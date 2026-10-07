@@ -160,7 +160,6 @@ Do not use this cleanup to implement or redesign:
 - new write Graph permissions;
 - a Microsoft Graph Python SDK;
 - a second HTTP transport;
-- schema redesign unrelated to ownership moves;
 - new live-tenant acceptance claims;
 - authoritative absence semantics where A1 currently does not provide them;
 - broad renaming or style cleanup without ownership value.
@@ -348,10 +347,14 @@ Target:
 
 ## 7. Work breakdown
 
-Implementation is split into six gates, G0 through G5. Each gate should be
-independently reviewable and revertible.
+Implementation is split into six checkpoints, G0 through G5. Each checkpoint
+is independently reviewable and revertible, but none is a human-approval stop.
+When a checkpoint fails, the implementation must diagnose and repair the current
+lane autonomously, rerun only the affected verification, and continue once it
+is green. The plan should run end-to-end without asking the user to make routine
+technical decisions.
 
-## Gate G0 — freeze ownership tests before moves
+## Checkpoint G0 — freeze ownership tests before moves
 
 ### Goal
 
@@ -373,15 +376,15 @@ before production relocation begins.
 6. Add a focused test proving no application delta request inspects/rebuilds an
    opaque Graph cursor.
 
-### Gate
+### Checkpoint
 
 - tests demonstrate the intended ownership, not just import direction;
 - no production behavior changed yet;
 - each test has one clear ownership failure message.
 
-## Gate G1 — remove application state from Teams notification protocol/items
+## Checkpoint G1 — remove application state from Teams notification protocol/items
 
-This gate has two disjoint lanes that may run in parallel after G0.
+This checkpoint has two disjoint lanes that may run in parallel after G0.
 
 ### Lane G1-A — notification boundary
 
@@ -426,14 +429,14 @@ Work:
 - if persisted bytes/shape would otherwise change, adapt at the application
   projection boundary rather than migrating provider semantics into SQL.
 
-### G1 gate
+### G1 checkpoint
 
 - `microsoft_graph` contains no msgloom source identity or acquisition
   completeness state;
 - provider notification/item tests remain standalone;
 - application notification/topology tests pass.
 
-## Gate G2 — return selected acquisition profiles to `message_ingest`
+## Checkpoint G2 — return selected acquisition profiles to `message_ingest`
 
 Run three lanes in parallel; they own disjoint provider/application files.
 
@@ -506,7 +509,7 @@ Framework retains:
 - hosted-content consistency/representation mechanics;
 - pure provider parsing.
 
-### G2 gate
+### G2 checkpoint
 
 - changing a msgloom acquisition profile no longer requires editing
   `microsoft_graph`;
@@ -514,7 +517,7 @@ Framework retains:
 - current application request bytes/scopes remain unchanged;
 - no new permission is requested.
 
-## Gate G3 — finish remaining provider mechanics extraction
+## Checkpoint G3 — finish remaining provider mechanics extraction
 
 Run disjoint provider lanes in parallel after G2 unless a shared helper is
 needed.
@@ -543,14 +546,14 @@ needed.
 - do not move traversal, checkpointing, failure items, or removal semantics into
   the framework.
 
-### G3 gate
+### G3 checkpoint
 
 - no application code constructs/decodes provider cursor structure;
 - repeated provider tombstone validation is centralized;
 - OneDrive provider response mechanics are reusable;
 - application callbacks still own traversal and semantic decisions.
 
-## Gate G4 — architecture guardrails and cleanup
+## Checkpoint G4 — architecture guardrails and cleanup
 
 After G1-G3 converge, perform one fresh static ownership audit.
 
@@ -580,21 +583,31 @@ Update old documentation that currently says the framework owns selected
 Do not rewrite historical implementation reports except where a current
 architecture statement would otherwise mislead future work.
 
-## Gate G5 — final A1 ownership acceptance
+## Checkpoint G5 — final A1 ownership acceptance
 
-G5 is the only full convergence gate.
+G5 is the only full convergence checkpoint.
 
 ### 5.1 Focused tests during development
 
 During G0-G4:
 
 - run only tests affected by the current lane;
-- on a failure, rerun only the failing/related test set;
-- do not repeatedly run the full suite after each patch.
+- a single narrow test may run on one Pi;
+- as soon as verification spans multiple independent test files or logical test
+  groups, split those tests across both Raspberry Pis in parallel;
+- both Pis must test the same committed SHA; push/sync the lane candidate before
+  a distributed run so results are reproducible;
+- on a failure, fix the current lane autonomously and rerun only the failing or
+  directly affected shard;
+- do not restart already-green independent shards after an unrelated fix;
+- do not run the full tracked suite during normal lane development;
+- the full tracked suite is reserved for the final G5 convergence pass, except
+  when a genuinely cross-cutting failure makes a broader run necessary.
 
 ### 5.2 Two-Raspberry-Pi final test split
 
-Use both Raspberry Pis for the final tracked suite.
+Use both Raspberry Pis for the final tracked suite. This is the same execution
+policy used for multi-file focused tests during G0-G4, not a special one-off.
 
 Split tests into stable, non-overlapping shards by file. One recommended split:
 
@@ -605,7 +618,7 @@ Both Pis must test the same committed SHA and frozen dependency lock. If one Pi
 needs environment bootstrap, use the lock rather than an ad-hoc dependency
 install.
 
-### 5.3 Final static/framework gates
+### 5.3 Final static/framework checks
 
 Run once on the final candidate:
 
@@ -621,7 +634,10 @@ Also run the semantic ownership scans from G4.
 
 ### 5.4 Final review cells
 
-A final independent review must return PASS for all four cells:
+Run a final independent review as an automated quality check. It must return
+PASS for all four cells; a REVISE result is not a user-approval blocker. Apply
+the concrete findings, rerun only affected verification, and repeat the review
+autonomously until it passes:
 
 1. **Framework purity** — no msgloom business/application policy in
    `microsoft_graph`.
@@ -629,11 +645,12 @@ A final independent review must return PASS for all four cells:
    `message_ingest`.
 3. **Behavior compatibility** — A1 wire requests, evidence, catalog output,
    public reader behavior, and source identity remain compatible.
-4. **Validation/rollback** — focused and final gates cover the moved boundaries
-   and every gate is independently revertible.
+4. **Validation/rollback** — focused and final checks cover the moved boundaries
+   and every checkpoint is independently revertible.
 
-Only then mark A1 Graph ownership finalization complete and use that exact SHA as
-the A2 entry baseline.
+After the four cells pass, mark A1 Graph ownership finalization complete and use
+that exact SHA as the A2 entry baseline. No intermediate checkpoint requires
+user confirmation.
 
 ## 8. Parallel execution model
 
@@ -698,10 +715,18 @@ Each commit must preserve a buildable/testable state. Avoid compatibility
 aliases unless an external/public import actually requires one; do not keep
 aliases merely to hide an unfinished move.
 
-Rollback is reverse commit order. No database migration or irreversible user
-data operation is planned, so rollback should be code-only. If any lane proves
-that a schema change is necessary, stop that lane and revise this plan before
-proceeding.
+After each lane reaches a coherent candidate commit, push that SHA so both
+Raspberry Pis can test the exact same bytes. If a distributed shard fails, fix
+the defect, create the next small candidate commit, and rerun only the affected
+shard(s).
+
+Rollback is reverse commit order. This is a development-stage system with no
+database migration compatibility burden and no production data migration to
+preserve. The cleanup is not expected to require schema changes; if a minimal
+schema adjustment becomes necessary to keep ownership correct, make it directly
+with its focused tests and continue autonomously rather than stopping for a
+migration-design decision. Do not add migration machinery solely for backward
+compatibility with disposable development data.
 
 ## 10. Acceptance criteria
 
@@ -721,24 +746,45 @@ This cleanup is complete only when all statements below are true:
   `message_ingest`;
 - current A1 behavior remains compatible;
 - no new write permission or transport exists;
-- final two-Pi test gate and static/framework checks are green;
-- fresh independent ownership review is PASS;
+- exactly one normal final two-Pi full tracked-suite convergence run is green
+  (plus only targeted reruns if that final run exposes defects);
+- final static/framework checks are green;
+- fresh independent ownership review is PASS after any autonomous repair loop;
 - the final accepted SHA is recorded as the A2 entry baseline.
 
-## 11. Stop conditions
+## 11. Autonomous recovery rules
 
-Stop and revise the plan rather than pushing through if any of these occurs:
+The implementation is expected to complete without routine user intervention.
+A failed checkpoint means repair and continue, not stop and ask for approval.
 
-- a proposed framework primitive needs `message_ingest`, `msgloom`, or SQLAlchemy;
-- preserving behavior requires moving evidence/catalog/checkpoint state into the
-  framework;
-- a profile relocation unexpectedly changes Graph permissions or request
-  semantics without an explicit product decision;
-- a persisted schema migration becomes necessary;
-- a refactor requires a second scheduler/HTTP/retry abstraction;
-- a provider mechanic cannot be separated from application policy without a
-  misleading abstraction;
-- a current live/security contract would be weakened.
+Use these recovery rules:
+
+- if a proposed framework primitive accidentally depends on `message_ingest`,
+  `msgloom`, or SQLAlchemy, move the application concern back out and keep the
+  provider primitive narrower;
+- if behavior preservation appears to require moving evidence/catalog/checkpoint
+  state into the framework, keep those concerns in `message_ingest` and adapt at
+  the application boundary instead;
+- if a profile relocation changes Graph permissions or request bytes, determine
+  whether it is an implementation regression, restore the existing contract,
+  and continue; do not silently broaden permissions;
+- if a small development schema adjustment is required, apply it directly with
+  focused tests; no backward migration path is required for disposable
+  development data;
+- if a proposed change starts creating a second scheduler/HTTP/retry abstraction,
+  discard that approach and use the existing Scrapy/Graph component instead;
+- if provider mechanics and application policy are entangled, prefer the
+  smallest explicit seam or argument rather than inventing a new framework;
+- if a security/privacy contract regresses, restore the stricter current
+  behavior first, then continue the refactor;
+- if tests fail, diagnose and fix the defect, rerun only affected shards, and
+  continue automatically;
+- if a final independent review returns REVISE, implement its concrete findings
+  and repeat the affected checks/review without waiting for user confirmation.
+
+Escalation to the user is reserved only for a true product-policy ambiguity that
+cannot be resolved from the existing design/code/contracts. This ownership
+cleanup is not expected to contain such a decision.
 
 ## 12. Expected end state
 
