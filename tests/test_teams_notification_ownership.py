@@ -10,10 +10,14 @@ import pytest
 
 from message_ingest.spiders.microsoft.teams._notification_intake import (
     NotificationInputError,
+    aggregate_coverage_items,
     load_trusted_subscriptions,
 )
-from microsoft_graph.protocol.teams_notifications import TeamsTrustedSubscription
-from tests.teams_notification_support import chat_subscription
+from microsoft_graph.protocol.teams_notifications import (
+    TeamsTrustedSubscription,
+    teams_notifications_from_payload,
+)
+from tests.teams_notification_support import chat_subscription, lifecycle_event
 
 
 def test_provider_subscription_needs_no_application_identity() -> None:
@@ -50,3 +54,49 @@ def test_application_preserves_source_binding_without_provider_state(
         pytest.fail("Source validation changed the provider subscription scope")
     if hasattr(record, "source_id"):
         pytest.fail("Application source binding escaped into provider state")
+
+
+@pytest.mark.parametrize(
+    ("lifecycles", "expected_gaps", "aggregate_gap"),
+    [
+        (
+            ["reauthorizationRequired"],
+            ["reauthorization-required"],
+            "reauthorization-required",
+        ),
+        (["subscriptionRemoved"], ["subscription-removed"], "subscription-removed"),
+        (
+            ["subscriptionRemoved", "reauthorizationRequired"],
+            ["subscription-removed", "reauthorization-required"],
+            "notification-gap",
+        ),
+    ],
+)
+def test_application_maps_lifecycle_facts_to_durable_gap_details(
+    lifecycles: list[str], expected_gaps: list[str], aggregate_gap: str
+) -> None:
+    record = TeamsTrustedSubscription.from_mapping(chat_subscription())
+    events = teams_notifications_from_payload(
+        {"value": [lifecycle_event(lifecycle=value) for value in lifecycles]},
+        trusted_subscriptions={record.subscription_id: record},
+        captured_at="2026-10-04T05:00:00+00:00",
+    )
+    if any(hasattr(event, "gap_kind") for event in events):
+        pytest.fail("Provider lifecycle facts contain application gap semantics")
+    items = aggregate_coverage_items(
+        events,
+        source_id="teams-source",
+        observed_at="2026-10-04T05:00:00+00:00",
+        evidence_id="a" * 32,
+        run_id="run",
+    )
+    if len(items) != 1:
+        pytest.fail("Same-scope lifecycle facts did not aggregate")
+    item = items[0]
+    if item.gap_kind != aggregate_gap or not item.history_incomplete:
+        pytest.fail("Application lifecycle gap aggregation changed")
+    details = item.details["events"]
+    if [value["gap_kind"] for value in details] != expected_gaps:
+        pytest.fail("Stored lifecycle gap details changed")
+    if [value["lifecycle_event"] for value in details] != lifecycles:
+        pytest.fail("Stored lifecycle facts lost their provider order")

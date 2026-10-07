@@ -190,15 +190,11 @@ def test_invalid_trusted_window_is_rejected() -> None:
 
 
 @pytest.mark.parametrize(
-    ("lifecycle", "expected_gap"),
-    [
-        ("reauthorizationRequired", "reauthorization-required"),
-        ("subscriptionRemoved", "subscription-removed"),
-    ],
+    "lifecycle",
+    ["reauthorizationRequired", "subscriptionRemoved"],
 )
 def test_supported_lifecycle_event_uses_trusted_scope(
     lifecycle: str,
-    expected_gap: str,
 ) -> None:
     entry = {
         "subscriptionId": "sub-chat",
@@ -207,8 +203,10 @@ def test_supported_lifecycle_event_uses_trusted_scope(
         "lifecycleEvent": lifecycle,
     }
     event = _parse(entry)[0]
-    if event.identity is not None or event.gap_kind != expected_gap:
-        pytest.fail("Lifecycle notification did not resolve to trusted scope gap")
+    if event.identity is not None or event.lifecycle_event != lifecycle:
+        pytest.fail("Lifecycle notification lost its provider lifecycle fact")
+    if event.scope != ("same",):
+        pytest.fail("Lifecycle notification lost its trusted resource scope")
 
 
 def test_generic_missed_lifecycle_is_not_claimed_for_teams() -> None:

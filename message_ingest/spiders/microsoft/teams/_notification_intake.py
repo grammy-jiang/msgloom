@@ -26,6 +26,11 @@ from microsoft_graph.protocol.teams_notifications import (
 
 _EVIDENCE_ID = re.compile(r"^[0-9a-f]{32}$")
 _LOCAL_GAP_KINDS = frozenset({"delivery-interruption", "subscription-expired"})
+# Provider lifecycle facts become durable history uncertainty only in intake.
+_LIFECYCLE_GAP_KINDS = {
+    "reauthorizationRequired": "reauthorization-required",
+    "subscriptionRemoved": "subscription-removed",
+}
 
 
 class NotificationInputError(ValueError):
@@ -307,7 +312,12 @@ def aggregate_coverage_items(
         subscription_id = valid_from = valid_until = None
         if len(subscriptions) == 1:
             subscription_id, valid_from, valid_until = next(iter(subscriptions))
-        gaps = [event.gap_kind for event in scope_events if event.gap_kind is not None]
+        gaps = [
+            gap
+            for event in scope_events
+            if (gap := _LIFECYCLE_GAP_KINDS.get(event.lifecycle_event or ""))
+            is not None
+        ]
         gap_kind = None
         if gaps:
             gap_kind = gaps[0] if len(set(gaps)) == 1 else "notification-gap"
@@ -320,7 +330,7 @@ def aggregate_coverage_items(
                     "subscription_valid_until": event.valid_until,
                     "change_type": event.change_type,
                     "lifecycle_event": event.lifecycle_event,
-                    "gap_kind": event.gap_kind,
+                    "gap_kind": _LIFECYCLE_GAP_KINDS.get(event.lifecycle_event or ""),
                     "message_identity": _identity_details(event.identity),
                 }
                 for event in scope_events

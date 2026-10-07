@@ -139,7 +139,6 @@ class TeamsNotificationEvent:
     valid_until: str
     change_type: str | None
     lifecycle_event: str | None
-    gap_kind: str | None
     identity: TeamsMessageIdentity | None
 
 
@@ -388,11 +387,6 @@ def teams_notifications_from_payload(
             trusted=trusted,
             identity=identity,
         )
-        gap_kind = None
-        if graph_event.lifecycle_event == "reauthorizationRequired":
-            gap_kind = "reauthorization-required"
-        elif graph_event.lifecycle_event == "subscriptionRemoved":
-            gap_kind = "subscription-removed"
         events.append(
             TeamsNotificationEvent(
                 ordinal=ordinal,
@@ -404,7 +398,6 @@ def teams_notifications_from_payload(
                 valid_until=trusted.valid_until,
                 change_type=graph_event.change_type,
                 lifecycle_event=graph_event.lifecycle_event,
-                gap_kind=gap_kind,
                 identity=identity,
             )
         )
