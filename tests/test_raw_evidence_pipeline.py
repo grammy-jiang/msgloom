@@ -419,7 +419,8 @@ def test_public_raw_pipeline_cancellation_drains_accepted_worker(
             await reached.wait()
 
         monkeypatch.setattr(pipeline.catalog.evidence, "record", gated_record)
-        if phase == "before_acceptance":
+        fixture_owns_lock = phase == "before_acceptance"
+        if fixture_owns_lock:
             await service.write_lock.acquire()
         task = asyncio.create_task(manager.process_item_async(_raw_item()))
         try:
@@ -438,7 +439,12 @@ def test_public_raw_pipeline_cancellation_drains_accepted_worker(
             if task.done():
                 with pytest.raises(asyncio.CancelledError):
                     await task
-                await manager.close_spider_async()
+                # Close acquires the same lock as the fixture's admission
+                # barrier. Keep the observations above, then release ownership.
+                if fixture_owns_lock:
+                    service.write_lock.release()
+                    fixture_owns_lock = False
+                await asyncio.wait_for(manager.close_spider_async(), 5)
             report["service_closed_before_drain"] = service._closed
             finish.set()
             if phase == "during_accepted_write":
@@ -449,9 +455,9 @@ def test_public_raw_pipeline_cancellation_drains_accepted_worker(
             finish.set()
             if report["worker_entered"]:
                 await asyncio.wait_for(drained.wait(), 5)
-            if phase == "before_acceptance":
+            if fixture_owns_lock:
                 service.write_lock.release()
-            await manager.close_spider_async()
+            await asyncio.wait_for(manager.close_spider_async(), 5)
             pipeline.catalog.close()
 
     asyncio.run(exercise())
