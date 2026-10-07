@@ -75,7 +75,9 @@ def test_mail_tombstone_shape_preserves_membership_policy(
     item = output[1]
     if isinstance(item, OutlookMailRemovalItem) != removed:
         pytest.fail("Only object markers remove Mail folder membership")
-    if removed and (item.folder_id != "folder-1" or item.removed_reason != reason):
+    if isinstance(item, OutlookMailRemovalItem) and (
+        item.folder_id != "folder-1" or item.removed_reason != reason
+    ):
         pytest.fail("Mail must retain the folder context and unmodified reason")
     if not removed and not isinstance(item, OutlookMailItem):
         pytest.fail("Mail must retain legacy nonobject-marker upserts")

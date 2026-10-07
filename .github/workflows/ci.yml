@@ -1,8 +1,9 @@
 name: CI
 
 on:
+  # Run the full matrix for master and PRs, not twice for each feature push.
   push:
-    branches: ["**"]
+    branches: ["master"]
   pull_request:
   workflow_dispatch:
 
@@ -78,7 +79,8 @@ jobs:
             tox-env: py314
           - python: "3.12"
             tox-env: py312-fastmcp4
-          - python: "3.13"
+          # The A1 qualification intentionally requires the 3.13.5 patch.
+          - python: "3.13.5"
             tox-env: py313-fastmcp4
           - python: "3.14"
             tox-env: py314-fastmcp4
@@ -109,10 +111,27 @@ jobs:
         run: uv sync --locked --group dev
       # Tox owns test selection, coverage, and the separate serial-state suite.
       # Each environment has its own runner; no test or timeout override applies.
+      # The hosted runner service does not delegate its cgroup to the runner
+      # user. Run normal suites under an unprivileged Delegate=yes systemd
+      # service instead of skipping safety-sensitive process-boundary tests.
       - name: Run the existing tox environment
         env:
           TOX_ENVIRONMENT: ${{ matrix.tox-env }}
-        run: uv run --no-sync tox run -e "$TOX_ENVIRONMENT"
+        run: |
+          if [[ "$TOX_ENVIRONMENT" == *-fastmcp4 ]]; then
+            uv run --no-sync tox run -e "$TOX_ENVIRONMENT"
+          else
+            sudo systemd-run --quiet --wait --collect --pipe \
+              --uid "$(id -un)" --property=Delegate=yes \
+              --working-directory="$GITHUB_WORKSPACE" \
+              --setenv=HOME="$HOME" --setenv=PATH="$PATH" \
+              --setenv=CI=true --setenv=TOX_ENVIRONMENT="$TOX_ENVIRONMENT" \
+              --setenv=UV_CACHE_DIR="${UV_CACHE_DIR:-$HOME/.cache/uv}" \
+              /bin/bash -euc '
+                python -c "from scripts.handoff_qualification.process_boundary import check_supported; check_supported()"
+                uv run --no-sync tox run -e "$TOX_ENVIRONMENT"
+              '
+          fi
       - name: Qualify the rebuilt wheel outside the checkout
         if: ${{ !contains(matrix.tox-env, 'fastmcp') }}
         run: |
