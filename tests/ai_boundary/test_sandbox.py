@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 import subprocess
+import sys
 from pathlib import Path
 
 import pytest
@@ -18,14 +19,27 @@ def test_bubblewrap_hides_unmounted_host_sentinel(tmp_path: Path) -> None:
     sentinel.write_text("synthetic forbidden host content")
     worker = tmp_path / "worker.py"
     worker.write_text(
-        "import json\n"
+        "import json,sys\n"
         "from pathlib import Path\n"
-        f"print(json.dumps({{'visible': Path({str(sentinel)!r}).exists()}}))\n"
+        f"print(json.dumps({{'visible': Path({str(sentinel)!r}).exists(),"
+        "'python':list(sys.version_info[:2])}))\n"
+    )
+    # Managed interpreters may live outside /usr. Mount their standard library
+    # while keeping the synthetic host sentinel outside the trusted roots.
+    roots = tuple(
+        dict.fromkeys(
+            (
+                Path(sys.base_prefix),
+                Path(sys.base_exec_prefix),
+                Path("/usr"),
+                Path("/lib"),
+            )
+        )
     )
     runtime = RuntimeIsolation(
-        Path("/usr/bin/python3.13"),
+        Path(sys.executable).resolve(),
         Path("/usr/bin/bwrap"),
-        (Path("/usr"), Path("/lib")),
+        roots,
         Path("/bin/true"),
         {},
         tmp_path,
@@ -50,14 +64,14 @@ def test_bubblewrap_hides_unmounted_host_sentinel(tmp_path: Path) -> None:
     if completed.returncode != 0:
         pytest.fail(f"bubblewrap synthetic check failed: {completed.stderr}")
     result = json.loads(completed.stdout)
-    if result != {"visible": False}:
-        pytest.fail("host sentinel was visible inside the AI namespace")
+    if result != {"visible": False, "python": list(sys.version_info[:2])}:
+        pytest.fail("namespace exposed the sentinel or used another Python")
 
 
 def test_missing_isolation_fails_closed(tmp_path: Path) -> None:
     """A missing bubblewrap executable is not silently bypassed."""
     runtime = RuntimeIsolation(
-        Path("/usr/bin/python3.13"),
+        Path(sys.executable).resolve(),
         tmp_path / "missing-bwrap",
         (Path("/usr"),),
         Path("/bin/true"),
