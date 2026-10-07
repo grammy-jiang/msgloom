@@ -77,7 +77,11 @@ def test_todo_large_group_pages_and_unchanged_round(tmp_path, graph_server):
     )
     for identity in extra:
         pages[f"{todo.LISTS}/{identity}/tasks?%24top=2"] = {"value": []}
-    successful(todo._crawl(tmp_path, origin, action="sync"))
+    # These 42 lists require 51 response writes plus serialized content and
+    # traversal proof writes. Under the four-worker A1 gate, the ordinary
+    # 30-second budget expired after only 18 responses with progress ongoing.
+    # Give both large rounds a bounded budget; retain all publication checks.
+    successful(todo._crawl(tmp_path, origin, action="sync", timeout=120))
     first = feed(tmp_path, "todo-fixture", "todo", limit=7)
     positive = [f for _, facts in first for f in facts if f.role != "transition"]
     expected = {
@@ -107,7 +111,7 @@ def test_todo_large_group_pages_and_unchanged_round(tmp_path, graph_server):
             pytest.fail("Component/task lost its exact hierarchical parent")
     if len(first) != 96 or len({e.release_group_id for e, _ in first}) != 1:
         pytest.fail("Large snapshot was split, omitted or duplicated")
-    successful(todo._crawl(tmp_path, origin, action="sync"))
+    successful(todo._crawl(tmp_path, origin, action="sync", timeout=120))
     no_churn(first, feed(tmp_path, "todo-fixture", "todo", limit=7))
     if [g["authority_revision"] for g in groups(tmp_path)] != ["1", "2"]:
         pytest.fail("Unchanged snapshot did not record zero-entry authority")

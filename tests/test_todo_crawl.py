@@ -156,7 +156,8 @@ def graph_server():
         thread.join(timeout=5)
 
 
-def _crawl(tmp_path, origin, *, action="discover", extra_settings=None):
+def _crawl(tmp_path, origin, *, action="discover", extra_settings=None, timeout=30):
+    """Run a fixture crawl with a finite, caller-selected workload budget."""
     settings = {
         "MS_GRAPH_SERVICE_ROOT": origin + "/v1.0",
         "MS_GRAPH_AUTH_METHOD": "none",
@@ -190,7 +191,7 @@ def _crawl(tmp_path, origin, *, action="discover", extra_settings=None):
         cwd=ROOT,
         capture_output=True,
         text=True,
-        timeout=30,
+        timeout=timeout,
         check=False,
         env=env,
     )
