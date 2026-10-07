@@ -19,6 +19,7 @@ from message_ingest.sync.microsoft.outlook.email.checkpoints import (
 )
 from message_ingest.sync.microsoft.outlook.email.promotion import ValidatedMailDeltaRun
 from microsoft_graph.protocol import GraphDeltaPage
+from microsoft_graph.protocol.delta import graph_tombstone
 
 from ._delta_state import (
     MailDeltaCommitMode,
@@ -203,7 +204,7 @@ class OutlookDeltaSpider(OutlookFolderTraversal):
         )
 
         for message in values:
-            if isinstance(removed := message.get("@removed"), dict):
+            if (removed := graph_tombstone(message, strict=False)) is not None:
                 self.crawler.stats.inc_value(
                     "msgloom/crawl/delta/message_removed_count"
                 )

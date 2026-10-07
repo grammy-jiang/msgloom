@@ -22,7 +22,7 @@ from message_ingest.extensions.catalog import CatalogService
 from message_ingest.extensions.microsoft.outlook.email.checkpoint import (
     OutlookDeltaCheckpointExtension,
 )
-from message_ingest.items.acquisition import AcquisitionFailureItem
+from message_ingest.items.acquisition import AcquisitionFailureItem, RawHttpEvidenceItem
 from message_ingest.items.microsoft.outlook.email import (
     OutlookDeltaCheckpointCandidateItem,
     OutlookFolderSnapshotCandidateItem,
@@ -38,6 +38,49 @@ from message_ingest.sync.microsoft.outlook.email.checkpoints import (
 )
 
 FIXTURES = Path(__file__).parent / "fixtures" / "microsoft_graph"
+
+
+@pytest.mark.parametrize(
+    ("marker", "removed", "reason"),
+    [
+        ({}, True, None),
+        ({"reason": "deleted"}, True, "deleted"),
+        ({"reason": "changed"}, True, "changed"),
+        ({"reason": 42}, True, 42),
+        (None, False, None),
+        (False, False, None),
+        ("deleted", False, None),
+        ([], False, None),
+    ],
+)
+def test_mail_tombstone_shape_preserves_membership_policy(
+    tmp_path: Path, marker: object, removed: bool, reason: object
+) -> None:
+    spider = _spider(tmp_path)
+    request = spider._initial_message_delta_request("folder-1", reset_count=0)
+    response = TextResponse(
+        request.url,
+        request=request,
+        body=json.dumps(
+            {
+                "value": [{"id": "message-1", "@removed": marker}],
+                "@odata.deltaLink": "https://graph.microsoft.com/v1.0/state",
+            }
+        ).encode(),
+        encoding="utf-8",
+    )
+    output = list(spider.parse_message_delta(response, **request.cb_kwargs))
+    if not isinstance(output[0], RawHttpEvidenceItem):
+        pytest.fail("Raw evidence must precede Mail tombstone interpretation")
+    item = output[1]
+    if isinstance(item, OutlookMailRemovalItem) != removed:
+        pytest.fail("Only object markers remove Mail folder membership")
+    if removed and (item.folder_id != "folder-1" or item.removed_reason != reason):
+        pytest.fail("Mail must retain the folder context and unmodified reason")
+    if not removed and not isinstance(item, OutlookMailItem):
+        pytest.fail("Mail must retain legacy nonobject-marker upserts")
+    if not isinstance(output[-1], OutlookDeltaCheckpointCandidateItem):
+        pytest.fail("Compatible tombstones must retain terminal checkpoint staging")
 
 
 @pytest.mark.parametrize("reset_count", [0, 1])
