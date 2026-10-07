@@ -1,7 +1,7 @@
 """Application Teams topology items with raw-evidence provenance."""
 
 from dataclasses import dataclass
-from typing import Literal
+from typing import Any, Literal, Self
 
 from microsoft_graph.items.teams.channel import (
     TeamsChannelItem as GraphTeamsChannelItem,
@@ -62,6 +62,66 @@ class TeamsTeamItem(GraphTeamsTeamItem):
     evidence_id: str | None
     run_id: str
 
+    detail_complete: bool
+    detail_limitation: str | None
+
+    def __post_init__(self) -> None:
+        """Validate application completeness, then project provider fields."""
+        if self.detail_complete:
+            if self.representation != "detail" or self.detail_limitation is not None:
+                raise ValueError(
+                    "Complete team detail must come from a detail response"
+                )
+        elif not isinstance(self.detail_limitation, str) or not self.detail_limitation:
+            raise ValueError("Partial team representations require a detail limitation")
+        GraphTeamsTeamItem.__post_init__(self)
+
+    @classmethod
+    def from_associated(
+        cls,
+        resource: dict[str, Any],
+        *,
+        detail_limitation: str = (
+            "associatedTeams is discovery-only; full team detail is not observed"
+        ),
+        **kwargs: Any,
+    ) -> Self:
+        """Retain associated-team discovery until separate detail is observed."""
+        return super(TeamsTeamItem, cls).from_associated(
+            resource,
+            detail_complete=False,
+            detail_limitation=detail_limitation,
+            **kwargs,
+        )
+
+    @classmethod
+    def from_joined(
+        cls,
+        resource: dict[str, Any],
+        *,
+        detail_limitation: str = (
+            "joinedTeams is discovery-only; full team detail is not observed"
+        ),
+        **kwargs: Any,
+    ) -> Self:
+        """Retain joined-team discovery until separate detail is observed."""
+        return super(TeamsTeamItem, cls).from_joined(
+            resource,
+            detail_complete=False,
+            detail_limitation=detail_limitation,
+            **kwargs,
+        )
+
+    @classmethod
+    def from_detail(cls, resource: dict[str, Any], **kwargs: Any) -> Self:
+        """Mark a separate team detail observation complete."""
+        return super(TeamsTeamItem, cls).from_detail(
+            resource,
+            detail_complete=True,
+            detail_limitation=None,
+            **kwargs,
+        )
+
 
 @dataclass(slots=True)
 class TeamsChannelItem(GraphTeamsChannelItem):
@@ -71,6 +131,79 @@ class TeamsChannelItem(GraphTeamsChannelItem):
     observed_at: str
     evidence_id: str | None
     run_id: str
+
+    detail_complete: bool
+    detail_limitation: str | None
+
+    def __post_init__(self) -> None:
+        """Validate application completeness, then project provider fields."""
+        if self.detail_complete:
+            if self.representation != "detail" or self.detail_limitation is not None:
+                raise ValueError(
+                    "Complete channel detail must come from detail response"
+                )
+        elif not isinstance(self.detail_limitation, str) or not self.detail_limitation:
+            raise ValueError("Channel discovery requires a detail limitation")
+        GraphTeamsChannelItem.__post_init__(self)
+
+    @classmethod
+    def from_all_channels(
+        cls,
+        resource: dict[str, Any],
+        *,
+        host_team_id: str,
+        detail_limitation: str = (
+            "allChannels is a discovery projection; full channel detail is not observed"
+        ),
+        **kwargs: Any,
+    ) -> Self:
+        """Keep selected allChannels discovery distinct from hydrated detail."""
+        return super(TeamsChannelItem, cls).from_all_channels(
+            resource,
+            host_team_id=host_team_id,
+            detail_complete=False,
+            detail_limitation=detail_limitation,
+            **kwargs,
+        )
+
+    @classmethod
+    def from_incoming(
+        cls,
+        resource: dict[str, Any],
+        *,
+        host_team_id: str,
+        receiving_team_id: str,
+        detail_limitation: str = (
+            "incomingChannels is a discovery projection; full channel detail is not observed"
+        ),
+        **kwargs: Any,
+    ) -> Self:
+        """Keep incoming channel discovery distinct from hydrated detail."""
+        return super(TeamsChannelItem, cls).from_incoming(
+            resource,
+            host_team_id=host_team_id,
+            receiving_team_id=receiving_team_id,
+            detail_complete=False,
+            detail_limitation=detail_limitation,
+            **kwargs,
+        )
+
+    @classmethod
+    def from_detail(
+        cls,
+        resource: dict[str, Any],
+        *,
+        host_team_id: str,
+        **kwargs: Any,
+    ) -> Self:
+        """Mark a separate channel detail observation complete."""
+        return super(TeamsChannelItem, cls).from_detail(
+            resource,
+            host_team_id=host_team_id,
+            detail_complete=True,
+            detail_limitation=None,
+            **kwargs,
+        )
 
 
 @dataclass(slots=True)

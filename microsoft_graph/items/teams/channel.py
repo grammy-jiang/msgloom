@@ -30,18 +30,10 @@ def _context_id(value: str | None, *, name: str, required: bool) -> None:
 
 @dataclass(slots=True)
 class TeamsTeamItem:
-    """
-    Team discovery/detail representation with unchanged provider JSON.
-
-    Discovery observations stay explicitly partial until a separate detail
-    response is observed. Consumers may replace the default limitation text
-    with a concrete provider limitation after a failed hydration attempt.
-    """
+    """Team discovery/detail representation with unchanged provider JSON."""
 
     team_id: str
     representation: TeamRepresentation
-    detail_complete: bool
-    detail_limitation: str | None
     raw: dict[str, Any]
     display_name: str | None = field(init=False)
     description: str | None = field(init=False)
@@ -53,13 +45,6 @@ class TeamsTeamItem:
         """Project provider fields while enforcing representation provenance."""
         if self.representation not in {"associated", "joined", "detail"}:
             raise ValueError("Unknown Teams team representation")
-        if self.detail_complete:
-            if self.representation != "detail" or self.detail_limitation is not None:
-                raise ValueError(
-                    "Complete team detail must come from a detail response"
-                )
-        elif not isinstance(self.detail_limitation, str) or not self.detail_limitation:
-            raise ValueError("Partial team representations require a detail limitation")
         self.display_name = self.raw.get("displayName")
         self.description = self.raw.get("description")
         self.tenant_id = self.raw.get("tenantId")
@@ -70,10 +55,6 @@ class TeamsTeamItem:
     def from_associated(
         cls,
         resource: dict[str, Any],
-        *,
-        detail_limitation: str = (
-            "associatedTeams is discovery-only; full team detail is not observed"
-        ),
         **kwargs: Any,
     ) -> Self:
         """Parse an associated-team discovery observation."""
@@ -81,8 +62,6 @@ class TeamsTeamItem:
         return cls(
             team_id=raw["id"],
             representation="associated",
-            detail_complete=False,
-            detail_limitation=detail_limitation,
             raw=raw,
             **kwargs,
         )
@@ -91,10 +70,6 @@ class TeamsTeamItem:
     def from_joined(
         cls,
         resource: dict[str, Any],
-        *,
-        detail_limitation: str = (
-            "joinedTeams is discovery-only; full team detail is not observed"
-        ),
         **kwargs: Any,
     ) -> Self:
         """Parse a direct-team discovery observation."""
@@ -102,8 +77,6 @@ class TeamsTeamItem:
         return cls(
             team_id=raw["id"],
             representation="joined",
-            detail_complete=False,
-            detail_limitation=detail_limitation,
             raw=raw,
             **kwargs,
         )
@@ -115,8 +88,6 @@ class TeamsTeamItem:
         return cls(
             team_id=raw["id"],
             representation="detail",
-            detail_complete=True,
-            detail_limitation=None,
             raw=raw,
             **kwargs,
         )
@@ -129,7 +100,6 @@ class TeamsChannelItem:
 
     The provider never assumes the team used for discovery is the content host.
     Incoming/shared discovery can therefore retain both identities and tenants.
-    List projections remain partial even when every selected field is present.
     """
 
     channel_id: str
@@ -138,8 +108,6 @@ class TeamsChannelItem:
     receiving_team_id: str | None
     receiving_tenant_id: str | None
     representation: ChannelRepresentation
-    detail_complete: bool
-    detail_limitation: str | None
     original_resource_link: str | None
     raw: dict[str, Any]
     created_date_time: str | None = field(init=False)
@@ -168,13 +136,6 @@ class TeamsChannelItem:
             raise ValueError("Unknown Teams channel representation")
         if self.representation == "incomingChannels" and self.receiving_team_id is None:
             raise ValueError("Incoming channel discovery requires a receiving team")
-        if self.detail_complete:
-            if self.representation != "detail" or self.detail_limitation is not None:
-                raise ValueError(
-                    "Complete channel detail must come from detail response"
-                )
-        elif not isinstance(self.detail_limitation, str) or not self.detail_limitation:
-            raise ValueError("Channel discovery requires a detail limitation")
         mapping = {
             "created_date_time": "createdDateTime",
             "display_name": "displayName",
@@ -200,9 +161,6 @@ class TeamsChannelItem:
         host_tenant_id: str | None = None,
         receiving_team_id: str | None = None,
         receiving_tenant_id: str | None = None,
-        detail_limitation: str = (
-            "allChannels is a discovery projection; full channel detail is not observed"
-        ),
         original_resource_link: str | None = None,
         **kwargs: Any,
     ) -> Self:
@@ -220,8 +178,6 @@ class TeamsChannelItem:
             receiving_team_id=receiving_team_id,
             receiving_tenant_id=receiving_tenant_id,
             representation="allChannels",
-            detail_complete=False,
-            detail_limitation=detail_limitation,
             original_resource_link=link,
             raw=raw,
             **kwargs,
@@ -236,9 +192,6 @@ class TeamsChannelItem:
         receiving_team_id: str,
         host_tenant_id: str | None = None,
         receiving_tenant_id: str | None = None,
-        detail_limitation: str = (
-            "incomingChannels is a discovery projection; full channel detail is not observed"
-        ),
         original_resource_link: str | None = None,
         **kwargs: Any,
     ) -> Self:
@@ -256,8 +209,6 @@ class TeamsChannelItem:
             receiving_team_id=receiving_team_id,
             receiving_tenant_id=receiving_tenant_id,
             representation="incomingChannels",
-            detail_complete=False,
-            detail_limitation=detail_limitation,
             original_resource_link=link,
             raw=raw,
             **kwargs,
@@ -284,8 +235,6 @@ class TeamsChannelItem:
             receiving_team_id=receiving_team_id,
             receiving_tenant_id=receiving_tenant_id,
             representation="detail",
-            detail_complete=True,
-            detail_limitation=None,
             original_resource_link=original_resource_link,
             raw=raw,
             **kwargs,
