@@ -1,0 +1,140 @@
+name: CI
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  quality:
+    name: Quality and native Scrapy contracts
+    runs-on: ubuntu-24.04-arm
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: astral-sh/setup-uv@c18668ad3cf93ea998bef934396af7bb5c839dc7 # v10.2.0
+        with:
+          version: "0.12.21"
+          python-version: "3.13"
+          enable-cache: true
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: "24"
+      - name: Install locked development dependencies
+        run: uv sync --locked --group dev
+      - name: Ruff checks
+        run: |
+          uv run --no-sync ruff check microsoft_graph message_ingest msgloom tests
+          uv run --no-sync ruff format --check microsoft_graph message_ingest msgloom tests
+      - name: Pyright
+        run: >-
+          npx --yes --package pyright@1.1.413 pyright
+          --pythonpath .venv/bin/python microsoft_graph message_ingest msgloom tests
+      - name: Existing pre-commit checks on the branch changes
+        env:
+          BASE_BRANCH: ${{ github.base_ref }}
+          DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
+          BEFORE_SHA: ${{ github.event.before }}
+        run: |
+          if [[ "$GITHUB_EVENT_NAME" == "pull_request" ]]; then
+            base=$(git merge-base "origin/$BASE_BRANCH" HEAD)
+          elif [[ "$GITHUB_REF_NAME" != "$DEFAULT_BRANCH" ]]; then
+            base=$(git merge-base "origin/$DEFAULT_BRANCH" HEAD)
+          elif git cat-file -e "$BEFORE_SHA^{commit}" 2>/dev/null; then
+            base=$BEFORE_SHA
+          else
+            base=$(git hash-object -t tree /dev/null)
+          fi
+          uv tool run --from pre-commit==4.6.2 pre-commit run \
+            --from-ref "$base" --to-ref HEAD --show-diff-on-failure
+          git diff --exit-code
+
+  tests:
+    name: Tests (${{ matrix.tox-env }})
+    runs-on: ubuntu-24.04-arm
+    timeout-minutes: 60
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - python: "3.12"
+            tox-env: py312
+          - python: "3.13"
+            tox-env: py313
+          - python: "3.14"
+            tox-env: py314
+          - python: "3.12"
+            tox-env: py312-fastmcp4
+          - python: "3.13"
+            tox-env: py313-fastmcp4
+          - python: "3.14"
+            tox-env: py314-fastmcp4
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Install required process isolation
+        if: ${{ !contains(matrix.tox-env, 'fastmcp') }}
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends apparmor bubblewrap
+          profile="$GITHUB_WORKSPACE/.github/apparmor/bwrap-userns-restrict"
+          profile_sha256="11d39094f044f0cda0febb3ad517b830301da6b2ce929664af09ee9e4dd264f9"
+          printf '%s  %s\n' "$profile_sha256" "$profile" | sha256sum --check --strict -
+          test -r /etc/apparmor.d/abi/4.0
+          sudo apparmor_parser --replace --skip-cache "$profile"
+          bwrap --die-with-parent --unshare-all \
+            --ro-bind /usr /usr --ro-bind /lib /lib \
+            --proc /proc --dev /dev /usr/bin/true
+      - uses: astral-sh/setup-uv@c18668ad3cf93ea998bef934396af7bb5c839dc7 # v10.2.0
+        with:
+          version: "0.12.21"
+          python-version: ${{ matrix.python }}
+          enable-cache: true
+          cache-suffix: ${{ matrix.tox-env }}
+      - name: Install locked development dependencies
+        run: uv sync --locked --group dev
+      # Tox owns test selection, coverage, and the separate serial-state suite.
+      # Each environment has its own runner; no test or timeout override applies.
+      - name: Run the existing tox environment
+        env:
+          TOX_ENVIRONMENT: ${{ matrix.tox-env }}
+        run: uv run --no-sync tox run -e "$TOX_ENVIRONMENT"
+      - name: Qualify the rebuilt wheel outside the checkout
+        if: ${{ !contains(matrix.tox-env, 'fastmcp') }}
+        run: |
+          uv venv "$RUNNER_TEMP/wheel-env"
+          uv export --locked --no-dev --no-emit-project \
+            --format requirements-txt --output-file "$RUNNER_TEMP/runtime-requirements.txt"
+          uv pip sync --python "$RUNNER_TEMP/wheel-env/bin/python" \
+            "$RUNNER_TEMP/runtime-requirements.txt"
+          uv run --no-sync python scripts/qualify_installed_wheel.py \
+            --source-root "$GITHUB_WORKSPACE" \
+            --output-root "$RUNNER_TEMP/wheel-qualification" \
+            --env-python "$RUNNER_TEMP/wheel-env/bin/python" \
+            --uv "$(command -v uv)" --require-cli msgloom \
+            --require-resource msgloom.reporting:templates/report.txt.j2 \
+            --require-resource msgloom.reporting:templates/report.html.j2
+      - name: Preserve coverage and qualification evidence
+        if: ${{ always() }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: evidence-${{ matrix.tox-env }}
+          path: |
+            .tox/${{ matrix.tox-env }}/coverage.xml
+            .tox/${{ matrix.tox-env }}/log/
+            ${{ runner.temp }}/wheel-qualification/qualification.json
+          include-hidden-files: true
+          if-no-files-found: warn
+          retention-days: 14
