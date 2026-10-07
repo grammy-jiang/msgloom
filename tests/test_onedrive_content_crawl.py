@@ -81,7 +81,7 @@ def download_servers():
     try:
         yield f"http://localhost:{graph.server_port}", download_url, state, observed
     finally:
-        for server, thread in zip((graph, download), threads):
+        for server, thread in zip((graph, download), threads, strict=True):
             server.shutdown()
             server.server_close()
             thread.join(timeout=5)

@@ -162,7 +162,9 @@ def render_report(
     except _OutputOverflow:
         groups = [(topic,) for topic in topics]
         if len(groups) > config.max_parts:
-            raise ReportBuildError("report requires more output parts than configured")
+            raise ReportBuildError(
+                "report requires more output parts than configured"
+            ) from None
         try:
             rendered = _render_groups(
                 report_ref,

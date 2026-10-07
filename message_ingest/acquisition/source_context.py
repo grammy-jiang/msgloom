@@ -75,7 +75,7 @@ def ensure_jobdir_context(jobdir: str, source_id: str, database_url: str) -> Non
         if actual != expected:
             raise SourceContextMismatch(
                 "JOBDIR source-context marker changed during initialization"
-            )
+            ) from None
         return
     with os.fdopen(fd, "w", encoding="ascii") as handle:
         handle.write(expected + "\n")
