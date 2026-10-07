@@ -37,7 +37,14 @@ def test_machine_matrix_keeps_candidates_collectable_and_status_honest() -> None
     if scenarios is None or gaps is None or pending is None:
         pytest.fail("The executable-candidate inventory is missing")
     installed = set(SpiderLoader.from_settings(get_project_settings()).list())
-    if installed != set(MATRIX) or len(installed) != 17:
+    # Teams registration is additive. These paths remain outside the Task 10
+    # qualification matrix and do not acquire receipts from registration.
+    pending_teams = {
+        "microsoft_teams_chat_discover",
+        "microsoft_teams_channel_discover",
+        "microsoft_teams_notification_reconcile",
+    }
+    if installed != set(MATRIX) | pending_teams or len(MATRIX) != 17:
         pytest.fail("Installed spider inventory differs from the exact matrix")
     if set(scenarios) != TASK10_ROWS:
         pytest.fail("Task 10 must retain its exact 12 executable rows")
