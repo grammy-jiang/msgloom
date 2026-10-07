@@ -19,13 +19,6 @@ from microsoft_graph.spiders.teams.channel_paths import (
     resolve_trusted_channel_resource_link,
 )
 
-SCOPES = (
-    "Team.ReadBasic.All",
-    "Channel.ReadBasic.All",
-    "ChannelMessage.Read.All",
-    "TeamMember.Read.All",
-    "ChannelMember.Read.All",
-)
 SELECT_QUERY = (
     "?%24select=id%2CcreatedDateTime%2CdisplayName%2Cdescription%2CisArchived"
     "%2CisFavoriteByDefault%2ClayoutType%2CmembershipType%2CmigrationMode"
@@ -33,14 +26,14 @@ SELECT_QUERY = (
 )
 
 
-def test_complete_t2_scope_and_frozen_team_channel_paths():
+def test_provider_team_channel_paths_do_not_select_permissions():
     spider = MicrosoftTeamsChannelSpider(name="provider")
     settings = Settings()
     spider.update_settings(settings)
-    if spider.required_graph_permissions(settings) != SCOPES:
-        pytest.fail("Complete T2 scope declaration changed")
-    if settings.getlist("MS_GRAPH_SCOPES") != list(SCOPES):
-        pytest.fail("Complete T2 defaults must request exactly the frozen scopes")
+    if spider.required_graph_permissions(settings):
+        pytest.fail("Provider helpers must not select a permission bundle")
+    if settings.getlist("MS_GRAPH_SCOPES"):
+        pytest.fail("Provider helpers must not set acquisition scopes")
     if spider.associated_teams_path() != "/me/teamwork/associatedTeams":
         pytest.fail("Associated teams must remain the discovery root")
     if spider.joined_teams_path() != "/me/joinedTeams":

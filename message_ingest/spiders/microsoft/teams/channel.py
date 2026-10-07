@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from collections.abc import Iterator
-from typing import Any
+from typing import Any, ClassVar
 
 from scrapy import Request
 from twisted.python.failure import Failure
@@ -17,6 +17,7 @@ from microsoft_graph.spiders.teams.channel_composition import (
 
 from ._channel_content import ChannelContentMixin
 from ._channel_messages import ChannelMessagesMixin
+from ._channel_profile import CHANNEL_GRAPH_PERMISSIONS
 from ._channel_topology import ChannelTopologyMixin
 
 
@@ -36,6 +37,7 @@ class MicrosoftTeamsChannelDiscoverSpider(
     """
 
     name = "microsoft_teams_channel_discover"
+    graph_permissions: ClassVar[tuple[str, ...]] = CHANNEL_GRAPH_PERMISSIONS
     failure_context_keys = (
         "team_id",
         "host_team_id",

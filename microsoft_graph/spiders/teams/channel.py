@@ -1,4 +1,4 @@
-"""Microsoft Teams complete-T2 scopes and provider channel path surface."""
+"""Reusable Microsoft Teams provider channel path surface."""
 
 from typing import ClassVar
 
@@ -8,15 +8,8 @@ from . import channel_paths
 
 
 class MicrosoftTeamsChannelSpider(MicrosoftGraphSpider):
-    """Supply complete T2 scopes and pure Teams channel topology paths."""
+    """Supply pure Teams channel topology paths and representation requirements."""
 
-    graph_permissions: ClassVar[tuple[str, ...]] = (
-        "Team.ReadBasic.All",
-        "Channel.ReadBasic.All",
-        "ChannelMessage.Read.All",
-        "TeamMember.Read.All",
-        "ChannelMember.Read.All",
-    )
     representation_prefer: ClassVar[str] = "include-unknown-enum-members"
     hosted_consistency_level: ClassVar[str] = "eventual"
     hosted_bytes_accept: ClassVar[str] = "application/octet-stream"
