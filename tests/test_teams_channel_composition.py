@@ -69,6 +69,7 @@ def test_message_requests_are_native_named_and_preserve_context_and_prefer():
         callback=spider.parse_roots,
         errback=spider.failed,
         cb_kwargs=context,
+        page_size=50,
         operation="roots",
     )
     replies = spider.replies_request(
@@ -78,6 +79,7 @@ def test_message_requests_are_native_named_and_preserve_context_and_prefer():
         callback=spider.parse_replies,
         errback=spider.failed,
         cb_kwargs=context,
+        page_size=50,
         operation="replies",
     )
     detail = spider.message_detail_request(

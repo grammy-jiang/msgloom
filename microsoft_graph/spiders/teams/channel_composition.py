@@ -152,7 +152,7 @@ class MicrosoftTeamsChannelCompositionSpider(MicrosoftTeamsChannelSpider):
         callback: Callback,
         errback: Callback,
         cb_kwargs: dict[str, Any] | None = None,
-        page_size: int = 50,
+        page_size: int | None = None,
         operation: str = "teams-channel-root-messages",
     ) -> Request:
         """Build one enum-aware channel-root collection request."""
@@ -178,7 +178,7 @@ class MicrosoftTeamsChannelCompositionSpider(MicrosoftTeamsChannelSpider):
         callback: Callback,
         errback: Callback,
         cb_kwargs: dict[str, Any] | None = None,
-        page_size: int = 50,
+        page_size: int | None = None,
         operation: str = "teams-channel-replies",
     ) -> Request:
         """Build one enum-aware reply collection request."""

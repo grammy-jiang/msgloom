@@ -15,15 +15,11 @@ from microsoft_graph.items.teams.channel import (
 )
 from microsoft_graph.spiders.teams.channel import MicrosoftTeamsChannelSpider
 from microsoft_graph.spiders.teams.channel_paths import (
-    CHANNEL_SELECT_FIELDS,
     resolve_trusted_channel_resource_link,
 )
 
-SELECT_QUERY = (
-    "?%24select=id%2CcreatedDateTime%2CdisplayName%2Cdescription%2CisArchived"
-    "%2CisFavoriteByDefault%2ClayoutType%2CmembershipType%2CmigrationMode"
-    "%2CoriginalCreatedDateTime%2CtenantId%2CwebUrl"
-)
+SELECT_QUERY = "?%24select=id%2CdisplayName"
+SELECT_FIELDS = ("id", "displayName")
 
 
 def test_provider_team_channel_paths_do_not_select_permissions():
@@ -41,30 +37,34 @@ def test_provider_team_channel_paths_do_not_select_permissions():
     if spider.team_path("team") != "/teams/team":
         pytest.fail("Team detail path changed")
     expected = {
-        spider.all_channels_path("team"): "/teams/team/allChannels" + SELECT_QUERY,
-        spider.incoming_channels_path("team"): (
+        spider.all_channels_path(
+            "team", fields=SELECT_FIELDS
+        ): "/teams/team/allChannels" + SELECT_QUERY,
+        spider.incoming_channels_path("team", fields=SELECT_FIELDS): (
             "/teams/team/incomingChannels" + SELECT_QUERY
         ),
-        spider.channel_path("team", "channel"): (
+        spider.channel_path("team", "channel", fields=SELECT_FIELDS): (
             "/teams/team/channels/channel" + SELECT_QUERY
         ),
         spider.shared_with_teams_path("team", "channel"): (
             "/teams/team/channels/channel/sharedWithTeams"
         ),
-        spider.team_members_path("team"): "/teams/team/members?%24top=999",
-        spider.channel_members_path("team", "channel"): (
+        spider.team_members_path(
+            "team", page_size=999
+        ): "/teams/team/members?%24top=999",
+        spider.channel_members_path("team", "channel", page_size=999): (
             "/teams/team/channels/channel/members?%24top=999"
         ),
         spider.all_channel_members_path("team", "channel"): (
             "/teams/team/channels/channel/allMembers"
         ),
-        spider.root_messages_path("team", "channel"): (
+        spider.root_messages_path("team", "channel", page_size=50): (
             "/teams/team/channels/channel/messages?%24top=50"
         ),
         spider.root_message_path("team", "channel", "root"): (
             "/teams/team/channels/channel/messages/root"
         ),
-        spider.replies_path("team", "channel", "root"): (
+        spider.replies_path("team", "channel", "root", page_size=50): (
             "/teams/team/channels/channel/messages/root/replies?%24top=50"
         ),
         spider.reply_message_path("team", "channel", "root", "reply"): (
@@ -74,21 +74,6 @@ def test_provider_team_channel_paths_do_not_select_permissions():
     for actual, wanted in expected.items():
         if actual != wanted:
             pytest.fail(f"Frozen Teams path changed: {actual!r} != {wanted!r}")
-    if CHANNEL_SELECT_FIELDS != (
-        "id",
-        "createdDateTime",
-        "displayName",
-        "description",
-        "isArchived",
-        "isFavoriteByDefault",
-        "layoutType",
-        "membershipType",
-        "migrationMode",
-        "originalCreatedDateTime",
-        "tenantId",
-        "webUrl",
-    ):
-        pytest.fail("Channel projection must exactly match the P0-C freeze")
     if spider.representation_prefer != "include-unknown-enum-members":
         pytest.fail("Unknown enum retention preference changed")
 

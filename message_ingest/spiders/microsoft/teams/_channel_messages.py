@@ -21,6 +21,8 @@ from microsoft_graph.spiders.teams.channel_composition import (
     parse_channel_root_messages,
 )
 
+from ._channel_profile import CHANNEL_MESSAGE_PAGE_SIZE
+
 
 class ChannelMessagesMixin:
     """Persist scoped root/reply observations before content follow-ups."""
@@ -59,6 +61,7 @@ class ChannelMessagesMixin:
                 host_team_id,
                 channel_id,
                 message.message_id,
+                page_size=CHANNEL_MESSAGE_PAGE_SIZE,
                 callback=self.parse_replies,
                 errback=self.errback,
                 cb_kwargs={

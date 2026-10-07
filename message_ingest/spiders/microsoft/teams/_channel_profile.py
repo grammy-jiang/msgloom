@@ -7,3 +7,21 @@ CHANNEL_GRAPH_PERMISSIONS = (
     "TeamMember.Read.All",
     "ChannelMember.Read.All",
 )
+
+CHANNEL_SELECT_FIELDS = (
+    "id",
+    "createdDateTime",
+    "displayName",
+    "description",
+    "isArchived",
+    "isFavoriteByDefault",
+    "layoutType",
+    "membershipType",
+    "migrationMode",
+    "originalCreatedDateTime",
+    "tenantId",
+    "webUrl",
+)
+CHANNEL_MESSAGE_PAGE_SIZE = 50
+TEAM_MEMBER_PAGE_SIZE = 999
+CHANNEL_MEMBER_PAGE_SIZE = 999

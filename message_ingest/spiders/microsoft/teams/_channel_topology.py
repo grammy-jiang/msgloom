@@ -18,6 +18,8 @@ from message_ingest.items.microsoft.teams.topology import (
 )
 from microsoft_graph.protocol import GraphCollectionPage, graph_object
 
+from ._channel_profile import CHANNEL_SELECT_FIELDS, TEAM_MEMBER_PAGE_SIZE
+
 ChannelInventoryKind = Literal["allChannels", "incomingChannels"]
 MembershipSource = Literal["direct", "all"]
 
@@ -99,7 +101,7 @@ class ChannelTopologyMixin:
             },
         )
         yield self._teams_request(
-            self.all_channels_path(team_id),
+            self.all_channels_path(team_id, fields=CHANNEL_SELECT_FIELDS),
             callback=self.parse_all_channels,
             purpose="teams-all-channels",
             cb_kwargs={
@@ -109,7 +111,7 @@ class ChannelTopologyMixin:
             prefer=self.representation_prefer,
         )
         yield self._teams_request(
-            self.incoming_channels_path(team_id),
+            self.incoming_channels_path(team_id, fields=CHANNEL_SELECT_FIELDS),
             callback=self.parse_incoming_channels,
             purpose="teams-incoming-channels",
             cb_kwargs={
@@ -119,7 +121,7 @@ class ChannelTopologyMixin:
             prefer=self.representation_prefer,
         )
         yield self._teams_request(
-            self.team_members_path(team_id),
+            self.team_members_path(team_id, page_size=TEAM_MEMBER_PAGE_SIZE),
             callback=self.parse_team_members,
             purpose="teams-team-members",
             cb_kwargs={"team_id": team_id},

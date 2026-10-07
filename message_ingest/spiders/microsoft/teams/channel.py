@@ -17,7 +17,12 @@ from microsoft_graph.spiders.teams.channel_composition import (
 
 from ._channel_content import ChannelContentMixin
 from ._channel_messages import ChannelMessagesMixin
-from ._channel_profile import CHANNEL_GRAPH_PERMISSIONS
+from ._channel_profile import (
+    CHANNEL_GRAPH_PERMISSIONS,
+    CHANNEL_MEMBER_PAGE_SIZE,
+    CHANNEL_MESSAGE_PAGE_SIZE,
+    CHANNEL_SELECT_FIELDS,
+)
 from ._channel_topology import ChannelTopologyMixin
 
 
@@ -129,7 +134,10 @@ class MicrosoftTeamsChannelDiscoverSpider(
     ) -> Iterator[Request]:
         detail_purpose = "teams-channel-detail"
         detail = self._teams_request(
-            detail_path or self.channel_path(item.host_team_id, item.channel_id),
+            detail_path
+            or self.channel_path(
+                item.host_team_id, item.channel_id, fields=CHANNEL_SELECT_FIELDS
+            ),
             callback=self.parse_channel_detail,
             errback=self.hydration_errback,
             purpose=detail_purpose,
@@ -166,7 +174,9 @@ class MicrosoftTeamsChannelDiscoverSpider(
                 },
             )
         yield self._teams_request(
-            self.channel_members_path(item.host_team_id, item.channel_id),
+            self.channel_members_path(
+                item.host_team_id, item.channel_id, page_size=CHANNEL_MEMBER_PAGE_SIZE
+            ),
             callback=self.parse_channel_members,
             purpose="teams-channel-members",
             cb_kwargs={
@@ -189,6 +199,7 @@ class MicrosoftTeamsChannelDiscoverSpider(
         yield self.root_messages_request(
             item.host_team_id,
             item.channel_id,
+            page_size=CHANNEL_MESSAGE_PAGE_SIZE,
             callback=self.parse_root_messages,
             errback=self.errback,
             cb_kwargs={

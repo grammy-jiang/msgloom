@@ -1,28 +1,11 @@
-"""Pure Microsoft Teams channel paths and frozen v1.0 query helpers."""
+"""Pure Microsoft Teams channel paths and caller-selected query helpers."""
 
 from __future__ import annotations
 
 import re
+from collections.abc import Sequence
 from dataclasses import dataclass
 from urllib.parse import quote, unquote, urlencode, urlsplit
-
-CHANNEL_SELECT_FIELDS = (
-    "id",
-    "createdDateTime",
-    "displayName",
-    "description",
-    "isArchived",
-    "isFavoriteByDefault",
-    "layoutType",
-    "membershipType",
-    "migrationMode",
-    "originalCreatedDateTime",
-    "tenantId",
-    "webUrl",
-)
-CHANNEL_MESSAGE_PAGE_SIZE = 50
-TEAM_MEMBER_PAGE_SIZE = 999
-CHANNEL_MEMBER_PAGE_SIZE = 999
 
 _TRUSTED_CHANNEL_LINK = re.compile(
     r"^/v1[.]0/tenants/([^/]+)/teams/([^/]+)/channels/([^/]+)$"
@@ -63,7 +46,7 @@ def _segment(value: str, *, name: str) -> str:
 
 
 def _bounded_page_size(value: int, *, name: str, maximum: int) -> int:
-    """Require an integer page size inside the frozen endpoint bounds."""
+    """Require an integer page size inside the provider endpoint bounds."""
     if isinstance(value, bool) or not isinstance(value, int):
         raise TypeError(f"{name} must be an integer")
     if value < 1 or value > maximum:
@@ -71,15 +54,19 @@ def _bounded_page_size(value: int, *, name: str, maximum: int) -> int:
     return value
 
 
-def _top(path: str, page_size: int, *, name: str, maximum: int) -> str:
+def _top(path: str, page_size: int | None, *, name: str, maximum: int) -> str:
     """Append exactly one validated page-size option to a new request path."""
+    if page_size is None:
+        return path
     size = _bounded_page_size(page_size, name=name, maximum=maximum)
     return f"{path}?{urlencode({'$top': size})}"
 
 
-def _channel_projection(path: str) -> str:
-    """Append the frozen non-exhaustive channel projection."""
-    return f"{path}?{urlencode({'$select': ','.join(CHANNEL_SELECT_FIELDS)})}"
+def _channel_projection(path: str, fields: Sequence[str]) -> str:
+    """Append caller-selected fields without choosing a capture profile."""
+    if not fields:
+        return path
+    return f"{path}?{urlencode({'$select': ','.join(fields)})}"
 
 
 def associated_teams_path() -> str:
@@ -97,20 +84,20 @@ def team_path(team_id: str) -> str:
     return f"/teams/{_segment(team_id, name='team ID')}"
 
 
-def all_channels_path(team_id: str) -> str:
-    """Discover all channels using the frozen channel projection."""
-    return _channel_projection(f"{team_path(team_id)}/allChannels")
+def all_channels_path(team_id: str, *, fields: Sequence[str] = ()) -> str:
+    """Discover all channels with an optional caller-selected projection."""
+    return _channel_projection(f"{team_path(team_id)}/allChannels", fields)
 
 
-def incoming_channels_path(team_id: str) -> str:
+def incoming_channels_path(team_id: str, *, fields: Sequence[str] = ()) -> str:
     """Discover incoming shared channels for one receiving team."""
-    return _channel_projection(f"{team_path(team_id)}/incomingChannels")
+    return _channel_projection(f"{team_path(team_id)}/incomingChannels", fields)
 
 
-def channel_path(team_id: str, channel_id: str) -> str:
-    """Address full channel detail using the same frozen projection."""
+def channel_path(team_id: str, channel_id: str, *, fields: Sequence[str] = ()) -> str:
+    """Address channel detail with an optional caller-selected projection."""
     base = f"{team_path(team_id)}/channels/{_segment(channel_id, name='channel ID')}"
-    return _channel_projection(base)
+    return _channel_projection(base, fields)
 
 
 def shared_with_teams_path(team_id: str, channel_id: str) -> str:
@@ -121,8 +108,8 @@ def shared_with_teams_path(team_id: str, channel_id: str) -> str:
     )
 
 
-def team_members_path(team_id: str, *, page_size: int = TEAM_MEMBER_PAGE_SIZE) -> str:
-    """List team members with the frozen bounded page size."""
+def team_members_path(team_id: str, *, page_size: int | None = None) -> str:
+    """List team members with an optional bounded page size."""
     return _top(
         f"{team_path(team_id)}/members",
         page_size,
@@ -135,9 +122,9 @@ def channel_members_path(
     team_id: str,
     channel_id: str,
     *,
-    page_size: int = CHANNEL_MEMBER_PAGE_SIZE,
+    page_size: int | None = None,
 ) -> str:
-    """List direct channel members with the frozen bounded page size."""
+    """List direct channel members with an optional bounded page size."""
     path = (
         f"{team_path(team_id)}/channels/"
         f"{_segment(channel_id, name='channel ID')}/members"
@@ -157,9 +144,9 @@ def root_messages_path(
     team_id: str,
     channel_id: str,
     *,
-    page_size: int = CHANNEL_MESSAGE_PAGE_SIZE,
+    page_size: int | None = None,
 ) -> str:
-    """List channel root messages with the frozen bounded page size."""
+    """List channel root messages with an optional bounded page size."""
     path = (
         f"{team_path(team_id)}/channels/"
         f"{_segment(channel_id, name='channel ID')}/messages"
@@ -181,7 +168,7 @@ def replies_path(
     channel_id: str,
     root_id: str,
     *,
-    page_size: int = CHANNEL_MESSAGE_PAGE_SIZE,
+    page_size: int | None = None,
 ) -> str:
     """List replies for one root without relying on reply expansion."""
     path = f"{root_message_path(team_id, channel_id, root_id)}/replies"
@@ -301,10 +288,6 @@ def resolve_trusted_channel_resource_link(
 
 
 __all__ = [
-    "CHANNEL_MEMBER_PAGE_SIZE",
-    "CHANNEL_MESSAGE_PAGE_SIZE",
-    "CHANNEL_SELECT_FIELDS",
-    "TEAM_MEMBER_PAGE_SIZE",
     "TrustedChannelResourceLink",
     "all_channel_members_path",
     "all_channels_path",
