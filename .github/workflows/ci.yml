@@ -17,7 +17,7 @@ concurrency:
 jobs:
   quality:
     name: Quality and native Scrapy contracts
-    runs-on: ubuntu-24.04-arm
+    runs-on: ubuntu-26.04-arm
     timeout-minutes: 30
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -84,7 +84,11 @@ jobs:
             '325e971b6ba9bfa504672e29be93c24981eeb1c07576d730e9f7c8805afff0c6' \
             "$archive" | sha256sum --check --strict -
           tar -xzf "$archive" -C "$RUNNER_TEMP" actionlint
-          "$RUNNER_TEMP/actionlint" -color=false
+          # actionlint v1.7.12 predates the GitHub-hosted Ubuntu 26.04 Arm64
+          # label (GA 2026-09-17). Ignore only this exact known-label
+          # false positive; every other runner-label error remains enforced.
+          "$RUNNER_TEMP/actionlint" -color=false \
+            -ignore '^label "ubuntu-26[.]04-arm" is unknown[.]'
       # Reuse existing A1-to-A2 / Graph import boundary checks.  Keep these
       # separate from handoff runtime qualification (which requires cgroups).
       - name: Architecture boundaries
@@ -117,7 +121,7 @@ jobs:
 
   tests:
     name: Tests (${{ matrix.tox-env }})
-    runs-on: ubuntu-24.04-arm
+    runs-on: ubuntu-26.04-arm
     timeout-minutes: 60
     strategy:
       fail-fast: false
@@ -236,7 +240,7 @@ jobs:
 
   linux_safety:
     name: Linux cgroup-v2 safety contracts
-    runs-on: ubuntu-24.04-arm
+    runs-on: ubuntu-26.04-arm
     timeout-minutes: 20
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
