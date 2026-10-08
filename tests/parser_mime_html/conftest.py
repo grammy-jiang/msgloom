@@ -15,7 +15,7 @@ from msgloom.preparation.contracts import (
 
 PARSER_NAME = "msgloom.mime-html"
 PARSER_VERSION = "1"
-BACKEND = "stdlib-email+selectolax-0.4.12"
+BACKEND = "stdlib-email+selectolax-0.4.13"
 
 
 def parser_request(

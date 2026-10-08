@@ -2,5 +2,38 @@
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "extends": [
     "config:recommended"
+  ],
+  "prConcurrentLimit": 4,
+  "prHourlyLimit": 2,
+  "packageRules": [
+    {
+      "matchPackageNames": [
+        "tox",
+        "tox-uv",
+        "pytest",
+        "pytest-cov",
+        "pytest-xdist",
+        "pre-commit",
+        "ruff"
+      ],
+      "groupName": "test and quality toolchain"
+    },
+    {
+      "matchPackageNames": [
+        "selectolax",
+        "pypdfium2"
+      ],
+      "groupName": "document parsing dependencies"
+    },
+    {
+      "matchPackageNames": [
+        "cyclopts",
+        "claude-agent-sdk"
+      ],
+      "groupName": "application interface dependencies"
+    }
+  ],
+  "ignoreDeps": [
+    "python"
   ]
 }

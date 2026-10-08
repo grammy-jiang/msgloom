@@ -87,7 +87,7 @@ def test_closed_format_and_parser_identity_are_enforced() -> None:
     if (PARSER_NAME, PARSER_VERSION, BACKEND) != (
         "msgloom.mime-html",
         "1",
-        "stdlib-email+selectolax-0.4.12",
+        "stdlib-email+selectolax-0.4.13",
     ):
         pytest.fail("Parser identity constants changed unexpectedly")
 

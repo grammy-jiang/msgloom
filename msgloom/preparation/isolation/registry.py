@@ -53,7 +53,7 @@ PRODUCTION_REGISTRY = TrustedRegistry(
             identity=ParserIdentity(
                 "msgloom.mime-html",
                 "1",
-                "stdlib-email+selectolax-0.4.12",
+                "stdlib-email+selectolax-0.4.13",
             ),
         ),
         RegistryEntry(
@@ -77,7 +77,7 @@ PRODUCTION_REGISTRY = TrustedRegistry(
             identity=ParserIdentity(
                 "msgloom.pdf",
                 "1",
-                "pypdfium2-5.13.0",
+                "pypdfium2-5.14.0",
             ),
         ),
         RegistryEntry(
