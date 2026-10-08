@@ -19,7 +19,7 @@ from msgloom.preparation.parsers.mime_html_mime import extract_mime
 
 PARSER_NAME = "msgloom.mime-html"
 PARSER_VERSION = "1"
-BACKEND = "stdlib-email+selectolax-0.4.12"
+BACKEND = "stdlib-email+selectolax-0.4.13"
 SUPPORTED_PROFILES = frozenset({"mime-html-v1"})
 SUPPORTED_SETTINGS = frozenset[str]()
 

@@ -36,9 +36,9 @@ _LIMITS = ParserLimits(
     output_bytes=8 * 1024 * 1024,
     container_members=2048,
 )
-_MIME = ParserIdentity("msgloom.mime-html", "1", "stdlib-email+selectolax-0.4.12")
+_MIME = ParserIdentity("msgloom.mime-html", "1", "stdlib-email+selectolax-0.4.13")
 _EXCEL = ParserIdentity("msgloom.excel", "1", "python-calamine-0.8.2+openpyxl-3.1.5")
-_PDF = ParserIdentity("msgloom.pdf", "1", "pypdfium2-5.13.0")
+_PDF = ParserIdentity("msgloom.pdf", "1", "pypdfium2-5.14.0")
 _WORD = ParserIdentity("msgloom.word", "1", "python-docx-1.2.0+lxml-6.1.3")
 
 

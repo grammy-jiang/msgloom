@@ -41,11 +41,11 @@ def test_build_backend_and_development_pins_are_exact() -> None:
     groups = _table(project["dependency-groups"], "dependency groups")
     dev = set(cast(list[str], groups["dev"]))
     for requirement in (
-        "tox==4.64.4",
-        "tox-uv==1.36.0",
+        "tox==4.64.9",
+        "tox-uv==1.36.1",
         "pytest-xdist==3.8.0",
         "pytest-cov==7.1.0",
-        "pytest==9.0.3",
+        "pytest==9.1.1",
     ):
         if requirement not in dev:
             pytest.fail(f"missing exact development pin: {requirement}")

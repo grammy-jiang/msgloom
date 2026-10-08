@@ -24,7 +24,7 @@ from msgloom.preparation.contracts import (
 
 PARSER_NAME = "msgloom.pdf"
 PARSER_VERSION = "1"
-BACKEND = "pypdfium2-5.13.0"
+BACKEND = "pypdfium2-5.14.0"
 
 _PRIMARY_PROFILE = "pdf-primary-v1"
 _UNAVAILABLE_PROFILE_TERMS = ("ocr", "layout", "docling")
