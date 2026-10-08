@@ -20,5 +20,7 @@ def test_parser_identity_tracks_exact_runtime_dependency(
 ) -> None:
     entry = PRODUCTION_REGISTRY.resolve(format_)
     installed_backend = f"{prefix}{metadata.version(package)}"
-    assert entry.identity.backend == installed_backend
-    assert import_module(entry.module).BACKEND == installed_backend
+    if entry.identity.backend != installed_backend:
+        pytest.fail(f"registry backend differs from installed {package} version")
+    if import_module(entry.module).BACKEND != installed_backend:
+        pytest.fail(f"parser backend differs from installed {package} version")
