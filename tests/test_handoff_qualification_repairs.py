@@ -69,7 +69,7 @@ def _alive(pid: int) -> bool:
 def _precommit_python() -> str:
     """Use the current locked environment, not an executable shebang."""
     version = importlib.metadata.version("pre-commit")
-    _equal(version, "4.6.2")
+    _equal(version, "4.7.0")
     return sys.executable
 
 
