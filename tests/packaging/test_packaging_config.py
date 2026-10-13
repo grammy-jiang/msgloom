@@ -51,7 +51,7 @@ def test_build_backend_and_development_pins_are_exact() -> None:
             pytest.fail(f"missing exact development pin: {requirement}")
     _require_equal(
         groups["compat-fastmcp4"],
-        ["fastmcp==4.0.11"],
+        ["fastmcp==4.1.0"],
         "FastMCP compatibility group",
     )
     metadata = _table(project["project"], "project metadata")

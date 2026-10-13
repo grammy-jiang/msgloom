@@ -34,8 +34,8 @@ class SyntheticReader:
 def test_fastmcp4_import_and_shared_async_contract() -> None:
     """Prove dependency compatibility without constructing an MCP server."""
     fastmcp = importlib.import_module("fastmcp")
-    if version("fastmcp") != "4.0.11":
-        pytest.fail("compatibility environment must select FastMCP 4.0.11")
+    if version("fastmcp") != "4.1.0":
+        pytest.fail("compatibility environment must select FastMCP 4.1.0")
     if fastmcp is None:
         pytest.fail("FastMCP import unexpectedly resolved to no module")
     reader: EvidenceReader = SyntheticReader()
@@ -55,11 +55,11 @@ def test_runtime_probe_accepts_qualified_fastmcp(
         SimpleNamespace(version_info=(3, 13, 5), executable=sys.executable),
     )
     result = audit.runtime("3.13", True)
-    if result["packages"]["fastmcp"] != "4.0.11":
+    if result["packages"]["fastmcp"] != "4.1.0":
         pytest.fail("runtime probe did not report the qualified FastMCP release")
 
 
-@pytest.mark.parametrize("unqualified", ["4.0.10", "4.0.12"])
+@pytest.mark.parametrize("unqualified", ["4.0.11", "4.1.1"])
 def test_runtime_probe_rejects_other_fastmcp_releases(
     monkeypatch: pytest.MonkeyPatch, unqualified: str
 ) -> None:
@@ -74,5 +74,5 @@ def test_runtime_probe_rejects_other_fastmcp_releases(
         "sys",
         SimpleNamespace(version_info=(3, 13, 5), executable=sys.executable),
     )
-    with pytest.raises(ValueError, match="FastMCP"):
+    with pytest.raises(ValueError, match=r"FastMCP must remain exactly 4\.1\.0"):
         audit.runtime("3.13", True)
