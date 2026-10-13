@@ -74,5 +74,5 @@ def test_runtime_probe_rejects_other_fastmcp_releases(
         "sys",
         SimpleNamespace(version_info=(3, 13, 5), executable=sys.executable),
     )
-    with pytest.raises(ValueError, match="FastMCP"):
+    with pytest.raises(ValueError, match=r"FastMCP must remain exactly 4\.1\.0"):
         audit.runtime("3.13", True)
