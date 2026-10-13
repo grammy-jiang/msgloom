@@ -1,5 +1,5 @@
 """
-Run pre-commit 4.6.2 from a read-only source cache.
+Run pre-commit 4.7.0 from a read-only source cache.
 
 The real pre-commit Store owns a per-gate writable metadata sandbox. Repository
 lookups are redirected to an already provisioned source cache through read-only
@@ -53,8 +53,8 @@ def _cache_paths() -> tuple[Path, Path]:
 def main() -> int:
     """Run with source-cache lookup and bootstrap guards installed."""
     try:
-        if importlib.metadata.version("pre-commit") != "4.6.2":
-            raise RuntimeError("cached pre-commit adapter requires reviewed 4.6.2")
+        if importlib.metadata.version("pre-commit") != "4.7.0":
+            raise RuntimeError("cached pre-commit adapter requires reviewed 4.7.0")
         source, sandbox = _cache_paths()
         store = importlib.import_module("pre_commit.store")
         repository = cast(Any, importlib.import_module("pre_commit.repository"))
@@ -76,7 +76,7 @@ def main() -> int:
         store.Store._new_repo = cached
         repository._hook_install = no_install
         print(
-            "pre-commit 4.6.2; read-only source cache; writable metadata "
+            "pre-commit 4.7.0; read-only source cache; writable metadata "
             f"sandbox={sandbox}",
             flush=True,
         )

@@ -15,7 +15,7 @@ def runtime_versions(monkeypatch: pytest.MonkeyPatch) -> dict[str, str]:
         "pytest": "9.1.1",
         "pytest-cov": "7.1.0",
         "pytest-xdist": "3.8.0",
-        "ruff": "0.16.10",
+        "ruff": "0.17.0",
     }
     monkeypatch.setattr(
         audit,
@@ -42,6 +42,6 @@ def test_runtime_accepts_upgraded_ruff(runtime_versions: dict[str, str]) -> None
 
 def test_runtime_rejects_previous_ruff(runtime_versions: dict[str, str]) -> None:
     """A stale environment must fail before qualification can continue."""
-    runtime_versions["ruff"] = "0.16.9"
-    with pytest.raises(ValueError, match=r"ruff must remain 0\.16\.10"):
+    runtime_versions["ruff"] = "0.16.10"
+    with pytest.raises(ValueError, match=r"ruff must remain 0\.17\.0"):
         audit.runtime("3.13", fastmcp=False)

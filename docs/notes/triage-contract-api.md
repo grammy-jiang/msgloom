@@ -8,7 +8,7 @@ PreparedRecord contracts. The default Phase 1 registries include the closed
 triage and deterministic-rule codecs beside the preparation/context codecs.
 Accepted results require the corresponding validated semantic data.
 
-The implementation targets the pinned Pydantic 2.13.5 API. Models use strict
+The implementation targets the pinned Pydantic 2.14.1 API. Models use strict
 validation, extra fields are forbidden, and instances are frozen. The codec
 revalidates JSON on both encode and decode because model_construct() and
 model_copy() can bypass ordinary construction validation. Validation failures

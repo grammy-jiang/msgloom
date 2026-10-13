@@ -117,8 +117,8 @@ def test_time_boundaries_compare_aware_instants() -> None:
 @pytest.mark.parametrize(
     "kwargs",
     [
-        {"not_before": datetime(2026, 1, 1)},  # noqa: DTZ001
-        {"before": datetime(2026, 1, 1)},  # noqa: DTZ001
+        {"not_before": datetime(2026, 1, 1)},
+        {"before": datetime(2026, 1, 1)},
         {"sender_addresses": (" sender-1",)},
         {"sender_addresses": ("sender-1", "sender-1")},
     ],

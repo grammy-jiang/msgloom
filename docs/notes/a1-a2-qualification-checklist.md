@@ -106,7 +106,7 @@ not persistence, release atomicity or lifecycle evidence. At least four
 successful contracts must be reported. No persistent Graph credentials are
 supplied.
 
-The pre-commit adapter requires the inspected version 4.6.2 and a populated
+The pre-commit adapter requires the inspected version 4.7.0 and a populated
 source cache (default `~/.cache/pre-commit`). The source cache is opened only
 for read-only repository lookup. The real pre-commit Store instead uses a
 fresh per-gate writable metadata sandbox, so `mark_config_used()` cannot alter
