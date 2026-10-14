@@ -1,5 +1,6 @@
 """Publish exact Mail impacts inside the winning authority transaction."""
 
+from dataclasses import replace
 from datetime import datetime
 
 from sqlalchemy import select
@@ -66,6 +67,13 @@ def stage_presence(
         evidence_id=evidence_id,
         transition_reason=reason or "inventory_present",
     )
+    # A newer collected message or folder may already have toggled the mutable
+    # presence projection before authority reconciliation. Existing A1 effective
+    # state, not the mutable row alone, decides whether this is real restoration.
+    if spec.storage_relation == StorageRelation.CURRENT_EQUIVALENT:
+        current = ledger.current_effective_state(session, spec.effective_key)
+        if current is not None and current["source_state_key"] != spec.source_state_key:
+            spec = replace(spec, storage_relation=StorageRelation.ADVANCED)
     ledger.stage_state_fact_in_session(session, spec)
 
 
