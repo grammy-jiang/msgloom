@@ -428,10 +428,19 @@ async def _pipe_pressure_spawn_timeout(
     root: Path,
     script: Path,
 ) -> tuple[AttemptStatus, bool]:
+    """Force timeout only after the child has been accepted by the runner.
+
+    A 50 ms real attempt deadline can expire during setup on loaded CI,
+    before any pipe-pressure child exists. This fixture drives the precise
+    accepted-spawn timeout branch while other tests cover real deadlines.
+    """
+    from msgloom.ai.lifecycle import await_accepted as original_await_accepted
+
     real_create = asyncio.create_subprocess_exec
     accepted = asyncio.Event()
     release = asyncio.Event()
     processes: list[asyncio.subprocess.Process] = []
+    acceptance_count = 0
 
     async def create(*args: Any, **kwargs: Any) -> asyncio.subprocess.Process:
         process = await real_create(*args, **kwargs)
@@ -440,18 +449,38 @@ async def _pipe_pressure_spawn_timeout(
         await release.wait()
         return process
 
+    async def expire_accepted_spawn(
+        task: asyncio.Task[Any], deadline: float
+    ) -> tuple[bool, bool]:
+        nonlocal acceptance_count
+        acceptance_count += 1
+        if acceptance_count == 1:
+            return await original_await_accepted(task, deadline)
+        if acceptance_count != 2:
+            raise RuntimeError("unexpected AI runner acceptance stage")
+        await asyncio.wait_for(accepted.wait(), 5)
+        # Give the real child an opportunity to fill stderr before a consumer
+        # attaches. A simulated elapsed deadline is independent of CPU load.
+        await asyncio.sleep(0.08)
+        release.set()
+        await asyncio.wait_for(task, 5)
+        return True, False
+
     with (
         patch(
             "msgloom.ai.runner.build_sandbox_command",
             return_value=[sys.executable, str(script)],
         ),
         patch("msgloom.ai.runner.asyncio.create_subprocess_exec", create),
+        patch("msgloom.ai.runner.await_accepted", expire_accepted_spawn),
     ):
-        task = asyncio.create_task(_runner(root).run(_attempt(0.05), _Sink()))
-        await asyncio.wait_for(accepted.wait(), 1)
-        await asyncio.sleep(0.08)
-        release.set()
-        response = await asyncio.wait_for(task, 2)
+        task = asyncio.create_task(_runner(root).run(_attempt(5), _Sink()))
+        try:
+            response = await asyncio.wait_for(task, 5)
+        finally:
+            release.set()
+    if acceptance_count != 2 or len(processes) != 1:
+        pytest.fail("AI timeout did not exercise one accepted spawn")
     return response.status, processes[0].returncode is None
 
 
