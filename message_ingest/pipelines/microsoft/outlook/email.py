@@ -229,6 +229,7 @@ class OutlookMailPipeline:
             return ("msgloom/catalog/folder_delta_removed_count",)
         if isinstance(item, OutlookFolderDeltaCheckpointCandidateItem):
             self.folder_checkpoints.write_candidate(
+                baseline_identity=item.baseline_identity,
                 run_id=item.run_id,
                 delta_link=item.delta_link,
                 observed_at=item.observed_at,

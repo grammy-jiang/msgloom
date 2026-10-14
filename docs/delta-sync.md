@@ -22,6 +22,24 @@ to reconcile any folder that was missed or whose prior incremental state is
 unavailable. Folder delta provides efficient lifecycle evidence, while a
 complete recursive inventory can rebuild state.
 
+The mailbox-level mailFolder delta cursor has **its own** immutable causal
+contract, separate from each folder's message-delta cursor. The native Spider
+reads the currently committed cursor URL *and its generation identity* before
+constructing the first Graph request. It retains that digest across opaque
+nextLink pages and one bounded 410 reset. A terminal page stages both its
+next deltaLink and the original request-start identity in the additive,
+SQL-guarded `mail_folder_delta_candidate_bases` table. The existing
+`OutlookFolderDeltaCheckpointStore.commit` publishes scoped folder lifecycle
+transitions, promotes the provider cursor, and verifies the exact baseline
+generation under one shared catalog writer transaction. A delayed response
+from an old baseline cannot override a newer committed folder cursor, even
+if its receipt timestamp is later. Exact winner replay is read-only; a
+pre-upgrade pending candidate without causal proof fails closed.
+
+MailFolder delta **does not support JOBDIR**; this path starts a fresh native
+Scrapy run and never invents a resume baseline. The separate per-folder message
+delta implementation retains its existing JOBDIR/Scrapy resume contract.
+
 ## Why per-folder delta
 
 Microsoft Graph message delta is a folder-scoped operation. Each enumerable

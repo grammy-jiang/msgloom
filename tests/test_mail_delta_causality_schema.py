@@ -32,6 +32,7 @@ def test_historical_catalog_gain_additive_proof_table_without_backfill(
     try:
         with engine.begin() as connection:
             connection.exec_driver_sql("DROP TABLE mail_delta_candidate_bases")
+            connection.exec_driver_sql("DROP TABLE mail_folder_delta_candidate_bases")
             connection.exec_driver_sql("DROP TABLE mail_delta_absence_generations")
             connection.execute(
                 cast(Table, DeltaCheckpoint.__table__)
@@ -63,6 +64,7 @@ def test_historical_catalog_gain_additive_proof_table_without_backfill(
         new_names = set(inspect(catalog.engine).get_table_names())
         if new_names - old_names != {
             "mail_delta_candidate_bases",
+            "mail_folder_delta_candidate_bases",
             "mail_delta_absence_generations",
         }:
             pytest.fail("Mail proof migration altered historical tables")

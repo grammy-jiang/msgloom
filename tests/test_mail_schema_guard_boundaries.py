@@ -26,6 +26,8 @@ MAIL_GUARDS = {
 MAIL_DELTA_GUARDS = {
     "mail_delta_candidate_bases_immutable_insert",
     "mail_delta_candidate_bases_immutable_update",
+    "mail_folder_delta_candidate_bases_immutable_insert",
+    "mail_folder_delta_candidate_bases_immutable_update",
 }
 SHARED_GUARDS = {
     "immutable_acquisition_facts_INSERT",

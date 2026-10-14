@@ -198,6 +198,7 @@ def test_folder_delta_authority_to_public_reader(mail_catalog, removed):
                 observed_at=CURRENT,
             )
         checkpoints.write_candidate(
+            baseline_identity=checkpoints.get_delta_start()[1],
             run_id="folder-run",
             delta_link="https://graph.test/folders",
             observed_at=CURRENT,

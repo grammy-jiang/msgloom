@@ -13,6 +13,7 @@ from sqlalchemy.schema import CreateIndex, CreateTable
 from message_ingest.catalog.models.microsoft.outlook.email import (
     MailDeltaAbsenceGeneration,
     MailDeltaCandidateBase,
+    MailFolderDeltaCandidateBase,
 )
 
 
@@ -23,7 +24,11 @@ def _normalized(value: str) -> str:
 def initialize_mail_delta_baselines(connection: Connection) -> None:
     """Validate all present causal schemas before adding any missing table."""
     definitions: dict[str, dict[str, tuple[str, str]]] = {}
-    for model in (MailDeltaCandidateBase, MailDeltaAbsenceGeneration):
+    for model in (
+        MailDeltaCandidateBase,
+        MailDeltaAbsenceGeneration,
+        MailFolderDeltaCandidateBase,
+    ):
         table = cast(Table, model.__table__)
         expected = {table.name: ("table", str(CreateTable(table).compile(connection)))}
         for index in table.indexes:
@@ -33,15 +38,18 @@ def initialize_mail_delta_baselines(connection: Connection) -> None:
                 "index",
                 str(CreateIndex(index).compile(connection)),
             )
-        if model is MailDeltaCandidateBase:
+        if model in (MailDeltaCandidateBase, MailFolderDeltaCandidateBase):
             # Proof can be deleted for an expired folder, but not rewritten.
             for operation in ("UPDATE", "INSERT"):
                 name = f"{table.name}_immutable_{operation.lower()}"
+                keys = (
+                    "source_id=NEW.source_id AND run_id=NEW.run_id "
+                    "AND folder_id=NEW.folder_id"
+                    if model is MailDeltaCandidateBase
+                    else "source_id=NEW.source_id AND run_id=NEW.run_id"
+                )
                 condition = (
-                    " WHEN EXISTS (SELECT 1 FROM "
-                    + table.name
-                    + " WHERE source_id=NEW.source_id AND run_id=NEW.run_id "
-                    + "AND folder_id=NEW.folder_id)"
+                    f" WHEN EXISTS (SELECT 1 FROM {table.name} WHERE {keys})"
                     if operation == "INSERT"
                     else ""
                 )

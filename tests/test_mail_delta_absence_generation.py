@@ -53,6 +53,7 @@ def test_predelete_absent_baseline_never_resurrects_removed_folder_cursor(
         )
         folder_store = OutlookFolderDeltaCheckpointStore(catalog, source)
         folder_store.write_candidate(
+            baseline_identity=folder_store.get_delta_start()[1],
             run_id="delete",
             delta_link="folder-current",
             observed_at=t2,

@@ -39,6 +39,7 @@ class OutlookFolderDeltaSpider(OutlookMailSpider):
             maximum=1000,
         )
         self._terminal_delta_seen = False
+        self._initial_baseline: str | None = None
 
     @classmethod
     def update_settings(cls, settings: BaseSettings) -> None:
@@ -66,7 +67,8 @@ class OutlookFolderDeltaSpider(OutlookMailSpider):
         self.crawler.stats.set_value("msgloom/crawl/mode", "folder_delta")
         self.crawler.stats.set_value("msgloom/crawl/run_id", self.run_id)
         store = OutlookFolderDeltaCheckpointStore.from_crawler(self.crawler)
-        delta_link = await self._to_thread(store.get_delta_link)
+        delta_link, baseline = await self._to_thread(store.get_delta_start)
+        self._initial_baseline = baseline
         self.crawler.stats.set_value(
             "msgloom/crawl/folder_delta/checkpoint_loaded", bool(delta_link)
         )
@@ -76,9 +78,10 @@ class OutlookFolderDeltaSpider(OutlookMailSpider):
                 page_number=1,
                 from_checkpoint=True,
                 reset_count=0,
+                baseline_identity=baseline,
             )
             return
-        yield self._initial_request(reset_count=0)
+        yield self._initial_request(reset_count=0, baseline_identity=baseline)
 
     async def _to_thread(self, func, *args):
         import asyncio
@@ -93,6 +96,7 @@ class OutlookFolderDeltaSpider(OutlookMailSpider):
         page_number: int,
         from_checkpoint: bool,
         reset_count: int,
+        baseline_identity: str | None = None,
     ) -> Iterator[Any]:
         evidence = self._raw_http_evidence_item(response, purpose)
         yield evidence
@@ -141,15 +145,30 @@ class OutlookFolderDeltaSpider(OutlookMailSpider):
                 page_number=page_number + 1,
                 from_checkpoint=from_checkpoint,
                 reset_count=reset_count,
+                baseline_identity=baseline_identity,
             )
             return
         if delta_link := page.delta_link:
+            if baseline_identity is None or baseline_identity != self._initial_baseline:
+                self.mark_run_failed("folder_delta_baseline_missing")
+                yield AcquisitionFailureItem(
+                    url=response.url,
+                    purpose="folder-delta",
+                    error_type="FolderDeltaBaselineMissing",
+                    error_message="Mail folder delta lost original cursor proof",
+                    observed_at=evidence.observed_at,
+                    evidence_id=evidence.evidence_id,
+                    run_id=self.run_id,
+                    context={},
+                )
+                return
             self._terminal_delta_seen = True
             yield OutlookFolderDeltaCheckpointCandidateItem(
                 run_id=self.run_id,
                 delta_link=delta_link,
                 observed_at=evidence.observed_at,
                 evidence_id=evidence.evidence_id,
+                baseline_identity=baseline_identity,
             )
             return
 
@@ -181,7 +200,10 @@ class OutlookFolderDeltaSpider(OutlookMailSpider):
                 self.crawler.stats.inc_value(
                     "msgloom/crawl/folder_delta/checkpoint_reset_count"
                 )
-                yield self._initial_request(reset_count=reset_count + 1)
+                yield self._initial_request(
+                    reset_count=reset_count + 1,
+                    baseline_identity=callback_data.get("baseline_identity"),
+                )
                 return
         yield self._request_failure_item(failure, evidence)
 
@@ -193,13 +215,16 @@ class OutlookFolderDeltaSpider(OutlookMailSpider):
             "failure_reasons": set(self.failure_reasons),
         }
 
-    def _initial_request(self, *, reset_count: int) -> scrapy.Request:
+    def _initial_request(
+        self, *, reset_count: int, baseline_identity: str | None = None
+    ) -> scrapy.Request:
         path = self.mail_folder_delta_path(fields=self.folder_fields)
         return self._delta_request(
             f"{self.graph_root}{path}",
             page_number=1,
             from_checkpoint=False,
             reset_count=reset_count,
+            baseline_identity=baseline_identity,
         )
 
     def _delta_request(
@@ -209,6 +234,7 @@ class OutlookFolderDeltaSpider(OutlookMailSpider):
         page_number: int,
         from_checkpoint: bool,
         reset_count: int,
+        baseline_identity: str | None = None,
     ) -> scrapy.Request:
         return self._request(
             url,
@@ -218,6 +244,7 @@ class OutlookFolderDeltaSpider(OutlookMailSpider):
                 "page_number": page_number,
                 "from_checkpoint": from_checkpoint,
                 "reset_count": reset_count,
+                "baseline_identity": baseline_identity,
             },
             dont_cache=True,
             # Initial/reset paths are local; later pages and saved cursors

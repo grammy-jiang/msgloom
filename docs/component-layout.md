@@ -593,6 +593,10 @@ digest with the currently committed generation inside the same catalog writer
 transaction as lifecycle and A1 release. A strictly initialized additive
 candidate-proof table preserves the existing provider checkpoint schema; only
 digest tags, not provider URLs, enter SpiderState.
+The mailbox-level mailFolder delta cursor uses a **distinct**, source-scoped
+causal candidate table and the same transactional CAS rule; unlike message
+delta it rejects JOBDIR and always binds its first request in a fresh Spider
+start. Later arrival timestamps cannot establish Graph token ancestry.
 `protocol/calendar.py` validates timezone-aware increasing window bounds,
 derives series-master relations, and validates cancelled/exception occurrence
 lists. It does not decide topology freshness, persistence, or acquisition scope.

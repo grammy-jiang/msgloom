@@ -27,12 +27,18 @@ def test_older_empty_folder_candidate_cannot_rewind_authority(tmp_path, replay):
     try:
         folders = OutlookFolderDeltaCheckpointStore(catalog, SOURCE)
         folders.write_candidate(
-            run_id="a", delta_link="cursor-a", observed_at="2026-10-01T00:00:00+00:00"
+            baseline_identity=folders.get_delta_start()[1],
+            run_id="a",
+            delta_link="cursor-a",
+            observed_at="2026-10-01T00:00:00+00:00",
         )
         if replay:
             folders.commit("a")
         folders.write_candidate(
-            run_id="b", delta_link="cursor-b", observed_at="2026-10-02T00:00:00+00:00"
+            baseline_identity=folders.get_delta_start()[1],
+            run_id="b",
+            delta_link="cursor-b",
+            observed_at="2026-10-02T00:00:00+00:00",
         )
         folders.commit("b")
         with catalog.Session() as session:

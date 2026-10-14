@@ -169,6 +169,7 @@ class OutlookFolderDeltaCheckpointCandidateItem:
     delta_link: str
     observed_at: str
     evidence_id: str | None
+    baseline_identity: str | None = None
 
 
 @dataclass(slots=True)
