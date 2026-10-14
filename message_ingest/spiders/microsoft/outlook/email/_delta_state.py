@@ -6,6 +6,10 @@ from dataclasses import dataclass
 from enum import StrEnum
 from typing import Any
 
+from message_ingest.sync.microsoft.outlook.email._cursor_causality import (
+    validate_baseline,
+)
+
 
 class MailDeltaCommitMode(StrEnum):
     """Private message-delta promotion ownership mode."""
@@ -31,6 +35,7 @@ class MailDeltaExecutionState:
     run_failed: bool
     failure_reasons: frozenset[str]
     delta_start_scheduled: bool
+    baseline_identities: dict[str, str]
 
     @classmethod
     def restore(
@@ -46,6 +51,16 @@ class MailDeltaExecutionState:
             if isinstance(saved_run_id, str) and saved_run_id
             else default_run_id
         )
+        baselines = saved.get("baseline_identities", {})
+        if not isinstance(baselines, dict) or any(
+            not isinstance(folder, str) or not folder or not isinstance(identity, str)
+            for folder, identity in baselines.items()
+        ):
+            raise ValueError("Invalid resumed Mail delta causal baselines")
+        baselines = {
+            folder: validate_baseline(identity)
+            for folder, identity in baselines.items()
+        }
         return cls(
             run_id=run_id,
             seen_folder_ids=frozenset(saved.get("seen_folder_ids", [])),
@@ -61,6 +76,7 @@ class MailDeltaExecutionState:
             run_failed=bool(saved.get("run_failed", False)),
             failure_reasons=frozenset(saved.get("failure_reasons", [])),
             delta_start_scheduled=bool(saved.get("delta_start_scheduled", False)),
+            baseline_identities=baselines,
         )
 
 
@@ -78,6 +94,7 @@ def execution_payload(
     run_failed: bool,
     failure_reasons: set[str],
     delta_start_scheduled: bool,
+    baseline_identities: dict[str, str] | None = None,
 ) -> dict[str, object]:
     """Create deterministic SpiderState without copying provider cursor URLs."""
     return {
@@ -93,6 +110,10 @@ def execution_payload(
         "run_failed": run_failed,
         "failure_reasons": sorted(failure_reasons),
         "delta_start_scheduled": delta_start_scheduled,
+        "baseline_identities": {
+            folder: validate_baseline(identity)
+            for folder, identity in sorted((baseline_identities or {}).items())
+        },
     }
 
 

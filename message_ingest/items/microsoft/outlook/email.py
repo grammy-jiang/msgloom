@@ -182,6 +182,7 @@ class OutlookDeltaCheckpointCandidateItem:
     delta_link: str
     observed_at: str
     evidence_id: str | None
+    baseline_identity: str | None = None
 
 
 __all__ = [

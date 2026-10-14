@@ -262,6 +262,7 @@ class OutlookMailPipeline:
                 run_id=item.run_id,
                 folder_id=item.folder_id,
                 delta_link=item.delta_link,
+                baseline_identity=item.baseline_identity,
                 evidence_id=item.evidence_id,
                 observed_at=item.observed_at,
             )

@@ -59,6 +59,9 @@ def test_item_pipeline_error_blocks_delta_checkpoint_commit(tmp_path: Path) -> N
     asyncio.run(
         pipeline.process_item(
             OutlookDeltaCheckpointCandidateItem(
+                baseline_identity=OutlookDeltaCheckpointStore.from_crawler(
+                    crawler
+                ).get_delta_start("folder-inbox")[1],
                 run_id=spider.run_id,
                 folder_id="folder-inbox",
                 delta_link="https://graph.microsoft.com/v1.0/me/mailFolders/folder-inbox/messages/delta?$deltatoken=pending",
@@ -92,6 +95,9 @@ def test_delta_execution_state_restores_run_identity_for_jobdir_resume(
     asyncio.run(_collect_start(spider1))
     original_run_id = spider1.run_id
     spider1._seen_folder_ids = {"folder-one", "folder-two"}
+    # Store plain request-start identities in SpiderState, not Graph URLs.
+    spider1._message_delta_start_request("folder-one")
+    spider1._message_delta_start_request("folder-two")
     spider1._started_folder_ids = {"folder-one", "folder-two"}
     spider1._completed_folder_ids = {"folder-one"}
     spider1._folder_inventory_pending = 1
@@ -110,6 +116,8 @@ def test_delta_execution_state_restores_run_identity_for_jobdir_resume(
         pytest.fail("Expected: output == []")
     if spider2.run_id != original_run_id:
         pytest.fail("Expected: spider2.run_id == original_run_id")
+    if spider2._delta_baselines != spider1._delta_baselines:
+        pytest.fail("JOBDIR resume changed original per-folder cursor baselines")
     if spider2._started_folder_ids != {"folder-one", "folder-two"}:
         pytest.fail(
             'Expected: spider2._started_folder_ids == {"folder-one", "folder-two"}'
@@ -144,6 +152,9 @@ def test_item_pipeline_error_blocks_checkpoint_commit_even_when_candidates_compl
     asyncio.run(
         pipeline.process_item(
             OutlookDeltaCheckpointCandidateItem(
+                baseline_identity=OutlookDeltaCheckpointStore.from_crawler(
+                    crawler
+                ).get_delta_start("folder-inbox")[1],
                 run_id=spider.run_id,
                 folder_id="folder-inbox",
                 delta_link="https://graph.microsoft.com/v1.0/me/mailFolders/folder-inbox/messages/delta?$deltatoken=must-not-commit",
@@ -303,6 +314,9 @@ def _complete_candidate(crawler, spider: OutlookDeltaSpider) -> None:
     asyncio.run(
         pipeline.process_item(
             OutlookDeltaCheckpointCandidateItem(
+                baseline_identity=OutlookDeltaCheckpointStore.from_crawler(
+                    crawler
+                ).get_delta_start("folder-inbox")[1],
                 run_id=spider.run_id,
                 folder_id="folder-inbox",
                 delta_link=(

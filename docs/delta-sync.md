@@ -48,13 +48,18 @@ Committed per-folder delta links and per-run candidates live in the shared
 SQLAlchemy catalog. The older JSON checkpoint file is a legacy development
 backup only and is not a runtime authority.
 
-At delta start the Spider loads the committed delta-link map once through the
-crawler-scoped catalog service, then uses the in-memory map during traversal.
+At delta start the Spider loads a single read snapshot of committed per-folder
+URLs and their causal baseline identities, then uses that in-memory map during
+traversal. Each baseline is an SHA-256-tagged identity of the source, folder,
+exact cursor URL, owner run and commit generation (or an explicit absent state).
+The opaque Graph URL stays in the private catalog, never in the baseline tag.
 The Spider never commits checkpoint state directly.
 
 For every folder whose final Graph response contains `@odata.deltaLink`, the
 Spider emits an `OutlookDeltaCheckpointCandidateItem`. `OutlookMailPipeline`
-persists that candidate through SQLAlchemy.
+persists that candidate together with its first-request baseline in the
+additive `mail_delta_candidate_bases` table. A legacy pending candidate missing
+proof is retained but cannot be promoted or retroactively authorized.
 
 ## Checkpoint safety at `spider_idle`
 
@@ -77,7 +82,12 @@ A checkpoint round is committed only if:
 
 If any condition fails, the existing committed checkpoints remain unchanged and
 the crawl closes with `delta_incomplete` or `checkpoint_commit_failed` as
-appropriate.
+appropriate. After completion, the committing catalog writer transaction also
+compares every original request-start baseline against the currently committed
+checkpoint generation. The latest response timestamp does not prove Graph
+cursor ancestry. One mismatched folder aborts lifecycle, all cursor commits
+and release publication; an exact committed replay preserves the original
+generation without modifying `committed_at`.
 
 The SQLAlchemy catalog database is a private local file. Runtime database access
 uses SQLAlchemy only; application code does not query SQLite with `sqlite3`.
@@ -94,6 +104,13 @@ source and normalized catalog location. A different source/catalog is
 rejected. A non-empty legacy JOBDIR without the marker is also rejected
 because queued requests cannot be safely attributed after this upgrade.
 
+For a delta job `Spider.state` records only hashed baseline identities
+alongside execution facts. Scrapy request `cb_kwargs` keeps the frozen identity
+through provider `nextLink`, bounded 410 reset, and native disk scheduling.
+On clean JOBDIR resume, previously started folders without persisted proof
+fail closed. Provider delta URL bytes stay in the private catalog or Scrapy
+request, never in the application SpiderState map.
+
 For a delta job `Spider.state` records:
 
 - run id;
@@ -101,7 +118,8 @@ For a delta job `Spider.state` records:
 - folder-inventory pending/completion/failure state;
 - reconciliation orphan ids and completion state;
 - run-failure state;
-- whether the initial delta start request was already scheduled.
+- whether the initial delta start request was already scheduled;
+- the original per-folder causal identity tags (never raw Graph URL tokens).
 
 This allows a cleanly paused Scrapy job to resume the same acquisition round
 without generating a new run id or re-emitting its root traversal request.
