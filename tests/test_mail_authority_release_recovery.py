@@ -26,7 +26,10 @@ def _folder(store, run, when, name="Folder"):
 def _commit(catalog, source, run):
     checkpoints = OutlookFolderDeltaCheckpointStore(catalog, source)
     checkpoints.write_candidate(
-        run_id=run, delta_link=run, observed_at="2026-10-01T00:00:00+00:00"
+        baseline_identity=checkpoints.get_delta_start()[1],
+        run_id=run,
+        delta_link=run,
+        observed_at="2026-10-01T00:00:00+00:00",
     )
     checkpoints.commit(run)
 

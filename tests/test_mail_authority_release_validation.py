@@ -47,7 +47,10 @@ def test_equal_time_competing_states_fail_closed(tmp_path):
     try:
         folders = OutlookFolderDeltaCheckpointStore(catalog, SOURCE)
         folders.write_candidate(
-            run_id="r", delta_link="new", observed_at="2026-10-01T00:00:00+00:00"
+            baseline_identity=folders.get_delta_start()[1],
+            run_id="r",
+            delta_link="new",
+            observed_at="2026-10-01T00:00:00+00:00",
         )
         writer = MailFactWriter(catalog, SOURCE, "outlook_folder_delta")
         with catalog.writer_session() as session:
@@ -87,7 +90,10 @@ def test_positive_folder_delta_stages_presence_until_commit(tmp_path):
             pytest.fail("Positive delta presence escaped authority gate")
         folders = OutlookFolderDeltaCheckpointStore(catalog, SOURCE)
         folders.write_candidate(
-            run_id="r", delta_link="new", observed_at="2026-10-01T00:00:00+00:00"
+            baseline_identity=folders.get_delta_start()[1],
+            run_id="r",
+            delta_link="new",
+            observed_at="2026-10-01T00:00:00+00:00",
         )
         folders.commit("r")
         if store.folder_presence(folder_id="new") is not True:

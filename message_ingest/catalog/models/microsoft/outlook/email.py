@@ -239,6 +239,20 @@ class DeltaCheckpoint(Base):
     run_id: Mapped[str] = mapped_column(String(32), index=True)
 
 
+class MailFolderDeltaCandidateBase(Base):
+    """Immutable original committed mailFolder delta generation per crawl.
+
+    Absence is explicit and unknown legacy candidates are never trusted.
+    The table is additive; historical folder checkpoints remain intact.
+    """
+
+    __tablename__ = "mail_folder_delta_candidate_bases"
+
+    source_id: Mapped[str] = mapped_column(String(200), primary_key=True)
+    run_id: Mapped[str] = mapped_column(String(32), primary_key=True)
+    baseline_identity: Mapped[str] = mapped_column(String(66))
+
+
 class MailDeltaAbsenceGeneration(Base):
     """Durable epoch of provider-cursor invalidation, scoped to a folder.
 

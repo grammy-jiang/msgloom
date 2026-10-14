@@ -78,6 +78,7 @@ def test_folder_release_failure_retains_presence_and_message_cursor(tmp_path):
         store, checkpoints = _seed_baseline(catalog)
         folders = OutlookFolderDeltaCheckpointStore(catalog, SOURCE)
         folders.write_candidate(
+            baseline_identity=folders.get_delta_start()[1],
             run_id="folders",
             delta_link="folder-new",
             observed_at="2026-10-01T00:00:00+00:00",
