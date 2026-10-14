@@ -93,6 +93,9 @@ def test_failed_chat_discovery_does_not_publish_release(
 def test_deletion_locator_uses_exact_deletion_primary_key() -> None:
     """A Teams deletion has `deletion_id`, not a message observation id."""
     from types import SimpleNamespace
+    from typing import cast
+
+    from sqlalchemy.orm import Session
 
     from message_ingest.catalog.stores.microsoft.teams._handoff import stage_deletion
 
@@ -116,8 +119,8 @@ def test_deletion_locator_uses_exact_deletion_primary_key() -> None:
     )
     recorder = Recorder()
     stage_deletion(
-        object(),
-        recorder,
+        cast(Session, object()),
+        cast(AcquisitionHandoffStore, recorder),
         spider_name="microsoft_teams_notification_reconcile",
         row=row,
         run_id="run-a",

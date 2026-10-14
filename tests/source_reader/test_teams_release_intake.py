@@ -10,6 +10,7 @@ from sqlalchemy import select
 from message_ingest.acquisition.handoff import (
     AcquisitionStream,
     FactSpec,
+    ReleaseEntryKind,
     ReleaseEntrySpec,
     ReleaseGroupSpec,
     ReleaseKind,
@@ -223,9 +224,9 @@ def test_release_reader_preserves_teams_context_and_scoped_deletion(
                     resource_identity=fact.resource_identity,
                     scope_kind=fact.scope_kind,
                     scope_identity=fact.scope_identity,
-                    entry_kind="transition"
+                    entry_kind=ReleaseEntryKind.TRANSITION
                     if fact.fact_kind == "scoped_state_transition"
-                    else "context",
+                    else ReleaseEntryKind.CONTEXT,
                     facts=(
                         (
                             fact.fact_id,
@@ -413,7 +414,7 @@ def test_component_change_is_a_durable_parent_refresh_not_held(
                         parent_resource_identity=fact.parent_resource_identity,
                         scope_kind=fact.scope_kind,
                         scope_identity=fact.scope_identity,
-                        entry_kind="component",
+                        entry_kind=ReleaseEntryKind.COMPONENT,
                         facts=((fact.fact_id, "component"),),
                     ),
                 ),

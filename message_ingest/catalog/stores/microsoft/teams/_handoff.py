@@ -18,7 +18,7 @@ from message_ingest.acquisition.handoff import (
 )
 from message_ingest.catalog.stores.handoff import AcquisitionHandoffStore
 
-Outcome = Literal["advanced", "created", "replay", "stale", "tie"]
+from ._common import Outcome
 
 
 def _digest(value: object) -> str:
