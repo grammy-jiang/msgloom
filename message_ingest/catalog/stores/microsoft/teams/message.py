@@ -26,7 +26,7 @@ from ._common import (
     require_source,
     scope_digest,
 )
-from ._handoff import stage_deletion, stage_message
+from ._handoff import stage_deletion, stage_live_presence, stage_message
 
 
 def message_scope(
@@ -127,6 +127,8 @@ class TeamsMessageStore:
                     scope_key=scope_key,
                     evidence_run_id=evidence.run_id,
                 )
+            previous = session.get(TeamsMessageCurrent, (item.source_id, digest))
+            was_deleted = previous is not None and previous.is_deleted
             outcome = self._project_message_current(
                 session,
                 observation=observation,
@@ -136,6 +138,20 @@ class TeamsMessageStore:
                 evidence_run_id=evidence.run_id,
             )
             self._stage_message(session, observation, item.run_id, outcome)
+            if (
+                was_deleted
+                and outcome == "advanced"
+                and item.deleted_date_time is None
+                and self.handoff is not None
+                and self.spider_name is not None
+            ):
+                stage_live_presence(
+                    session,
+                    self.handoff,
+                    spider_name=self.spider_name,
+                    row=observation,
+                    run_id=item.run_id,
+                )
             if direct_deletion is not None:
                 self._stage_deletion(session, direct_deletion, item.run_id, outcome)
             return outcome

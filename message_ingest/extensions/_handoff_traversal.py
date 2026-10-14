@@ -154,7 +154,10 @@ def _entries(catalog, writer, source, spider, stream):
         ):
             # Run-local completion proof is not an A2 content impact.
             continue
-        if stream in _TEAMS_STREAMS and fact.resource_kind == "teams_message_presence":
+        if stream in _TEAMS_STREAMS and fact.resource_kind in {
+            "teams_message",
+            "teams_message_presence",
+        }:
             try:
                 parts = json.loads(fact.resource_identity)
             except (TypeError, ValueError):
@@ -163,9 +166,35 @@ def _entries(catalog, writer, source, spider, stream):
                 raise ValueError("Invalid Teams deletion release scope")
             _scope, digest = scope_digest(("message", *parts))
             message_current = writer.get(TeamsMessageCurrent, (source, digest))
-            if message_current is not None and not message_current.is_deleted:
-                # A later observed live message supersedes the deletion.
-                # No contradictory presence state may escape this transaction.
+            if message_current is None:
+                continue
+            if fact.resource_kind == "teams_message":
+                locator = fact.source_version_locator
+                if locator is None or locator.observation_id is None:
+                    continue
+                try:
+                    family, observation_id = json.loads(locator.observation_id)
+                except (TypeError, ValueError):
+                    continue
+                if (
+                    family != "message"
+                    or type(observation_id) is not int
+                    or message_current.message_observation_id != observation_id
+                    or message_current.latest_evidence_id != fact.evidence_id
+                ):
+                    # Notification deletion or a newer captured message won.
+                    continue
+            elif fact.transition_reason == "observed_present":
+                if (
+                    message_current.is_deleted
+                    or message_current.latest_evidence_id != fact.evidence_id
+                ):
+                    continue
+            elif (
+                not message_current.is_deleted
+                or message_current.latest_evidence_id != fact.evidence_id
+            ):
+                # The deletion is no longer current at release time.
                 continue
         if stream == AcquisitionStream.OUTLOOK_MAIL and (
             fact.fact_kind,

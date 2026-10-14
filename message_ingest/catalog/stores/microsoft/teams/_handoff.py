@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import hashlib
 import json
-from typing import Any, Literal
+from typing import Any
 
 from sqlalchemy.orm import Session
 
@@ -209,6 +209,46 @@ def stage_message(
     )
 
 
+def stage_live_presence(
+    writer: Session,
+    handoff: AcquisitionHandoffStore,
+    *,
+    spider_name: str,
+    row: Any,
+    run_id: str,
+) -> None:
+    """Record positive presence with the same effective key as deletions.
+
+    A later provider restoration supersedes the prior deletion; the same
+    deletion payload can then advance again in its next capture transaction.
+    """
+    identity = message_resource_identity(row.scope_key)
+    scope_kind, scope_identity = message_scope_identity(row.scope_key)
+    key = _digest(message_state(row))
+    handoff.stage_state_fact_in_session(
+        writer,
+        FactSpec(
+            source_id=row.source_id,
+            stream=message_stream(row.scope_key),
+            run_id=run_id,
+            spider_name=spider_name,
+            fact_kind=AcquisitionFactKind.SCOPED_STATE_TRANSITION,
+            resource_kind="teams_message_presence",
+            resource_identity=identity,
+            scope_kind=scope_kind,
+            scope_identity=scope_identity,
+            provider_observed_at=row.observed_at,
+            evidence_id=row.evidence_id,
+            source_state_key=key,
+            source_version_locator=_locator(
+                row, family="message", resource_identity=identity, state_key=key
+            ),
+            storage_relation=StorageRelation.ADVANCED,
+            transition_reason="observed_present",
+        ),
+    )
+
+
 def _topology_stream(row: Any) -> AcquisitionStream:
     if row.resource_kind in {"chat", "chat-member", "pin"}:
         return AcquisitionStream.TEAMS_CHAT
@@ -368,55 +408,6 @@ def stage_reference(
     )
 
 
-def stage_hosted(
-    writer: Session,
-    handoff: AcquisitionHandoffStore,
-    *,
-    spider_name: str,
-    row: Any,
-    trigger: Any,
-    run_id: str,
-    outcome: Literal["created", "replay"],
-) -> None:
-    parent = message_resource_identity(trigger.scope_key)
-    scope_kind, scope_identity = message_scope_identity(trigger.scope_key)
-    component = f"hosted_{row.observation_kind}"
-    identity = canonical_json([parent, row.hosted_content_id, row.observation_kind])
-    key = _digest(hosted_state(row))
-    handoff.stage_state_fact_in_session(
-        writer,
-        FactSpec(
-            source_id=row.source_id,
-            stream=message_stream(trigger.scope_key),
-            run_id=run_id,
-            spider_name=spider_name,
-            fact_kind=AcquisitionFactKind.COMPONENT_OBSERVATION,
-            resource_kind="teams_hosted_content",
-            resource_identity=identity,
-            parent_resource_kind="teams_message",
-            parent_resource_identity=parent,
-            scope_kind=scope_kind,
-            scope_identity=scope_identity,
-            component_kind=component,
-            provider_observed_at=row.observed_at,
-            evidence_id=row.evidence_id,
-            source_state_key=key,
-            source_version_locator=_locator(
-                row,
-                family="hosted",
-                resource_identity=identity,
-                component_kind=component,
-                state_key=key,
-            ),
-            storage_relation=(
-                StorageRelation.CURRENT_EQUIVALENT
-                if outcome == "replay"
-                else StorageRelation.ADVANCED
-            ),
-        ),
-    )
-
-
 def stage_deletion(
     writer: Session,
     handoff: AcquisitionHandoffStore,
@@ -468,7 +459,7 @@ __all__ = [
     "reference_state",
     "stage_coverage",
     "stage_deletion",
-    "stage_hosted",
+    "stage_live_presence",
     "stage_message",
     "stage_reference",
     "stage_topology",

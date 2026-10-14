@@ -8,7 +8,7 @@ from types import SimpleNamespace
 import pytest
 from sqlalchemy import select
 
-from message_ingest.acquisition.handoff import AcquisitionStream
+from message_ingest.acquisition.handoff import AcquisitionStream, FactSpec
 from message_ingest.catalog.models.acquisition import RawHttpEvidence
 from message_ingest.catalog.models.handoff import AcquisitionFact
 from message_ingest.catalog.stores.microsoft.teams.message import TeamsMessageStore
@@ -146,7 +146,26 @@ def test_newer_live_message_supersedes_deletion_before_release(tmp_path) -> None
                 SimpleNamespace(run_id="run-same"),
                 AcquisitionStream.TEAMS_CHAT,
             )
-        if [entry.resource_kind for entry in entries] != ["teams_message"]:
-            pytest.fail("Reconciliation released a superseded deletion transition")
+        kinds = {entry.resource_kind for entry in entries}
+        if kinds != {"teams_message", "teams_message_presence"}:
+            pytest.fail("Reconciliation lost live resource or restored presence")
+        accepted = []
+        with catalog.Session() as session:
+            for entry in entries:
+                for fact_id, _role in entry.facts:
+                    payload = session.scalar(
+                        select(AcquisitionFact.payload).where(
+                            AcquisitionFact.fact_id == fact_id
+                        )
+                    )
+                    if payload is None:
+                        pytest.fail("Released fact is missing from the ledger")
+                    accepted.append(FactSpec.from_json(payload))
+        if {
+            fact.transition_reason
+            for fact in accepted
+            if fact.resource_kind == "teams_message_presence"
+        } != {"observed_present"}:
+            pytest.fail("Reconciliation leaked superseded deletion")
     finally:
         catalog.close()

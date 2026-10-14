@@ -30,7 +30,8 @@ from ._common import (
     require_evidence,
     require_source,
 )
-from ._handoff import stage_hosted, stage_reference
+from ._handoff import stage_reference
+from ._handoff_hosted import stage_hosted
 from .message import message_scope
 
 

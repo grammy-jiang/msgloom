@@ -248,12 +248,17 @@ def side_fact(fact: ReleasedFact, evidence: ReleaseEvidence) -> None:
         locator.kind != "observation"
         or not isinstance(identity, list)
         or len(identity) != 2
-        or identity[0] not in _SIDE_FAMILIES
+        or identity[0] not in {*_SIDE_FAMILIES, "message"}
         or type(identity[1]) is not int
         or not 1 <= identity[1] < 2**63
     ):
         raise SourceReferenceError("Invalid Teams side-fact locator")
     family = identity[0]
+    if family == "message" and fact.resource_kind == "teams_message_presence":
+        if fact.transition_reason != "observed_present":
+            raise SourceReferenceError("Teams live presence reason is invalid")
+        message(fact, evidence)
+        return
     table, key = _SIDE_FAMILIES[family]
     allowed = {
         "topology": {"teams_topology", "teams_pin"},
