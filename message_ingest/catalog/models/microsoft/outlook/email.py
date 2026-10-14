@@ -239,6 +239,35 @@ class DeltaCheckpoint(Base):
     run_id: Mapped[str] = mapped_column(String(32), index=True)
 
 
+class MailDeltaAbsenceGeneration(Base):
+    """Durable epoch of provider-cursor invalidation, scoped to a folder.
+
+    The absence identity must not cycle back to an old request after a cursor
+    was committed and then deleted by authoritative folder removal.
+    """
+
+    __tablename__ = "mail_delta_absence_generations"
+
+    source_id: Mapped[str] = mapped_column(String(200), primary_key=True)
+    folder_id: Mapped[str] = mapped_column(Text, primary_key=True)
+    generation: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+
+
+class MailDeltaCandidateBase(Base):
+    """Immutable causal proof captured before the first folder delta request.
+
+    Retain the digest independently from an existing legacy pending candidate.
+    Missing row means *unknown*, never permission to treat a run as initial.
+    """
+
+    __tablename__ = "mail_delta_candidate_bases"
+
+    source_id: Mapped[str] = mapped_column(String(200), primary_key=True)
+    run_id: Mapped[str] = mapped_column(String(32), primary_key=True)
+    folder_id: Mapped[str] = mapped_column(Text, primary_key=True)
+    baseline_identity: Mapped[str] = mapped_column(String(66))
+
+
 class DeltaCheckpointCandidate(Base):
     """
     Uncommitted final-page cursor for one run/folder, retained for validation.

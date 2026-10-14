@@ -72,6 +72,7 @@ def _seed_baseline(
     for folder_id in ("keep", "removed"):
         _folder(store, folder_id, run_id="baseline", when=OLD)
         checkpoints.write_candidate(
+            baseline_identity=checkpoints.get_delta_start(folder_id)[1],
             run_id="baseline",
             folder_id=folder_id,
             delta_link=f"https://graph.test/{folder_id}?$deltatoken=old",
@@ -105,6 +106,7 @@ def _stage_current(
         evidence_id=None,
     )
     checkpoints.write_candidate(
+        baseline_identity=checkpoints.get_delta_start("keep")[1],
         run_id="current",
         folder_id="keep",
         delta_link="https://graph.test/keep?$deltatoken=new",

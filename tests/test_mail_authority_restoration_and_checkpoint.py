@@ -64,6 +64,7 @@ def test_mail_reconciliation_releases_restored_message_and_folder(tmp_path) -> N
         )
         for folder in ("keep", "removed"):
             checkpoints.write_candidate(
+                baseline_identity=checkpoints.get_delta_start(folder)[1],
                 run_id="restore",
                 folder_id=folder,
                 delta_link=f"https://graph.test/{folder}?$deltatoken=restored",
@@ -116,15 +117,27 @@ def test_delayed_message_delta_candidate_cannot_rewind_cursor(
     catalog = _catalog(tmp_path)
     try:
         checkpoints = OutlookDeltaCheckpointStore(catalog, SOURCE)
-        for run, stamp in (("older", OLD), ("newer", NEW)):
-            checkpoints.write_candidate(
-                run_id=run,
-                folder_id="inbox",
-                delta_link=f"https://graph.test/inbox?$deltatoken={run}",
-                observed_at=stamp,
-            )
+        # Distinguish true sequential evolution from competing runs which
+        # consumed the same baseline. Only the first case permits the second
+        # cursor to commit.
+        old_base = checkpoints.get_delta_start("inbox")[1]
+        checkpoints.write_candidate(
+            baseline_identity=old_base,
+            run_id="older",
+            folder_id="inbox",
+            delta_link="https://graph.test/inbox?$deltatoken=older",
+            observed_at=OLD,
+        )
         if older_committed_first:
             checkpoints.commit("older")
+        newer_base = checkpoints.get_delta_start("inbox")[1]
+        checkpoints.write_candidate(
+            baseline_identity=newer_base,
+            run_id="newer",
+            folder_id="inbox",
+            delta_link="https://graph.test/inbox?$deltatoken=newer",
+            observed_at=NEW,
+        )
         checkpoints.commit("newer")
         with catalog.Session() as session:
             from sqlalchemy import select

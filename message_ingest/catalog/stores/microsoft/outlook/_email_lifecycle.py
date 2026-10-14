@@ -9,6 +9,7 @@ from sqlalchemy import delete, or_, select
 from message_ingest.catalog.models.microsoft.outlook.email import (
     DeltaCheckpoint,
     DeltaCheckpointCandidate,
+    MailDeltaCandidateBase,
     MailFolderPresence,
     MailFolderRecord,
     MailFolderSighting,
@@ -21,6 +22,7 @@ from message_ingest.catalog.models.microsoft.outlook.email import (
 
 from ._email_handoff import is_stale
 from ._email_release_folders import mark_folder_present_in_session, mark_folder_removed
+from ._mail_delta_absence import bump_absence_generation
 
 
 class OutlookMailLifecycleStore:
@@ -247,6 +249,8 @@ class OutlookMailLifecycleStore:
                 applied_absences.add(folder_id)
         removed_folders = applied_absences
         if removed_folders:
+            for folder_id in sorted(removed_folders):
+                bump_absence_generation(session, self.source_id, folder_id)
             session.execute(
                 delete(DeltaCheckpoint).where(
                     DeltaCheckpoint.source_id == self.source_id,
@@ -257,6 +261,12 @@ class OutlookMailLifecycleStore:
                 delete(DeltaCheckpointCandidate).where(
                     DeltaCheckpointCandidate.source_id == self.source_id,
                     DeltaCheckpointCandidate.folder_id.in_(removed_folders),
+                )
+            )
+            session.execute(
+                delete(MailDeltaCandidateBase).where(
+                    MailDeltaCandidateBase.source_id == self.source_id,
+                    MailDeltaCandidateBase.folder_id.in_(removed_folders),
                 )
             )
         folder_candidate.committed_at = committed_at
@@ -343,6 +353,15 @@ class OutlookMailLifecycleStore:
         )
         from message_ingest.sync.microsoft.outlook.email._release import stage_presence
 
+        if (
+            not is_present
+            and record is not None
+            and record.is_present == is_present
+            and record.latest_run_id == run_id
+            and record.latest_observed_at == observed_at
+            and record.latest_evidence_id == evidence_id
+        ):
+            return False
         if record and is_stale(observed_at, record.latest_observed_at):
             return False
         if not is_present:

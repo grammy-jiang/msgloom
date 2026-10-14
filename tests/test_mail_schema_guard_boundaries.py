@@ -21,6 +21,12 @@ MAIL_GUARDS = {
     for table in MAIL_TABLES
     for operation in ("insert", "update", "delete")
 }
+# The newer causal-proof guards are independent of the original twelve Mail
+# binding guards. Preserve both exact sets rather than weakening either.
+MAIL_DELTA_GUARDS = {
+    "mail_delta_candidate_bases_immutable_insert",
+    "mail_delta_candidate_bases_immutable_update",
+}
 SHARED_GUARDS = {
     "immutable_acquisition_facts_INSERT",
     "immutable_acquisition_release_groups_INSERT",
@@ -66,13 +72,24 @@ def seeded(tmp_path):
         if not rows[table]:
             pytest.fail(f"Guard fixture has no immutable history in {table}")
     definitions = {name: sql for kind, name, _, sql in schema if kind == "trigger"}
-    actual_mail = {name for name in definitions if name.startswith("mail_")}
+    actual_mail = {
+        name
+        for name in definitions
+        if name.startswith("mail_") and name not in MAIL_DELTA_GUARDS
+    }
+    actual_causal = MAIL_DELTA_GUARDS & set(definitions)
     actual_shared = {
         name
         for name, sql in definitions.items()
-        if "BEFORE INSERT" in sql and name not in MAIL_GUARDS
+        if "BEFORE INSERT" in sql
+        and name not in MAIL_GUARDS
+        and name not in MAIL_DELTA_GUARDS
     }
-    if actual_mail != MAIL_GUARDS or actual_shared != SHARED_GUARDS:
+    if (
+        actual_mail != MAIL_GUARDS
+        or actual_causal != MAIL_DELTA_GUARDS
+        or actual_shared != SHARED_GUARDS
+    ):
         pytest.fail("Fixture did not contain the exact twelve and seven guards")
     return database, definitions
 

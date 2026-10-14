@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import asyncio
 from typing import Any
 
 import scrapy
@@ -14,13 +13,11 @@ from message_ingest.items.microsoft.outlook.email import (
     OutlookDeltaCheckpointCandidateItem,
     OutlookMailRemovalItem,
 )
-from message_ingest.sync.microsoft.outlook.email.checkpoints import (
-    OutlookDeltaCheckpointStore,
-)
 from message_ingest.sync.microsoft.outlook.email.promotion import ValidatedMailDeltaRun
 from microsoft_graph.protocol import GraphDeltaPage
 from microsoft_graph.protocol.delta import graph_tombstone
 
+from ._delta_requests import load_delta_start_snapshot, start_message_delta_request
 from ._delta_state import (
     MailDeltaCommitMode,
     MailDeltaExecutionState,
@@ -73,6 +70,8 @@ class OutlookDeltaSpider(OutlookFolderTraversal):
         }
         self._completed_folder_ids: set[str] = set()
         self._delta_links: dict[str, str] = {}
+        self._delta_initial_starts: dict[str, tuple[str | None, str]] = {}
+        self._delta_baselines: dict[str, str] = {}
         self._delta_start_scheduled = False
 
     @property
@@ -114,14 +113,12 @@ class OutlookDeltaSpider(OutlookFolderTraversal):
         the same round; restarting inventory would double-count work and could
         mix checkpoint candidates.
         """
-        self._restore_execution_state()
+        await load_delta_start_snapshot(self)
         self.logger.info(
             "Starting Outlook delta crawl: page_size=%s reconciliation=%s",
             self.page_size,
             self.reconcile_global,
         )
-        store = OutlookDeltaCheckpointStore.from_crawler(self.crawler)
-        self._delta_links = await asyncio.to_thread(store.get_delta_links)
         self.crawler.stats.set_value(
             "msgloom/crawl/delta/checkpoint_loaded_count", len(self._delta_links)
         )
@@ -170,6 +167,7 @@ class OutlookDeltaSpider(OutlookFolderTraversal):
         page_number: int,
         from_checkpoint: bool,
         reset_count: int,
+        baseline_identity: str | None = None,
     ):
         """
         Emit changes and stage a candidate only at the end of a folder round.
@@ -243,10 +241,29 @@ class OutlookDeltaSpider(OutlookFolderTraversal):
                 page_number=page_number + 1,
                 from_checkpoint=from_checkpoint,
                 reset_count=reset_count,
+                baseline_identity=baseline_identity,
             )
             return
 
         if delta_link := page.delta_link:
+            # Missing JOBDIR/callback provenance must not be converted to a
+            # false initial checkpoint just because the request succeeded.
+            if (
+                baseline_identity is None
+                or baseline_identity != self._delta_baselines.get(folder_id)
+            ):
+                self.mark_run_failed("delta_baseline_missing")
+                yield AcquisitionFailureItem(
+                    url=response.url,
+                    purpose="message-delta",
+                    error_type="DeltaBaselineMissing",
+                    error_message="Mail delta terminal lacks its original cursor identity",
+                    observed_at=evidence.observed_at,
+                    evidence_id=evidence.evidence_id,
+                    run_id=self.run_id,
+                    context={"folder_id": folder_id},
+                )
+                return
             self._completed_folder_ids.add(folder_id)
             self._persist_execution_state()
             self.crawler.stats.set_value(
@@ -265,6 +282,7 @@ class OutlookDeltaSpider(OutlookFolderTraversal):
                 delta_link=delta_link,
                 observed_at=evidence.observed_at,
                 evidence_id=evidence.evidence_id,
+                baseline_identity=baseline_identity,
             )
             return
 
@@ -318,7 +336,9 @@ class OutlookDeltaSpider(OutlookFolderTraversal):
                     folder_id,
                 )
                 yield self._initial_message_delta_request(
-                    folder_id, reset_count=reset_count + 1
+                    folder_id,
+                    reset_count=reset_count + 1,
+                    baseline_identity=callback_data.get("baseline_identity"),
                 )
                 return
 
@@ -377,6 +397,7 @@ class OutlookDeltaSpider(OutlookFolderTraversal):
         self._run_failed = restored.run_failed
         self._failure_reasons = set(restored.failure_reasons)
         self._delta_start_scheduled = restored.delta_start_scheduled
+        self._delta_baselines = dict(restored.baseline_identities)
 
     def _persist_execution_state(self) -> None:
         """
@@ -400,34 +421,21 @@ class OutlookDeltaSpider(OutlookFolderTraversal):
             run_failed=self._run_failed,
             failure_reasons=self._failure_reasons,
             delta_start_scheduled=self._delta_start_scheduled,
+            baseline_identities=self._delta_baselines,
         )
 
     def _message_delta_start_request(self, folder_id: str) -> scrapy.Request:
-        """
-        Prefer a committed folder cursor; otherwise request the initial delta
-        round.
-        """
-        self.crawler.stats.inc_value("msgloom/crawl/delta/folder_started_count")
-        if delta_link := self._delta_links.get(folder_id):
-            self.crawler.stats.inc_value("msgloom/crawl/delta/folder_resumed_count")
-            return self._message_delta_request(
-                delta_link,
-                folder_id=folder_id,
-                page_number=1,
-                from_checkpoint=True,
-                reset_count=0,
-            )
-
-        self.crawler.stats.inc_value("msgloom/crawl/delta/folder_initial_count")
-        return self._initial_message_delta_request(folder_id, reset_count=0)
+        """Freeze the exact first-request cursor generation."""
+        return start_message_delta_request(self, folder_id)
 
     def _initial_message_delta_request(
-        self, folder_id: str, *, reset_count: int
+        self,
+        folder_id: str,
+        *,
+        reset_count: int,
+        baseline_identity: str | None = None,
     ) -> scrapy.Request:
-        """
-        Build the initial cursor request with a bounded expired-token reset
-        count.
-        """
+        """Create initial/reset requests without changing cursor authority."""
         path = self.message_delta_path(folder_id, fields=self.discovery_fields)
         return self._message_delta_request(
             f"{self.graph_root}{path}",
@@ -435,6 +443,7 @@ class OutlookDeltaSpider(OutlookFolderTraversal):
             page_number=1,
             from_checkpoint=False,
             reset_count=reset_count,
+            baseline_identity=baseline_identity,
             verbatim_url=False,
         )
 
@@ -446,6 +455,7 @@ class OutlookDeltaSpider(OutlookFolderTraversal):
         page_number: int,
         from_checkpoint: bool = False,
         reset_count: int = 0,
+        baseline_identity: str | None = None,
         verbatim_url: bool = True,
     ) -> scrapy.Request:
         """
@@ -466,6 +476,7 @@ class OutlookDeltaSpider(OutlookFolderTraversal):
                 "page_number": page_number,
                 "from_checkpoint": from_checkpoint,
                 "reset_count": reset_count,
+                "baseline_identity": baseline_identity,
             },
             dont_cache=True,
             verbatim_url=verbatim_url,

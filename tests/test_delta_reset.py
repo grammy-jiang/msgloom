@@ -5,6 +5,7 @@ attempts.
 
 from __future__ import annotations
 
+import asyncio
 from pathlib import Path
 
 import pytest
@@ -41,9 +42,28 @@ def test_expired_checkpoint_410_restarts_folder_delta_without_committing_failure
     tmp_path: Path,
 ) -> None:
     spider = _spider(tmp_path)
-    spider._delta_links["folder-1"] = (
-        "https://graph.microsoft.com/v1.0/me/mailFolders/folder-1/messages/delta?$deltatoken=old"
+    from message_ingest.sync.microsoft.outlook.email.checkpoints import (
+        OutlookDeltaCheckpointStore,
     )
+
+    store = OutlookDeltaCheckpointStore.from_crawler(spider.crawler)
+    store.write_candidate(
+        run_id="seed",
+        folder_id="folder-1",
+        delta_link=(
+            "https://graph.microsoft.com/v1.0/me/mailFolders/"
+            "folder-1/messages/delta?$deltatoken=old"
+        ),
+        observed_at="2026-10-01T00:00:00Z",
+        baseline_identity=store.get_delta_start("folder-1")[1],
+    )
+    store.commit("seed")
+
+    async def load_start() -> None:
+        async for _request in spider.start():
+            pass
+
+    asyncio.run(load_start())
     request = spider._message_delta_start_request("folder-1")
     if request.cb_kwargs["from_checkpoint"] is not True:
         pytest.fail('Expected: request.cb_kwargs["from_checkpoint"] is True')
@@ -59,6 +79,8 @@ def test_expired_checkpoint_410_restarts_folder_delta_without_committing_failure
         pytest.fail('Expected: reset.cb_kwargs["from_checkpoint"] is False')
     if reset.cb_kwargs["reset_count"] != 1:
         pytest.fail('Expected: reset.cb_kwargs["reset_count"] == 1')
+    if reset.cb_kwargs["baseline_identity"] != request.cb_kwargs["baseline_identity"]:
+        pytest.fail("Expired cursor reset lost original causal baseline")
     if "$deltatoken=" in reset.url:
         pytest.fail('Expected: "$deltatoken=" not in reset.url')
     if spider._run_failed is not False:

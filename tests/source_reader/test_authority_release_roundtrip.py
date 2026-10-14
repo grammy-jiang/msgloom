@@ -83,6 +83,7 @@ def test_message_delta_authority_to_public_reader(mail_catalog):
             evidence_id="current-message",
         )
         checkpoints.write_candidate(
+            baseline_identity=checkpoints.get_delta_start("inbox")[1],
             run_id="current",
             folder_id="inbox",
             delta_link="https://graph.test/new",

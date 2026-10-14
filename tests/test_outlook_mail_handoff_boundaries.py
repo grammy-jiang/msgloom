@@ -125,6 +125,7 @@ def test_folder_tombstone_failure_preserves_presence_and_cursors(setup):
     )
     checkpoints = OutlookDeltaCheckpointStore(store.catalog, "source")
     checkpoints.write_candidate(
+        baseline_identity=checkpoints.get_delta_start("f1")[1],
         run_id="r1",
         folder_id="f1",
         delta_link="https://graph.test/opaque",
@@ -168,6 +169,7 @@ def test_older_folder_tombstone_does_not_discard_newer_cursor(setup):
     )
     checkpoints = OutlookDeltaCheckpointStore(store.catalog, "source")
     checkpoints.write_candidate(
+        baseline_identity=checkpoints.get_delta_start("f1")[1],
         run_id="r2",
         folder_id="f1",
         delta_link="https://graph.test/newer",

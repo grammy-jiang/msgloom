@@ -13,7 +13,16 @@ from datetime import UTC, datetime
 from sqlalchemy import select
 
 from message_ingest.catalog import Catalog, DeltaCheckpoint, DeltaCheckpointCandidate
+from message_ingest.catalog.models.microsoft.outlook.email import (
+    MailDeltaAbsenceGeneration,
+    MailDeltaCandidateBase,
+)
 from message_ingest.extensions.catalog import CatalogService
+from message_ingest.sync.microsoft.outlook.email._cursor_causality import (
+    absent_baseline,
+    current_baseline,
+    validate_baseline,
+)
 
 
 class OutlookDeltaCheckpointStore:
@@ -71,6 +80,54 @@ class OutlookDeltaCheckpointStore:
             ).all()
             return {folder_id: delta_link for folder_id, delta_link in rows}
 
+    def get_delta_starts(self) -> dict[str, tuple[str | None, str]]:
+        """Snapshot committed Graph cursors and durable absence generations."""
+        with self.catalog.Session() as session:
+            epochs = session.scalars(
+                select(MailDeltaAbsenceGeneration).filter_by(source_id=self.source_id)
+            ).all()
+            starts: dict[str, tuple[str | None, str]] = {
+                row.folder_id: (
+                    None,
+                    absent_baseline(
+                        self.source_id, row.folder_id, generation=row.generation
+                    ),
+                )
+                for row in epochs
+            }
+            rows = session.scalars(
+                select(DeltaCheckpoint).filter_by(source_id=self.source_id)
+            ).all()
+            starts.update(
+                {
+                    row.folder_id: (
+                        row.delta_link,
+                        current_baseline(self.source_id, row.folder_id, row),
+                    )
+                    for row in rows
+                }
+            )
+            return starts
+
+    def get_delta_start(self, folder_id: str) -> tuple[str | None, str]:
+        """Capture one folder's effective generation at request creation."""
+        with self.catalog.Session() as session:
+            checkpoint = session.scalar(
+                select(DeltaCheckpoint).filter_by(
+                    source_id=self.source_id, folder_id=folder_id
+                )
+            )
+            if checkpoint is not None:
+                return checkpoint.delta_link, current_baseline(
+                    self.source_id, folder_id, checkpoint
+                )
+            epoch = session.get(MailDeltaAbsenceGeneration, (self.source_id, folder_id))
+            return None, absent_baseline(
+                self.source_id,
+                folder_id,
+                generation=0 if epoch is None else epoch.generation,
+            )
+
     def write_candidate(
         self,
         *,
@@ -78,16 +135,19 @@ class OutlookDeltaCheckpointStore:
         folder_id: str,
         delta_link: str,
         observed_at: str,
+        baseline_identity: str | None = None,
         evidence_id: str | None = None,
     ) -> None:
-        """
-        Persist the final page's link without changing the committed cursor.
+        """Persist the final cursor and its original immutable causal proof.
 
-        The pipeline holds the crawler's write lock while calling this method.
-        Replaying the same run/folder replaces its candidate in one
-        transaction.
+        A missing or invalid baseline is never treated as an initial cursor.
+        Exact replay may be accepted but cannot change a committed candidate.
+        The new table preserves legacy candidate history without inventing it.
         """
-        with self.catalog.Session() as session, session.begin():
+        baseline = validate_baseline(baseline_identity)
+        with self.catalog.writer_session() as session:
+            key = (self.source_id, run_id, folder_id)
+            proof = session.get(MailDeltaCandidateBase, key)
             record = session.scalar(
                 select(DeltaCheckpointCandidate).filter_by(
                     run_id=run_id,
@@ -95,6 +155,21 @@ class OutlookDeltaCheckpointStore:
                     folder_id=folder_id,
                 )
             )
+            # A legacy pending candidate is unknown, not a proof of absence.
+            # Never attach a newly inferred digest to an existing legacy row.
+            if proof is None and record is not None:
+                raise RuntimeError("legacy Mail delta candidate lacks causal baseline")
+            if proof is None:
+                session.add(
+                    MailDeltaCandidateBase(
+                        source_id=self.source_id,
+                        run_id=run_id,
+                        folder_id=folder_id,
+                        baseline_identity=baseline,
+                    )
+                )
+            elif proof.baseline_identity != baseline:
+                raise ValueError("Mail delta candidate changed its causal baseline")
             if record is None:
                 session.add(
                     DeltaCheckpointCandidate(
@@ -106,6 +181,14 @@ class OutlookDeltaCheckpointStore:
                         observed_at=observed_at,
                     )
                 )
+                return
+            if record.committed_at is not None:
+                if (record.delta_link, record.evidence_id, record.observed_at) != (
+                    delta_link,
+                    evidence_id,
+                    observed_at,
+                ):
+                    raise RuntimeError("committed Mail delta candidate changed")
                 return
             record.delta_link = delta_link
             record.evidence_id = evidence_id
@@ -138,7 +221,7 @@ class OutlookDeltaCheckpointStore:
             candidate_folder_ids=frozenset(candidates),
         )
         committed_at = datetime.now(UTC).isoformat()
-        with self.catalog.Session() as session, session.begin():
+        with self.catalog.writer_session() as session:
             return self.commit_in_session(
                 session,
                 validated,
@@ -152,7 +235,12 @@ class OutlookDeltaCheckpointStore:
         *,
         committed_at: str,
     ) -> int:
-        """Promote validated message-delta cursors in a caller-owned transaction."""
+        """CAS all folder candidates against their first-request baseline.
+
+        Caller owns a SQLite BEGIN IMMEDIATE writer transaction shared with
+        lifecycle and release publication. No response timestamp determines
+        provider-cursor ancestry. One mismatched folder rejects the full run.
+        """
         run_id = validated.run_id
         candidates = session.scalars(
             select(DeltaCheckpointCandidate).filter_by(
@@ -160,39 +248,52 @@ class OutlookDeltaCheckpointStore:
                 source_id=self.source_id,
             )
         ).all()
+        if {row.folder_id for row in candidates} != validated.candidate_folder_ids:
+            raise RuntimeError("mail delta candidate folder set changed")
+        updates = []
         for candidate in candidates:
+            proof = session.get(
+                MailDeltaCandidateBase, (self.source_id, run_id, candidate.folder_id)
+            )
+            if proof is None:
+                raise RuntimeError("mail delta candidate lacks causal baseline")
+            baseline = validate_baseline(proof.baseline_identity)
             checkpoint = session.scalar(
                 select(DeltaCheckpoint).filter_by(
                     source_id=self.source_id,
                     folder_id=candidate.folder_id,
                 )
             )
-            if checkpoint is not None and checkpoint.run_id != run_id:
-                # The committed winner's retained candidate owns its provider
-                # observation chronology; commit timestamps are not freshness.
-                current = session.scalar(
-                    select(DeltaCheckpointCandidate).filter_by(
-                        source_id=self.source_id,
-                        folder_id=candidate.folder_id,
-                        run_id=checkpoint.run_id,
-                    )
-                )
-                if current is None or candidate.committed_at is not None:
-                    raise RuntimeError("mail delta candidate displaced")
-                previous_time = datetime.fromisoformat(current.observed_at)
-                proposed_time = datetime.fromisoformat(candidate.observed_at)
-                if proposed_time < previous_time or (
-                    proposed_time == previous_time
-                    and candidate.delta_link != checkpoint.delta_link
+            if candidate.committed_at is not None:
+                if (
+                    checkpoint is None
+                    or checkpoint.run_id != run_id
+                    or checkpoint.delta_link != candidate.delta_link
+                    or checkpoint.committed_at != candidate.committed_at
                 ):
                     raise RuntimeError("mail delta candidate displaced")
+                # Committed replay is read-only. Do not refresh committed_at: a
+                # later run might already have captured this exact generation.
+                continue
+            epoch = (
+                session.get(
+                    MailDeltaAbsenceGeneration, (self.source_id, candidate.folder_id)
+                )
+                if checkpoint is None
+                else None
+            )
             if (
-                checkpoint is not None
-                and checkpoint.run_id == run_id
-                and candidate.committed_at is not None
-                and checkpoint.delta_link != candidate.delta_link
+                current_baseline(
+                    self.source_id,
+                    candidate.folder_id,
+                    checkpoint,
+                    absence_generation=0 if epoch is None else epoch.generation,
+                )
+                != baseline
             ):
-                raise RuntimeError("committed mail delta candidate changed")
+                raise RuntimeError("mail delta candidate displaced")
+            updates.append((candidate, checkpoint))
+        for candidate, checkpoint in updates:
             if checkpoint is None:
                 session.add(
                     DeltaCheckpoint(

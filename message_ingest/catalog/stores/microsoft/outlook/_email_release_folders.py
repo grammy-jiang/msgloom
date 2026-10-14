@@ -6,11 +6,13 @@ from message_ingest.acquisition.handoff import AcquisitionFactKind as Kind
 from message_ingest.catalog.models.microsoft.outlook.email import (
     DeltaCheckpoint,
     DeltaCheckpointCandidate,
+    MailDeltaCandidateBase,
     MailFolderPresence,
     MailFolderSighting,
 )
 
 from ._email_handoff import MailFactWriter, is_stale
+from ._mail_delta_absence import bump_absence_generation
 
 
 def mark_folder_removed(
@@ -81,6 +83,14 @@ def apply_folder_transitions(session, source_id, facts):
                 folder_id=fact.resource_identity,
             )
         )
+        already_applied = (
+            presence is not None
+            and not presence.is_present
+            and presence.latest_run_id == fact.run_id
+            and presence.latest_observed_at == fact.provider_observed_at
+            and presence.latest_evidence_id == fact.evidence_id
+            and fact.transition_reason == "folder_delta_removed"
+        )
         if presence is None:
             presence = MailFolderPresence(
                 source_id=source_id,
@@ -93,9 +103,14 @@ def apply_folder_transitions(session, source_id, facts):
         presence.latest_run_id = fact.run_id
         presence.latest_observed_at = fact.provider_observed_at
         presence.latest_evidence_id = fact.evidence_id
-        if present:
+        if present or already_applied:
             continue
-        for model in (DeltaCheckpoint, DeltaCheckpointCandidate):
+        bump_absence_generation(session, source_id, fact.resource_identity)
+        for model in (
+            DeltaCheckpoint,
+            DeltaCheckpointCandidate,
+            MailDeltaCandidateBase,
+        ):
             session.execute(
                 delete(model).where(
                     model.source_id == source_id,

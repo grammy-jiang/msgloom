@@ -13,6 +13,7 @@ from sqlalchemy.exc import DBAPIError
 from test_catalog_model_package_layout import (
     EXPECTED_TABLES,
     MAIL_BINDING_TABLE_NAMES,
+    MAIL_DELTA_CAUSAL_TABLE_NAMES,
     PRE_MAIL_BINDING_TABLE_NAMES,
 )
 
@@ -443,7 +444,10 @@ def test_opening_previous_schema_adds_calendar_delta_tables_only(
     catalog = Catalog(url)
     try:
         after_tables = set(inspect(catalog.engine).get_table_names())
-        if after_tables - before_tables != delta_tables | MAIL_BINDING_TABLE_NAMES:
+        if (
+            after_tables - before_tables
+            != delta_tables | MAIL_BINDING_TABLE_NAMES | MAIL_DELTA_CAUSAL_TABLE_NAMES
+        ):
             pytest.fail("Expected only Calendar delta and Mail binding additions")
         if after_tables != EXPECTED_TABLES:
             pytest.fail("Expected additive Calendar delta schema initialization")

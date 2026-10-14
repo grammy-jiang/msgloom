@@ -588,6 +588,11 @@ boundary text. Continuation URLs remain opaque and never enter these builders.
 semantics. `protocol/onedrive.py` validates exact same-origin reset locations;
 the application retains retry limits, evidence redaction, and checkpoint policy.
 Mail cursor handling follows request provenance, never token text.
+Per-folder Mail delta promotion compares the request-start cursor-generation
+digest with the currently committed generation inside the same catalog writer
+transaction as lifecycle and A1 release. A strictly initialized additive
+candidate-proof table preserves the existing provider checkpoint schema; only
+digest tags, not provider URLs, enter SpiderState.
 `protocol/calendar.py` validates timezone-aware increasing window bounds,
 derives series-master relations, and validates cancelled/exception occurrence
 lists. It does not decide topology freshness, persistence, or acquisition scope.

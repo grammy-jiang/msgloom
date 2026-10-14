@@ -8,6 +8,9 @@ from message_ingest.spiders.microsoft.outlook.email._delta_state import (
     MailDeltaExecutionState,
     execution_payload,
 )
+from message_ingest.sync.microsoft.outlook.email._cursor_causality import (
+    absent_baseline,
+)
 
 
 def test_mail_delta_execution_state_round_trips_plain_facts() -> None:
@@ -24,6 +27,7 @@ def test_mail_delta_execution_state_round_trips_plain_facts() -> None:
         run_failed=True,
         failure_reasons={"item_error"},
         delta_start_scheduled=True,
+        baseline_identities={"folder-a": absent_baseline("source-1", "folder-a")},
     )
     restored = MailDeltaExecutionState.restore(payload, default_run_id="fallback")
 
@@ -35,6 +39,10 @@ def test_mail_delta_execution_state_round_trips_plain_facts() -> None:
         pytest.fail("Expected failure reasons to survive JOBDIR serialization")
     if "delta_link" in payload or "delta_links" in payload:
         pytest.fail("Provider cursors must not be stored in Scrapy execution state")
+    if restored.baseline_identities != {
+        "folder-a": absent_baseline("source-1", "folder-a")
+    } or "graph.microsoft.com" in repr(payload):
+        pytest.fail("JOBDIR must retain only hashed cursor origins")
 
 
 def _snapshot(**overrides):
@@ -179,3 +187,28 @@ def test_mail_delta_commit_mode_rejects_impossible_combinations() -> None:
             _mail_rule_policy=enabled,
             _mail_delta_commit_mode="deferred",
         )
+
+
+def test_mail_delta_execution_state_rejects_forged_proof() -> None:
+    value = execution_payload(
+        run_id="run",
+        seen_folder_ids=set(),
+        started_folder_ids={"inbox"},
+        completed_folder_ids=set(),
+        reconcile_orphan_ids=set(),
+        folder_inventory_pending=0,
+        folder_inventory_complete=False,
+        folder_inventory_failed=False,
+        reconcile_complete=False,
+        run_failed=False,
+        failure_reasons=set(),
+        delta_start_scheduled=True,
+    )
+    for invalid in (
+        {"inbox": "https://graph.microsoft.com/private?$deltatoken=x"},
+        {"inbox": "a:not-a-real-digest"},
+        ["bad"],
+    ):
+        saved = {**value, "baseline_identities": invalid}
+        with pytest.raises(ValueError, match="baseline"):
+            MailDeltaExecutionState.restore(saved, default_run_id="new")

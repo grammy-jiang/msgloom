@@ -8,6 +8,7 @@ import pytest
 from sqlalchemy import create_engine, inspect, select
 from test_catalog_model_package_layout import (
     MAIL_BINDING_TABLE_NAMES,
+    MAIL_DELTA_CAUSAL_TABLE_NAMES,
     PRE_MAIL_BINDING_TABLE_NAMES,
 )
 
@@ -130,7 +131,7 @@ def test_onedrive_schema_is_additive_and_uses_source_scope(api, tmp_path):
         schema = inspect(catalog.engine)
         if (
             set(schema.get_table_names()) - before
-            != set(expected) | MAIL_BINDING_TABLE_NAMES
+            != set(expected) | MAIL_BINDING_TABLE_NAMES | MAIL_DELTA_CAUSAL_TABLE_NAMES
         ):
             pytest.fail("OneDrive and Mail bindings must be the only added tables")
         for table, keys in expected.items():
