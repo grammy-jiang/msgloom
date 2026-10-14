@@ -12,6 +12,9 @@ from message_ingest.items.microsoft.outlook.email import (
     OutlookDeltaCheckpointCandidateItem,
 )
 from message_ingest.spiders.microsoft.outlook.email.delta import OutlookDeltaSpider
+from message_ingest.sync.microsoft.outlook.email.checkpoints import (
+    OutlookDeltaCheckpointStore,
+)
 
 
 def _crawler(tmp_path: Path):
@@ -94,3 +97,62 @@ def test_legacy_active_resume_cannot_infer_baseline_from_current_checkpoint(
         asyncio.run(_start(spider))
     if not spider._run_failed:
         pytest.fail("Invalid JOBDIR cursor ancestry was not marked failed")
+
+
+def test_jobdir_folder_callback_waits_for_real_startup_snapshot(tmp_path: Path) -> None:
+    """A queued callback must never downgrade an existing cursor to absent."""
+    crawler = _crawler(tmp_path)
+    spider = OutlookDeltaSpider.from_crawler(crawler)
+    store = OutlookDeltaCheckpointStore.from_crawler(crawler)
+    store.write_candidate(
+        run_id="seed",
+        folder_id="inbox",
+        delta_link="https://graph.test/old",
+        observed_at="2026-10-14T00:00:00+00:00",
+        baseline_identity=store.get_delta_start("inbox")[1],
+    )
+    store.commit("seed")
+    existing_identity = store.get_delta_start("inbox")[1]
+    request = spider._folder_list_request(
+        "https://graph.test/folders",
+        parent_folder_id=None,
+        page_number=1,
+        purpose="folder-list",
+    )
+    response = TextResponse(
+        request.url,
+        request=request,
+        encoding="utf-8",
+        body=json.dumps({"value": [{"id": "inbox", "displayName": "Inbox"}]}).encode(),
+    )
+
+    async def interleaving() -> None:
+        async def resumed_callback():
+            return [
+                item
+                async for item in spider.parse_folders(response, **request.cb_kwargs)
+            ]
+
+        queued = asyncio.create_task(resumed_callback())
+        await asyncio.sleep(0)
+        if queued.done():
+            pytest.fail("Queued native folder callback ran before the snapshot")
+        await _start(spider)
+        output = await asyncio.wait_for(queued, 5)
+        message_requests = [
+            item
+            for item in output
+            if isinstance(item, Request)
+            and item.cb_kwargs.get("purpose") == "message-delta"
+        ]
+        if len(message_requests) != 1:
+            pytest.fail("Resumed inventory did not start one provider delta")
+        child = message_requests[0]
+        if (
+            child.cb_kwargs.get("baseline_identity") != existing_identity
+            or child.cb_kwargs.get("from_checkpoint") is not True
+            or child.url != "https://graph.test/old"
+        ):
+            pytest.fail("Queued folder callback saw the wrong committed generation")
+
+    asyncio.run(interleaving())

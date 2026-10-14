@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import asyncio
 from typing import Any
 
 import scrapy
@@ -14,14 +13,11 @@ from message_ingest.items.microsoft.outlook.email import (
     OutlookDeltaCheckpointCandidateItem,
     OutlookMailRemovalItem,
 )
-from message_ingest.sync.microsoft.outlook.email.checkpoints import (
-    OutlookDeltaCheckpointStore,
-)
 from message_ingest.sync.microsoft.outlook.email.promotion import ValidatedMailDeltaRun
 from microsoft_graph.protocol import GraphDeltaPage
 from microsoft_graph.protocol.delta import graph_tombstone
 
-from ._delta_requests import committed_delta_links, start_message_delta_request
+from ._delta_requests import load_delta_start_snapshot, start_message_delta_request
 from ._delta_state import (
     MailDeltaCommitMode,
     MailDeltaExecutionState,
@@ -117,20 +113,12 @@ class OutlookDeltaSpider(OutlookFolderTraversal):
         the same round; restarting inventory would double-count work and could
         mix checkpoint candidates.
         """
-        self._restore_execution_state()
+        await load_delta_start_snapshot(self)
         self.logger.info(
             "Starting Outlook delta crawl: page_size=%s reconciliation=%s",
             self.page_size,
             self.reconcile_global,
         )
-        store = OutlookDeltaCheckpointStore.from_crawler(self.crawler)
-        self._delta_initial_starts = await asyncio.to_thread(store.get_delta_starts)
-        self._delta_links = committed_delta_links(self._delta_initial_starts)
-        if any(
-            folder not in self._delta_baselines for folder in self._started_folder_ids
-        ):
-            self.mark_run_failed("delta_baseline_missing_on_resume")
-            raise ValueError("Resumed Mail delta run lacks causal cursor identities")
         self.crawler.stats.set_value(
             "msgloom/crawl/delta/checkpoint_loaded_count", len(self._delta_links)
         )

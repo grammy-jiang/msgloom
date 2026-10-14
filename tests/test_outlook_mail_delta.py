@@ -239,11 +239,17 @@ def test_folder_inventory_recurses_and_starts_one_delta_per_unique_folder(
 ) -> None:
     spider = _spider(tmp_path)
     root_request = asyncio.run(_collect_start(spider))[0]
-    output = list(
-        spider.parse_folders(
-            _response(root_request, "mail_folders_root.json"), **root_request.cb_kwargs
-        )
-    )
+
+    async def collect_folders():
+        return [
+            item
+            async for item in spider.parse_folders(
+                _response(root_request, "mail_folders_root.json"),
+                **root_request.cb_kwargs,
+            )
+        ]
+
+    output = asyncio.run(collect_folders())
 
     folder_items = [
         value for value in output if isinstance(value, OutlookMailFolderItem)

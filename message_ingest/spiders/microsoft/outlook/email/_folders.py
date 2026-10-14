@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import asyncio
 from abc import abstractmethod
 
 import scrapy
@@ -42,6 +43,10 @@ class OutlookFolderTraversal(OutlookMailCollectionSpider):
         self._folder_inventory_complete = False
         self._folder_inventory_failed = False
         self._reconcile_complete = False
+        # Native JOBDIR may dispatch queued callbacks before Spider.start()
+        # finishes awaiting its private catalog snapshot.
+        self._delta_snapshot_ready = asyncio.Event()
+        self._delta_snapshot_failed = False
 
     @abstractmethod
     def _persist_execution_state(self) -> None:
@@ -56,7 +61,7 @@ class OutlookFolderTraversal(OutlookMailCollectionSpider):
         """Start or resume the delta round for an inventoried folder."""
         raise NotImplementedError
 
-    def parse_folders(
+    async def parse_folders(
         self,
         response: TextResponse,
         *,
@@ -72,6 +77,9 @@ class OutlookFolderTraversal(OutlookMailCollectionSpider):
         pending count. Only the last successful inventory response may start
         global reconciliation.
         """
+        await self._delta_snapshot_ready.wait()
+        if self._delta_snapshot_failed:
+            raise RuntimeError("Mail delta start snapshot did not load")
         evidence = self._raw_http_evidence_item(response, purpose)
         yield evidence
         # Mail inventories retain missing values and falsey-link compatibility.

@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import asyncio
 from typing import Any
 
 import scrapy
@@ -9,6 +10,29 @@ import scrapy
 from message_ingest.sync.microsoft.outlook.email._cursor_causality import (
     absent_baseline,
 )
+from message_ingest.sync.microsoft.outlook.email.checkpoints import (
+    OutlookDeltaCheckpointStore,
+)
+
+
+async def load_delta_start_snapshot(spider: Any) -> None:
+    """Release native JOBDIR callbacks after exact cursor snapshot loading."""
+    try:
+        spider._restore_execution_state()
+        store = OutlookDeltaCheckpointStore.from_crawler(spider.crawler)
+        spider._delta_initial_starts = await asyncio.to_thread(store.get_delta_starts)
+        spider._delta_links = committed_delta_links(spider._delta_initial_starts)
+        if any(
+            folder not in spider._delta_baselines
+            for folder in spider._started_folder_ids
+        ):
+            spider.mark_run_failed("delta_baseline_missing_on_resume")
+            raise ValueError("Resumed Mail delta run lacks causal cursor identities")
+    except BaseException:
+        spider._delta_snapshot_failed = True
+        raise
+    finally:
+        spider._delta_snapshot_ready.set()
 
 
 def committed_delta_links(starts: dict[str, tuple[str | None, str]]) -> dict[str, str]:
@@ -51,4 +75,8 @@ def start_message_delta_request(spider: Any, folder_id: str) -> scrapy.Request:
     )
 
 
-__all__ = ["committed_delta_links", "start_message_delta_request"]
+__all__ = [
+    "committed_delta_links",
+    "load_delta_start_snapshot",
+    "start_message_delta_request",
+]
