@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+from dataclasses import replace
 from typing import Any
 
 from sqlalchemy.orm import Session
@@ -19,6 +20,7 @@ from message_ingest.acquisition.handoff import (
 from message_ingest.catalog.stores.handoff import AcquisitionHandoffStore
 
 from ._common import Outcome
+from ._handoff_chronology import capture_ordered_relation
 
 
 def _digest(value: object) -> str:
@@ -378,32 +380,38 @@ def stage_reference(
     scope_kind, scope_identity = message_scope_identity(trigger.scope_key)
     identity = canonical_json([parent, "reference", row.attachment_ordinal])
     key = _digest(reference_state(row))
+    fact = FactSpec(
+        source_id=row.source_id,
+        stream=message_stream(trigger.scope_key),
+        run_id=run_id,
+        spider_name=spider_name,
+        fact_kind=AcquisitionFactKind.COMPONENT_OBSERVATION,
+        resource_kind="teams_reference_resolution",
+        resource_identity=identity,
+        parent_resource_kind="teams_message",
+        parent_resource_identity=parent,
+        scope_kind=scope_kind,
+        scope_identity=scope_identity,
+        component_kind="reference_resolution",
+        provider_observed_at=row.observed_at,
+        evidence_id=row.evidence_id,
+        source_state_key=key,
+        source_version_locator=_locator(
+            row,
+            family="reference",
+            resource_identity=identity,
+            component_kind="reference_resolution",
+            state_key=key,
+        ),
+        storage_relation=_relation(outcome),
+    )
     handoff.stage_state_fact_in_session(
         writer,
-        FactSpec(
-            source_id=row.source_id,
-            stream=message_stream(trigger.scope_key),
-            run_id=run_id,
-            spider_name=spider_name,
-            fact_kind=AcquisitionFactKind.COMPONENT_OBSERVATION,
-            resource_kind="teams_reference_resolution",
-            resource_identity=identity,
-            parent_resource_kind="teams_message",
-            parent_resource_identity=parent,
-            scope_kind=scope_kind,
-            scope_identity=scope_identity,
-            component_kind="reference_resolution",
-            provider_observed_at=row.observed_at,
-            evidence_id=row.evidence_id,
-            source_state_key=key,
-            source_version_locator=_locator(
-                row,
-                family="reference",
-                resource_identity=identity,
-                component_kind="reference_resolution",
-                state_key=key,
+        replace(
+            fact,
+            storage_relation=capture_ordered_relation(
+                writer, handoff, fact, _relation(outcome)
             ),
-            storage_relation=_relation(outcome),
         ),
     )
 

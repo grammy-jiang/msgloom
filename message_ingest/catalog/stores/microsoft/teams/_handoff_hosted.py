@@ -5,7 +5,6 @@ from __future__ import annotations
 from dataclasses import replace
 from typing import Any, Literal
 
-from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from message_ingest.acquisition.handoff import (
@@ -14,10 +13,8 @@ from message_ingest.acquisition.handoff import (
     StorageRelation,
     canonical_json,
 )
-from message_ingest.catalog.models.handoff import AcquisitionFact
 from message_ingest.catalog.stores.handoff import AcquisitionHandoffStore
 
-from ._common import compare_observed
 from ._handoff import (
     _digest,
     _locator,
@@ -26,44 +23,7 @@ from ._handoff import (
     message_scope_identity,
     message_stream,
 )
-
-
-def _hosted_relation(
-    writer: Session,
-    handoff: AcquisitionHandoffStore,
-    spec: FactSpec,
-    *,
-    outcome: Literal["created", "replay"],
-) -> StorageRelation:
-    """Choose freshness by canonical capture time, never SQL insert order."""
-    if outcome == "replay":
-        return StorageRelation.CURRENT_EQUIVALENT
-    current = handoff.current_effective_state(writer, spec.effective_key)
-    if current is not None:
-        # An equivalent t3 capture does not replace the original effective
-        # fact from t1. Compare all accepted captures, not just its pointer: a
-        # different t2 capture arriving late must remain stale. The finite
-        # bound fails closed rather than silently ignoring older ledger rows.
-        accepted = writer.scalars(
-            select(AcquisitionFact.payload)
-            .where(
-                AcquisitionFact.effective_key == spec.effective_key.digest,
-                AcquisitionFact.storage_relation.in_(
-                    (StorageRelation.ADVANCED, StorageRelation.CURRENT_EQUIVALENT)
-                ),
-            )
-            .limit(10_001)
-        )
-        for index, payload in enumerate(accepted, 1):
-            if index > 10_000:
-                raise ValueError("Teams hosted freshness history exceeds safe bound")
-            prior = FactSpec.from_json(payload)
-            if (
-                compare_observed(spec.provider_observed_at, prior.provider_observed_at)
-                <= 0
-            ):
-                return StorageRelation.STALE
-    return StorageRelation.ADVANCED
+from ._handoff_chronology import capture_ordered_relation
 
 
 def stage_hosted(
@@ -110,7 +70,14 @@ def stage_hosted(
         writer,
         replace(
             fact,
-            storage_relation=_hosted_relation(writer, handoff, fact, outcome=outcome),
+            storage_relation=capture_ordered_relation(
+                writer,
+                handoff,
+                fact,
+                StorageRelation.CURRENT_EQUIVALENT
+                if outcome == "replay"
+                else StorageRelation.ADVANCED,
+            ),
         ),
     )
 

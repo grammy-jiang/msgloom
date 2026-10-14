@@ -218,3 +218,28 @@ def test_teams_release_drains_once_through_real_a2_workset(
             await persistence.close()
 
     asyncio.run(check())
+
+
+@pytest.mark.parametrize("stream", ["teams_chat", "teams_channel"])
+def test_teams_stream_is_admissible_in_operator_intake_configuration(
+    stream: str,
+) -> None:
+    """The real configured scheduler must accept explicitly supported Teams streams."""
+    from pydantic import ValidationError
+
+    from msgloom.configuration.models import PreparationIntakeTarget
+
+    data = {
+        "expected_catalog": {"catalog_identity": "catalog-teams", "schema_version": 1},
+        "source_id": "teams-fixture",
+        "stream": stream,
+        "consumer_id": "teams-consumer",
+    }
+    try:
+        target = PreparationIntakeTarget.model_validate(data)
+    except ValidationError as error:
+        pytest.fail(f"Configured Teams intake rejected: {error.errors()[0]['type']}")
+    if target.stream != stream or target.max_entries != 100:
+        pytest.fail("Teams intake validation changed other bounded target defaults")
+    with pytest.raises(ValidationError):
+        PreparationIntakeTarget.model_validate({**data, "stream": "teams_unsafe"})

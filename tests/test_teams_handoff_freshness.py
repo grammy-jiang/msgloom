@@ -279,3 +279,93 @@ def test_hosted_same_state_revalidation_keeps_newer_capture_highwater(tmp_path) 
             pytest.fail("Hosted accepted-capture highwater was not retained")
     finally:
         catalog.close()
+
+
+def test_reference_resolution_respects_newer_message_capture(tmp_path) -> None:
+    """Older reference results cannot displace newer results from another capture."""
+    from message_ingest.catalog.stores.microsoft.teams.content import TeamsContentStore
+    from message_ingest.items.microsoft.teams.content import (
+        ResolutionState,
+        TeamsReferenceResolutionItem,
+    )
+    from message_ingest.items.microsoft.teams.message import TeamsMessageTrigger
+
+    catalog = open_catalog(tmp_path)
+    messages = TeamsMessageStore(
+        catalog, source_id=SOURCE, spider_name="microsoft_teams_chat_discover"
+    )
+    content = TeamsContentStore(
+        catalog, source_id=SOURCE, spider_name="microsoft_teams_chat_discover"
+    )
+    attachment = [{"contentType": "reference", "name": "file"}]
+    try:
+        record_evidence(catalog, "new-message", observed_at=TIME2, run_id="new-run")
+        record_evidence(catalog, "old-message", observed_at=TIME1, run_id="old-run")
+        newer = chat_message(
+            evidence_id="new-message",
+            observed_at=TIME2,
+            run_id="new-run",
+            attachments=attachment,
+        )
+        older = chat_message(
+            evidence_id="old-message",
+            observed_at=TIME1,
+            run_id="old-run",
+            attachments=attachment,
+        )
+        if messages.persist_message(newer) != "created":
+            pytest.fail("Newer message fixture was not persisted")
+        if messages.persist_message(older) != "stale":
+            pytest.fail("Older message fixture should remain immutable stale history")
+        for message in (newer, older):
+            state: ResolutionState = "resolved" if message is newer else "not-attempted"
+            content.persist_reference(
+                TeamsReferenceResolutionItem(
+                    source_id=SOURCE,
+                    trigger=TeamsMessageTrigger.from_message(message),
+                    attachment_ordinal=0,
+                    state=state,
+                    observed_at=message.observed_at,
+                    evidence_id=message.evidence_id,
+                    run_id=message.run_id,
+                    details={"state": state},
+                )
+            )
+        with catalog.writer_session() as writer:
+            newest = _entries(
+                catalog,
+                writer,
+                SOURCE,
+                SimpleNamespace(run_id="new-run"),
+                AcquisitionStream.TEAMS_CHAT,
+            )
+            old = _entries(
+                catalog,
+                writer,
+                SOURCE,
+                SimpleNamespace(run_id="old-run"),
+                AcquisitionStream.TEAMS_CHAT,
+            )
+        if not any(
+            entry.resource_kind == "teams_reference_resolution" for entry in newest
+        ):
+            pytest.fail("Newest reference outcome was not releasable")
+        if any(entry.resource_kind == "teams_reference_resolution" for entry in old):
+            pytest.fail("Stale reference outcome displaced newer semantic state")
+        with catalog.Session() as session:
+            payloads = session.scalars(
+                select(AcquisitionFact.payload).where(
+                    AcquisitionFact.source_id == SOURCE,
+                    AcquisitionFact.stream == AcquisitionStream.TEAMS_CHAT,
+                    AcquisitionFact.run_id == "old-run",
+                )
+            ).all()
+        stale = [
+            FactSpec.from_json(raw)
+            for raw in payloads
+            if FactSpec.from_json(raw).resource_kind == "teams_reference_resolution"
+        ]
+        if len(stale) != 1 or stale[0].storage_relation != "stale":
+            pytest.fail("Older reference observation was not preserved as stale")
+    finally:
+        catalog.close()
