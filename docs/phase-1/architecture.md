@@ -100,6 +100,15 @@ results prepare facts for downstream use; they do not perform global deletion
 or retirement. Missing or corrupt evidence receives a durable held disposition
 instead of a fabricated selection. Later valid entries can still advance.
 
+Teams Chat and Channel are distinct A1 release streams. Their message facts
+reconstruct immutable captured responses; topology, reference, hosted
+content, and notification effects cannot retroactively mutate an earlier
+release. A2 admits component-only changes as a scoped parent refresh and
+preserves deletion or restoration as explicit transitions. The third Teams
+Spider reconciles notifications but does not create a separate A2 stream.
+These paths have local Scrapy/Graph-fixture and CI qualification; company
+Teams live-account acceptance remains separate.
+
 `HistoricalBaselineService.run` provides explicit historical admission for a
 new consumer scope. It accepts caller-approved bounded exact versions, verifies
 saved evidence, saves selections, and commits one immutable starting workset

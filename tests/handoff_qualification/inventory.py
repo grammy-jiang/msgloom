@@ -219,6 +219,40 @@ MATRIX = {
 }
 
 
+# Teams is an additive Task 15 extension. Preserve Task 10's original 17
+# provider records and their explicit qualification ownership unchanged.
+TEAMS_EXTENSION_MATRIX = {
+    "microsoft_teams_chat_discover": Coverage(
+        "teams_chat",
+        "teams_chat_discovery",
+        "successful_native_idle",
+        pending="Task15",
+        candidate_tests=(
+            "tests/test_teams_handoff_release.py::test_native_chat_crawl_to_exact_a2_intake",
+        ),
+    ),
+    "microsoft_teams_channel_discover": Coverage(
+        "teams_channel",
+        "teams_channel_discovery",
+        "successful_native_idle",
+        pending="Task15",
+        candidate_tests=(
+            "tests/test_teams_handoff_release.py::test_native_channel_root_reply_to_a2_intake",
+        ),
+    ),
+    "microsoft_teams_notification_reconcile": Coverage(
+        "teams_chat",
+        "teams_notification_reconciliation",
+        "readback_and_scoped_release",
+        pending="Task15",
+        candidate_tests=(
+            "tests/test_teams_notification_reconciliation.py::test_chat_and_channel_reply_readbacks_use_provider_paths_and_scoped_identity",
+            "tests/test_teams_handoff_freshness.py::test_restore_then_second_deletion_stays_publishable",
+        ),
+    ),
+}
+
+
 TASK10_EXECUTABLE_SCENARIOS = {
     "mail_discovery": MAIL_DISCOVERY_CANDIDATES,
     "mail_cache_replay": (MAIL_CACHE,),

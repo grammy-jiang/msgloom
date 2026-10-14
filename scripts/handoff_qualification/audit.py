@@ -16,7 +16,7 @@ import sys
 import xml.etree.ElementTree as ET
 from pathlib import Path
 
-SPIDERS = (
+ORIGINAL_SPIDERS = (
     "microsoft_profile",
     "microsoft_todo_discover",
     "microsoft_todo_sync",
@@ -35,6 +35,15 @@ SPIDERS = (
     "outlook_calendar_delta",
     "outlook_calendar_full",
 )
+# The signed 2026-10-03 acceptance baseline remains the original 17. Teams
+# T1/T2 was added later and must be qualified as an explicit extension, not
+# silently excluded by the installed-Spider equality gate.
+TEAMS_EXTENSION_SPIDERS = (
+    "microsoft_teams_chat_discover",
+    "microsoft_teams_channel_discover",
+    "microsoft_teams_notification_reconcile",
+)
+SPIDERS = ORIGINAL_SPIDERS + TEAMS_EXTENSION_SPIDERS
 DESIGN = "docs/superpowers/specs/2026-10-03-a1-a2-handoff-contract-design.md"
 
 

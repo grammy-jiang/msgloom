@@ -27,6 +27,13 @@ Graph-over-Scrapy architecture.
 | User/Profile | The signed-in user read primitive remains available through `User.Read`. |
 | Teams | Real acceptance remains blocked by the available personal-account capability. Synthetic fixtures may preserve shared contracts, but A1 does not claim live Teams support. |
 
+The later Teams T1/T2 local acquisition implementation and the durable
+Teams A1-to-A2 release/intake extension were integrated through PR #35 on
+2026-10-14. This is code and CI qualification only: work/school tenant live
+acceptance remains blocked, and Task 15 still requires separate end-to-end
+qualification and independent signoff. This update does not reopen the
+2026-10-03 source-capability closeout.
+
 Microsoft source expansion stops after Contacts for this program.
 
 ## Contacts personal-account acceptance

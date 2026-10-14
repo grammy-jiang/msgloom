@@ -232,9 +232,9 @@ class Runner:
                 size = _tail_append(chunks, size, value)
             if process.poll() is None:
                 _terminate_group(process)
-        except (Exception, KeyboardInterrupt) as exc:  # noqa: BLE001 - preserve evidence
+        except (Exception, KeyboardInterrupt):
             _cleanup_after_interrupt(process)
-            raise exc.with_traceback(exc.__traceback__)
+            raise
         finally:
             selector.close()
             process.stdout.close()

@@ -891,6 +891,20 @@ validated facts but must not rely on parsing logs.
 | outlook_calendar_delta | one exact fixed-window authority scope | winning checkpoint/state promotion | 410 rebaseline releases only winning materialized window state. |
 | outlook_calendar_full | one event target/profile | per-event Full-v1 completion | One run may release several events independently; qualified scope-bound JOBDIR retained. |
 
+### Teams extension to the original 17-Spider matrix (2026-10-14)
+
+The preceding 17 rows remain the original 2026-10-03 qualification baseline.
+The T1/T2 Teams implementation contributes three additional installed Spider
+names, qualified separately against the same fail-closed A1/A2 release
+contract and included in the exact-candidate installed-Spider inventory.
+No additional Task 15 scenario is inferred from their presence.
+
+| Spider | Release subject | Release gate | Authority / coverage notes |
+| --- | --- | --- | --- |
+| microsoft_teams_chat_discover | one Teams chat discovery run | native Scrapy idle plus current-run completion proof | Positive observations, topology, and independent component effects; no inferred absence or JOBDIR resume. |
+| microsoft_teams_channel_discover | one Teams/channel discovery run | both Teams inventory families complete and native idle | Exact scoped root and reply messages; no missing-channel absence authority or JOBDIR resume. |
+| microsoft_teams_notification_reconcile | one notification reconciliation run | validated readback and scoped release | Chat and channel outcomes publish atomically per run; deletion and later restoration remain distinct scoped transitions. |
+
 ## 13. Product-specific details
 
 ### 13.1 Outlook Mail discover
