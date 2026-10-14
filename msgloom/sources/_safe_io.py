@@ -6,11 +6,17 @@ import os
 import stat
 from pathlib import Path
 
+from msgloom.sources._pinning_support import supports_pinned_posix_reader
 from msgloom.sources.models import SourceEvidenceError
 
 
 def open_root(path: Path) -> int:
     """Open every root component without following symbolic links."""
+    if not supports_pinned_posix_reader():
+        raise SourceEvidenceError(
+            "secure evidence roots require POSIX descriptor pinning; "
+            "Windows native-handle support is not qualified"
+        )
     flags = os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW
     descriptor = os.open("/", flags)
     try:

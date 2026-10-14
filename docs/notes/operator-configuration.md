@@ -150,6 +150,13 @@ add explicit plan-file references without changing the current semantics.
 
 ## Scheduled preparation
 
+Saved-source and release-aware scheduled intake require the secure POSIX
+file-descriptor reader described in the
+[Phase 1 qualification boundary](../phase-1/architecture.md#secure-saved-source-reader-platform-boundary).
+Windows portable CI smoke does not qualify A2 saved-source operation. An
+unsupported host fails closed before reading an unpinned catalog path; there
+is no unsafe fallback.
+
 `msgloom prepare-scheduled` runs one finite A2 intake and preparation cycle.
 It reads saved A1 data and does not start collection or install a scheduler.
 Configure the existing `source`, `preparation.filter_config`, parser profiles,

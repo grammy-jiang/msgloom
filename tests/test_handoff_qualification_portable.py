@@ -56,6 +56,26 @@ def test_reverse_import_scan_rejects_a2_and_dynamic_imports(tmp_path: Path) -> N
     audit.reverse_imports(tmp_path)
 
 
+def test_saved_reader_platform_gate_rejects_windows_in_portable_smoke(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Portable smoke must expose native Windows POSIX-ineligible readers."""
+    from importlib.util import module_from_spec, spec_from_file_location
+
+    module_path = (
+        Path(__file__).parents[1] / "msgloom" / "sources" / "_pinning_support.py"
+    )
+    spec = spec_from_file_location("pinned_a1_platform_contract", module_path)
+    if spec is None or spec.loader is None:
+        pytest.fail("Portable test cannot inspect the A1 pinned-file contract")
+    module = module_from_spec(spec)
+    spec.loader.exec_module(module)
+    with monkeypatch.context() as override:
+        override.setattr(module.sys, "platform", "win32")
+        if module.supports_pinned_posix_reader():
+            pytest.fail("Windows bypassed descriptor-pinned file safety gate")
+
+
 def test_runtime_requires_exact_313_patch(monkeypatch):
     """A patch-number prefix cannot stand in for Python 3.13.5."""
     monkeypatch.setattr(audit.sys, "version_info", (3, 13, 50))
