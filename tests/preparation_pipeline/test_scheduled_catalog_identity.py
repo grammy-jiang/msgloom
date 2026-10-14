@@ -31,6 +31,8 @@ from tests.preparation_pipeline.helpers import filter_config
 
 
 class MemoryCatalog:
+    max_release_page_size = 200
+
     def __init__(self, identity, anchor_ok, anchor_digest):
         self.identity = A1CatalogIdentity(catalog_identity=identity, schema_version=1)
         self.anchor_ok = anchor_ok

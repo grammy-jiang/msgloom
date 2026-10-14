@@ -122,7 +122,9 @@ class PreparationIntakeService:
             scope.stream,
             after_seq=previous.last_release_entry_seq,
             through_seq=ceiling,
-            limit=limit,
+            # Caller budget is an upper bound; preserve the reader's stricter
+            # configured cap and let later invocations drain the next page.
+            limit=min(limit, catalog.max_release_page_size),
         )
         if not page.entries:
             return None
