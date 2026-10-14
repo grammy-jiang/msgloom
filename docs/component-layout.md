@@ -28,8 +28,11 @@ independent acceptance remain pending; see the
 | `message_ingest/acquisition/handoff.py` | Define provider-independent immutable fact and release contracts. |
 | `message_ingest/catalog/stores/handoff.py` | Store catalog identity, staged facts, release groups, and pageable entries under transaction guards. |
 | Provider catalog stores | Commit effective state with its fact and publish authority with the winning checkpoint and lifecycle changes. |
+| `message_ingest/catalog/stores/microsoft/teams/_handoff.py` | Stage immutable scoped Teams message, context, component, and presence facts atomically with provider state. |
+| `message_ingest/extensions/_handoff_traversal.py` | Recheck Teams run completeness and cross-run freshness before native idle release. |
 | `message_ingest/extensions/handoff.py` | Join native lifecycle completion to eligible non-authoritative publication. |
 | `msgloom/sources/release_reader.py` | Read exact committed release entries and verify saved evidence without calling a live crawler. |
+| `msgloom/sources/_release_teams.py` | Rebuild Teams messages from exact observation/evidence pins, without borrowing later mutable components. |
 | `msgloom/preparation_pipeline/intake.py` | Capture a bounded cutoff, save exact selections, and admit entries as selections, scoped transitions, or held dispositions. |
 | `msgloom/preparation_pipeline/historical_baseline.py` | Admit caller-approved exact historical versions as one starting workset for a new consumer scope. |
 | `msgloom/persistence/intake_store.py` | Commit the workset, pending state, and cursor atomically under the intake claim. |

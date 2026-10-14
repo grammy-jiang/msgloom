@@ -175,8 +175,11 @@ a mismatch does not authorize baseline creation. All target fields affect the
 configuration version, so reload invocation versions after changing them.
 
 `source_id` must match the saved A1 source binding. Supported streams are
-`outlook_mail`, `outlook_calendar`, `todo`, `contacts`, and `onedrive`. Keep
-`consumer_id` stable across scheduled runs and retries. It identifies cursor
+`outlook_mail`, `outlook_calendar`, `todo`, `contacts`, `onedrive`,
+`teams_chat`, and `teams_channel`. The two Teams streams use separate durable
+intake cursors. Teams notification reconciliation contributes scoped facts
+to those streams; it is not a third A2 intake stream. Keep `consumer_id`
+stable across scheduled runs and retries. It identifies cursor
 progress within the catalog/source/stream scope. A new consumer ID creates a
 separate intake scope; it is not a recovery command for the existing scope.
 
@@ -187,6 +190,11 @@ permits 1 through 100. These are entry-admission and workset-attempt limits,
 not a promise to drain the backlog in one invocation. A failed pending attempt
 consumes a work unit. Durable rotation allows other pending work to progress.
 Each target still gets one bounded fresh intake after pending processing.
+Teams scopes retain component-refresh and presence-transition inputs without
+inventing a new message body. Missing evidence remains a held disposition.
+The local Graph fixture acceptance does not constitute company-tenant Teams
+Live Acceptance; configure only sources already collected with authorized
+read-only consent.
 
 The existing execution timeout and claim lease apply to bounded operations.
 The claim lease must exceed the execution timeout by more than one second.
