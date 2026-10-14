@@ -61,6 +61,9 @@ def test_initial_folder_delta_follows_opaque_nextlink_and_stages_cursor(
 ) -> None:
     spider = _spider(tmp_path)
     first = asyncio.run(_collect_start(spider))[0]
+    baseline = first.cb_kwargs.get("baseline_identity")
+    if not isinstance(baseline, str) or not baseline.startswith("a:"):
+        pytest.fail("Native first folder delta request omitted absent cursor proof")
     if "/me/mailFolders/delta?" not in first.url:
         pytest.fail("Expected initial mailFolder delta request")
     next_link = (
@@ -90,6 +93,8 @@ def test_initial_folder_delta_follows_opaque_nextlink_and_stages_cursor(
     if not any(isinstance(value, OutlookMailFolderItem) for value in output):
         pytest.fail("Expected folder delta upsert item")
     continuation = next(value for value in output if hasattr(value, "url"))
+    if continuation.cb_kwargs.get("baseline_identity") != baseline:
+        pytest.fail("Opaque folder continuation lost initial Graph cursor proof")
     if (
         continuation.url != next_link
         or continuation.meta.get("verbatim_url") is not True
@@ -114,6 +119,13 @@ def test_initial_folder_delta_follows_opaque_nextlink_and_stages_cursor(
         isinstance(value, OutlookFolderDeltaCheckpointCandidateItem) for value in final
     ):
         pytest.fail("Expected terminal folder delta checkpoint candidate")
+    candidates = [
+        item
+        for item in final
+        if isinstance(item, OutlookFolderDeltaCheckpointCandidateItem)
+    ]
+    if len(candidates) != 1 or candidates[0].baseline_identity != baseline:
+        pytest.fail("Terminal folder delta item changed original cursor identity")
 
 
 def test_folder_delta_removal_clears_message_cursor(tmp_path: Path) -> None:
@@ -145,6 +157,7 @@ def test_folder_delta_removal_clears_message_cursor(tmp_path: Path) -> None:
         folders = OutlookFolderDeltaCheckpointStore(catalog, "source-1")
         folder_cursor = "https://graph.test/me/mailFolders/delta?$deltatoken=done"
         folders.write_candidate(
+            baseline_identity=folders.get_delta_start()[1],
             run_id="folder-delta-run",
             delta_link=folder_cursor,
             observed_at="2026-09-28T01:00:00+00:00",
@@ -221,6 +234,7 @@ def test_folder_delta_checkpoint_store_promotes_only_candidate(tmp_path: Path) -
         if store.get_delta_link() is not None:
             pytest.fail("Expected no initial folder delta cursor")
         store.write_candidate(
+            baseline_identity=store.get_delta_start()[1],
             run_id="run-1",
             delta_link="https://graph.test/me/mailFolders/delta?$deltatoken=done",
             observed_at="2026-09-28T00:00:00+00:00",
@@ -249,14 +263,21 @@ def test_folder_delta_410_resets_once_without_failing_run(tmp_path: Path) -> Non
     from scrapy import Request
 
     spider = _spider(tmp_path)
-    request = spider._delta_request(
-        "https://graph.microsoft.com/v1.0/me/mailFolders/delta?$deltatoken=old",
-        page_number=1,
-        from_checkpoint=True,
-        reset_count=0,
+    checkpoints = OutlookFolderDeltaCheckpointStore.from_crawler(spider.crawler)
+    checkpoints.write_candidate(
+        baseline_identity=checkpoints.get_delta_start()[1],
+        run_id="seed",
+        delta_link="https://graph.microsoft.com/v1.0/me/mailFolders/delta?$deltatoken=old",
+        observed_at="2026-09-28T00:00:00+00:00",
     )
+    checkpoints.commit("seed")
+    request = asyncio.run(_collect_start(spider))[0]
     output = list(spider.errback(_http_failure(request, 410)))
     reset = next(value for value in output if isinstance(value, Request))
+    if reset.cb_kwargs.get("baseline_identity") != request.cb_kwargs.get(
+        "baseline_identity"
+    ):
+        pytest.fail("Expired folder delta reset changed original cursor proof")
     if reset.cb_kwargs["reset_count"] != 1:
         pytest.fail("Expected one bounded mailFolder delta reset")
     if "$deltatoken=" in reset.url:
