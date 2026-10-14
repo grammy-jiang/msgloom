@@ -97,7 +97,9 @@ def message(fact: ReleasedFact, evidence: ReleaseEvidence) -> CollectedRecord:
         encode_parts(fact.source_id, *parts),
         encode_parts(str(identity[1]), locator.evidence_id),
     )
-    return TeamsSavedSourceAdapter(evidence.catalog, evidence.files).read(reference)
+    return TeamsSavedSourceAdapter(evidence.catalog, evidence.files).read(
+        reference, release_facts_only=True
+    )
 
 
 _SIDE_FAMILIES = {

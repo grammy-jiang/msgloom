@@ -126,11 +126,15 @@ def test_deletion_locator_uses_exact_deletion_primary_key() -> None:
         run_id="run-a",
         outcome="created",
     )
-    assert recorder.fact is not None
-    assert json.loads(recorder.fact.source_version_locator.observation_id) == [
+    if not (recorder.fact is not None):
+        pytest.fail("Expected recorder.fact is not None")
+    if json.loads(recorder.fact.source_version_locator.observation_id) != [
         "deletion",
         42,
-    ]
+    ]:
+        pytest.fail(
+            "Expected json.loads(recorder.fact.source_version_locator.observation_id) == ['deletion', 42]"
+        )
 
 
 def test_native_chat_crawl_to_exact_a2_intake(
@@ -176,17 +180,25 @@ def test_native_chat_crawl_to_exact_a2_intake(
                 through_seq=ceiling,
                 limit=100,
             )
-            assert page.entries and not page.has_more
+            if not (page.entries and not page.has_more):
+                pytest.fail("Expected page.entries and (not page.has_more)")
             records = []
             for entry in page.entries:
                 released = await reader.read_entry(entry.reference)
                 if entry.entry_kind == "resource":
-                    assert released.selection is not None
+                    if not (released.selection is not None):
+                        pytest.fail("Expected released.selection is not None")
                     records.append(released.selection.record)
-            assert len(records) == 1
-            assert records[0].source_type.value == "teams_chat_message"
-            assert records[0].body is not None
-            assert records[0].body.content == "hello"
+            if len(records) != 1:
+                pytest.fail("Expected len(records) == 1")
+            if records[0].source_type.value != "teams_chat_message":
+                pytest.fail(
+                    "Expected records[0].source_type.value == 'teams_chat_message'"
+                )
+            if not (records[0].body is not None):
+                pytest.fail("Expected records[0].body is not None")
+            if records[0].body.content != "hello":
+                pytest.fail("Expected records[0].body.content == 'hello'")
             scope = IntakeScope(
                 catalog=await reader.catalog.catalog_identity(),
                 source_id="teams-fixture",
@@ -196,16 +208,23 @@ def test_native_chat_crawl_to_exact_a2_intake(
             service = PreparationIntakeService(persistence, reader)
             first = await run(service, scope, identity="native-teams-first", limit=100)
             workset = await payload(persistence, first)
-            assert len(workset.entries) == len(page.entries)
-            assert len(workset.selections) == 1
-            assert not workset.held
-            assert (
-                await persistence.get_preparation_intake_cursor(scope) == workset.cutoff
-            )
-            assert (
+            if len(workset.entries) != len(page.entries):
+                pytest.fail("Expected len(workset.entries) == len(page.entries)")
+            if len(workset.selections) != 1:
+                pytest.fail("Expected len(workset.selections) == 1")
+            if workset.held:
+                pytest.fail("Expected not workset.held")
+            if await persistence.get_preparation_intake_cursor(scope) != workset.cutoff:
+                pytest.fail(
+                    "Expected await persistence.get_preparation_intake_cursor(scope) == workset.cutoff"
+                )
+            if not (
                 await run(service, scope, identity="native-teams-repeat", limit=100)
                 is None
-            )
+            ):
+                pytest.fail(
+                    "Expected await run(service, scope, identity='native-teams-repeat', limit=100) is None"
+                )
         finally:
             await reader.close()
             await persistence.close()
@@ -267,13 +286,23 @@ def test_native_channel_root_reply_to_a2_intake(
                 if released.selection is not None:
                     records.append(released.selection.record)
             scopes = {record.source.identity for record in records}
-            assert len(records) == 5
-            assert len(scopes) == 5
-            assert any("channel-reply" in identity for identity in scopes)
-            assert all(
-                record.source_type.value == "teams_channel_message"
-                for record in records
-            )
+            if len(records) != 5:
+                pytest.fail("Expected len(records) == 5")
+            if len(scopes) != 5:
+                pytest.fail("Expected len(scopes) == 5")
+            if not (any("channel-reply" in identity for identity in scopes)):
+                pytest.fail(
+                    "Expected any(('channel-reply' in identity for identity in scopes))"
+                )
+            if not (
+                all(
+                    record.source_type.value == "teams_channel_message"
+                    for record in records
+                )
+            ):
+                pytest.fail(
+                    "Expected all((record.source_type.value == 'teams_channel_message' for record in records))"
+                )
             scope = IntakeScope(
                 catalog=await reader.catalog.catalog_identity(),
                 source_id="teams-fixture",
@@ -287,12 +316,16 @@ def test_native_channel_root_reply_to_a2_intake(
                 limit=100,
             )
             workset = await payload(persistence, first)
-            assert len(workset.entries) == len(page.entries)
-            assert len(workset.selections) == 5
-            assert not workset.held
-            assert (
-                await persistence.get_preparation_intake_cursor(scope) == workset.cutoff
-            )
+            if len(workset.entries) != len(page.entries):
+                pytest.fail("Expected len(workset.entries) == len(page.entries)")
+            if len(workset.selections) != 5:
+                pytest.fail("Expected len(workset.selections) == 5")
+            if workset.held:
+                pytest.fail("Expected not workset.held")
+            if await persistence.get_preparation_intake_cursor(scope) != workset.cutoff:
+                pytest.fail(
+                    "Expected await persistence.get_preparation_intake_cursor(scope) == workset.cutoff"
+                )
         finally:
             await reader.close()
             await persistence.close()

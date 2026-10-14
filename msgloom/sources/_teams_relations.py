@@ -7,10 +7,15 @@ from contextlib import closing
 from typing import Any
 
 from msgloom.contracts import Limitation, VersionRef
-from msgloom.preparation.records import NativeRelationship, PreparedSourceType
+from msgloom.preparation.records import (
+    NativeRelationship,
+    PreparedParty,
+    PreparedSourceType,
+)
 from msgloom.sources._catalog import ReadOnlyCatalog, encode_parts
+from msgloom.sources._io import EvidenceFiles
 from msgloom.sources._teams_catalog import TeamsMessageSelection, decode_json
-from msgloom.sources.models import SourceReferenceError
+from msgloom.sources.models import SourceEvidenceError, SourceReferenceError
 
 
 def _message_reference_id(raw: dict[str, Any]) -> str | None:
@@ -41,6 +46,7 @@ def _exact_target(
     catalog: ReadOnlyCatalog,
     selected: TeamsMessageSelection,
     message_id: str,
+    files: EvidenceFiles,
 ) -> VersionRef | None:
     """Resolve the newest target capture already observable at reply capture time."""
     if selected.chat_id is None:
@@ -64,17 +70,31 @@ def _exact_target(
     if not rows:
         return None
     row = rows[0]
-    return VersionRef(
+    reference = VersionRef(
         PreparedSourceType.TEAMS_CHAT_MESSAGE.value,
         encode_parts(selected.source_id, "chat", selected.chat_id, message_id),
         encode_parts(str(row["observation_id"]), row["evidence_id"]),
     )
+    # Confirm the candidate's exact immutable scope and response bytes.
+    # A malformed or missing target remains a candidate, not a verified reply.
+    from msgloom.sources._teams import TeamsSavedSourceAdapter
+    from msgloom.sources._teams_catalog import TeamsCatalogQueries
+
+    try:
+        found = TeamsCatalogQueries(catalog).select(reference)
+        TeamsSavedSourceAdapter(catalog, files)._primary_evidence(found)
+    except (SourceEvidenceError, SourceReferenceError, OSError, ValueError, TypeError):
+        return None
+    return reference
 
 
 def message_reference_relationships(
     catalog: ReadOnlyCatalog,
     selected: TeamsMessageSelection,
     attachments: tuple[dict[str, Any], ...],
+    *,
+    files: EvidenceFiles,
+    resolve_exact: bool = True,
 ) -> tuple[tuple[NativeRelationship, ...], tuple[Limitation, ...]]:
     """Preserve every chat messageReference and confirm only saved exact targets."""
     if selected.location != "chat":
@@ -100,7 +120,15 @@ def message_reference_relationships(
                 target=_candidate(selected, message_id),
             )
         )
-        target = _exact_target(catalog, selected, message_id)
+        if not resolve_exact:
+            limitations.append(
+                Limitation(
+                    "teams-reference-target-unqualified",
+                    "An exact referenced message is not bound to this release.",
+                )
+            )
+            continue
+        target = _exact_target(catalog, selected, message_id, files)
         if target is None:
             limitations.append(
                 Limitation(
@@ -115,4 +143,22 @@ def message_reference_relationships(
     return tuple(relationships), tuple(limitations)
 
 
-__all__ = ["message_reference_relationships"]
+def party_from_sender(value: object) -> PreparedParty | None:
+    """Project an optional Teams sender without product identity policy."""
+    if not isinstance(value, dict):
+        return None
+    for kind in ("user", "application", "device"):
+        candidate = value.get(kind)
+        if not isinstance(candidate, dict):
+            continue
+        identity = candidate.get("id")
+        if isinstance(identity, str) and identity:
+            name = candidate.get("displayName")
+            return PreparedParty(
+                identity=f"{kind}:{identity}",
+                display_name=name if isinstance(name, str) and name else None,
+            )
+    return None
+
+
+__all__ = ["message_reference_relationships", "party_from_sender"]

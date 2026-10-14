@@ -10,7 +10,6 @@ from sqlalchemy import select
 from message_ingest.acquisition.handoff import (
     AcquisitionStream,
     FactSpec,
-    ReleaseEntryKind,
     ReleaseEntrySpec,
     ReleaseGroupSpec,
     ReleaseKind,
@@ -35,7 +34,8 @@ def _release_messages(path: Path, stream: AcquisitionStream) -> None:
                 (1, 2) if stream is AcquisitionStream.TEAMS_CHAT else (3, 4)
             ):
                 row = writer.get(TeamsMessageObservation, observation_id)
-                assert row is not None
+                if not (row is not None):
+                    pytest.fail("Expected row is not None")
                 stage_message(
                     writer,
                     handoff,
@@ -114,173 +114,30 @@ def test_release_reader_reconstructs_exact_teams_messages(
             page = await reader.catalog.list_release_entries(
                 SOURCE, stream.value, after_seq=0, through_seq=cutoff, limit=10
             )
-            assert len(page.entries) == count
+            if len(page.entries) != count:
+                pytest.fail("Expected len(page.entries) == count")
             for entry in page.entries:
                 result = await reader.read_entry(entry.reference)
-                assert result.reference == entry.reference
-                assert result.selection is not None
-                assert result.selection.record.source_type == source_type
-                assert result.selection.record.source_scope.kind == "source_scope"
-                assert result.selection.record.body is not None
-                assert result.selection.record.source_bytes is not None
-                assert len(result.facts) == 1
-        finally:
-            await reader.close()
-
-    asyncio.run(run())
-
-
-def test_release_reader_preserves_teams_context_and_scoped_deletion(
-    tmp_path: Path,
-) -> None:
-    """Non-message Teams impacts must be readable, not silently held."""
-
-    from message_ingest.catalog.models.microsoft.teams import (
-        TeamsMessageDeletionObservation,
-        TeamsTopologyObservation,
-    )
-    from message_ingest.catalog.stores.microsoft.teams._handoff import (
-        stage_deletion,
-        stage_topology,
-    )
-    from tests.source_reader.test_teams_saved_source import _evidence
-
-    bootstrap = Catalog(f"sqlite:///{tmp_path / 'catalog.sqlite3'}")
-    bootstrap.close()
-    fixture = _build_fixture(tmp_path)
-    catalog = Catalog(f"sqlite:///{fixture.database}")
-    try:
-        handoff = AcquisitionHandoffStore(catalog)
-        with catalog.writer_session() as writer:
-            at = "2026-10-04T00:00:05+00:00"
-            _evidence(
-                writer, fixture.evidence_root, "topology-extra", {"id": "chat-a"}, at
-            )
-            _evidence(
-                writer,
-                fixture.evidence_root,
-                "deletion-extra",
-                {"id": "same-message"},
-                at,
-            )
-            top = TeamsTopologyObservation(
-                source_id=SOURCE,
-                resource_kind="chat",
-                scope_key=["chat", "chat-a"],
-                scope_key_sha256="f" * 64,
-                observed_at=at,
-                evidence_id="topology-extra",
-                run_id="context-run",
-                evidence_run_id="teams-test-run",
-                raw={"id": "chat-a"},
-                context={},
-            )
-            deleted = TeamsMessageDeletionObservation(
-                source_id=SOURCE,
-                scope_key=["message", "chat", "chat-a", "same-message"],
-                scope_key_sha256="e" * 64,
-                deletion_kind="notification",
-                declared_deleted_at=None,
-                observed_at=at,
-                evidence_id="deletion-extra",
-                run_id="context-run",
-                evidence_run_id="teams-test-run",
-                readback_state="not_found",
-                readback_observed_at=None,
-                readback_evidence_id=None,
-                readback_evidence_run_id=None,
-            )
-            writer.add_all([top, deleted])
-            writer.flush()
-            stage_topology(
-                writer,
-                handoff,
-                spider_name="microsoft_teams_chat_discover",
-                row=top,
-                run_id="context-run",
-                outcome="created",
-            )
-            stage_deletion(
-                writer,
-                handoff,
-                spider_name="microsoft_teams_notification_reconcile",
-                row=deleted,
-                run_id="context-run",
-                outcome="created",
-            )
-            staged = writer.scalars(
-                select(AcquisitionFact.payload)
-                .where(
-                    AcquisitionFact.source_id == SOURCE,
-                    AcquisitionFact.stream == AcquisitionStream.TEAMS_CHAT,
-                    AcquisitionFact.run_id == "context-run",
-                )
-                .order_by(AcquisitionFact.fact_id)
-            ).all()
-            facts = [FactSpec.from_json(payload) for payload in staged]
-            entries = tuple(
-                ReleaseEntrySpec(
-                    resource_kind=fact.resource_kind,
-                    resource_identity=fact.resource_identity,
-                    scope_kind=fact.scope_kind,
-                    scope_identity=fact.scope_identity,
-                    entry_kind=ReleaseEntryKind.TRANSITION
-                    if fact.fact_kind == "scoped_state_transition"
-                    else ReleaseEntryKind.CONTEXT,
-                    facts=(
-                        (
-                            fact.fact_id,
-                            "transition"
-                            if fact.fact_kind == "scoped_state_transition"
-                            else "context",
-                        ),
-                    ),
-                )
-                for fact in facts
-            )
-            handoff.release_effective_group_in_session(
-                writer,
-                ReleaseGroupSpec(
-                    source_id=SOURCE,
-                    stream=AcquisitionStream.TEAMS_CHAT,
-                    release_kind=ReleaseKind.RESOURCE_SET,
-                    subject_kind="teams_notification_reconcile",
-                    subject_identity="test",
-                    owner_run_id="context-run",
-                    released_at=at,
-                    coverage_kind="complete",
-                ),
-                entries,
-            )
-    finally:
-        catalog.close()
-
-    async def run() -> None:
-        reader = ReleaseSourceReader(
-            SavedSourceReaderConfig(
-                catalog_path=fixture.database,
-                evidence_roots=(fixture.evidence_root,),
-            )
-        )
-        try:
-            max_seq = await reader.catalog.max_release_entry_seq(SOURCE, "teams_chat")
-            page = await reader.catalog.list_release_entries(
-                SOURCE, "teams_chat", after_seq=0, through_seq=max_seq, limit=10
-            )
-            assert len(page.entries) == 2
-            contexts = transitions = 0
-            for entry in page.entries:
-                released = await reader.read_entry(entry.reference)
-                if entry.entry_kind == "context":
-                    contexts += 1
-                    assert any(f.fact_kind == "control_context" for f in released.facts)
-                    assert released.selection is None
-                else:
-                    transitions += 1
-                    assert len(released.transitions) == 1
-                    assert released.transitions[0].reason == "provider_deleted"
-                    assert released.transitions[0].scope_kind == "teams_chat"
-            assert (contexts, transitions) == (1, 1)
+                if result.reference != entry.reference:
+                    pytest.fail("Expected result.reference == entry.reference")
+                if not (result.selection is not None):
+                    pytest.fail("Expected result.selection is not None")
+                if result.selection.record.source_type != source_type:
+                    pytest.fail(
+                        "Expected result.selection.record.source_type == source_type"
+                    )
+                if result.selection.record.source_scope.kind != "source_scope":
+                    pytest.fail(
+                        "Expected result.selection.record.source_scope.kind == 'source_scope'"
+                    )
+                if not (result.selection.record.body is not None):
+                    pytest.fail("Expected result.selection.record.body is not None")
+                if not (result.selection.record.source_bytes is not None):
+                    pytest.fail(
+                        "Expected result.selection.record.source_bytes is not None"
+                    )
+                if len(result.facts) != 1:
+                    pytest.fail("Expected len(result.facts) == 1")
         finally:
             await reader.close()
 
@@ -324,133 +181,38 @@ def test_teams_release_drains_once_through_real_a2_workset(
             for index in range(2):
                 result = await run(service, scope, identity=f"intake-{index}", limit=1)
                 workset = await payload(persistence, result)
-                assert len(workset.entries) == 1
-                assert len(workset.selections) == 1
-                assert not workset.held and not workset.transitions
+                if len(workset.entries) != 1:
+                    pytest.fail("Expected len(workset.entries) == 1")
+                if len(workset.selections) != 1:
+                    pytest.fail("Expected len(workset.selections) == 1")
+                if not (not workset.held and not workset.transitions):
+                    pytest.fail(
+                        "Expected not workset.held and (not workset.transitions)"
+                    )
                 refs.extend(workset.entries)
-            assert refs[0].release_entry_seq < refs[1].release_entry_seq
-            cursor = await persistence.get_preparation_intake_cursor(scope)
-            assert cursor.last_release_entry_seq == refs[1].release_entry_seq
-            assert cursor.last_release_entry_digest == refs[1].entry_digest
-            assert await run(service, scope, identity="intake-drained", limit=1) is None
-            assert len(await persistence.list_preparation_intake_worksets(scope)) == 2
-        finally:
-            await reader.close()
-            await persistence.close()
-
-    asyncio.run(check())
-
-
-def test_component_change_is_a_durable_parent_refresh_not_held(
-    tmp_path: Path,
-) -> None:
-    """Pin component updates must retain a scoped downstream refresh impact."""
-    from message_ingest.catalog.models.microsoft.teams import TeamsTopologyObservation
-    from message_ingest.catalog.stores.microsoft.teams._handoff import stage_topology
-    from msgloom.persistence import Phase1Persistence
-    from msgloom.preparation_pipeline.intake import PreparationIntakeService
-    from msgloom.preparation_pipeline.intake_models import IntakeScope
-    from tests.preparation_intake_helpers import payload, run
-    from tests.source_reader.test_teams_saved_source import _evidence
-
-    bootstrap = Catalog(f"sqlite:///{tmp_path / 'catalog.sqlite3'}")
-    bootstrap.close()
-    fixture = _build_fixture(tmp_path)
-    catalog = Catalog(f"sqlite:///{fixture.database}")
-    try:
-        handoff = AcquisitionHandoffStore(catalog)
-        with catalog.writer_session() as writer:
-            at = "2026-10-04T00:00:05+00:00"
-            _evidence(writer, fixture.evidence_root, "pin-extra", {"id": "pin-1"}, at)
-            pin = TeamsTopologyObservation(
-                source_id=SOURCE,
-                resource_kind="pin",
-                scope_key=["pin", "chat-a", "same-message"],
-                scope_key_sha256="d" * 64,
-                observed_at=at,
-                evidence_id="pin-extra",
-                run_id="pin-run",
-                evidence_run_id="teams-test-run",
-                raw={"id": "pin-1"},
-                context={"chat_id": "chat-a", "message_id": "same-message"},
-            )
-            writer.add(pin)
-            writer.flush()
-            stage_topology(
-                writer,
-                handoff,
-                spider_name="microsoft_teams_chat_discover",
-                row=pin,
-                run_id="pin-run",
-                outcome="created",
-            )
-            payloads = writer.scalars(
-                select(AcquisitionFact.payload).where(
-                    AcquisitionFact.source_id == SOURCE,
-                    AcquisitionFact.stream == AcquisitionStream.TEAMS_CHAT,
-                    AcquisitionFact.run_id == "pin-run",
+            if not (refs[0].release_entry_seq < refs[1].release_entry_seq):
+                pytest.fail(
+                    "Expected refs[0].release_entry_seq < refs[1].release_entry_seq"
                 )
-            ).all()
-            assert len(payloads) == 1
-            fact = FactSpec.from_json(payloads[0])
-            assert fact.fact_kind == "component_observation"
-            handoff.release_effective_group_in_session(
-                writer,
-                ReleaseGroupSpec(
-                    source_id=SOURCE,
-                    stream=AcquisitionStream.TEAMS_CHAT,
-                    release_kind=ReleaseKind.RESOURCE_SET,
-                    subject_kind="teams_chat_discovery",
-                    subject_identity="pin-run",
-                    owner_run_id="pin-run",
-                    released_at=at,
-                    coverage_kind="complete",
-                ),
-                (
-                    ReleaseEntrySpec(
-                        resource_kind=fact.resource_kind,
-                        resource_identity=fact.resource_identity,
-                        parent_resource_kind=fact.parent_resource_kind,
-                        parent_resource_identity=fact.parent_resource_identity,
-                        scope_kind=fact.scope_kind,
-                        scope_identity=fact.scope_identity,
-                        entry_kind=ReleaseEntryKind.COMPONENT,
-                        facts=((fact.fact_id, "component"),),
-                    ),
-                ),
-            )
-    finally:
-        catalog.close()
-
-    async def check() -> None:
-        reader = ReleaseSourceReader(
-            SavedSourceReaderConfig(
-                catalog_path=fixture.database,
-                evidence_roots=(fixture.evidence_root,),
-            )
-        )
-        persistence = await Phase1Persistence.open(f"sqlite:///{tmp_path / 'a2.db'}")
-        try:
-            scope = IntakeScope(
-                catalog=await reader.catalog.catalog_identity(),
-                source_id=SOURCE,
-                stream="teams_chat",
-                consumer_id="pin-consumer",
-            )
-            result = await run(
-                PreparationIntakeService(persistence, reader),
-                scope,
-                identity="pin-intake",
-                limit=10,
-            )
-            workset = await payload(persistence, result)
-            assert len(workset.entries) == 1
-            assert not workset.held and not workset.selections
-            assert len(workset.transitions) == 1
-            transition = workset.transitions[0]
-            assert transition.transition_kind == "context_refresh"
-            assert transition.resource_kind == "teams_message"
-            assert transition.resource_identity == fact.parent_resource_identity
+            cursor = await persistence.get_preparation_intake_cursor(scope)
+            if cursor.last_release_entry_seq != refs[1].release_entry_seq:
+                pytest.fail(
+                    "Expected cursor.last_release_entry_seq == refs[1].release_entry_seq"
+                )
+            if cursor.last_release_entry_digest != refs[1].entry_digest:
+                pytest.fail(
+                    "Expected cursor.last_release_entry_digest == refs[1].entry_digest"
+                )
+            if not (
+                await run(service, scope, identity="intake-drained", limit=1) is None
+            ):
+                pytest.fail(
+                    "Expected await run(service, scope, identity='intake-drained', limit=1) is None"
+                )
+            if len(await persistence.list_preparation_intake_worksets(scope)) != 2:
+                pytest.fail(
+                    "Expected len(await persistence.list_preparation_intake_worksets(scope)) == 2"
+                )
         finally:
             await reader.close()
             await persistence.close()

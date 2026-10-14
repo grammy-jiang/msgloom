@@ -105,6 +105,10 @@ def reconstruct(
             primary.append(content_parent(content[0], evidence, scope))
     if len(primary) > 1:
         raise SourceReferenceError("Ambiguous released primary representation")
+    if primary and entry.stream in {"teams_chat", "teams_channel"}:
+        # The immutable Teams primary already carries embedded attachment rows.
+        # Do not erase them when combining separately released components.
+        attachments.extend(primary[0].attachments)
     selection = (
         capture_selection(
             enrich(

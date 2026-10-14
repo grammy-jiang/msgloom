@@ -9,7 +9,6 @@ from msgloom.contracts import Limitation, VersionRef
 from msgloom.preparation.contracts import DocumentLocation, SavedByteReference
 from msgloom.preparation.records import (
     NativeRelationship,
-    PreparedParty,
     PreparedSourceType,
 )
 from msgloom.sources._catalog import EvidenceRow, ReadOnlyCatalog
@@ -23,7 +22,16 @@ from msgloom.sources._teams_catalog import (
     decode_json,
     scope_digest,
 )
-from msgloom.sources._teams_relations import message_reference_relationships
+from msgloom.sources._teams_decode import (
+    _canonical,
+    _json_value,
+    _optional_dict,
+    _reject_constant,
+)
+from msgloom.sources._teams_relations import (
+    message_reference_relationships,
+    party_from_sender,
+)
 from msgloom.sources.models import (
     CollectedAttachment,
     CollectedRecord,
@@ -43,39 +51,6 @@ _RELATIONS = {
 }
 
 
-def _reject_constant(_value: str) -> object:
-    raise ValueError("non-finite JSON number")
-
-
-def _json_value(value: object, label: str) -> object:
-    if value is None or not isinstance(value, str):
-        return value
-    try:
-        return json.loads(value, parse_constant=_reject_constant)
-    except (json.JSONDecodeError, ValueError):
-        raise SourceReferenceError(f"Teams {label} JSON is invalid") from None
-
-
-def _optional_dict(value: object, label: str) -> dict[str, Any] | None:
-    parsed = _json_value(value, label)
-    if parsed is not None and not isinstance(parsed, dict):
-        raise SourceReferenceError(f"Teams {label} JSON is invalid")
-    return parsed
-
-
-def _canonical(value: object) -> str:
-    try:
-        return json.dumps(
-            value,
-            allow_nan=False,
-            ensure_ascii=False,
-            sort_keys=True,
-            separators=(",", ":"),
-        )
-    except (TypeError, ValueError):
-        raise SourceReferenceError("Teams saved component is invalid") from None
-
-
 class TeamsSavedSourceAdapter:
     """Read exact Teams observations using shared catalog and evidence guards."""
 
@@ -93,23 +68,45 @@ class TeamsSavedSourceAdapter:
         """List exact scoped Teams message observations."""
         return self._queries.list_versions(source_type, source_id, limit)
 
-    def read(self, source: VersionRef) -> CollectedRecord:
-        """Map one exact message and its currently captured additive facts."""
+    def read(
+        self, source: VersionRef, *, release_facts_only: bool = False
+    ) -> CollectedRecord:
+        """Map a saved message; release mode excludes later additive facts."""
         selected = self._queries.select(source)
         raw, source_bytes = self._primary_evidence(selected)
-        rows = self._queries.components(selected)
+        rows = (
+            self._queries.embedded_components(selected)
+            if release_facts_only
+            else self._queries.components(selected)
+        )
         scope = self._catalog.source_scope(selected.source_id)
         relationships = [NativeRelationship(kind="source_scope", target=scope)]
         limitations: list[Limitation] = []
         reference_relationships, reference_relation_limits = (
-            message_reference_relationships(self._catalog, selected, rows.attachments)
+            message_reference_relationships(
+                self._catalog,
+                selected,
+                rows.attachments,
+                files=self._files,
+                resolve_exact=not release_facts_only,
+            )
         )
         relationships.extend(reference_relationships)
         limitations.extend(reference_relation_limits)
         reference_limits, hosted = self._components(
             selected, rows, relationships, limitations
         )
-        self._reply_relation(selected, rows, relationships, limitations)
+        if release_facts_only and selected.location == "channel-reply":
+            # A later insertion of a historical root must not rewrite this
+            # immutable release. The target needs its own released evidence.
+            limitations.append(
+                Limitation(
+                    "teams-reply-target-unqualified",
+                    "An exact reply target is not bound to this message release.",
+                )
+            )
+        else:
+            self._reply_relation(selected, rows, relationships, limitations)
         attachments = (
             self._message_attachments(selected, raw, rows, reference_limits) + hosted
         )
@@ -133,7 +130,7 @@ class TeamsSavedSourceAdapter:
             ),
             subject=raw.get("subject") if isinstance(raw.get("subject"), str) else None,
             sender=None,
-            author=self._party(raw.get("from")),
+            author=party_from_sender(raw.get("from")),
             recipients=(),
             source_content_kind=ContentKind.JSON,
             source_bytes=source_bytes,
@@ -481,20 +478,3 @@ class TeamsSavedSourceAdapter:
         relationships.append(
             NativeRelationship(kind="teams_channel_reply_to", target=rows.reply_target)
         )
-
-    @staticmethod
-    def _party(value: object) -> PreparedParty | None:
-        if not isinstance(value, dict):
-            return None
-        for kind in ("user", "application", "device"):
-            candidate = value.get(kind)
-            if not isinstance(candidate, dict):
-                continue
-            identity = candidate.get("id")
-            if isinstance(identity, str) and identity:
-                name = candidate.get("displayName")
-                return PreparedParty(
-                    identity=f"{kind}:{identity}",
-                    display_name=name if isinstance(name, str) and name else None,
-                )
-        return None
