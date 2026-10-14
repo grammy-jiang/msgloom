@@ -15,6 +15,7 @@ from message_ingest.catalog.models.microsoft.teams.message import (
     TeamsMessageObservation,
 )
 from message_ingest.catalog.store import Catalog
+from message_ingest.catalog.stores.handoff import AcquisitionHandoffStore
 from message_ingest.items.microsoft.teams.content import (
     TeamsHostedContentBytesItem,
     TeamsHostedContentFailureItem,
@@ -29,15 +30,20 @@ from ._common import (
     require_evidence,
     require_source,
 )
+from ._handoff import stage_hosted, stage_reference
 from .message import message_scope
 
 
 class TeamsContentStore:
     """Store explicit content outcomes without following arbitrary provider URLs."""
 
-    def __init__(self, catalog: Catalog, *, source_id: str) -> None:
+    def __init__(
+        self, catalog: Catalog, *, source_id: str, spider_name: str | None = None
+    ) -> None:
         self.catalog = catalog
         self.source_id = source_id
+        self.spider_name = spider_name
+        self.handoff = AcquisitionHandoffStore(catalog) if spider_name else None
 
     def persist_reference(
         self,
@@ -89,6 +95,7 @@ class TeamsContentStore:
             if existing is not None:
                 if existing.state != item.state or existing.details != item.details:
                     raise ValueError("Teams reference replay changed immutable facts")
+                self._stage_reference(session, existing, trigger, item.run_id, "replay")
                 return "replay"
 
             observation = TeamsReferenceResolutionObservation(
@@ -129,11 +136,18 @@ class TeamsContentStore:
                         details=item.details,
                     )
                 )
+                self._stage_reference(
+                    session, observation, trigger, item.run_id, "created"
+                )
                 return "created"
             ordering = compare_observed(response_time, current.latest_observed_at)
             if ordering < 0:
+                self._stage_reference(
+                    session, observation, trigger, item.run_id, "stale"
+                )
                 return "stale"
             if ordering == 0:
+                self._stage_reference(session, observation, trigger, item.run_id, "tie")
                 return "tie"
             current.observation_id = observation.observation_id
             current.state = item.state
@@ -142,6 +156,9 @@ class TeamsContentStore:
             current.latest_run_id = item.run_id
             current.latest_evidence_run_id = response.run_id
             current.details = item.details
+            self._stage_reference(
+                session, observation, trigger, item.run_id, "advanced"
+            )
             return "advanced"
 
     def persist_hosted_metadata(
@@ -272,24 +289,64 @@ class TeamsContentStore:
                     getattr(existing, name) != value for name, value in values.items()
                 ):
                     raise ValueError("Teams hosted replay changed immutable facts")
+                self._stage_hosted(session, existing, trigger, item.run_id, "replay")
                 return "replay"
-            session.add(
-                TeamsHostedContentObservation(
-                    source_id=self.source_id,
-                    trigger_scope_sha256=trigger.scope_key_sha256,
-                    trigger_evidence_id=trigger.evidence_id,
-                    trigger_observed_at=trigger.observed_at,
-                    hosted_content_id=item.hosted_content_id,
-                    observation_kind=observation_kind,
-                    provider_version_bound=False,
-                    observed_at=response_time,
-                    evidence_id=response.evidence_id,
-                    run_id=item.run_id,
-                    evidence_run_id=response.run_id,
-                    **values,
-                )
+            observation = TeamsHostedContentObservation(
+                source_id=self.source_id,
+                trigger_scope_sha256=trigger.scope_key_sha256,
+                trigger_evidence_id=trigger.evidence_id,
+                trigger_observed_at=trigger.observed_at,
+                hosted_content_id=item.hosted_content_id,
+                observation_kind=observation_kind,
+                provider_version_bound=False,
+                observed_at=response_time,
+                evidence_id=response.evidence_id,
+                run_id=item.run_id,
+                evidence_run_id=response.run_id,
+                **values,
             )
+            session.add(observation)
+            session.flush()
+            self._stage_hosted(session, observation, trigger, item.run_id, "created")
             return "created"
+
+    def _stage_reference(
+        self,
+        session: Session,
+        row: TeamsReferenceResolutionObservation,
+        trigger: TeamsMessageObservation,
+        run_id: str,
+        outcome: Outcome,
+    ) -> None:
+        if self.handoff is not None and self.spider_name is not None:
+            stage_reference(
+                session,
+                self.handoff,
+                spider_name=self.spider_name,
+                row=row,
+                trigger=trigger,
+                run_id=run_id,
+                outcome=outcome,
+            )
+
+    def _stage_hosted(
+        self,
+        session: Session,
+        row: TeamsHostedContentObservation,
+        trigger: TeamsMessageObservation,
+        run_id: str,
+        outcome: str,
+    ) -> None:
+        if self.handoff is not None and self.spider_name is not None:
+            stage_hosted(
+                session,
+                self.handoff,
+                spider_name=self.spider_name,
+                row=row,
+                trigger=trigger,
+                run_id=run_id,
+                outcome=outcome,  # type: ignore[arg-type]
+            )
 
     def _require_trigger(
         self,

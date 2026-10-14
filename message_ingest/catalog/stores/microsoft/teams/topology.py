@@ -5,12 +5,14 @@ from __future__ import annotations
 from typing import Any
 
 from sqlalchemy import select
+from sqlalchemy.orm import Session
 
 from message_ingest.catalog.models.microsoft.teams.topology import (
     TeamsTopologyCurrent,
     TeamsTopologyObservation,
 )
 from message_ingest.catalog.store import Catalog
+from message_ingest.catalog.stores.handoff import AcquisitionHandoffStore
 from message_ingest.items.microsoft.teams.topology import (
     TeamsChannelItem,
     TeamsChannelMembershipItem,
@@ -31,14 +33,19 @@ from ._common import (
     require_source,
     scope_digest,
 )
+from ._handoff import stage_topology
 
 
 class TeamsTopologyStore:
     """Store additive provider topology without absence-based relation changes."""
 
-    def __init__(self, catalog: Catalog, *, source_id: str) -> None:
+    def __init__(
+        self, catalog: Catalog, *, source_id: str, spider_name: str | None = None
+    ) -> None:
         self.catalog = catalog
         self.source_id = source_id
+        self.spider_name = spider_name
+        self.handoff = AcquisitionHandoffStore(catalog) if spider_name else None
 
     def persist(self, item: TopologyItem) -> Outcome:
         """Append one observation and update current only when strictly newer."""
@@ -62,6 +69,7 @@ class TeamsTopologyStore:
             if existing is not None:
                 if existing.raw != raw or existing.context != context:
                     raise ValueError("Teams topology replay changed immutable facts")
+                self._stage(session, existing, item.run_id, "replay")
                 return "replay"
 
             observation = TeamsTopologyObservation(
@@ -99,6 +107,7 @@ class TeamsTopologyStore:
                         context=context,
                     )
                 )
+                self._stage(session, observation, item.run_id, "created")
                 return "created"
 
             ordering = compare_observed(
@@ -106,8 +115,10 @@ class TeamsTopologyStore:
                 current.latest_observed_at,
             )
             if ordering < 0:
+                self._stage(session, observation, item.run_id, "stale")
                 return "stale"
             if ordering == 0:
+                self._stage(session, observation, item.run_id, "tie")
                 return "tie"
             current.resource_kind = kind
             current.scope_key = scope_key
@@ -118,7 +129,25 @@ class TeamsTopologyStore:
             current.latest_evidence_run_id = evidence.run_id
             current.raw = raw
             current.context = context
+            self._stage(session, observation, item.run_id, "advanced")
             return "advanced"
+
+    def _stage(
+        self,
+        session: Session,
+        row: TeamsTopologyObservation,
+        run_id: str,
+        outcome: Outcome,
+    ) -> None:
+        if self.handoff is not None and self.spider_name is not None:
+            stage_topology(
+                session,
+                self.handoff,
+                spider_name=self.spider_name,
+                row=row,
+                run_id=run_id,
+                outcome=outcome,
+            )
 
     @staticmethod
     def _projection(

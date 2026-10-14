@@ -17,6 +17,8 @@ class AcquisitionStream(StrEnum):
     TODO = "todo"
     CONTACTS = "contacts"
     ONEDRIVE = "onedrive"
+    TEAMS_CHAT = "teams_chat"
+    TEAMS_CHANNEL = "teams_channel"
 
 
 class AcquisitionFactKind(StrEnum):

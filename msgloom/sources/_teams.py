@@ -23,6 +23,7 @@ from msgloom.sources._teams_catalog import (
     decode_json,
     scope_digest,
 )
+from msgloom.sources._teams_relations import message_reference_relationships
 from msgloom.sources.models import (
     CollectedAttachment,
     CollectedRecord,
@@ -100,6 +101,11 @@ class TeamsSavedSourceAdapter:
         scope = self._catalog.source_scope(selected.source_id)
         relationships = [NativeRelationship(kind="source_scope", target=scope)]
         limitations: list[Limitation] = []
+        reference_relationships, reference_relation_limits = (
+            message_reference_relationships(self._catalog, selected, rows.attachments)
+        )
+        relationships.extend(reference_relationships)
+        limitations.extend(reference_relation_limits)
         reference_limits, hosted = self._components(
             selected, rows, relationships, limitations
         )

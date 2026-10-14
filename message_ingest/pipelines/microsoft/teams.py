@@ -78,6 +78,7 @@ class TeamsPipeline:
         *,
         service: CatalogService,
         source_id: str,
+        spider_name: str | None = None,
         stats=None,
     ) -> None:
         self.service = service
@@ -86,18 +87,16 @@ class TeamsPipeline:
         self.topology_store = TeamsTopologyStore(
             self.catalog,
             source_id=source_id,
+            spider_name=spider_name,
         )
         self.message_store = TeamsMessageStore(
-            self.catalog,
-            source_id=source_id,
+            self.catalog, source_id=source_id, spider_name=spider_name
         )
         self.content_store = TeamsContentStore(
-            self.catalog,
-            source_id=source_id,
+            self.catalog, source_id=source_id, spider_name=spider_name
         )
         self.coverage_store = TeamsCoverageStore(
-            self.catalog,
-            source_id=source_id,
+            self.catalog, source_id=source_id, spider_name=spider_name
         )
 
     @classmethod
@@ -111,6 +110,7 @@ class TeamsPipeline:
         return cls(
             service=CatalogService.from_crawler(crawler),
             source_id=source_id,
+            spider_name=crawler.spidercls.name,
             stats=crawler.stats,
         )
 
