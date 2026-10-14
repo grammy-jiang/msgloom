@@ -73,3 +73,43 @@ def test_bad_first_entry_is_held_and_later_entry_can_progress(
             await persistence.close()
 
     asyncio.run(check())
+
+
+def test_anchor_enumeration_charges_aggregate_metadata_before_next_row(
+    saved_catalog, tmp_path: Path
+) -> None:
+    """A strict 64-byte materialization budget cannot load a 1000-entry anchor page."""
+    large_transition_group(saved_catalog, entry_count=3)
+
+    async def check() -> None:
+        reader = ReleaseSourceReader(
+            SavedSourceReaderConfig(
+                catalog_path=saved_catalog["database"],
+                evidence_roots=(saved_catalog["evidence_root"],),
+                limits=SourceReaderLimits(max_snapshot_bytes=64, max_list_results=1000),
+            )
+        )
+        try:
+            ceiling = await reader.catalog.max_release_entry_seq(SOURCE, "contacts")
+            after = 0
+            seen = []
+            for _ in range(3):
+                refs = await reader.catalog.list_release_entry_refs(
+                    SOURCE, "contacts", after_seq=after, through_seq=ceiling, limit=1000
+                )
+                if len(refs) != 1:
+                    pytest.fail("Anchor enumeration ignored aggregate byte budget")
+                seen.append(refs[0].release_entry_seq)
+                after = refs[0].release_entry_seq
+            if len(set(seen)) != 3 or (
+                await reader.catalog.list_release_entry_refs(
+                    SOURCE, "contacts", after_seq=after, through_seq=ceiling, limit=1000
+                )
+            ):
+                pytest.fail(
+                    "Budgeted anchor paging skipped or repeated entry identities"
+                )
+        finally:
+            await reader.close()
+
+    asyncio.run(check())

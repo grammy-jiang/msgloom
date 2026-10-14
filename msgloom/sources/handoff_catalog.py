@@ -65,6 +65,10 @@ class _Snapshot:
     def __init__(self, connection: sqlite3.Connection, limits: SourceReaderLimits):
         self.connection = connection
         self.remaining = limits.max_snapshot_bytes
+        # Admission anchors are not A1 fact/evidence materialization. Keep a
+        # separate aggregate byte budget, allowing at most one complete signed
+        # anchor if configured metadata limits are smaller than its wire size.
+        self.anchor_remaining = limits.max_snapshot_bytes
         self.member_limit = min(128, limits.max_query_rows)
 
     def payload(self, raw: str, model: type[_Model]) -> _Model:
@@ -133,6 +137,31 @@ class _Snapshot:
             entry_digest=row["entry_digest"],
             group_digest=group_row["group_digest"],
             group=group,
+        )
+
+    @staticmethod
+    def anchor_size(row: sqlite3.Row) -> int:
+        """Charge all selected anchor columns, not only the JSON payload."""
+        if any(
+            not isinstance(row[key], str)
+            for key in (
+                "release_group_id",
+                "source_id",
+                "stream",
+                "entry_digest",
+                "payload",
+            )
+        ):
+            raise SourceReferenceError("Release anchor columns are invalid")
+        return 8 + sum(
+            len(row[key].encode())
+            for key in (
+                "release_group_id",
+                "source_id",
+                "stream",
+                "entry_digest",
+                "payload",
+            )
         )
 
     def admission_ref(
@@ -408,13 +437,26 @@ class HandoffCatalog:
 
         def read(snapshot: _Snapshot) -> tuple[ReleaseEntryRef, ...]:
             catalog = snapshot.identity()
-            rows = snapshot.connection.execute(
+            cursor = snapshot.connection.execute(
                 f"SELECT {_ENTRY_COLUMNS} FROM acquisition_release_entries "
                 "WHERE source_id = ? AND stream = ? AND release_entry_seq > ? "
                 "AND release_entry_seq <= ? ORDER BY release_entry_seq LIMIT ?",
                 (source_id, stream, after_seq, through_seq, limit),
-            ).fetchall()
-            return tuple(snapshot.admission_ref(row, catalog) for row in rows)
+            )
+            anchors = []
+            # Iterate instead of fetchall: never materialize an unbounded
+            # aggregate of entry JSON before charging the page budget. Each
+            # bounded call admits at least one valid digest-verified anchor
+            # even when the caller chose a sub-wire metadata limit; further
+            # anchors wait for the next cursor page.
+            for row in cursor:
+                size = snapshot.anchor_size(row)
+                if anchors and size > snapshot.anchor_remaining:
+                    break
+                anchor = snapshot.admission_ref(row, catalog)
+                anchors.append(anchor)
+                snapshot.anchor_remaining = max(0, snapshot.anchor_remaining - size)
+            return tuple(anchors)
 
         return await self._run(read)
 
