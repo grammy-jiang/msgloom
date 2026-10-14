@@ -83,6 +83,14 @@ def apply_folder_transitions(session, source_id, facts):
                 folder_id=fact.resource_identity,
             )
         )
+        already_applied = (
+            presence is not None
+            and not presence.is_present
+            and presence.latest_run_id == fact.run_id
+            and presence.latest_observed_at == fact.provider_observed_at
+            and presence.latest_evidence_id == fact.evidence_id
+            and fact.transition_reason == "folder_delta_removed"
+        )
         if presence is None:
             presence = MailFolderPresence(
                 source_id=source_id,
@@ -95,7 +103,7 @@ def apply_folder_transitions(session, source_id, facts):
         presence.latest_run_id = fact.run_id
         presence.latest_observed_at = fact.provider_observed_at
         presence.latest_evidence_id = fact.evidence_id
-        if present:
+        if present or already_applied:
             continue
         bump_absence_generation(session, source_id, fact.resource_identity)
         for model in (

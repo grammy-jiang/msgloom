@@ -63,6 +63,10 @@ def test_predelete_absent_baseline_never_resurrects_removed_folder_cursor(
         _, post_delete_baseline = store.get_delta_start(folder)
         if a_baseline == post_delete_baseline:
             pytest.fail("Folder tombstone reused the previous absent generation")
+        # An exact authority replay must not create a third generation.
+        folder_store.commit("delete")
+        if store.get_delta_start(folder)[1] != post_delete_baseline:
+            pytest.fail("Equivalent folder removal replay advanced absence epoch")
         # A's Graph response predates the folder removal despite arriving last.
         store.write_candidate(
             baseline_identity=a_baseline,
@@ -86,5 +90,8 @@ def test_predelete_absent_baseline_never_resurrects_removed_folder_cursor(
         store.commit("C")
         if store.get_delta_link(folder) != "C-new":
             pytest.fail("Latest absent generation blocked legitimate new cursor")
+        folder_store.commit("delete")
+        if store.get_delta_link(folder) != "C-new":
+            pytest.fail("Old authority replay deleted a post-removal valid cursor")
     finally:
         catalog.close()

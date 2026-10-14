@@ -353,6 +353,15 @@ class OutlookMailLifecycleStore:
         )
         from message_ingest.sync.microsoft.outlook.email._release import stage_presence
 
+        if (
+            not is_present
+            and record is not None
+            and record.is_present == is_present
+            and record.latest_run_id == run_id
+            and record.latest_observed_at == observed_at
+            and record.latest_evidence_id == evidence_id
+        ):
+            return False
         if record and is_stale(observed_at, record.latest_observed_at):
             return False
         if not is_present:
