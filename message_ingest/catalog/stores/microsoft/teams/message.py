@@ -89,6 +89,17 @@ class TeamsMessageStore:
                         "Teams message replay changed immutable provider facts"
                     )
                 self._stage_message(session, existing, item.run_id, "replay")
+                if existing.deleted_date_time is not None:
+                    deletion = session.scalar(
+                        select(TeamsMessageDeletionObservation).filter_by(
+                            source_id=self.source_id,
+                            scope_key_sha256=digest,
+                            evidence_id=existing.evidence_id,
+                        )
+                    )
+                    if deletion is None or deletion.deletion_kind != "direct":
+                        raise ValueError("Teams replay lost immutable direct deletion")
+                    self._stage_deletion(session, deletion, item.run_id, "replay")
                 return "replay"
 
             observation = TeamsMessageObservation(

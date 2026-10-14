@@ -1,5 +1,6 @@
 """Validate durable additive traversal proof inside the release transaction."""
 
+import json
 from datetime import UTC, datetime
 
 from sqlalchemy import select
@@ -18,12 +19,14 @@ from message_ingest.catalog.models.microsoft.contacts import (
     ContactCollectionCompletion,
     ContactFolderSighting,
 )
+from message_ingest.catalog.models.microsoft.teams.message import TeamsMessageCurrent
 from message_ingest.catalog.models.microsoft.todo import (
     TodoTaskListSighting,
     TodoTaskSighting,
     TodoTraversalCompletion,
 )
 from message_ingest.catalog.stores.handoff import AcquisitionHandoffStore
+from message_ingest.catalog.stores.microsoft.teams._common import scope_digest
 from message_ingest.extensions._handoff_calendar import calendar_traversal_group
 from message_ingest.extensions._handoff_mail import mail_discovery_group
 from message_ingest.extensions._handoff_onedrive import onedrive_discovery_group
@@ -53,17 +56,31 @@ def _teams_complete(writer, source, spider):
         if spider.name == "microsoft_teams_chat_discover"
         else {"teams-associated-teams", "teams-joined-teams"}
     )
-    rows = writer.scalars(
-        select(RawHttpEvidence).where(
-            RawHttpEvidence.source_id == source,
-            RawHttpEvidence.run_id == spider.run_id,
+    facts = writer.scalars(
+        select(AcquisitionFact.payload).where(
+            AcquisitionFact.source_id == source,
+            AcquisitionFact.run_id == spider.run_id,
         )
     ).all()
-    successful = {
-        row.purpose
-        for row in rows
-        if row.response_status == 200 and row.error_type is None
-    }
+    successful = set()
+    for payload in facts:
+        fact = FactSpec.from_json(payload)
+        if fact.resource_kind != "teams_inventory_completion":
+            continue
+        if fact.scope_kind != "teams_initial_inventory":
+            return False
+        evidence = writer.get(RawHttpEvidence, fact.evidence_id)
+        if (
+            evidence is None
+            or evidence.source_id != source
+            or evidence.response_status != 200
+            or evidence.error_type is not None
+            or evidence.purpose != fact.scope_identity
+            or fact.source_version_locator is None
+            or fact.source_version_locator.evidence_id != fact.evidence_id
+        ):
+            return False
+        successful.add(fact.scope_identity)
     return required <= successful
 
 
@@ -131,6 +148,25 @@ def _entries(catalog, writer, source, spider, stream):
     selected = {}
     for payload in payloads:
         fact = FactSpec.from_json(payload)
+        if (
+            stream in _TEAMS_STREAMS
+            and fact.resource_kind == "teams_inventory_completion"
+        ):
+            # Run-local completion proof is not an A2 content impact.
+            continue
+        if stream in _TEAMS_STREAMS and fact.resource_kind == "teams_message_presence":
+            try:
+                parts = json.loads(fact.resource_identity)
+            except (TypeError, ValueError):
+                raise ValueError("Invalid Teams deletion release scope") from None
+            if not isinstance(parts, list):
+                raise ValueError("Invalid Teams deletion release scope")
+            _scope, digest = scope_digest(("message", *parts))
+            message_current = writer.get(TeamsMessageCurrent, (source, digest))
+            if message_current is not None and not message_current.is_deleted:
+                # A later observed live message supersedes the deletion.
+                # No contradictory presence state may escape this transaction.
+                continue
         if stream == AcquisitionStream.OUTLOOK_MAIL and (
             fact.fact_kind,
             fact.resource_kind,
