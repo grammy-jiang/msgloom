@@ -221,6 +221,25 @@ Replay is an Operator CLI operation on a selected stage result. It creates new d
 
 ## 7. Qualification boundary
 
+### Secure saved-source reader platform boundary
+
+A1-to-A2 saved-source and release readers currently require a POSIX host
+providing descriptor-relative `open`/`stat`, `O_NOFOLLOW`, `O_DIRECTORY`,
+and `/dev/fd`. This is an intentional security prerequisite: the reader pins
+the catalog and evidence directory handles and rejects ancestor symlink or
+file replacement attempts. On Windows the reader fails *before* accessing the
+configured path with a specific `SourceReferenceError`/`SourceEvidenceError`.
+A normal path-based Windows fallback would weaken the verified containment
+contract and is **not** supplied. Future Windows support needs a separately
+qualified Windows native-handle/reparse-point boundary with equivalent
+replacement and byte-integrity tests. Windows CI portable smoke verifies the
+platform gate, not Windows A2 runtime eligibility.
+
+The Task 15 cgroup-v2 security qualification runs on delegated Linux and
+remains a separate, stricter requirement. Its success does not certify a
+Windows deployment, nor does this platform notice alter the Python-version
+compatibility matrix.
+
 Before production use, exercise the concrete deployment against the logical acceptance cases and [technical qualification](../tech-stack.md#9-qualification). Test the actual container architecture, Python 3.12, 3.13 and 3.14, sequential stage completion and event-loop responsiveness during attachment parsing. Verify command execution without Prefect or FastMCP installed. This document specifies a deployment; it does not claim one has been installed or tested.
 
 ## 8. Extension interface preparation

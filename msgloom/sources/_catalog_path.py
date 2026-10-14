@@ -7,6 +7,7 @@ import stat
 from pathlib import Path
 from urllib.parse import quote
 
+from msgloom.sources._pinning_support import supports_pinned_posix_reader
 from msgloom.sources.models import SourceReferenceError
 
 
@@ -14,6 +15,11 @@ class CatalogPath:
     """Pin catalog ancestors and reject final-file replacement."""
 
     def __init__(self, path: Path) -> None:
+        if not supports_pinned_posix_reader():
+            raise SourceReferenceError(
+                "secure saved-source reader requires POSIX descriptor pinning; "
+                "Windows native-handle support is not qualified"
+            )
         absolute = Path(os.path.abspath(path))
         flags = os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW
         descriptor = os.open("/", flags)
