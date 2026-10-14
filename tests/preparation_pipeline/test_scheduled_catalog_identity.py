@@ -43,6 +43,12 @@ class MemoryCatalog:
         self.queries.append("catalog_identity")
         return self.identity
 
+    async def get_release_entry_ref(self, seq, source, stream):
+        self.queries.append("anchor:" + str(seq))
+        if not self.anchor_ok or (source, stream) != ("source", "todo"):
+            return None
+        return SimpleNamespace(catalog=self.identity, entry_digest=self.anchor_digest)
+
     async def get_release_entry(self, seq):
         self.queries.append("anchor:" + str(seq))
         if not self.anchor_ok:
@@ -57,6 +63,10 @@ class MemoryCatalog:
     async def max_release_entry_seq(self, source, stream):
         self.queries.append("ceiling")
         return 9 if self.anchor_ok else 0
+
+    async def list_release_entry_refs(self, *args, **kwargs):
+        self.queries.append("page:" + str(kwargs["after_seq"]))
+        return ()
 
     async def list_release_entries(self, *args, **kwargs):
         self.queries.append("page:" + str(kwargs["after_seq"]))

@@ -23,6 +23,7 @@ from msgloom.sources.handoff_catalog import HandoffCatalog
 from msgloom.sources.release_reader import ReleaseSourceReader
 from tests.application_cli.test_scheduled_prepare import configuration
 from tests.preparation_intake_helpers import release, run
+from tests.source_reader.conftest import saved_catalog as saved_catalog  # noqa: PLC0414
 from tests.source_reader.release_nonmail_helpers import fact, publish
 
 

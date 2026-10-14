@@ -126,6 +126,8 @@ class HistoricalBaselineService:
             stream = {
                 "outlook_email": "outlook_mail",
                 "contact": "contacts",
+                "teams_chat_message": "teams_chat",
+                "teams_channel_message": "teams_channel",
             }.get(value.record.source_type.value, value.record.source_type.value)
             if (
                 value.record.source_scope.identity != scope.source_id
