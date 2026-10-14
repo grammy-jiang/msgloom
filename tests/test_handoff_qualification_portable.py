@@ -61,3 +61,38 @@ def test_runtime_requires_exact_313_patch(monkeypatch):
     monkeypatch.setattr(audit.sys, "version_info", (3, 13, 50))
     with pytest.raises(ValueError, match="Python mismatch"):
         audit.runtime("3.13", False)
+
+
+def test_task15_extension_spiders_remain_explicit() -> None:
+    """Qualify Teams additions without reinterpreting the 17-spider baseline."""
+    from tests.handoff_qualification.inventory import MATRIX
+
+    expected = {
+        "microsoft_teams_chat_discover",
+        "microsoft_teams_channel_discover",
+        "microsoft_teams_notification_reconcile",
+    }
+    if set(audit.TEAMS_EXTENSION_SPIDERS) != expected:
+        pytest.fail("Teams extension inventory is not exact")
+    if len(audit.ORIGINAL_SPIDERS) != 17 or len(audit.SPIDERS) != 20:
+        pytest.fail("Task 15 lost original/extension scope separation")
+    if set(MATRIX) != set(audit.SPIDERS):
+        pytest.fail("Executable spider evidence matrix omits an installed Spider")
+    nodes = ["tests/test_fixture.py::test_complete"]
+    data = {
+        "base_sha": "a" * 40,
+        "candidate_sha": "b" * 40,
+        "spiders": {name: nodes for name in audit.SPIDERS},
+        "scenarios": {str(i): nodes for i in range(1, 14)},
+    }
+    for name in expected:
+        missing = json.loads(json.dumps(data))
+        del missing["spiders"][name]
+        with pytest.raises(ValueError):
+            audit.validate_coverage(
+                missing,
+                set(audit.SPIDERS),
+                {("tests.test_fixture", "test_complete")},
+                "a" * 40,
+                "b" * 40,
+            )

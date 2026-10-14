@@ -253,7 +253,7 @@ def build_plan(args: argparse.Namespace) -> list[Gate]:
             required_artifacts=(str(output / "spider_coverage" / "coverage-map.json"),),
             unavailable=None
             if args.coverage_map
-            else "17-spider/13-scenario exact-candidate executed-node map required",
+            else "20-spider (17 original + 3 Teams extension)/13-scenario executed-node map required",
         ),
         Gate(
             "live_lsp",

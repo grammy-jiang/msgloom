@@ -17,8 +17,8 @@ tracked at the preparation base.
 - [ ] Supply installed interpreter paths for all six matrix environments.
 - [ ] Reserve the host; do not overlap this run with other pytest/tox runs.
 - [ ] Run on Linux cgroup v2 with a writable delegated child and `cgroup.kill`.
-- [ ] Supply a candidate-bound coverage map for the 17 spiders and all 13
-      scenarios.
+- [ ] Supply a candidate-bound coverage map for the original 17 spiders,
+      three Teams extensions, and all 13 scenarios.
 - [ ] Use a fresh evidence directory outside every source checkout.
 - [ ] Run the complete plan once; retain failures and interruptions.
 - [ ] Obtain the separate independent GPT-6 Astra/max review of the full
@@ -78,7 +78,7 @@ outside this preparation; this runner never installs or upgrades dependencies.
 | Diff | `git diff --check BASE CANDIDATE` and candidate cleanliness checks. |
 | Pre-commit | All configured hooks on all files, existing cache only. |
 | Reverse imports | AST scan of A1 and standalone Graph transport boundaries. |
-| Spider/scenario coverage | Exact 17 names and 13 executed-test mappings. |
+| Spider/scenario | Exact 17+3 spiders; 13 executed scenario mappings. |
 | Independent review | External GPT-6 Astra/max, exact candidate and base. |
 
 The A1 selection is intentionally explicit and includes all top-level tests,
@@ -119,7 +119,7 @@ run; it is not rerun automatically.
 ## Exact spider coverage
 
 Every row needs one or more passing real Scrapy crawl/command test node IDs
-from Task10. Merely loading 17 names is not semantic qualification.
+from Task10. Loading names alone never proves semantic qualification.
 
 | Spider | Required release contract |
 | --- | --- |
@@ -141,8 +141,18 @@ from Task10. Merely loading 17 names is not semantic qualification.
 | outlook_calendar_delta | Winning window promotion and 410 rebaseline. |
 | outlook_calendar_full | Per-event profile, multi-target partial success. |
 
+The following three Teams extensions supplement the original matrix.
+They require actual native and release tests from the Teams development.
+
+| Teams Spider | Required extension evidence |
+| --- | --- |
+| microsoft_teams_chat_discover | Chat crawl, release and A2 intake. |
+| microsoft_teams_channel_discover | Root/reply crawl and exact intake. |
+| microsoft_teams_notification_reconcile | Readback and scoped state changes. |
+
 The coverage JSON has `base_sha`, `candidate_sha`, `spiders` and
-`scenarios`. The `spiders` object must contain exactly the 17 names above.
+`scenarios`. The `spiders` object must contain the 17 original names and
+the three qualified Teams extensions, with no extra names.
 The `scenarios` object must contain exactly string keys `"1"` through
 `"13"`. Every value is a nonempty list of exact pytest node IDs, for example
 `tests/test_a1_handoff_end_to_end.py::test_profile_no_release` **only if that

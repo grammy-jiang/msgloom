@@ -216,6 +216,33 @@ MATRIX = {
         pending="Task8",
         candidate_tests=(FULL_FAILURE + "[False-callback-calendar]",),
     ),
+    # Extension qualification. Keep original Task 10's 17-spider contract and
+    # Task 15's original 13 scenarios independently traceable.
+    "microsoft_teams_chat_discover": Coverage(
+        "teams_chat",
+        "teams_chat_discovery",
+        "successful_native_idle",
+        candidate_tests=(
+            "tests/test_teams_handoff_release.py::test_native_chat_crawl_to_exact_a2_intake",
+        ),
+    ),
+    "microsoft_teams_channel_discover": Coverage(
+        "teams_channel",
+        "teams_channel_discovery",
+        "successful_native_idle",
+        candidate_tests=(
+            "tests/test_teams_handoff_release.py::test_native_channel_root_reply_to_a2_intake",
+        ),
+    ),
+    "microsoft_teams_notification_reconcile": Coverage(
+        "teams_chat",
+        "teams_notification_reconciliation",
+        "readback_and_scoped_release",
+        candidate_tests=(
+            "tests/test_teams_notification_reconciliation.py::test_chat_and_channel_reply_readbacks_use_provider_paths_and_scoped_identity",
+            "tests/test_teams_handoff_freshness.py::test_restore_then_second_deletion_stays_publishable",
+        ),
+    ),
 }
 
 
