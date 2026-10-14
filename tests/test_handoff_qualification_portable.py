@@ -65,7 +65,10 @@ def test_runtime_requires_exact_313_patch(monkeypatch):
 
 def test_task15_extension_spiders_remain_explicit() -> None:
     """Qualify Teams additions without reinterpreting the 17-spider baseline."""
-    from tests.handoff_qualification.inventory import MATRIX
+    from tests.handoff_qualification.inventory import (
+        MATRIX,
+        TEAMS_EXTENSION_MATRIX,
+    )
 
     expected = {
         "microsoft_teams_chat_discover",
@@ -76,8 +79,16 @@ def test_task15_extension_spiders_remain_explicit() -> None:
         pytest.fail("Teams extension inventory is not exact")
     if len(audit.ORIGINAL_SPIDERS) != 17 or len(audit.SPIDERS) != 20:
         pytest.fail("Task 15 lost original/extension scope separation")
-    if set(MATRIX) != set(audit.SPIDERS):
-        pytest.fail("Executable spider evidence matrix omits an installed Spider")
+    if (
+        set(MATRIX) != set(audit.ORIGINAL_SPIDERS)
+        or set(TEAMS_EXTENSION_MATRIX) != expected
+        or set(MATRIX).intersection(TEAMS_EXTENSION_MATRIX)
+        or set(MATRIX) | set(TEAMS_EXTENSION_MATRIX) != set(audit.SPIDERS)
+    ):
+        pytest.fail("Original and extension Spider inventories overlap or drift")
+    for name, coverage in TEAMS_EXTENSION_MATRIX.items():
+        if coverage.pending != "Task15" or not coverage.candidate_tests:
+            pytest.fail(f"{name} has no explicit pending owner or test candidates")
     nodes = ["tests/test_fixture.py::test_complete"]
     data = {
         "base_sha": "a" * 40,
