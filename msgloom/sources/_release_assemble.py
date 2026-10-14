@@ -4,6 +4,8 @@ from msgloom.sources._release_components import component, enrich, validate_comp
 from msgloom.sources._release_content_parent import content_parent
 from msgloom.sources._release_evidence import ReleaseEvidence
 from msgloom.sources._release_records import record
+from msgloom.sources._release_teams import message as teams_message
+from msgloom.sources._release_teams import side_fact as teams_side_fact
 from msgloom.sources._release_validation import validate_fact
 from msgloom.sources._snapshot import capture_selection, encode_selection
 from msgloom.sources.handoff_models import ReleasedFact, ReleaseEntry
@@ -33,6 +35,8 @@ def reconstruct(
     attachments = []
     for fact in facts:
         if fact.fact_kind == "scoped_state_transition":
+            if fact.stream in {"teams_chat", "teams_channel"}:
+                teams_side_fact(fact, evidence)
             saved = None
             if fact.evidence_id:
                 _, saved = evidence.load(fact.evidence_id, fact.source_id)
@@ -67,10 +71,25 @@ def reconstruct(
                 evidence.load(fact.evidence_id, fact.source_id)
             continue
         if fact.fact_kind == "component_observation":
+            if fact.stream in {"teams_chat", "teams_channel"}:
+                teams_side_fact(fact, evidence)
+                continue
             value, attachment = component(fact, evidence, scope)
             components.append(value)
             if attachment is not None:
                 attachments.append(attachment)
+            continue
+        if (
+            fact.stream in {"teams_chat", "teams_channel"}
+            and fact.resource_kind == "teams_message"
+        ):
+            primary.append(teams_message(fact, evidence))
+            continue
+        if (
+            fact.stream in {"teams_chat", "teams_channel"}
+            and fact.fact_kind == "control_context"
+        ):
+            teams_side_fact(fact, evidence)
             continue
         raw, saved = evidence.object(fact)
         value = record(fact, raw, saved, scope)

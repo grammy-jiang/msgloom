@@ -11,7 +11,15 @@ from typing import Annotated, Literal
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
-Stream = Literal["outlook_mail", "outlook_calendar", "todo", "onedrive", "contacts"]
+Stream = Literal[
+    "outlook_mail",
+    "outlook_calendar",
+    "todo",
+    "onedrive",
+    "contacts",
+    "teams_chat",
+    "teams_channel",
+]
 FactRole = Literal["primary", "component", "context", "transition", "proof"]
 Digest = Annotated[str, Field(pattern=r"^[0-9a-f]{64}$")]
 Sequence = Annotated[int, Field(ge=0, le=2**63 - 1)]

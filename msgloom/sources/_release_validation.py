@@ -22,6 +22,23 @@ _KINDS = {
         "calendar_series",
         "calendar_event_surface",
     },
+    "teams_chat": {
+        "teams_message",
+        "teams_topology",
+        "teams_pin",
+        "teams_coverage",
+        "teams_reference_resolution",
+        "teams_hosted_content",
+        "teams_message_presence",
+    },
+    "teams_channel": {
+        "teams_message",
+        "teams_topology",
+        "teams_coverage",
+        "teams_reference_resolution",
+        "teams_hosted_content",
+        "teams_message_presence",
+    },
 }
 
 
