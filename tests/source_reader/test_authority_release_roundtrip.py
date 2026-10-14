@@ -231,6 +231,52 @@ def test_folder_delta_authority_to_public_reader(mail_catalog, removed):
             pytest.fail("Folder authority lost identity, scope, reason or evidence")
         if baseline.message_presence(message_id="present") is not True:
             pytest.fail("Folder authority fabricated mailbox-wide message deletion")
+        # The saved A1 reason must survive *public* A2 intake, not merely
+        # pass the Reader: held dispositions can advance and hide lost work.
+        import asyncio
+
+        from msgloom.persistence import Phase1Persistence
+        from msgloom.preparation_pipeline.intake import PreparationIntakeService
+        from msgloom.preparation_pipeline.intake_models import IntakeScope
+        from msgloom.sources import ReleaseSourceReader, SavedSourceReaderConfig
+        from tests.preparation_intake_helpers import payload, run
+
+        async def check_intake() -> None:
+            reader = ReleaseSourceReader(
+                SavedSourceReaderConfig(
+                    catalog_path=saved["database"],
+                    evidence_roots=(saved["evidence_root"],),
+                )
+            )
+            persistence = await Phase1Persistence.open(
+                f"sqlite:///{saved['database'].parent / 'a2-folder.sqlite3'}"
+            )
+            try:
+                scope = IntakeScope(
+                    catalog=await reader.catalog.catalog_identity(),
+                    source_id=SOURCE,
+                    stream="outlook_mail",
+                    consumer_id="folder-authority-intake",
+                )
+                workset = await payload(
+                    persistence,
+                    await run(PreparationIntakeService(persistence, reader), scope),
+                )
+                expected_kind = "membership_removal" if removed else "presence"
+                kinds = tuple(
+                    (value.transition_kind, value.resource_identity)
+                    for value in workset.transitions
+                )
+                if (expected_kind, "inbox") not in kinds or workset.held:
+                    pytest.fail(
+                        f"Released folder authority was lost or held by A2: "
+                        f"transitions={kinds} held={workset.held}"
+                    )
+            finally:
+                await reader.close()
+                await persistence.close()
+
+        asyncio.run(check_intake())
         checkpoints.commit("folder-run")
         if entries(catalog) != rows:
             pytest.fail("Folder replay changed group or entry identities")
