@@ -232,6 +232,11 @@ class HandoffCatalog:
         )
         self._closed = False
 
+    @property
+    def max_release_page_size(self) -> int:
+        """Advertise the finite A1 release page bound to the A2 intake owner."""
+        return min(1000, self._limits.max_list_results, self._limits.max_query_rows)
+
     def _read(self, operation: Callable[[_Snapshot], _T]) -> _T:
         try:
             with closing(self._catalog._connect()) as connection:
@@ -297,9 +302,7 @@ class HandoffCatalog:
         TypeAdapter(Sequence).validate_python(through_seq, strict=True)
         if (
             type(limit) is not int
-            or not 1
-            <= limit
-            <= min(1000, self._limits.max_list_results, self._limits.max_query_rows)
+            or not 1 <= limit <= self.max_release_page_size
             or after_seq > through_seq
         ):
             raise ValueError("Invalid release page bounds")

@@ -167,6 +167,32 @@ class OutlookDeltaCheckpointStore:
                     folder_id=candidate.folder_id,
                 )
             )
+            if checkpoint is not None and checkpoint.run_id != run_id:
+                # The committed winner's retained candidate owns its provider
+                # observation chronology; commit timestamps are not freshness.
+                current = session.scalar(
+                    select(DeltaCheckpointCandidate).filter_by(
+                        source_id=self.source_id,
+                        folder_id=candidate.folder_id,
+                        run_id=checkpoint.run_id,
+                    )
+                )
+                if current is None or candidate.committed_at is not None:
+                    raise RuntimeError("mail delta candidate displaced")
+                previous_time = datetime.fromisoformat(current.observed_at)
+                proposed_time = datetime.fromisoformat(candidate.observed_at)
+                if proposed_time < previous_time or (
+                    proposed_time == previous_time
+                    and candidate.delta_link != checkpoint.delta_link
+                ):
+                    raise RuntimeError("mail delta candidate displaced")
+            if (
+                checkpoint is not None
+                and checkpoint.run_id == run_id
+                and candidate.committed_at is not None
+                and checkpoint.delta_link != candidate.delta_link
+            ):
+                raise RuntimeError("committed mail delta candidate changed")
             if checkpoint is None:
                 session.add(
                     DeltaCheckpoint(
