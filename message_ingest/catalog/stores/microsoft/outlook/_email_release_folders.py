@@ -12,6 +12,7 @@ from message_ingest.catalog.models.microsoft.outlook.email import (
 )
 
 from ._email_handoff import MailFactWriter, is_stale
+from ._mail_delta_absence import bump_absence_generation
 
 
 def mark_folder_removed(
@@ -96,6 +97,7 @@ def apply_folder_transitions(session, source_id, facts):
         presence.latest_evidence_id = fact.evidence_id
         if present:
             continue
+        bump_absence_generation(session, source_id, fact.resource_identity)
         for model in (
             DeltaCheckpoint,
             DeltaCheckpointCandidate,

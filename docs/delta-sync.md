@@ -53,6 +53,11 @@ URLs and their causal baseline identities, then uses that in-memory map during
 traversal. Each baseline is an SHA-256-tagged identity of the source, folder,
 exact cursor URL, owner run and commit generation (or an explicit absent state).
 The opaque Graph URL stays in the private catalog, never in the baseline tag.
+For absent cursors, an additional private, source/folder-scoped generation
+is incremented atomically whenever an authoritative folder removal invalidates
+the message cursor. A delayed pre-removal initial request therefore cannot
+become current again after the checkpoint was deleted. This marker is not
+changed by ordinary folder metadata updates.
 The Spider never commits checkpoint state directly.
 
 For every folder whose final Graph response contains `@odata.deltaLink`, the

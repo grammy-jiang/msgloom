@@ -128,6 +128,7 @@ def test_folder_delta_removal_clears_message_cursor(tmp_path: Path) -> None:
         )
         checkpoints = OutlookDeltaCheckpointStore(catalog, "source-1")
         checkpoints.write_candidate(
+            baseline_identity=checkpoints.get_delta_start("gone")[1],
             run_id="baseline",
             folder_id="gone",
             delta_link="https://graph.test/gone?$deltatoken=old",
@@ -168,6 +169,17 @@ def test_folder_delta_removal_clears_message_cursor(tmp_path: Path) -> None:
             pytest.fail("Expected folder delta tombstone to mark folder absent")
         if checkpoints.get_delta_link("gone") is not None:
             pytest.fail("Expected folder removal to clear stale message delta cursor")
+        from message_ingest.catalog.models.microsoft.outlook.email import (
+            MailDeltaCandidateBase,
+        )
+
+        with catalog.Session() as session:
+            if (
+                session.query(MailDeltaCandidateBase)
+                .filter_by(source_id="source-1", folder_id="gone")
+                .count()
+            ):
+                pytest.fail("Folder deletion retained obsolete causal proofs")
         if folders.get_delta_link() != folder_cursor:
             pytest.fail("Expected committed folder delta cursor")
         with catalog.Session() as session:

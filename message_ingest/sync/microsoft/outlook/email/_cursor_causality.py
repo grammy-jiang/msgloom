@@ -10,7 +10,9 @@ import hashlib
 import json
 import re
 
-from message_ingest.catalog.models.microsoft.outlook.email import DeltaCheckpoint
+from message_ingest.catalog.models.microsoft.outlook.email import (
+    DeltaCheckpoint,
+)
 
 _BASELINE = re.compile(r"^(?:a|p):[0-9a-f]{64}$")
 
@@ -27,9 +29,19 @@ def _digest(parts: list[str]) -> str:
     return hashlib.sha256(raw.encode()).hexdigest()
 
 
-def absent_baseline(source_id: str, folder_id: str) -> str:
-    """One explicit, scoped absent checkpoint (distinct from missing proof)."""
-    return "a:" + _digest(["mail-delta-baseline-v1", source_id, folder_id, "absent"])
+def absent_baseline(source_id: str, folder_id: str, *, generation: int = 0) -> str:
+    """Scope an absent checkpoint to its durable post-removal epoch."""
+    if type(generation) is not int or generation < 0:
+        raise ValueError("Invalid Mail delta absence generation")
+    return "a:" + _digest(
+        [
+            "mail-delta-baseline-v1",
+            source_id,
+            folder_id,
+            "absent",
+            str(generation),
+        ]
+    )
 
 
 def committed_baseline(
@@ -54,10 +66,14 @@ def committed_baseline(
 
 
 def current_baseline(
-    source_id: str, folder_id: str, checkpoint: DeltaCheckpoint | None
+    source_id: str,
+    folder_id: str,
+    checkpoint: DeltaCheckpoint | None,
+    *,
+    absence_generation: int = 0,
 ) -> str:
     if checkpoint is None:
-        return absent_baseline(source_id, folder_id)
+        return absent_baseline(source_id, folder_id, generation=absence_generation)
     return committed_baseline(
         source_id,
         folder_id,

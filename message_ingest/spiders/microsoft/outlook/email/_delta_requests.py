@@ -6,9 +6,16 @@ from typing import Any
 
 import scrapy
 
-from message_ingest.sync.microsoft.outlook.email.checkpoints import (
-    OutlookDeltaCheckpointStore,
+from message_ingest.sync.microsoft.outlook.email._cursor_causality import (
+    absent_baseline,
 )
+
+
+def committed_delta_links(starts: dict[str, tuple[str | None, str]]) -> dict[str, str]:
+    """Retain only live Graph links from the fuller baseline snapshot."""
+    return {
+        folder: link for folder, (link, _baseline) in starts.items() if link is not None
+    }
 
 
 def start_message_delta_request(spider: Any, folder_id: str) -> scrapy.Request:
@@ -19,8 +26,13 @@ def start_message_delta_request(spider: Any, folder_id: str) -> scrapy.Request:
     if folder_id in spider._delta_initial_starts:
         link, baseline = spider._delta_initial_starts[folder_id]
     else:
-        store = OutlookDeltaCheckpointStore.from_crawler(spider.crawler)
-        link, baseline = store.get_delta_start(folder_id)
+        # First request on the reactor must not perform blocking SQL. A
+        # missing startup entry had no committed cursor or absence epoch;
+        # concurrent later writes make this CAS fail closed at promotion.
+        link = None
+        baseline = absent_baseline(
+            spider.crawler.settings["MSGLOOM_SOURCE_ID"], folder_id
+        )
     spider._delta_baselines[folder_id] = baseline
     spider._persist_execution_state()
     if link is not None:
@@ -39,4 +51,4 @@ def start_message_delta_request(spider: Any, folder_id: str) -> scrapy.Request:
     )
 
 
-__all__ = ["start_message_delta_request"]
+__all__ = ["committed_delta_links", "start_message_delta_request"]

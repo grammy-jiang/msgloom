@@ -22,6 +22,7 @@ from message_ingest.catalog.models.microsoft.outlook.email import (
 
 from ._email_handoff import is_stale
 from ._email_release_folders import mark_folder_present_in_session, mark_folder_removed
+from ._mail_delta_absence import bump_absence_generation
 
 
 class OutlookMailLifecycleStore:
@@ -248,6 +249,8 @@ class OutlookMailLifecycleStore:
                 applied_absences.add(folder_id)
         removed_folders = applied_absences
         if removed_folders:
+            for folder_id in sorted(removed_folders):
+                bump_absence_generation(session, self.source_id, folder_id)
             session.execute(
                 delete(DeltaCheckpoint).where(
                     DeltaCheckpoint.source_id == self.source_id,

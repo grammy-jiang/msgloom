@@ -32,6 +32,7 @@ def test_historical_catalog_gain_additive_proof_table_without_backfill(
     try:
         with engine.begin() as connection:
             connection.exec_driver_sql("DROP TABLE mail_delta_candidate_bases")
+            connection.exec_driver_sql("DROP TABLE mail_delta_absence_generations")
             connection.execute(
                 cast(Table, DeltaCheckpoint.__table__)
                 .insert()
@@ -60,7 +61,10 @@ def test_historical_catalog_gain_additive_proof_table_without_backfill(
     catalog = Catalog(url)
     try:
         new_names = set(inspect(catalog.engine).get_table_names())
-        if new_names - old_names != {"mail_delta_candidate_bases"}:
+        if new_names - old_names != {
+            "mail_delta_candidate_bases",
+            "mail_delta_absence_generations",
+        }:
             pytest.fail("Mail proof migration altered historical tables")
         store = OutlookDeltaCheckpointStore(catalog, "source")
         if store.get_delta_link("inbox") != "legacy-X":
@@ -93,6 +97,37 @@ def test_historical_catalog_gain_additive_proof_table_without_backfill(
         catalog.close()
     reopened = Catalog(url)
     reopened.close()
+
+
+def test_causal_schema_can_add_absence_epoch_to_existing_proof_table(
+    tmp_path: Path,
+) -> None:
+    """An already valid proof schema may add the epoch without DDL rewrites."""
+    database = tmp_path / "proof_only.db"
+    url = f"sqlite:///{database}"
+    catalog = Catalog(url)
+    catalog.close()
+    with create_engine(url).begin() as connection:
+        before_proof = connection.exec_driver_sql(
+            "SELECT name,sql FROM sqlite_master "
+            "WHERE tbl_name='mail_delta_candidate_bases' AND sql IS NOT NULL"
+        ).all()
+        connection.exec_driver_sql("DROP TABLE mail_delta_absence_generations")
+    catalog = Catalog(url)
+    try:
+        with catalog.engine.connect() as connection:
+            after_proof = connection.exec_driver_sql(
+                "SELECT name,sql FROM sqlite_master "
+                "WHERE tbl_name='mail_delta_candidate_bases' AND sql IS NOT NULL"
+            ).all()
+        if (
+            before_proof != after_proof
+            or "mail_delta_absence_generations"
+            not in inspect(catalog.engine).get_table_names()
+        ):
+            pytest.fail("Additive epoch upgrade rewrote immutable proof table")
+    finally:
+        catalog.close()
 
 
 def test_incompatible_or_partial_causal_schema_rejected_without_changes(

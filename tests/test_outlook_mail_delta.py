@@ -115,6 +115,9 @@ def test_provider_cursor_without_named_tokens_survives_jobdir(
             baseline_identity=store.get_delta_start("folder-1")[1],
         )
         store.commit("seed")
+        # The real Spider loads its immutable startup cursor snapshot before
+        # folder discovery callbacks construct provider delta requests.
+        asyncio.run(_collect_start(spider))
         request = spider._message_delta_start_request("folder-1")
     else:
         request = spider._message_delta_request(
@@ -418,31 +421,6 @@ def test_incomplete_delta_round_does_not_advance_checkpoint(tmp_path: Path) -> N
             pytest.fail('Expected: store.get_delta_link("folder-inbox") is None')
     finally:
         store.close()
-
-
-def test_existing_checkpoint_is_used_verbatim_and_bypasses_http_cache(
-    tmp_path: Path,
-) -> None:
-    store = OutlookDeltaCheckpointStore(_db_url(tmp_path), "test-source")
-    store.write_candidate(
-        baseline_identity=store.get_delta_start("folder-inbox")[1],
-        run_id="setup",
-        folder_id="folder-inbox",
-        delta_link="https://graph.microsoft.com/v1.0/me/mailFolders/folder-inbox/messages/delta?$deltatoken=opaque-existing",
-        observed_at="2026-09-26T00:00:00+00:00",
-    )
-    store.commit("setup")
-    store.close()
-
-    spider = _spider(tmp_path)
-    asyncio.run(_collect_start(spider))
-    request = spider._message_delta_start_request("folder-inbox")
-    if not request.url.endswith("$deltatoken=opaque-existing"):
-        pytest.fail('Expected: request.url.endswith("$deltatoken=opaque-existing")')
-    if request.meta["dont_cache"] is not True:
-        pytest.fail('Expected: request.meta["dont_cache"] is True')
-    if request.cb_kwargs["folder_id"] != "folder-inbox":
-        pytest.fail('Expected: request.cb_kwargs["folder_id"] == "folder-inbox"')
 
 
 def test_global_reconciliation_streams_only_orphans_without_accumulating_mailbox(

@@ -21,7 +21,7 @@ from message_ingest.sync.microsoft.outlook.email.promotion import ValidatedMailD
 from microsoft_graph.protocol import GraphDeltaPage
 from microsoft_graph.protocol.delta import graph_tombstone
 
-from ._delta_requests import start_message_delta_request
+from ._delta_requests import committed_delta_links, start_message_delta_request
 from ._delta_state import (
     MailDeltaCommitMode,
     MailDeltaExecutionState,
@@ -74,7 +74,7 @@ class OutlookDeltaSpider(OutlookFolderTraversal):
         }
         self._completed_folder_ids: set[str] = set()
         self._delta_links: dict[str, str] = {}
-        self._delta_initial_starts: dict[str, tuple[str, str]] = {}
+        self._delta_initial_starts: dict[str, tuple[str | None, str]] = {}
         self._delta_baselines: dict[str, str] = {}
         self._delta_start_scheduled = False
 
@@ -125,9 +125,7 @@ class OutlookDeltaSpider(OutlookFolderTraversal):
         )
         store = OutlookDeltaCheckpointStore.from_crawler(self.crawler)
         self._delta_initial_starts = await asyncio.to_thread(store.get_delta_starts)
-        self._delta_links = {
-            folder: value[0] for folder, value in self._delta_initial_starts.items()
-        }
+        self._delta_links = committed_delta_links(self._delta_initial_starts)
         if any(
             folder not in self._delta_baselines for folder in self._started_folder_ids
         ):

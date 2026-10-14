@@ -31,6 +31,7 @@ from message_ingest.catalog.models.microsoft.outlook.email import (
     DeltaCheckpointCandidate,
     FolderDeltaCheckpoint,
     FolderDeltaCheckpointCandidate,
+    MailDeltaAbsenceGeneration,
     MailDeltaCandidateBase,
     MailFolderPresence,
     MailFolderRecord,
@@ -139,7 +140,10 @@ MAIL_BINDING_TABLE_NAMES = {
     "mail_inventory_pages",
 }
 # Keep the original pre-Mail-bindings historical set frozen.
-MAIL_DELTA_CAUSAL_TABLE_NAMES = {"mail_delta_candidate_bases"}
+MAIL_DELTA_CAUSAL_TABLE_NAMES = {
+    "mail_delta_candidate_bases",
+    "mail_delta_absence_generations",
+}
 EXPECTED_TABLES = (
     PRE_MAIL_BINDING_TABLE_NAMES
     | MAIL_BINDING_TABLE_NAMES
@@ -167,6 +171,7 @@ def test_models_live_in_expected_domain_modules() -> None:
         CalendarDeltaCheckpointCandidate: "message_ingest.catalog.models.microsoft.outlook.calendar",
         CalendarDeltaObservation: "message_ingest.catalog.models.microsoft.outlook.calendar",
         CalendarDeltaEventState: "message_ingest.catalog.models.microsoft.outlook.calendar",
+        MailDeltaAbsenceGeneration: "message_ingest.catalog.models.microsoft.outlook.email",
         MailDeltaCandidateBase: "message_ingest.catalog.models.microsoft.outlook.email",
         MessagePresenceSighting: "message_ingest.catalog.models.microsoft.outlook.email",
         MessagePresenceCandidate: "message_ingest.catalog.models.microsoft.outlook.email",

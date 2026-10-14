@@ -13,9 +13,13 @@ from datetime import UTC, datetime
 from sqlalchemy import select
 
 from message_ingest.catalog import Catalog, DeltaCheckpoint, DeltaCheckpointCandidate
-from message_ingest.catalog.models.microsoft.outlook.email import MailDeltaCandidateBase
+from message_ingest.catalog.models.microsoft.outlook.email import (
+    MailDeltaAbsenceGeneration,
+    MailDeltaCandidateBase,
+)
 from message_ingest.extensions.catalog import CatalogService
 from message_ingest.sync.microsoft.outlook.email._cursor_causality import (
+    absent_baseline,
     current_baseline,
     validate_baseline,
 )
@@ -76,31 +80,52 @@ class OutlookDeltaCheckpointStore:
             ).all()
             return {folder_id: delta_link for folder_id, delta_link in rows}
 
-    def get_delta_starts(self) -> dict[str, tuple[str, str]]:
-        """Read exact cursor URL and its committed-generation identity together."""
+    def get_delta_starts(self) -> dict[str, tuple[str | None, str]]:
+        """Snapshot committed Graph cursors and durable absence generations."""
         with self.catalog.Session() as session:
+            epochs = session.scalars(
+                select(MailDeltaAbsenceGeneration).filter_by(source_id=self.source_id)
+            ).all()
+            starts: dict[str, tuple[str | None, str]] = {
+                row.folder_id: (
+                    None,
+                    absent_baseline(
+                        self.source_id, row.folder_id, generation=row.generation
+                    ),
+                )
+                for row in epochs
+            }
             rows = session.scalars(
                 select(DeltaCheckpoint).filter_by(source_id=self.source_id)
             ).all()
-            return {
-                row.folder_id: (
-                    row.delta_link,
-                    current_baseline(self.source_id, row.folder_id, row),
-                )
-                for row in rows
-            }
+            starts.update(
+                {
+                    row.folder_id: (
+                        row.delta_link,
+                        current_baseline(self.source_id, row.folder_id, row),
+                    )
+                    for row in rows
+                }
+            )
+            return starts
 
     def get_delta_start(self, folder_id: str) -> tuple[str | None, str]:
-        """Capture one folder's baseline at first-request creation, not response."""
+        """Capture one folder's effective generation at request creation."""
         with self.catalog.Session() as session:
-            row = session.scalar(
+            checkpoint = session.scalar(
                 select(DeltaCheckpoint).filter_by(
                     source_id=self.source_id, folder_id=folder_id
                 )
             )
-            return (
-                None if row is None else row.delta_link,
-                current_baseline(self.source_id, folder_id, row),
+            if checkpoint is not None:
+                return checkpoint.delta_link, current_baseline(
+                    self.source_id, folder_id, checkpoint
+                )
+            epoch = session.get(MailDeltaAbsenceGeneration, (self.source_id, folder_id))
+            return None, absent_baseline(
+                self.source_id,
+                folder_id,
+                generation=0 if epoch is None else epoch.generation,
             )
 
     def write_candidate(
@@ -250,8 +275,20 @@ class OutlookDeltaCheckpointStore:
                 # Committed replay is read-only. Do not refresh committed_at: a
                 # later run might already have captured this exact generation.
                 continue
+            epoch = (
+                session.get(
+                    MailDeltaAbsenceGeneration, (self.source_id, candidate.folder_id)
+                )
+                if checkpoint is None
+                else None
+            )
             if (
-                current_baseline(self.source_id, candidate.folder_id, checkpoint)
+                current_baseline(
+                    self.source_id,
+                    candidate.folder_id,
+                    checkpoint,
+                    absence_generation=0 if epoch is None else epoch.generation,
+                )
                 != baseline
             ):
                 raise RuntimeError("mail delta candidate displaced")

@@ -5,6 +5,7 @@ attempts.
 
 from __future__ import annotations
 
+import asyncio
 from pathlib import Path
 
 import pytest
@@ -57,6 +58,12 @@ def test_expired_checkpoint_410_restarts_folder_delta_without_committing_failure
         baseline_identity=store.get_delta_start("folder-1")[1],
     )
     store.commit("seed")
+
+    async def load_start() -> None:
+        async for _request in spider.start():
+            pass
+
+    asyncio.run(load_start())
     request = spider._message_delta_start_request("folder-1")
     if request.cb_kwargs["from_checkpoint"] is not True:
         pytest.fail('Expected: request.cb_kwargs["from_checkpoint"] is True')
