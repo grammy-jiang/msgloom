@@ -373,6 +373,7 @@ def _transition(entry, value):
     ] = {
         "snapshot_present": "presence",
         "inventory_present": "presence",
+        "folder_delta_present": "presence",
         "present": "presence",
         "observed_present": "presence",
         "reconciliation_seen": "presence",

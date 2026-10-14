@@ -172,11 +172,19 @@ def release_mail_authority(
             if fact.effective_key.digest in pending:
                 continue
             current = ledger.current_effective_state(session, fact.effective_key)
-            expected = fact.revalidated_fact_id or fact.fact_id
+            expected = (
+                fact.revalidated_fact_id
+                if fact.storage_relation == StorageRelation.CURRENT_EQUIVALENT
+                else fact.fact_id
+            )
             if current is None or current["fact_id"] != expected:
                 continue
         role, kind = roles[Kind(fact.fact_kind)]
-        effective_id = fact.revalidated_fact_id or fact.fact_id
+        effective_id = (
+            fact.revalidated_fact_id
+            if fact.storage_relation == StorageRelation.CURRENT_EQUIVALENT
+            else fact.fact_id
+        )
         if (effective_id, role) in included:
             continue
         included.add((effective_id, role))
