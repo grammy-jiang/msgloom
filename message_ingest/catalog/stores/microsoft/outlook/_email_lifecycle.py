@@ -9,6 +9,7 @@ from sqlalchemy import delete, or_, select
 from message_ingest.catalog.models.microsoft.outlook.email import (
     DeltaCheckpoint,
     DeltaCheckpointCandidate,
+    MailDeltaCandidateBase,
     MailFolderPresence,
     MailFolderRecord,
     MailFolderSighting,
@@ -257,6 +258,12 @@ class OutlookMailLifecycleStore:
                 delete(DeltaCheckpointCandidate).where(
                     DeltaCheckpointCandidate.source_id == self.source_id,
                     DeltaCheckpointCandidate.folder_id.in_(removed_folders),
+                )
+            )
+            session.execute(
+                delete(MailDeltaCandidateBase).where(
+                    MailDeltaCandidateBase.source_id == self.source_id,
+                    MailDeltaCandidateBase.folder_id.in_(removed_folders),
                 )
             )
         folder_candidate.committed_at = committed_at

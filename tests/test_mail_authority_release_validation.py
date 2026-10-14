@@ -28,6 +28,7 @@ def test_candidate_set_rechecked_before_lifecycle_mutation(tmp_path):
         store, checkpoints = _seed_baseline(catalog)
         validated = _stage_current(store, checkpoints)
         checkpoints.write_candidate(
+            baseline_identity=checkpoints.get_delta_start("removed")[1],
             run_id="current",
             folder_id="removed",
             delta_link="unexpected",

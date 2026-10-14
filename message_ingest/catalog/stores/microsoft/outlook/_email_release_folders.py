@@ -6,6 +6,7 @@ from message_ingest.acquisition.handoff import AcquisitionFactKind as Kind
 from message_ingest.catalog.models.microsoft.outlook.email import (
     DeltaCheckpoint,
     DeltaCheckpointCandidate,
+    MailDeltaCandidateBase,
     MailFolderPresence,
     MailFolderSighting,
 )
@@ -95,7 +96,11 @@ def apply_folder_transitions(session, source_id, facts):
         presence.latest_evidence_id = fact.evidence_id
         if present:
             continue
-        for model in (DeltaCheckpoint, DeltaCheckpointCandidate):
+        for model in (
+            DeltaCheckpoint,
+            DeltaCheckpointCandidate,
+            MailDeltaCandidateBase,
+        ):
             session.execute(
                 delete(model).where(
                     model.source_id == source_id,

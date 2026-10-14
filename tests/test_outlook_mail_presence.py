@@ -55,6 +55,7 @@ def test_complete_folder_snapshot_tombstones_missing_folder_and_drops_cursor(
         for folder_id in ("keep", "removed"):
             _folder(store, folder_id, run_id="baseline")
             checkpoints.write_candidate(
+                baseline_identity=checkpoints.get_delta_start(folder_id)[1],
                 run_id="baseline",
                 folder_id=folder_id,
                 delta_link=f"https://graph.test/{folder_id}?$deltatoken=old",

@@ -239,6 +239,22 @@ class DeltaCheckpoint(Base):
     run_id: Mapped[str] = mapped_column(String(32), index=True)
 
 
+class MailDeltaCandidateBase(Base):
+    """Immutable causal proof captured before the first folder delta request.
+
+    Retain the digest independently from an existing legacy pending candidate.
+    Missing row means *unknown*, never permission to treat a run as initial.
+    """
+
+    __tablename__ = "mail_delta_candidate_bases"
+    __table_args__ = (UniqueConstraint("source_id", "run_id", "folder_id"),)
+
+    source_id: Mapped[str] = mapped_column(String(200), primary_key=True)
+    run_id: Mapped[str] = mapped_column(String(32), primary_key=True)
+    folder_id: Mapped[str] = mapped_column(Text, primary_key=True)
+    baseline_identity: Mapped[str] = mapped_column(String(66))
+
+
 class DeltaCheckpointCandidate(Base):
     """
     Uncommitted final-page cursor for one run/folder, retained for validation.
