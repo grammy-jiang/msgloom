@@ -40,16 +40,29 @@ def _hosted_relation(
         return StorageRelation.CURRENT_EQUIVALENT
     current = handoff.current_effective_state(writer, spec.effective_key)
     if current is not None:
-        payload = writer.scalar(
-            select(AcquisitionFact.payload).where(
-                AcquisitionFact.fact_id == current["fact_id"]
+        # An equivalent t3 capture does not replace the original effective
+        # fact from t1. Compare all accepted captures, not just its pointer: a
+        # different t2 capture arriving late must remain stale. The finite
+        # bound fails closed rather than silently ignoring older ledger rows.
+        accepted = writer.scalars(
+            select(AcquisitionFact.payload)
+            .where(
+                AcquisitionFact.effective_key == spec.effective_key.digest,
+                AcquisitionFact.storage_relation.in_(
+                    (StorageRelation.ADVANCED, StorageRelation.CURRENT_EQUIVALENT)
+                ),
             )
+            .limit(10_001)
         )
-        if payload is None:
-            raise ValueError("Hosted effective fact is unavailable")
-        prior = FactSpec.from_json(payload)
-        if compare_observed(spec.provider_observed_at, prior.provider_observed_at) <= 0:
-            return StorageRelation.STALE
+        for index, payload in enumerate(accepted, 1):
+            if index > 10_000:
+                raise ValueError("Teams hosted freshness history exceeds safe bound")
+            prior = FactSpec.from_json(payload)
+            if (
+                compare_observed(spec.provider_observed_at, prior.provider_observed_at)
+                <= 0
+            ):
+                return StorageRelation.STALE
     return StorageRelation.ADVANCED
 
 

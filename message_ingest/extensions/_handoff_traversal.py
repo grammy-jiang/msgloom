@@ -26,7 +26,10 @@ from message_ingest.catalog.models.microsoft.todo import (
     TodoTraversalCompletion,
 )
 from message_ingest.catalog.stores.handoff import AcquisitionHandoffStore
-from message_ingest.catalog.stores.microsoft.teams._common import scope_digest
+from message_ingest.catalog.stores.microsoft.teams._common import (
+    compare_observed,
+    scope_digest,
+)
 from message_ingest.extensions._handoff_calendar import calendar_traversal_group
 from message_ingest.extensions._handoff_mail import mail_discovery_group
 from message_ingest.extensions._handoff_onedrive import onedrive_discovery_group
@@ -185,9 +188,14 @@ def _entries(catalog, writer, source, spider, stream):
                     # Notification deletion or a newer captured message won.
                     continue
             elif fact.transition_reason == "observed_present":
+                # A newer live version can preserve an older, still-effective
+                # restoration. Handoff CAS below validates its exact pointer.
                 if (
                     message_current.is_deleted
-                    or message_current.latest_evidence_id != fact.evidence_id
+                    or compare_observed(
+                        message_current.latest_observed_at, fact.provider_observed_at
+                    )
+                    < 0
                 ):
                     continue
             elif (

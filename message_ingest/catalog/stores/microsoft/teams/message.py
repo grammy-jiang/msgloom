@@ -27,6 +27,7 @@ from ._common import (
     scope_digest,
 )
 from ._handoff import stage_deletion, stage_live_presence, stage_message
+from ._handoff_presence import revalidate_live_presence
 
 
 def message_scope(
@@ -89,6 +90,18 @@ class TeamsMessageStore:
                         "Teams message replay changed immutable provider facts"
                     )
                 self._stage_message(session, existing, item.run_id, "replay")
+                if (
+                    existing.deleted_date_time is None
+                    and self.handoff is not None
+                    and self.spider_name is not None
+                ):
+                    revalidate_live_presence(
+                        session,
+                        self.handoff,
+                        spider_name=self.spider_name,
+                        current_message=existing,
+                        run_id=item.run_id,
+                    )
                 if existing.deleted_date_time is not None:
                     deletion = session.scalar(
                         select(TeamsMessageDeletionObservation).filter_by(
@@ -150,6 +163,19 @@ class TeamsMessageStore:
                     self.handoff,
                     spider_name=self.spider_name,
                     row=observation,
+                    run_id=item.run_id,
+                )
+            if (
+                not was_deleted
+                and item.deleted_date_time is None
+                and self.handoff is not None
+                and self.spider_name is not None
+            ):
+                revalidate_live_presence(
+                    session,
+                    self.handoff,
+                    spider_name=self.spider_name,
+                    current_message=observation,
                     run_id=item.run_id,
                 )
             if direct_deletion is not None:
