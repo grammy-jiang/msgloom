@@ -105,19 +105,19 @@ class PreparationIntakeService:
             raise SourceReferenceError("Intake catalog identity mismatch")
         previous = await self._persistence.get_preparation_intake_cursor(scope)
         if previous.last_release_entry_seq:
-            anchor = await catalog.get_release_entry(previous.last_release_entry_seq)
+            anchor = await catalog.get_release_entry_ref(
+                previous.last_release_entry_seq, scope.source_id, scope.stream
+            )
             if (
                 anchor is None
                 or anchor.entry_digest != previous.last_release_entry_digest
-                or anchor.source_id != scope.source_id
-                or anchor.stream != scope.stream
                 or anchor.catalog != scope.catalog
             ):
                 raise SourceReferenceError("Intake cursor anchor mismatch")
         ceiling = await catalog.max_release_entry_seq(scope.source_id, scope.stream)
         if ceiling < previous.last_release_entry_seq:
             raise SourceReferenceError("Intake ledger moved behind cursor")
-        page = await catalog.list_release_entries(
+        entry_refs = await catalog.list_release_entry_refs(
             scope.source_id,
             scope.stream,
             after_seq=previous.last_release_entry_seq,
@@ -126,23 +126,26 @@ class PreparationIntakeService:
             # configured cap and let later invocations drain the next page.
             limit=min(limit, catalog.max_release_page_size),
         )
-        if not page.entries:
+        if not entry_refs:
             return None
         selections = []
         transitions = []
         held = []
         admitted = []
         workset = None
-        for entry in page.entries:
+        for entry in entry_refs:
             entry_held = []
+            # Exact fact members are available only after per-entry verification.
+            entry_members = ()
             try:
-                released = await self._reader.read_entry(entry.reference)
-                mapped = [
-                    _transition(entry.reference, item) for item in released.transitions
-                ]
+                released = await self._reader.read_entry(entry)
+                entry_members = tuple(
+                    (fact.fact_id, fact.role) for fact in released.facts
+                )
+                mapped = [_transition(entry, item) for item in released.transitions]
                 mapped.extend(
                     IntakeTransition(
-                        entry=entry.reference,
+                        entry=entry,
                         fact_id=fact.fact_id,
                         transition_kind="context_refresh",
                         resource_kind=fact.resource_kind,
@@ -158,7 +161,7 @@ class PreparationIntakeService:
                 # new primary message capture in this release entry.
                 mapped.extend(
                     IntakeTransition(
-                        entry=entry.reference,
+                        entry=entry,
                         fact_id=fact.fact_id,
                         transition_kind="context_refresh",
                         resource_kind=fact.parent_resource_kind or fact.resource_kind,
@@ -193,18 +196,18 @@ class PreparationIntakeService:
                     if isinstance(error, SourceEvidenceLimitError)
                     else "materialization_failed"
                 )
-                entry_held = [HeldIntakeEntry(entry=entry.reference, reason=reason)]
+                entry_held = [HeldIntakeEntry(entry=entry, reason=reason)]
                 values, mapped = (), []
             proposed = [
                 IntakeSelection(
-                    entry=entry.reference,
+                    entry=entry,
                     result=ResultRef(
                         _identity(
                             "selection",
                             [
                                 scope.claim_key(),
-                                entry.reference.model_dump(mode="json"),
-                                entry.facts,
+                                entry.model_dump(mode="json"),
+                                entry_members,
                                 configuration,
                                 code,
                                 ordinal,
@@ -233,9 +236,7 @@ class PreparationIntakeService:
                 if admitted:
                     break
                 entry_held = [
-                    HeldIntakeEntry(
-                        entry=entry.reference, reason=reason or "byte_limit"
-                    )
+                    HeldIntakeEntry(entry=entry, reason=reason or "byte_limit")
                 ]
                 values, proposed, mapped = (), [], []
                 candidate, _ = _bounded_workset(
@@ -343,7 +344,7 @@ def _bounded_workset(
             last_release_entry_seq=last.release_entry_seq,
             last_release_entry_digest=last.entry_digest,
         ),
-        entries=tuple(entry.reference for entry in entries),
+        entries=tuple(entries),
         selections=tuple(selections),
         transitions=tuple(transitions),
         held=tuple(held),

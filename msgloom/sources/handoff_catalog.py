@@ -135,6 +135,39 @@ class _Snapshot:
             group=group,
         )
 
+    def admission_ref(
+        self, row: sqlite3.Row, catalog: A1CatalogIdentity
+    ) -> ReleaseEntryRef:
+        """Validate the immutable entry anchor without materializing its facts.
+
+        A2 must be able to hold an oversized or otherwise unreadable entry
+        without blocking every later release. Anchor integrity uses the fixed
+        ledger wire limit, independent of the *materialization* byte budget.
+        The public exact-entry API retains its strict membership checks.
+        """
+        raw = row["payload"]
+        if not isinstance(raw, str) or len(raw.encode()) > 65536:
+            raise SourceReferenceError("Release anchor payload exceeds wire bound")
+        try:
+            material = json.loads(raw)
+        except (ValueError, TypeError):
+            raise SourceReferenceError("Invalid release anchor encoding") from None
+        if (
+            _canonical(material) != raw
+            or _digest({"group": row["release_group_id"], "entry": material})
+            != row["entry_digest"]
+        ):
+            raise SourceReferenceError("Release anchor digest mismatch")
+        return ReleaseEntryRef(
+            catalog=catalog,
+            release_entry_seq=TypeAdapter(Sequence).validate_python(
+                row["release_entry_seq"], strict=True
+            ),
+            entry_digest=TypeAdapter(Digest).validate_python(
+                row["entry_digest"], strict=True
+            ),
+        )
+
     def get(self, seq: int, catalog: A1CatalogIdentity) -> ReleaseEntry | None:
         row = self.connection.execute(
             f"SELECT {_ENTRY_COLUMNS} FROM acquisition_release_entries "
@@ -324,6 +357,64 @@ class HandoffCatalog:
                 entries=tuple(snapshot.entry(row, catalog) for row in rows[:limit]),
                 has_more=len(rows) > limit,
             )
+
+        return await self._run(read)
+
+    async def get_release_entry_ref(
+        self, seq: int, source_id: str, stream: Stream
+    ) -> ReleaseEntryRef | None:
+        """Recheck the exact cursor anchor even if its evidence is unreadable."""
+        TypeAdapter(Sequence).validate_python(seq, strict=True)
+        TypeAdapter(Identifier).validate_python(source_id, strict=True)
+        TypeAdapter(Stream).validate_python(stream, strict=True)
+
+        def read(snapshot: _Snapshot) -> ReleaseEntryRef | None:
+            catalog = snapshot.identity()
+            row = snapshot.connection.execute(
+                f"SELECT {_ENTRY_COLUMNS} FROM acquisition_release_entries "
+                "WHERE release_entry_seq = ? AND source_id = ? AND stream = ? "
+                "LIMIT 1",
+                (seq, source_id, stream),
+            ).fetchone()
+            return None if row is None else snapshot.admission_ref(row, catalog)
+
+        return await self._run(read)
+
+    async def list_release_entry_refs(
+        self,
+        source_id: str,
+        stream: Stream,
+        *,
+        after_seq: int,
+        through_seq: int,
+        limit: int,
+    ) -> tuple[ReleaseEntryRef, ...]:
+        """Enumerate bounded verified anchors; full payload is per-entry work.
+
+        The cursor may advance past a held entry only after its exact digest
+        and the held disposition are saved atomically. No mutable A1 state or
+        best-effort data is admitted by this metadata-only enumeration.
+        """
+        TypeAdapter(Identifier).validate_python(source_id, strict=True)
+        TypeAdapter(Stream).validate_python(stream, strict=True)
+        TypeAdapter(Sequence).validate_python(after_seq, strict=True)
+        TypeAdapter(Sequence).validate_python(through_seq, strict=True)
+        if (
+            type(limit) is not int
+            or not 1 <= limit <= self.max_release_page_size
+            or after_seq > through_seq
+        ):
+            raise ValueError("Invalid release anchor page bounds")
+
+        def read(snapshot: _Snapshot) -> tuple[ReleaseEntryRef, ...]:
+            catalog = snapshot.identity()
+            rows = snapshot.connection.execute(
+                f"SELECT {_ENTRY_COLUMNS} FROM acquisition_release_entries "
+                "WHERE source_id = ? AND stream = ? AND release_entry_seq > ? "
+                "AND release_entry_seq <= ? ORDER BY release_entry_seq LIMIT ?",
+                (source_id, stream, after_seq, through_seq, limit),
+            ).fetchall()
+            return tuple(snapshot.admission_ref(row, catalog) for row in rows)
 
         return await self._run(read)
 
