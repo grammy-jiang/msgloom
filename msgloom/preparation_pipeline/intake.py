@@ -151,6 +151,25 @@ class PreparationIntakeService:
                     for fact in released.facts
                     if fact.fact_kind == "control_context" and fact.role != "proof"
                 )
+                # Teams component-only releases update an existing message.
+                # Admit the precise parent refresh as durable work; there is no
+                # new primary message capture in this release entry.
+                mapped.extend(
+                    IntakeTransition(
+                        entry=entry.reference,
+                        fact_id=fact.fact_id,
+                        transition_kind="context_refresh",
+                        resource_kind=fact.parent_resource_kind or fact.resource_kind,
+                        resource_identity=fact.parent_resource_identity
+                        or fact.resource_identity,
+                        scope_kind=fact.scope_kind or fact.resource_kind,
+                        scope_identity=fact.scope_identity or fact.resource_identity,
+                    )
+                    for fact in released.facts
+                    if fact.stream in {"teams_chat", "teams_channel"}
+                    and fact.fact_kind == "component_observation"
+                    and fact.role != "proof"
+                )
                 # Root context has no wider A1 scope. Its resource is the
                 # refresh scope; never promote context to readable primary work.
                 values = tuple(

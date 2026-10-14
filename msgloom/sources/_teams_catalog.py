@@ -231,6 +231,31 @@ class TeamsCatalogQueries:
             reply_target=self._reply_target(selected),
         )
 
+    def embedded_components(
+        self, selected: TeamsMessageSelection
+    ) -> TeamsComponentRows:
+        """Use only embedded children; later released components are separate."""
+        attachments = self._bounded(
+            "teams_message_attachments",
+            "message_observation_id = ? AND source_id = ? AND scope_key_sha256 = ?",
+            (
+                selected.observation_id,
+                selected.source_id,
+                selected.scope_key_sha256,
+            ),
+            "ordinal",
+            "attachment",
+        )
+        return TeamsComponentRows(
+            attachments=attachments,
+            deletions=(),
+            references=(),
+            hosted=(),
+            topology=(),
+            coverage=(),
+            reply_target=None,
+        )
+
     @staticmethod
     def _require_type(source_type: PreparedSourceType) -> None:
         if not is_teams_source_type(source_type):

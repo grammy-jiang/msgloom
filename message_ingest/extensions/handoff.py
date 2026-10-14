@@ -27,6 +27,7 @@ from message_ingest.catalog.stores.handoff import AcquisitionHandoffStore
 from message_ingest.extensions._handoff_onedrive import release_onedrive_content
 from message_ingest.extensions._handoff_traversal import (
     TRAVERSALS,
+    release_teams_notifications,
     release_traversal,
 )
 from message_ingest.extensions.catalog import CatalogService
@@ -49,6 +50,7 @@ class HandoffReleaseExtension:
             "microsoft_onedrive_content",
             "outlook_full",
             "outlook_calendar_full",
+            "microsoft_teams_notification_reconcile",
             *TRAVERSALS,
         }:
             raise NotConfigured(
@@ -118,6 +120,15 @@ class HandoffReleaseExtension:
         source = self.crawler.settings.get("MSGLOOM_SOURCE_ID")
         if not isinstance(source, str) or not source:
             spider.mark_run_failed("handoff_source_missing")
+            return
+        if spider.name == "microsoft_teams_notification_reconcile":
+            self.handled = True
+            try:
+                with service.catalog.writer_session() as writer:
+                    release_teams_notifications(service.catalog, writer, source, spider)
+            except Exception as error:
+                spider.mark_run_failed("handoff_release_failed")
+                raise CloseSpider("handoff_release_failed") from error
             return
         if traversal:
             self.handled = True

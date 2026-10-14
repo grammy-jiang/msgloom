@@ -9,6 +9,7 @@ from message_ingest.catalog.models.microsoft.teams.coverage import (
     TeamsCoverageObservation,
 )
 from message_ingest.catalog.store import Catalog
+from message_ingest.catalog.stores.handoff import AcquisitionHandoffStore
 from message_ingest.items.microsoft.teams.coverage import TeamsCoverageItem
 
 from ._common import (
@@ -18,14 +19,19 @@ from ._common import (
     require_source,
     scope_digest,
 )
+from ._handoff import stage_coverage
 
 
 class TeamsCoverageStore:
     """Retain coverage history without letting reconciliation erase known gaps."""
 
-    def __init__(self, catalog: Catalog, *, source_id: str) -> None:
+    def __init__(
+        self, catalog: Catalog, *, source_id: str, spider_name: str | None = None
+    ) -> None:
         self.catalog = catalog
         self.source_id = source_id
+        self.spider_name = spider_name
+        self.handoff = AcquisitionHandoffStore(catalog) if spider_name else None
 
     def persist(self, item: TeamsCoverageItem) -> Outcome:
         """Append one fact and update latest fields with sticky incompleteness."""
@@ -60,6 +66,7 @@ class TeamsCoverageStore:
                     or existing.gap_kind != item.gap_kind
                 ):
                     raise ValueError("Teams coverage replay changed immutable facts")
+                self._stage(session, existing, item.run_id, "replay")
                 return "replay"
             observation = TeamsCoverageObservation(
                 source_id=self.source_id,
@@ -111,6 +118,7 @@ class TeamsCoverageStore:
                         details=item.details,
                     )
                 )
+                self._stage(session, observation, item.run_id, "created")
                 return "created"
 
             sticky_incomplete = current.history_incomplete or item.history_incomplete
@@ -121,10 +129,12 @@ class TeamsCoverageStore:
             if ordering < 0:
                 if sticky_incomplete != current.history_incomplete:
                     current.history_incomplete = sticky_incomplete
+                self._stage(session, observation, item.run_id, "stale")
                 return "stale"
             if ordering == 0:
                 if sticky_incomplete != current.history_incomplete:
                     current.history_incomplete = sticky_incomplete
+                self._stage(session, observation, item.run_id, "tie")
                 return "tie"
             current.observation_id = observation.observation_id
             current.history_incomplete = sticky_incomplete
@@ -141,7 +151,21 @@ class TeamsCoverageStore:
             current.subscription_valid_until = item.subscription_valid_until
             current.gap_kind = item.gap_kind
             current.details = item.details
+            self._stage(session, observation, item.run_id, "advanced")
             return "advanced"
+
+    def _stage(
+        self, session, row: TeamsCoverageObservation, run_id: str, outcome: Outcome
+    ) -> None:
+        if self.handoff is not None and self.spider_name is not None:
+            stage_coverage(
+                session,
+                self.handoff,
+                spider_name=self.spider_name,
+                row=row,
+                run_id=run_id,
+                outcome=outcome,
+            )
 
 
 __all__ = ["TeamsCoverageStore"]

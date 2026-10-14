@@ -188,7 +188,15 @@ class PreparationIntakeTarget(_ClosedModel):
     model_config = ConfigDict(extra="forbid", frozen=True, strict=True)
     expected_catalog: A1CatalogIdentity
     source_id: ShortText
-    stream: Literal["outlook_mail", "outlook_calendar", "todo", "contacts", "onedrive"]
+    stream: Literal[
+        "outlook_mail",
+        "outlook_calendar",
+        "todo",
+        "contacts",
+        "onedrive",
+        "teams_chat",
+        "teams_channel",
+    ]
     consumer_id: ShortText
     max_entries: Annotated[int, Field(ge=1, le=1000)] = 100
     max_pending_worksets: Annotated[int, Field(ge=1, le=100)] = 10

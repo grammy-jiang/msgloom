@@ -12,6 +12,7 @@ from message_ingest.catalog.models.microsoft.teams.message import (
     TeamsMessageObservation,
 )
 from message_ingest.catalog.store import Catalog
+from message_ingest.catalog.stores.handoff import AcquisitionHandoffStore
 from message_ingest.items.microsoft.teams.message import (
     TeamsMessageDeletionItem,
     TeamsMessageItem,
@@ -25,6 +26,8 @@ from ._common import (
     require_source,
     scope_digest,
 )
+from ._handoff import stage_deletion, stage_live_presence, stage_message
+from ._handoff_presence import revalidate_live_presence
 
 
 def message_scope(
@@ -49,9 +52,13 @@ def _identity_values(identity: TeamsMessageIdentity) -> dict[str, str | None]:
 class TeamsMessageStore:
     """Store every observed response while keeping current state explicit."""
 
-    def __init__(self, catalog: Catalog, *, source_id: str) -> None:
+    def __init__(
+        self, catalog: Catalog, *, source_id: str, spider_name: str | None = None
+    ) -> None:
         self.catalog = catalog
         self.source_id = source_id
+        self.spider_name = spider_name
+        self.handoff = AcquisitionHandoffStore(catalog) if spider_name else None
 
     def persist_message(self, item: TeamsMessageItem) -> Outcome:
         """
@@ -82,6 +89,30 @@ class TeamsMessageStore:
                     raise ValueError(
                         "Teams message replay changed immutable provider facts"
                     )
+                self._stage_message(session, existing, item.run_id, "replay")
+                if (
+                    existing.deleted_date_time is None
+                    and self.handoff is not None
+                    and self.spider_name is not None
+                ):
+                    revalidate_live_presence(
+                        session,
+                        self.handoff,
+                        spider_name=self.spider_name,
+                        current_message=existing,
+                        run_id=item.run_id,
+                    )
+                if existing.deleted_date_time is not None:
+                    deletion = session.scalar(
+                        select(TeamsMessageDeletionObservation).filter_by(
+                            source_id=self.source_id,
+                            scope_key_sha256=digest,
+                            evidence_id=existing.evidence_id,
+                        )
+                    )
+                    if deletion is None or deletion.deletion_kind != "direct":
+                        raise ValueError("Teams replay lost immutable direct deletion")
+                    self._stage_deletion(session, deletion, item.run_id, "replay")
                 return "replay"
 
             observation = TeamsMessageObservation(
@@ -100,15 +131,18 @@ class TeamsMessageStore:
             session.add(observation)
             session.flush()
             self._append_attachments(session, observation, item)
+            direct_deletion = None
             if item.deleted_date_time is not None:
-                self._append_direct_deletion(
+                direct_deletion = self._append_direct_deletion(
                     session,
                     item=item,
                     digest=digest,
                     scope_key=scope_key,
                     evidence_run_id=evidence.run_id,
                 )
-            return self._project_message_current(
+            previous = session.get(TeamsMessageCurrent, (item.source_id, digest))
+            was_deleted = previous is not None and previous.is_deleted
+            outcome = self._project_message_current(
                 session,
                 observation=observation,
                 item=item,
@@ -116,6 +150,37 @@ class TeamsMessageStore:
                 scope_key=scope_key,
                 evidence_run_id=evidence.run_id,
             )
+            self._stage_message(session, observation, item.run_id, outcome)
+            if (
+                was_deleted
+                and outcome == "advanced"
+                and item.deleted_date_time is None
+                and self.handoff is not None
+                and self.spider_name is not None
+            ):
+                stage_live_presence(
+                    session,
+                    self.handoff,
+                    spider_name=self.spider_name,
+                    row=observation,
+                    run_id=item.run_id,
+                )
+            if (
+                not was_deleted
+                and item.deleted_date_time is None
+                and self.handoff is not None
+                and self.spider_name is not None
+            ):
+                revalidate_live_presence(
+                    session,
+                    self.handoff,
+                    spider_name=self.spider_name,
+                    current_message=observation,
+                    run_id=item.run_id,
+                )
+            if direct_deletion is not None:
+                self._stage_deletion(session, direct_deletion, item.run_id, outcome)
+            return outcome
 
     def persist_deletion(
         self,
@@ -179,26 +244,27 @@ class TeamsMessageStore:
                     or existing.declared_deleted_at != item.declared_deleted_at
                 ):
                     raise ValueError("Teams deletion replay changed immutable facts")
+                self._stage_deletion(session, existing, item.run_id, "replay")
                 return "replay"
 
-            session.add(
-                TeamsMessageDeletionObservation(
-                    source_id=self.source_id,
-                    scope_key=scope_key,
-                    scope_key_sha256=digest,
-                    deletion_kind=item.deletion_kind,
-                    declared_deleted_at=item.declared_deleted_at,
-                    observed_at=effective_observed,
-                    evidence_id=evidence.evidence_id,
-                    run_id=item.run_id,
-                    evidence_run_id=evidence.run_id,
-                    readback_state=item.readback_state,
-                    readback_observed_at=effective_readback_observed,
-                    readback_evidence_id=effective_readback_evidence,
-                    readback_evidence_run_id=readback_run_id,
-                )
+            deletion = TeamsMessageDeletionObservation(
+                source_id=self.source_id,
+                scope_key=scope_key,
+                scope_key_sha256=digest,
+                deletion_kind=item.deletion_kind,
+                declared_deleted_at=item.declared_deleted_at,
+                observed_at=effective_observed,
+                evidence_id=evidence.evidence_id,
+                run_id=item.run_id,
+                evidence_run_id=evidence.run_id,
+                readback_state=item.readback_state,
+                readback_observed_at=effective_readback_observed,
+                readback_evidence_id=effective_readback_evidence,
+                readback_evidence_run_id=readback_run_id,
             )
-            return self._project_deletion_current(
+            session.add(deletion)
+            session.flush()
+            outcome = self._project_deletion_current(
                 session,
                 item=item,
                 digest=digest,
@@ -207,6 +273,8 @@ class TeamsMessageStore:
                 evidence_id=evidence.evidence_id,
                 evidence_run_id=evidence.run_id,
             )
+            self._stage_deletion(session, deletion, item.run_id, outcome)
+            return outcome
 
     @staticmethod
     def _append_attachments(
@@ -242,25 +310,60 @@ class TeamsMessageStore:
         digest: str,
         scope_key: list[str | None],
         evidence_run_id: str | None,
-    ) -> None:
+    ) -> TeamsMessageDeletionObservation:
         """Record deletedDateTime as explicit provider deletion evidence."""
-        session.add(
-            TeamsMessageDeletionObservation(
-                source_id=item.source_id,
-                scope_key=scope_key,
-                scope_key_sha256=digest,
-                deletion_kind="direct",
-                declared_deleted_at=item.deleted_date_time,
-                observed_at=item.observed_at,
-                evidence_id=item.evidence_id,
-                run_id=item.run_id,
-                evidence_run_id=evidence_run_id,
-                readback_state="not-attempted",
-                readback_observed_at=None,
-                readback_evidence_id=None,
-                readback_evidence_run_id=None,
-            )
+        deletion = TeamsMessageDeletionObservation(
+            source_id=item.source_id,
+            scope_key=scope_key,
+            scope_key_sha256=digest,
+            deletion_kind="direct",
+            declared_deleted_at=item.deleted_date_time,
+            observed_at=item.observed_at,
+            evidence_id=item.evidence_id,
+            run_id=item.run_id,
+            evidence_run_id=evidence_run_id,
+            readback_state="not-attempted",
+            readback_observed_at=None,
+            readback_evidence_id=None,
+            readback_evidence_run_id=None,
         )
+        session.add(deletion)
+        session.flush()
+        return deletion
+
+    def _stage_message(
+        self,
+        session: Session,
+        row: TeamsMessageObservation,
+        run_id: str,
+        outcome: Outcome,
+    ) -> None:
+        if self.handoff is not None and self.spider_name is not None:
+            stage_message(
+                session,
+                self.handoff,
+                spider_name=self.spider_name,
+                row=row,
+                run_id=run_id,
+                outcome=outcome,
+            )
+
+    def _stage_deletion(
+        self,
+        session: Session,
+        row: TeamsMessageDeletionObservation,
+        run_id: str,
+        outcome: Outcome,
+    ) -> None:
+        if self.handoff is not None and self.spider_name is not None:
+            stage_deletion(
+                session,
+                self.handoff,
+                spider_name=self.spider_name,
+                row=row,
+                run_id=run_id,
+                outcome=outcome,
+            )
 
     @staticmethod
     def _project_message_current(

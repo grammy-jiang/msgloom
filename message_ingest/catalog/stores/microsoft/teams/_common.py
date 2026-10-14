@@ -5,12 +5,13 @@ from __future__ import annotations
 import hashlib
 import json
 from datetime import datetime
+from typing import Literal
 
 from sqlalchemy.orm import Session
 
 from message_ingest.catalog.models.acquisition import RawHttpEvidence
 
-Outcome = str
+Outcome = Literal["advanced", "created", "replay", "stale", "tie"]
 
 
 def require_source(actual: str, expected: str) -> None:
