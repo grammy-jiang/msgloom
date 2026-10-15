@@ -6,6 +6,7 @@ profile stats.
 from __future__ import annotations
 
 import asyncio
+import json
 from pathlib import Path
 
 import pytest
@@ -26,7 +27,9 @@ from message_ingest.pipelines.evidence import RawEvidencePipeline
 from message_ingest.pipelines.microsoft.outlook.email import OutlookMailPipeline
 
 
-def _raw(evidence_id: str, observed_at: str) -> RawHttpEvidenceItem:
+def _raw(
+    evidence_id: str, observed_at: str, *, body: bytes = b"{}"
+) -> RawHttpEvidenceItem:
     return RawHttpEvidenceItem(
         evidence_id=evidence_id,
         run_id="run-test",
@@ -41,14 +44,16 @@ def _raw(evidence_id: str, observed_at: str) -> RawHttpEvidenceItem:
         response_url=f"https://graph.microsoft.com/v1.0/test/{evidence_id}",
         response_status=200,
         response_headers={"Content-Type": ["application/json"]},
-        response_body=b"{}",
+        response_body=body,
         response_flags=[],
     )
 
 
-def _persist_raw(crawler, evidence_id: str, observed_at: str) -> None:
+def _persist_raw(
+    crawler, evidence_id: str, observed_at: str, *, body: bytes = b"{}"
+) -> None:
     raw_pipeline = RawEvidencePipeline.from_crawler(crawler)
-    asyncio.run(raw_pipeline.process_item(_raw(evidence_id, observed_at)))
+    asyncio.run(raw_pipeline.process_item(_raw(evidence_id, observed_at, body=body)))
 
 
 def _message() -> OutlookMailItem:
@@ -228,7 +233,14 @@ def test_folder_delta_removal_does_not_imply_global_message_deletion(
         }
     )
     _persist_raw(crawler, "evidence-1", "2026-09-26T01:02:00+00:00")
-    _persist_raw(crawler, "evidence-removal", "2026-09-26T03:00:00+00:00")
+    _persist_raw(
+        crawler,
+        "evidence-removal",
+        "2026-09-26T03:00:00+00:00",
+        body=json.dumps(
+            {"value": [{"id": "m1", "@removed": {"reason": "deleted"}}]}
+        ).encode(),
+    )
     pipeline = OutlookMailPipeline.from_crawler(crawler)
     asyncio.run(pipeline.process_item(_message()))
     asyncio.run(
@@ -359,11 +371,33 @@ def test_message_replay_preserves_kind_surface_profile_and_stats(
             evidence_id=message.evidence_id,
             run_id=message.run_id,
         )
-    _persist_raw(crawler, "evidence-1", message.observed_at)
+    _persist_raw(
+        crawler,
+        "evidence-1",
+        message.observed_at,
+        body=(
+            json.dumps({"value": [message.raw]}).encode() if kind == "delta" else b"{}"
+        ),
+    )
     pipeline = OutlookMailPipeline.from_crawler(crawler)
     try:
         asyncio.run(pipeline.process_item(item))
         asyncio.run(pipeline.process_item(item))
+        if kind == "delta":
+            # A real Delta callback stages observations only; native idle must
+            # win the causal checkpoint before the surface becomes effective.
+            with pipeline.catalog.Session() as session:
+                if session.scalar(select(MessageSurface)) is not None:
+                    pytest.fail("Provisional Delta published before cursor ownership")
+            from tests._mail_provisional import prepare, promote
+
+            promotion = prepare(
+                pipeline.store,
+                message.run_id,
+                folder="inbox",
+                when=message.observed_at,
+            )
+            promote(pipeline.store, promotion)
 
         with pipeline.catalog.Session() as session:
             observations = session.scalars(select(MessageObservation)).all()

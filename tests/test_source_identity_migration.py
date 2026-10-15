@@ -9,6 +9,7 @@ from threading import Barrier, Thread
 import pytest
 from scrapy.utils.test import get_crawler
 from test_catalog_model_package_layout import (
+    MAIL_AUTHORITY_TABLE_NAMES,
     MAIL_BINDING_TABLE_NAMES,
     MAIL_DELTA_CAUSAL_TABLE_NAMES,
     PRE_MAIL_BINDING_TABLE_NAMES,
@@ -253,6 +254,7 @@ def test_upgrade_adds_binding_table_without_changing_legacy_rows(
             != {"source_bindings"}
             | MAIL_BINDING_TABLE_NAMES
             | MAIL_DELTA_CAUSAL_TABLE_NAMES
+            | MAIL_AUTHORITY_TABLE_NAMES
         ):
             pytest.fail("Expected only source identity and Mail binding additions")
         with catalog.engine.connect() as connection:

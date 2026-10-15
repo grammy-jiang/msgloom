@@ -91,7 +91,7 @@ def test_displaced_pending_folder_tombstone_does_not_remove_newer_folder(tmp_pat
         catalog.close()
 
 
-def test_newer_staged_positive_folder_displaces_older_tombstone(tmp_path):
+def test_newer_provisional_folder_cannot_displace_winning_tombstone(tmp_path):
     catalog = _catalog(tmp_path)
     try:
         store = OutlookMailStore(catalog, source_id=SOURCE)
@@ -108,8 +108,10 @@ def test_newer_staged_positive_folder_displaces_older_tombstone(tmp_path):
         )
         _folder(newer, "newer", "2026-10-03T00:00:00+00:00", name="Renamed")
         _commit(catalog, SOURCE, "old")
-        if store.folder_presence(folder_id="f") is not True or _entries(catalog):
-            pytest.fail("Older authority displaced a newer accepted observation")
+        if store.folder_presence(folder_id="f") is not False:
+            pytest.fail("Uncommitted folder metadata suppressed winning authority")
+        if not _entries(catalog):
+            pytest.fail("Winning folder removal was not released")
     finally:
         catalog.close()
 

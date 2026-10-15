@@ -1,7 +1,6 @@
 """Publish exact Mail impacts inside the winning authority transaction."""
 
 from dataclasses import replace
-from datetime import datetime
 
 from sqlalchemy import select
 
@@ -19,11 +18,6 @@ from message_ingest.acquisition.handoff import (
     source_state_key,
 )
 from message_ingest.catalog.models.handoff import AcquisitionFact
-from message_ingest.catalog.models.microsoft.outlook.email import (
-    MailFolderPresence,
-    MailFolderRecord,
-    MessageRecord,
-)
 from message_ingest.catalog.stores.handoff import AcquisitionHandoffStore
 
 
@@ -75,34 +69,12 @@ def stage_presence(
         if current is not None and current["source_state_key"] != spec.source_state_key:
             spec = replace(spec, storage_relation=StorageRelation.ADVANCED)
     ledger.stage_state_fact_in_session(session, spec)
-
-
-def _staged_winner(session, source_id, fact):
-    """Reject pending observations displaced by newer provider state."""
-    if fact.resource_kind == "mail_folder":
-        record = session.scalar(
-            select(MailFolderRecord).filter_by(
-                source_id=source_id,
-                folder_id=fact.resource_identity,
-            )
+    if resource_kind == "mail_folder":
+        from message_ingest.catalog.stores.microsoft.outlook._email_observations import (
+            clear_folder_owner,
         )
-        if record is not None and datetime.fromisoformat(
-            record.latest_observed_at
-        ) > datetime.fromisoformat(fact.provider_observed_at):
-            return False
-        model, identity = MailFolderPresence, MailFolderPresence.folder_id
-    elif fact.component_kind == "folder_membership":
-        model, identity = MessageRecord, MessageRecord.message_id
-    else:
-        return False
-    row = session.scalar(
-        select(model).where(
-            model.source_id == source_id, identity == fact.resource_identity
-        )
-    )
-    return row is None or datetime.fromisoformat(fact.provider_observed_at) >= (
-        datetime.fromisoformat(row.latest_observed_at)
-    )
+
+        clear_folder_owner(session, store.source_id, identity)
 
 
 def release_mail_authority(
@@ -113,13 +85,15 @@ def release_mail_authority(
     run_id,
     committed_at,
     subject,
+    applied=None,
 ):
     """
     Bind current run facts to one atomic authority decision.
 
-    The ledger filters released, stale and displaced states. Pending scoped
-    observations win only if no newer domain observation displaced them.
-    Group input order is stable across retries.
+    The ledger filters released, stale and displaced states. Retained inputs
+    require explicit selection by the validated authority application. That
+    application also preserves newer independent observations. Group input
+    order is stable across retries.
     """
     ledger = AcquisitionHandoffStore(catalog)
     facts = [
@@ -132,30 +106,19 @@ def release_mail_authority(
             )
         )
     ]
-    pending = {}
-    for fact in facts:
-        if fact.storage_relation != StorageRelation.AUTHORITY_STAGED:
-            continue
-        if not _staged_winner(session, source_id, fact):
-            continue
-        key = fact.effective_key.digest
-        prior = pending.get(key)
-        when = datetime.fromisoformat(fact.provider_observed_at)
-        previous = datetime.fromisoformat(prior.provider_observed_at) if prior else None
-        if prior is not None and when == previous:
-            if fact.source_state_key != prior.source_state_key:
-                raise ValueError("Ambiguous Mail authority state at one provider time")
-            # Equivalent same-time captures have no competing semantic state.
-            if fact.fact_id < prior.fact_id:
-                pending[key] = fact
-        elif previous is None or when > previous:
-            pending[key] = fact
-    if subject == "folder_delta":
-        from message_ingest.catalog.stores.microsoft.outlook._email_release_folders import (
-            apply_folder_transitions,
-        )
+    from message_ingest.catalog.models.microsoft.outlook._email_authority import (
+        MailAuthorityObservation,
+    )
 
-        apply_folder_transitions(session, source_id, pending.values())
+    retained = set(
+        session.scalars(
+            select(MailAuthorityObservation.fact_id).where(
+                MailAuthorityObservation.source_id == source_id,
+                MailAuthorityObservation.run_id == run_id,
+            )
+        )
+    )
+    pending = applied or {}
     winning = {fact.fact_id for fact in pending.values()}
     entries = []
     roles = {
@@ -167,6 +130,8 @@ def release_mail_authority(
     impacts = {}
     included = set()
     for fact in sorted(facts, key=lambda value: value.fact_id):
+        if fact.fact_id in retained and fact.fact_id not in winning:
+            continue
         if fact.storage_relation == StorageRelation.STALE:
             continue
         if (
@@ -177,7 +142,7 @@ def release_mail_authority(
         if fact.storage_relation != StorageRelation.AUTHORITY_STAGED:
             # The pending winner replaces this key in the same transaction.
             # An older member would make the entire impact ineligible.
-            if fact.effective_key.digest in pending:
+            if fact.effective_key.digest in pending and fact.fact_id not in winning:
                 continue
             current = ledger.current_effective_state(session, fact.effective_key)
             expected = (

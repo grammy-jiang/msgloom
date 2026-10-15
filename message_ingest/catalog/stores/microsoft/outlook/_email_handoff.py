@@ -182,6 +182,8 @@ class MailFactWriter:
         equivalent: bool = False,
         authority: bool = False,
         reason: str | None = None,
+        provisional: bool = False,
+        provisional_current=None,
     ) -> MailPersistenceOutcome:
         """Stage logical run provenance independently of canonical evidence."""
         if not run_id:
@@ -232,7 +234,12 @@ class MailFactWriter:
                 # Domain columns omit component/version semantics. The exact
                 # key, not evidence reuse, decides post-ledger advancement.
                 spec = replace(spec, storage_relation=StorageRelation.ADVANCED)
-        if authority and not stale:
+        if provisional:
+            fact = self.ledger.stage_provisional_fact_in_session(
+                session, spec, provisional_current
+            )
+            relation = StorageRelation(fact.storage_relation)
+        elif authority and not stale:
             fact = self.ledger.stage_authority_fact_in_session(session, spec)
         else:
             fact = self.ledger.stage_state_fact_in_session(session, spec)
@@ -304,6 +311,12 @@ class MailFactWriter:
         message_id: str,
     ) -> str | None:
         """Bind this run's primary representation when available."""
+        from ._email_observations import load_fact
+        from ._email_pending_components import pending_primary
+
+        row = pending_primary(session, self.source_id, run_id, message_id)
+        if row is not None:
+            return load_fact(session, row).source_state_key
         payloads = session.scalars(
             select(AcquisitionFact.payload).where(
                 AcquisitionFact.source_id == self.source_id,

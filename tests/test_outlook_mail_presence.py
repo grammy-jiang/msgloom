@@ -39,7 +39,7 @@ def _message(store: OutlookMailStore, message_id: str, *, folder_id: str) -> Non
     store.record_message(
         run_id="old-run",
         message={"id": message_id, "parentFolderId": folder_id},
-        kind="delta",
+        kind="discovery",
         evidence_id=None,
         observed_at=NOW,
     )

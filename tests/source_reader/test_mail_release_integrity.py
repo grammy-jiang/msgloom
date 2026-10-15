@@ -129,17 +129,22 @@ def test_primary_only_mail_validates_exact_state(
     save_evidence(mail_catalog, "primary-only", {"value": [raw]})
     catalog = Catalog(f"sqlite:///{mail_catalog['database']}")
     try:
-        primary = (
-            OutlookMailStore(catalog, source_id=SOURCE)
-            .record_message(
-                run_id="primary-only",
-                message=raw,
-                kind=kind,
-                evidence_id="primary-only",
-                observed_at=WHEN,
-            )
-            .fact
+        from tests._mail_provisional import prepare, promote
+
+        store = OutlookMailStore(catalog, source_id=SOURCE)
+        validated = (
+            prepare(store, "primary-only", when=WHEN) if kind == "delta" else None
         )
+        primary = store.record_message(
+            run_id="primary-only",
+            message=raw,
+            kind=kind,
+            authority_scope="inbox" if kind == "delta" else None,
+            evidence_id="primary-only",
+            observed_at=WHEN,
+        ).fact
+        if validated is not None:
+            promote(store, validated)
     finally:
         catalog.close()
     if tampered:

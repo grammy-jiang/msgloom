@@ -36,6 +36,9 @@ BASELINE_FIELDS = {
         "observation_kind",
         "evidence_id",
         "run_id",
+        # Additive, optional original Graph folder scope: provider fields and
+        # their ordering remain unchanged; the new field stays at the end.
+        "authority_scope",
     ),
     "OutlookMailDetailItem": (
         "message_id",

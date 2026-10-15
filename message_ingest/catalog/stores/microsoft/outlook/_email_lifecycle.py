@@ -94,7 +94,7 @@ class OutlookMailLifecycleStore:
         evidence_id: str | None,
     ) -> None:
         """Stage one lightweight whole-mailbox reconciliation sighting."""
-        with self.catalog.Session() as session, session.begin():
+        with self.catalog.writer_session() as session:
             existing = session.scalar(
                 select(MessagePresenceSighting.id).filter_by(
                     source_id=self.source_id,
@@ -144,7 +144,7 @@ class OutlookMailLifecycleStore:
         )
 
     def _write_candidate(self, model, *, run_id: str, observed_at: str, evidence_id):
-        with self.catalog.Session() as session, session.begin():
+        with self.catalog.writer_session() as session:
             record = session.scalar(
                 select(model).filter_by(source_id=self.source_id, run_id=run_id)
             )
@@ -180,7 +180,7 @@ class OutlookMailLifecycleStore:
             candidate_folder_ids=frozenset(expected_folder_ids),
         )
         committed_at = self._now()
-        with self.catalog.Session() as session, session.begin():
+        with self.catalog.writer_session() as session:
             return self.commit_delta_lifecycle_in_session(
                 session,
                 validated,
@@ -365,6 +365,10 @@ class OutlookMailLifecycleStore:
         if record and is_stale(observed_at, record.latest_observed_at):
             return False
         if not is_present:
+            from ._email_authority_planning import newer_pending_folder
+
+            if newer_pending_folder(session, self.source_id, folder_id, observed_at):
+                return False
             metadata_observed_at = session.scalar(
                 select(MailFolderRecord.latest_observed_at).filter_by(
                     source_id=self.source_id,

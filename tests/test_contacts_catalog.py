@@ -7,6 +7,7 @@ from pathlib import Path
 import pytest
 from sqlalchemy import create_engine, inspect, select
 from test_catalog_model_package_layout import (
+    MAIL_AUTHORITY_TABLE_NAMES,
     MAIL_BINDING_TABLE_NAMES,
     MAIL_DELTA_CAUSAL_TABLE_NAMES,
     PRE_MAIL_BINDING_TABLE_NAMES,
@@ -75,7 +76,10 @@ def test_contacts_schema_is_additive_and_preserves_existing_data(tmp_path):
         schema = inspect(catalog.engine)
         if (
             set(schema.get_table_names()) - before
-            != expected | MAIL_BINDING_TABLE_NAMES | MAIL_DELTA_CAUSAL_TABLE_NAMES
+            != expected
+            | MAIL_BINDING_TABLE_NAMES
+            | MAIL_DELTA_CAUSAL_TABLE_NAMES
+            | MAIL_AUTHORITY_TABLE_NAMES
         ):
             pytest.fail("Contacts schema initialization was not additive")
         with catalog.engine.connect() as connection:

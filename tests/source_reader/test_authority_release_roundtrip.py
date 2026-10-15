@@ -45,7 +45,7 @@ def test_message_delta_authority_to_public_reader(mail_catalog):
             store.record_message(
                 run_id="baseline",
                 message=raw,
-                kind="delta",
+                kind="discovery",
                 evidence_id="baseline",
                 observed_at=OLD,
             )
@@ -139,7 +139,7 @@ def test_message_delta_authority_to_public_reader(mail_catalog):
             store.record_message(
                 run_id="later",
                 message=raw,
-                kind="delta",
+                kind="discovery",
                 evidence_id="latest",
                 observed_at=LATER,
             )
@@ -178,7 +178,7 @@ def test_folder_delta_authority_to_public_reader(mail_catalog, removed):
         baseline.record_message(
             run_id="baseline",
             message=MESSAGE,
-            kind="delta",
+            kind="discovery",
             evidence_id="baseline-mail",
             observed_at=OLD,
         )

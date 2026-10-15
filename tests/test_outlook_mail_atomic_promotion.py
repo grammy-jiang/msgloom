@@ -58,7 +58,7 @@ def _message(
     store.record_message(
         run_id=run_id,
         message={"id": message_id, "parentFolderId": folder_id},
-        kind="delta",
+        kind="discovery",
         evidence_id=None,
         observed_at=when,
     )

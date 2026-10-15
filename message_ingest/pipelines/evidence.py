@@ -7,6 +7,7 @@ import hashlib
 import logging
 import os
 from pathlib import Path
+from tempfile import NamedTemporaryFile
 
 from scrapy.exceptions import NotConfigured
 
@@ -185,18 +186,28 @@ class RawEvidencePipeline:
 
     def _store_blob(self, body: bytes) -> tuple[str, Path, bool]:
         """
-        Reuse digest-named bytes, or atomically replace a private temporary
-        file under the write lock.
+        Reuse digest-named bytes, or publish a private temporary file.
+
+        Separate crawlers have separate write locks. Each write therefore
+        owns its temporary path. Concurrent replacements contain identical
+        digest-verified bytes; neither writer can rename the other's file.
         """
         digest = hashlib.sha256(body).hexdigest()
         path = self.raw_dir / f"{digest}.bin"
         if path.exists():
             return digest, path, False
-        temp = path.with_suffix(".tmp")
-        temp.write_bytes(body)
-        os.chmod(temp, 0o600)
-        temp.replace(path)
-        os.chmod(path, 0o600)
+        temp = None
+        try:
+            with NamedTemporaryFile(
+                dir=self.raw_dir, prefix=f"{digest}.", suffix=".tmp", delete=False
+            ) as stream:
+                temp = Path(stream.name)
+                stream.write(body)
+            os.chmod(temp, 0o600)
+            temp.replace(path)
+        finally:
+            if temp is not None:
+                temp.unlink(missing_ok=True)
         return digest, path, True
 
     def _inc(self, key: str, count: int = 1) -> None:

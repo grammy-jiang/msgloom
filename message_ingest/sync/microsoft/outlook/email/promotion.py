@@ -89,6 +89,7 @@ def promote_validated_mail_delta(
         OutlookDeltaCheckpointStore,
     )
 
+    from ._authority_decision import input_digest, replay, seal
     from ._release import release_mail_authority
 
     lifecycle = OutlookMailStore(catalog, source_id=source_id)
@@ -109,6 +110,38 @@ def promote_validated_mail_delta(
             == validated.expected_folder_ids
         ):
             raise ValueError("Persisted delta candidate set changed")
+        checkpoints.commit_in_session(
+            session, validated, committed_at=committed_at, validate_only=True
+        )
+        digest = input_digest(
+            session, source_id, validated.run_id, "message_delta", validated
+        )
+        previous = replay(session, source_id, validated.run_id, "message_delta", digest)
+        if previous is not None:
+            return previous
+        if (
+            session.scalar(
+                select(DeltaCheckpointCandidate.id)
+                .filter_by(
+                    source_id=source_id,
+                    run_id=validated.run_id,
+                )
+                .where(DeltaCheckpointCandidate.committed_at.is_not(None))
+            )
+            is not None
+        ):
+            raise RuntimeError("Legacy Mail authority decision requires reacquisition")
+        from message_ingest.catalog.stores.microsoft.outlook._email_apply_authority import (
+            apply_mail_observations,
+        )
+
+        applied = apply_mail_observations(
+            lifecycle,
+            session,
+            run_id=validated.run_id,
+            authority="message_delta",
+            scopes=validated.expected_folder_ids,
+        )
         outcome = lifecycle.commit_delta_lifecycle_in_session(
             session,
             validated,
@@ -126,8 +159,16 @@ def promote_validated_mail_delta(
             run_id=validated.run_id,
             committed_at=committed_at,
             subject="message_delta",
+            applied=applied,
         )
-        return {
-            **outcome,
-            "committed_folders": committed,
-        }
+        result = {**outcome, "committed_folders": committed}
+        seal(
+            session,
+            source_id,
+            validated.run_id,
+            "message_delta",
+            digest,
+            result,
+            applied,
+        )
+        return result

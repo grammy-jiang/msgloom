@@ -66,7 +66,11 @@ def test_mail_sync_refreshes_changed_messages_then_enriches_backlog(
         store = OutlookMailStore(catalog, source_id="source-1")
         store.record_message(
             run_id="delta-run",
-            message={"id": "changed", "lastModifiedDateTime": NOW},
+            message={
+                "id": "changed",
+                "parentFolderId": "inbox",
+                "lastModifiedDateTime": NOW,
+            },
             kind="delta",
             evidence_id=None,
             observed_at=NOW,
@@ -74,7 +78,9 @@ def test_mail_sync_refreshes_changed_messages_then_enriches_backlog(
         store.record_message(
             run_id="older-run",
             message={"id": "backlog", "lastModifiedDateTime": NOW},
-            kind="delta",
+            # The historical backlog is already independently accepted; only
+            # the just-crawled current run exercises provisional Delta planning.
+            kind="discovery",
             evidence_id=None,
             observed_at=NOW,
         )
@@ -263,7 +269,8 @@ def test_mail_sync_keeps_unbound_terminal_surfaces_in_backlog(tmp_path, monkeypa
         store.record_message(
             run_id="historical",
             message={"id": "legacy"},
-            kind="delta",
+            # Historical accepted primary, with deliberately unbound surfaces.
+            kind="discovery",
             evidence_id=None,
             observed_at=NOW,
         )

@@ -233,7 +233,18 @@ def test_detail_has_independent_component_and_preserves_primary_key(setup):
 )
 def test_fact_insert_failure_rolls_back_provider_state(setup, operation):
     crawler, _, store = setup
-    capture(crawler)
+    capture(
+        crawler,
+        body=json.dumps(
+            {
+                "value": [
+                    MESSAGE,
+                    {"id": "m1", "@removed": {"reason": "deleted"}},
+                    {"id": "f1", "@removed": {"reason": "deleted"}},
+                ]
+            }
+        ).encode(),
+    )
     with store.catalog.writer_session() as session:
         session.execute(
             text(
@@ -341,7 +352,18 @@ def test_surface_content_digest_and_terminal_semantics(setup):
 
 def test_folder_removals_are_scoped_and_authority_pending(setup):
     crawler, _, store = setup
-    capture(crawler)
+    capture(
+        crawler,
+        body=json.dumps(
+            {
+                "value": [
+                    MESSAGE,
+                    {"id": "m1", "@removed": {"reason": "deleted"}},
+                    {"id": "f1", "@removed": {"reason": "deleted"}},
+                ]
+            }
+        ).encode(),
+    )
     message(store)
     store.record_folder_removal(
         run_id="r1",

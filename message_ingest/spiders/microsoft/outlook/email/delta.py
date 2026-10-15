@@ -228,6 +228,7 @@ class OutlookDeltaSpider(OutlookFolderTraversal):
                 response.url,
                 evidence.observed_at,
                 observation_kind="delta",
+                authority_scope=folder_id,
                 evidence_id=evidence.evidence_id,
             )
 

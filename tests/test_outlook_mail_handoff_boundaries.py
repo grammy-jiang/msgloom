@@ -119,7 +119,7 @@ def test_folder_tombstone_failure_preserves_presence_and_cursors(setup):
         OutlookDeltaCheckpointStore,
     )
 
-    capture(crawler)
+    capture(crawler, body=b'{"id":"f1","@removed":{"reason":"deleted"}}')
     store.upsert_folder(
         run_id="r1", folder={"id": "f1"}, evidence_id="e1", observed_at=NOW
     )
@@ -163,7 +163,7 @@ def test_older_folder_tombstone_does_not_discard_newer_cursor(setup):
         OutlookDeltaCheckpointStore,
     )
 
-    capture(crawler)
+    capture(crawler, body=b'{"id":"f1","@removed":{"reason":"deleted"}}')
     store.upsert_folder(
         run_id="r2", folder={"id": "f1"}, evidence_id="e1", observed_at=LATER
     )

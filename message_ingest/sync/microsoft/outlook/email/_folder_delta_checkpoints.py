@@ -149,6 +149,8 @@ class OutlookFolderDeltaCheckpointStore:
             FolderDeltaCheckpointCandidate,
         )
 
+        from ._authority_decision import input_digest, replay, seal
+
         with self.catalog.writer_session() as session:
             candidate = session.scalar(
                 select(FolderDeltaCheckpointCandidate).filter_by(
@@ -172,9 +174,18 @@ class OutlookFolderDeltaCheckpointStore:
                     or checkpoint.committed_at != candidate.committed_at
                 ):
                     raise RuntimeError("folder delta candidate displaced")
+                digest = input_digest(session, self.source_id, run_id, "folder_delta")
+                if (
+                    replay(session, self.source_id, run_id, "folder_delta", digest)
+                    is None
+                ):
+                    raise RuntimeError(
+                        "Legacy Mail authority decision requires reacquisition"
+                    )
                 return  # exact idempotent replay must not churn generation
             if self._generation(checkpoint) != baseline:
                 raise RuntimeError("folder delta candidate displaced")
+            digest = input_digest(session, self.source_id, run_id, "folder_delta")
             committed_at = datetime.now(UTC).isoformat()
             if checkpoint is None:
                 session.add(
@@ -189,8 +200,22 @@ class OutlookFolderDeltaCheckpointStore:
                 checkpoint.delta_link = candidate.delta_link
                 checkpoint.committed_at = committed_at
                 checkpoint.run_id = run_id
+            from message_ingest.catalog.stores.microsoft.outlook._email_apply_authority import (
+                apply_mail_observations,
+            )
+            from message_ingest.catalog.stores.microsoft.outlook.email import (
+                OutlookMailStore,
+            )
+
             from ._release import release_mail_authority
 
+            applied = apply_mail_observations(
+                OutlookMailStore(self.catalog, source_id=self.source_id),
+                session,
+                run_id=run_id,
+                authority="folder_delta",
+                scopes={self.source_id},
+            )
             release_mail_authority(
                 self.catalog,
                 session,
@@ -198,8 +223,10 @@ class OutlookFolderDeltaCheckpointStore:
                 run_id=run_id,
                 committed_at=committed_at,
                 subject="folder_delta",
+                applied=applied,
             )
             candidate.committed_at = committed_at
+            seal(session, self.source_id, run_id, "folder_delta", digest, {}, applied)
 
 
 __all__ = ["OutlookFolderDeltaCheckpointStore"]

@@ -7,6 +7,7 @@ import logging
 
 from scrapy.exceptions import NotConfigured
 
+from message_ingest.acquisition.handoff import StorageRelation
 from message_ingest.acquisition.microsoft.outlook.email.profile import FULL_V1
 from message_ingest.catalog.stores.microsoft.outlook.email import OutlookMailStore
 from message_ingest.extensions.catalog import CatalogService
@@ -293,9 +294,12 @@ class OutlookMailPipeline:
             message=item.raw,
             kind=kind,
             selection_id=getattr(item, "selection_id", None),
+            authority_scope=getattr(item, "authority_scope", None),
             evidence_id=item.evidence_id,
             observed_at=item.observed_at,
         )
+        if outcome.storage_relation == StorageRelation.STALE:
+            return self._observation_stats(stat_prefix, outcome.observation_created)
         if outcome.selection_id is None:
             self.store.set_surface(
                 run_id=item.run_id,
@@ -307,6 +311,7 @@ class OutlookMailPipeline:
                 evidence_id=item.evidence_id,
                 observed_at=item.observed_at,
                 profile_version=profile,
+                observation_kind=kind,
             )
         return self._observation_stats(stat_prefix, outcome.observation_created)
 
