@@ -140,13 +140,18 @@ def test_calendar_jobdir_pause_resume_releases_one_group(tmp_path, calendar_serv
         or scope.get("calendar_id") != "default"
         or scope.get("start_datetime") != start
         or scope.get("end_datetime") != end
-        or not isinstance(scope.get("page_size"), int)
-        or not 1 <= scope["page_size"] <= 1000
+        or type(scope.get("page_size")) is not int
+        or scope["page_size"] != 100
     ):
         pytest.fail("Resumed Calendar release lost its exact bounded window scope")
     catalog = Catalog(f"sqlite:///{tmp_path / 'catalog.sqlite3'}")
     try:
         handoff = AcquisitionHandoffStore(catalog)
+        identities = {
+            json.loads(entry["payload"])["resource_identity"] for entry in entries
+        }
+        if identities != {"event-1", "event-2", "event-3"}:
+            pytest.fail("Window release omitted or duplicated exact event identities")
         for entry in entries:
             data = json.loads(entry["payload"])
             if (

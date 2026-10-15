@@ -65,17 +65,25 @@ def test_populated_history_requires_new_release_before_future_only_intake(
     asyncio.run(check())
 
 
+@pytest.mark.parametrize("backup_has_release", [False, True])
 def test_restored_old_a1_backup_cannot_advance_existing_a2_cursor(
-    saved_catalog, tmp_path
+    saved_catalog, tmp_path, backup_has_release
 ):
-    """A catalog backup with the same identity but an older ledger fails closed."""
-    original = release(saved_catalog)
+    """Reject an older same-identity A1 snapshot, including empty release history."""
     backup = tmp_path / "old-a1-backup.sqlite3"
-    with (
-        sqlite3.connect(saved_catalog["database"]) as current,
-        sqlite3.connect(backup) as saved,
-    ):
-        current.backup(saved)
+
+    def backup_catalog():
+        with (
+            sqlite3.connect(saved_catalog["database"]) as current,
+            sqlite3.connect(backup) as saved,
+        ):
+            current.backup(saved)
+
+    if not backup_has_release:
+        backup_catalog()
+    original = release(saved_catalog)
+    if backup_has_release:
+        backup_catalog()
     newer = replace(
         fact(
             "todo",
@@ -105,6 +113,13 @@ def test_restored_old_a1_backup_cannot_advance_existing_a2_cursor(
                 await older_reader.catalog.catalog_identity()
             ):
                 pytest.fail("Backup did not preserve the original A1 catalog identity")
+            backup_ceiling = await older_reader.catalog.max_release_entry_seq(
+                scope.source_id, scope.stream
+            )
+            if backup_ceiling != (original if backup_has_release else 0):
+                pytest.fail(
+                    "A1 backup does not have the expected historic ledger cutoff"
+                )
             result = await run(service, scope, identity="up-to-date")
             workset = await payload(persistence, result)
             cursor = await persistence.get_preparation_intake_cursor(scope)
