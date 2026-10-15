@@ -222,6 +222,7 @@ def release_mail_authority(
                 or accepted.source_state_key != current["source_state_key"]
             ):
                 raise ValueError("Mail component accepted primary is invalid")
+            compatible = []
             for member_id, role in members:
                 if role != "component":
                     continue
@@ -233,8 +234,18 @@ def release_mail_authority(
                     locator is not None
                     and locator.resource_version != accepted.source_state_key
                 ):
-                    raise ValueError("Mail component parent version differs")
-            members.insert(0, (accepted.fact_id, "primary"))
+                    # An independently accepted newer primary can displace
+                    # an older run's discovery component. The late cursor
+                    # still wins; only this stale impact loses publication.
+                    continue
+                compatible.append((member_id, role))
+            if not compatible:
+                continue
+            members = [(accepted.fact_id, "primary"), *compatible]
+        if resource == "message" and kind == ReleaseEntryKind.RESOURCE:
+            # The provider fact iteration is hash ordered, not role ordered.
+            # Keep the exact primary first in the published ordered membership.
+            members.sort(key=lambda item: (item[1] != "primary", item[0]))
         entries.append(
             ReleaseEntrySpec(
                 resource_kind=resource,

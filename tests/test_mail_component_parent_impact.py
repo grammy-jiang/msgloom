@@ -140,3 +140,71 @@ def test_later_independent_same_version_primary_keeps_delta_component_readable(
             await reader.close()
 
     asyncio.run(verify())
+
+
+def test_newer_different_version_does_not_block_mail_cursor(mail_catalog):
+    """An older reconciliation component cannot veto a newer Full version."""
+    from message_ingest.acquisition.handoff import AcquisitionStream
+    from message_ingest.catalog.stores.handoff import AcquisitionHandoffStore
+    from message_ingest.sync.microsoft.outlook.email.checkpoints import (
+        OutlookDeltaCheckpointStore,
+    )
+    from tests._mail_provisional import LATER
+
+    old = {**RAW, "parentFolderId": "inbox"}
+    newer = {**old, "changeKey": "v2", "subject": "new-version"}
+    save_evidence(mail_catalog, "reconcile-old", {"value": [old]})
+    save_evidence(mail_catalog, "full-new", newer)
+    catalog = Catalog(f"sqlite:///{mail_catalog['database']}")
+    store = OutlookMailStore(catalog, source_id=SOURCE)
+    try:
+        validated = prepare(store, "overlap", when=WHEN)
+        original = store.record_message(
+            run_id="overlap",
+            message=old,
+            kind="reconcile",
+            evidence_id="reconcile-old",
+            observed_at=WHEN,
+        )
+        store.set_surface(
+            run_id="overlap",
+            message_id=old["id"],
+            surface="discovery",
+            status="acquired",
+            evidence_id="reconcile-old",
+            observed_at=WHEN,
+            resource_version=original.fact.source_state_key,
+            observation_kind="reconcile",
+        )
+        store.record_message(
+            run_id="independent-full",
+            message=newer,
+            kind="detail",
+            evidence_id="full-new",
+            observed_at=LATER,
+        )
+        committed = promote(store, validated)
+        if committed["committed_folders"] != 1:
+            pytest.fail("Different-version Full capture blocked provider cursor")
+        if (
+            OutlookDeltaCheckpointStore(catalog, SOURCE).get_delta_link("inbox")
+            != "cursor-overlap"
+        ):
+            pytest.fail("Winning provider checkpoint was not promoted")
+        current = store.get_message_state(message_id=old["id"])
+        if current is None or current["latest_observed_at"] != LATER:
+            pytest.fail("Earlier reconciliation replaced independent new message")
+        entries = AcquisitionHandoffStore(catalog).list_release_entries(
+            SOURCE, AcquisitionStream.OUTLOOK_MAIL
+        )
+        if any(
+            member.resource_kind == "message_surface"
+            and member.resource_identity == old["id"]
+            for entry in entries
+            for member in AcquisitionHandoffStore(catalog).load_release_facts(
+                entry["release_entry_seq"]
+            )
+        ):
+            pytest.fail("Obsolete component was released against a newer parent")
+    finally:
+        catalog.close()
