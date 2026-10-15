@@ -27,6 +27,7 @@ from ._email_handoff import (
     verified_digest,
 )
 from ._email_observations import (
+    accepted_is_newer,
     application_fact,
     capture_key,
     head,
@@ -200,6 +201,18 @@ def apply_surfaces(store, session, rows, applied):
                 surface=data["surface"],
             )
         )
+        if record is not None and accepted_is_newer(
+            session,
+            fact.effective_key.digest,
+            row.authority_kind,
+            row.scope_identity,
+            fact.provider_observed_at,
+            record.observed_at,
+        ):
+            # Independent/Full component data is newer than this run's
+            # provisional capture. Do not rewind the mutable projection OR
+            # advance its effective fact pointer/release membership.
+            continue
         if record is None:
             record = MessageSurface(
                 source_id=store.source_id,

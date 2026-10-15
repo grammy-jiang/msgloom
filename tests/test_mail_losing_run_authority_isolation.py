@@ -223,3 +223,27 @@ def test_losing_folder_delta_cannot_suppress_winning_scoped_removal(
             pytest.fail("Winning folder deletion was absent from A2 release")
     finally:
         catalog.close()
+
+
+def test_reconcile_message_is_not_mistaken_for_legacy_delta_projection(tmp_path):
+    """The ordinary global reconcile callback is independent of cursor CAS."""
+    from tests._mail_provisional import prepare, promote
+
+    catalog = _catalog(tmp_path)
+    store = OutlookMailStore(catalog, source_id=SOURCE, spider_name="outlook_delta")
+    try:
+        validated = prepare(store, "reconcile-run")
+        store.record_message(
+            run_id="reconcile-run",
+            kind="reconcile",
+            evidence_id=None,
+            observed_at=CURRENT,
+            message={"id": "orphan", "parentFolderId": "outside"},
+        )
+        outcome = promote(store, validated)
+        if outcome["committed_folders"] != 1:
+            pytest.fail("Valid reconciliation blocked folder delta commit")
+        if store.get_message_state(message_id="orphan") is None:
+            pytest.fail("Independent reconciliation projection was removed")
+    finally:
+        catalog.close()

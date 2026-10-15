@@ -98,10 +98,7 @@ def apply_mail_observations(store, session, *, run_id, authority, scopes):
             or (
                 fact.resource_kind == "message"
                 and fact.component_kind is None
-                and (
-                    fact.resource_identity in legacy_messages
-                    or fact.spider_name == "outlook_delta"
-                )
+                and fact.resource_identity in legacy_messages
             )
         ):
             raise RuntimeError(

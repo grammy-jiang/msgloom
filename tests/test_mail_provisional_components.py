@@ -90,3 +90,47 @@ def test_late_losing_equivalent_selection_cannot_publish_components(mail_catalog
             promote(store, loser)
     finally:
         catalog.close()
+
+
+def test_late_independent_component_does_not_get_overwritten_by_delta() -> None:
+    """A winning cursor does not grant a stale component replacement right."""
+    catalog = Catalog("sqlite:///:memory:")
+    store = OutlookMailStore(catalog, source_id="source")
+    primary = {"id": "m", "subject": "same"}
+    try:
+        store.record_message(
+            run_id="seed",
+            kind="discovery",
+            message=primary,
+            evidence_id=None,
+            observed_at="2026-10-01T00:00:00+00:00",
+        )
+        validated = prepare(store, "delta")
+        pending = capture(store, "delta", primary)
+        store.set_surface(
+            run_id="delta",
+            message_id="m",
+            surface="discovery",
+            status="acquired",
+            evidence_id=None,
+            observed_at="2026-10-01T00:00:00+00:00",
+            resource_version=pending.fact.source_state_key,
+        )
+        store.set_surface(
+            run_id="independent",
+            message_id="m",
+            surface="discovery",
+            status="acquired",
+            evidence_id=None,
+            observed_at="2026-10-02T00:00:00+00:00",
+            profile_version="newer",
+            resource_version=pending.fact.source_state_key,
+        )
+        before = store.get_surfaces(message_id="m")
+        if before["discovery"]["profile_version"] != "newer":
+            pytest.fail("Independent component did not establish newer state")
+        promote(store, validated)
+        if store.get_surfaces(message_id="m") != before:
+            pytest.fail("Earlier delta component replaced newer independent state")
+    finally:
+        catalog.close()
