@@ -123,6 +123,55 @@ def test_calendar_jobdir_pause_resume_releases_one_group(tmp_path, calendar_serv
     groups, entries = read(tmp_path)
     if len(groups) != 1 or len(entries) != 3 or groups[0]["owner_run_id"] != run_id:
         pytest.fail("Resumed window lost one-group logical-run publication")
+    from microsoft_graph.protocol.calendar import calendar_window
+
+    start, end = calendar_window(START, END)
+    group = groups[0]
+    scope = json.loads(group["scope_identity"])
+    if (
+        group["release_kind"] != "resource_set"
+        or group["subject_kind"] != "calendar_window"
+        or group["subject_identity"] != "default"
+        or group["scope_kind"] != "calendar_window"
+        or group["coverage_kind"] != "complete"
+        or group["authority_revision"] is not None
+        or scope.get("source_id") != "calendar-fixture"
+        or scope.get("mailbox") != "me"
+        or scope.get("calendar_id") != "default"
+        or scope.get("start_datetime") != start
+        or scope.get("end_datetime") != end
+        or not isinstance(scope.get("page_size"), int)
+        or not 1 <= scope["page_size"] <= 1000
+    ):
+        pytest.fail("Resumed Calendar release lost its exact bounded window scope")
+    catalog = Catalog(f"sqlite:///{tmp_path / 'catalog.sqlite3'}")
+    try:
+        handoff = AcquisitionHandoffStore(catalog)
+        for entry in entries:
+            data = json.loads(entry["payload"])
+            if (
+                data["entry_kind"] != "resource"
+                or data["resource_kind"] != "calendar_event"
+                or data["resource_identity"] not in {"event-1", "event-2", "event-3"}
+            ):
+                pytest.fail("Window release changed its exact event entry target")
+            members = handoff.load_release_facts(entry["release_entry_seq"])
+            if len(members) != 1:
+                pytest.fail("Window release lost atomic single-fact membership")
+            fact = members[0]
+            if (
+                len(data["facts"]) != 1
+                or data["facts"][0] != [fact.fact_id, "primary"]
+                or fact.resource_kind != "calendar_event"
+                or fact.resource_identity != data["resource_identity"]
+                or fact.run_id != run_id
+                or fact.source_id != "calendar-fixture"
+                or fact.stream != AcquisitionStream.OUTLOOK_CALENDAR
+                or fact.source_version_locator is None
+            ):
+                pytest.fail("Window release lost exact immutable provider provenance")
+    finally:
+        catalog.close()
     if len(seen) != 2 or "$skiptoken=window-page-2" not in seen[-1]:
         pytest.fail("Resume did not use the native saved continuation")
     run(tmp_path, root, job=True)
