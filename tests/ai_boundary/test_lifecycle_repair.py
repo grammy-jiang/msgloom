@@ -459,8 +459,7 @@ async def _pipe_pressure_spawn_timeout(
         if acceptance_count != 2:
             raise RuntimeError("unexpected AI runner acceptance stage")
         await asyncio.wait_for(accepted.wait(), 5)
-        # Give the real child an opportunity to fill stderr before a consumer
-        # attaches. A simulated elapsed deadline is independent of CPU load.
+        # Wait for pipe pressure before the deadline-controlled consumer attaches.
         await asyncio.sleep(0.08)
         release.set()
         await asyncio.wait_for(task, 5)
