@@ -230,57 +230,63 @@ def release_mail_authority(
         impacts.setdefault(key, []).append((fact.fact_id, role))
     for key, members in sorted(impacts.items(), key=lambda item: str(item[0])):
         resource, identity, kind, parent, parent_id, scope, scope_id = key
-        if (
-            resource == "message"
-            and kind == ReleaseEntryKind.RESOURCE
-            and not any(role == "primary" for _, role in members)
-        ):
-            # A later independently accepted Full capture can own the same
-            # exact message version as the winning Delta's component. Pin
-            # that accepted immutable parent, not the losing provisional row.
+        if resource == "message" and kind == ReleaseEntryKind.RESOURCE:
+            primary_ids = [fact_id for fact_id, role in members if role == "primary"]
+            if len(primary_ids) > 1:
+                raise ValueError("Mail impact has ambiguous primary")
             primary_key = EffectiveStateKey(
                 source_id=source_id,
                 stream=AcquisitionStream.OUTLOOK_MAIL,
                 resource_kind="message",
                 resource_identity=identity,
             )
-            current = ledger.current_effective_state(session, primary_key)
-            if current is None:
-                # Historical pre-ledger message state legitimately has no
-                # effective fact. A new component cannot fabricate its
-                # missing primary, but must not veto the provider cursor.
-                continue
-            row = session.get(AcquisitionFact, current["fact_id"])
-            if row is None:
-                raise ValueError("Mail component accepted primary is missing")
-            accepted = FactSpec.from_json(row.payload)
+            if primary_ids:
+                # Even a same-run Full primary cannot acquire a component
+                # captured against an earlier version of the message.
+                accepted = run_facts.get(primary_ids[0])
+                if accepted is None or accepted.effective_key != primary_key:
+                    raise ValueError("Mail impact primary identity is invalid")
+            else:
+                # A later independently accepted Full can provide the exact
+                # same-version primary for a pending Delta component.
+                current = ledger.current_effective_state(session, primary_key)
+                if current is None:
+                    # Pre-ledger history may have no effective fact. Do not
+                    # fabricate a primary or veto the provider cursor.
+                    continue
+                row = session.get(AcquisitionFact, current["fact_id"])
+                if row is None:
+                    raise ValueError("Mail component accepted primary is missing")
+                accepted = FactSpec.from_json(row.payload)
+                if (
+                    accepted.fact_id != current["fact_id"]
+                    or accepted.effective_key != primary_key
+                    or accepted.source_state_key != current["source_state_key"]
+                ):
+                    raise ValueError("Mail component accepted primary is invalid")
+
             version = accepted.source_state_key
-            if (
-                version is None
-                or accepted.fact_id != current["fact_id"]
-                or accepted.effective_key != primary_key
-                or version != current["source_state_key"]
-            ):
-                raise ValueError("Mail component accepted primary is invalid")
-            compatible = []
+            if version is None:
+                raise ValueError("Mail accepted primary has no semantic version")
+            selected = []
             for member_id, role in members:
                 if role != "component":
+                    selected.append((member_id, role))
                     continue
                 component = run_facts.get(member_id)
                 if component is None:
                     raise ValueError("Mail component member is not retained")
-                if not _component_matches_parent_version(component, version):
-                    # A later independent Full can replace the original
-                    # version without invalidating the winning Delta cursor.
-                    # This includes evidence-free terminal surface outcomes.
+                if _component_matches_parent_version(component, version):
+                    selected.append((member_id, role))
+                # A stale component from either this run or a displaced run
+                # does not suppress legitimate cursor or primary publication.
+            if not primary_ids:
+                if not selected:
                     continue
-                compatible.append((member_id, role))
-            if not compatible:
-                continue
-            members = [(accepted.fact_id, "primary"), *compatible]
-        if resource == "message" and kind == ReleaseEntryKind.RESOURCE:
-            # The provider fact iteration is hash ordered, not role ordered.
-            # Keep the exact primary first in the published ordered membership.
+                selected.insert(0, (accepted.fact_id, "primary"))
+            members = selected
+            # Fact iteration is hash ordered. Preserve primary-first membership
+            # independent of callback completion order.
             members.sort(key=lambda item: (item[1] != "primary", item[0]))
         entries.append(
             ReleaseEntrySpec(

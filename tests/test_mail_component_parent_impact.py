@@ -210,12 +210,13 @@ def test_newer_different_version_does_not_block_mail_cursor(mail_catalog):
         catalog.close()
 
 
+@pytest.mark.parametrize("same_run", [False, True])
 @pytest.mark.parametrize(
     ("accepted_version", "component_expected"),
     [("v1", True), ("v2", False)],
 )
 def test_terminal_component_without_locator_cannot_bridge_new_full_version(
-    mail_catalog, accepted_version, component_expected
+    mail_catalog, accepted_version, component_expected, same_run
 ):
     """A terminal status has no evidence locator, but still pins its parent."""
     from message_ingest.acquisition.handoff import AcquisitionStream
@@ -252,7 +253,7 @@ def test_terminal_component_without_locator_cannot_bridge_new_full_version(
             observation_kind="reconcile",
         )
         store.record_message(
-            run_id="later-full",
+            run_id="terminal-overlap" if same_run else "later-full",
             message=new,
             kind="detail",
             evidence_id="accepted-full",
@@ -278,6 +279,35 @@ def test_terminal_component_without_locator_cannot_bridge_new_full_version(
             pytest.fail("An obsolete or valid terminal component was mispublished")
     finally:
         catalog.close()
+
+    if same_run:
+
+        async def verify():
+            reader = reader_api(mail_catalog)
+            try:
+                cutoff = await reader.catalog.max_release_entry_seq(
+                    SOURCE, "outlook_mail"
+                )
+                page = await reader.catalog.list_release_entries(
+                    SOURCE, "outlook_mail", after_seq=0, through_seq=cutoff, limit=20
+                )
+                messages = [
+                    entry
+                    for entry in page.entries
+                    if entry.resource_kind == "message"
+                    and entry.resource_identity == old["id"]
+                ]
+                if len(messages) != 1:
+                    pytest.fail("Accepted same-run primary lost its release")
+                released = await reader.read_entry(messages[0].reference)
+                if released.selection is None or (
+                    len(released.components) != int(component_expected)
+                ):
+                    pytest.fail("Released same-run message has wrong exact components")
+            finally:
+                await reader.close()
+
+        asyncio.run(verify())
 
 
 def test_preledger_equivalent_primary_cannot_block_valid_cursor(mail_catalog):
