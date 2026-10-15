@@ -208,3 +208,147 @@ def test_newer_different_version_does_not_block_mail_cursor(mail_catalog):
             pytest.fail("Obsolete component was released against a newer parent")
     finally:
         catalog.close()
+
+
+@pytest.mark.parametrize(
+    ("accepted_version", "component_expected"),
+    [("v1", True), ("v2", False)],
+)
+def test_terminal_component_without_locator_cannot_bridge_new_full_version(
+    mail_catalog, accepted_version, component_expected
+):
+    """A terminal status has no evidence locator, but still pins its parent."""
+    from message_ingest.acquisition.handoff import AcquisitionStream
+    from message_ingest.catalog.stores.handoff import AcquisitionHandoffStore
+    from message_ingest.sync.microsoft.outlook.email.checkpoints import (
+        OutlookDeltaCheckpointStore,
+    )
+    from tests._mail_provisional import LATER
+
+    old = {**RAW, "parentFolderId": "inbox"}
+    new = {**old, "changeKey": accepted_version, "subject": "accepted-Full"}
+    save_evidence(mail_catalog, "old-reconcile", {"value": [old]})
+    save_evidence(mail_catalog, "accepted-full", new)
+    catalog = Catalog(f"sqlite:///{mail_catalog['database']}")
+    store = OutlookMailStore(catalog, source_id=SOURCE)
+    try:
+        validated = prepare(store, "terminal-overlap", when=WHEN)
+        original = store.record_message(
+            run_id="terminal-overlap",
+            message=old,
+            kind="reconcile",
+            evidence_id="old-reconcile",
+            observed_at=WHEN,
+        )
+        store.set_surface(
+            run_id="terminal-overlap",
+            message_id=old["id"],
+            surface="mime",
+            status="unsupported",
+            evidence_id=None,
+            observed_at=WHEN,
+            profile_version="full-v1",
+            resource_version=original.fact.source_state_key,
+            observation_kind="reconcile",
+        )
+        store.record_message(
+            run_id="later-full",
+            message=new,
+            kind="detail",
+            evidence_id="accepted-full",
+            observed_at=LATER,
+        )
+        outcome = promote(store, validated)
+        if outcome["committed_folders"] != 1:
+            pytest.fail("Terminal component overlap blocked legitimate cursor CAS")
+        if (
+            OutlookDeltaCheckpointStore(catalog, SOURCE).get_delta_link("inbox")
+            != "cursor-terminal-overlap"
+        ):
+            pytest.fail("Terminal component overlap lost the winning cursor")
+        ledger = AcquisitionHandoffStore(catalog)
+        entries = ledger.list_release_entries(SOURCE, AcquisitionStream.OUTLOOK_MAIL)
+        components = [
+            member
+            for entry in entries
+            for member in ledger.load_release_facts(entry["release_entry_seq"])
+            if member.resource_identity == old["id"] and member.component_kind == "mime"
+        ]
+        if bool(components) is not component_expected:
+            pytest.fail("An obsolete or valid terminal component was mispublished")
+    finally:
+        catalog.close()
+
+
+def test_preledger_equivalent_primary_cannot_block_valid_cursor(mail_catalog):
+    """A pre-ledger historical message may have no accepted effective pointer."""
+    from message_ingest.acquisition.handoff import AcquisitionStream
+    from message_ingest.catalog.models.microsoft.outlook.email import MessageRecord
+    from message_ingest.catalog.stores.handoff import AcquisitionHandoffStore
+    from message_ingest.sync.microsoft.outlook.email.checkpoints import (
+        OutlookDeltaCheckpointStore,
+    )
+    from tests._mail_provisional import LATER
+
+    raw = {**RAW, "parentFolderId": "inbox"}
+    save_evidence(mail_catalog, "historic-primary", {"value": [raw]})
+    save_evidence(mail_catalog, "reconcile-retry", {"value": [raw]})
+    catalog = Catalog(f"sqlite:///{mail_catalog['database']}")
+    store = OutlookMailStore(catalog, source_id=SOURCE)
+    try:
+        with catalog.writer_session() as session:
+            session.add(
+                MessageRecord(
+                    source_id=SOURCE,
+                    message_id=raw["id"],
+                    subject=raw["subject"],
+                    latest_evidence_id="historic-primary",
+                    latest_observed_at=WHEN,
+                    is_removed=False,
+                )
+            )
+        validated = prepare(store, "preledger-reconcile", when=WHEN)
+        equivalent = store.record_message(
+            run_id="preledger-reconcile",
+            kind="reconcile",
+            message=raw,
+            evidence_id="reconcile-retry",
+            observed_at=LATER,
+        )
+        store.set_surface(
+            run_id="preledger-reconcile",
+            message_id=raw["id"],
+            surface="discovery",
+            status="acquired",
+            evidence_id="reconcile-retry",
+            observed_at=LATER,
+            resource_version=equivalent.fact.source_state_key,
+            observation_kind="reconcile",
+        )
+        with catalog.Session() as session:
+            if (
+                AcquisitionHandoffStore(catalog).current_effective_state(
+                    session, equivalent.fact.effective_key
+                )
+                is not None
+            ):
+                pytest.fail("Fixture unexpectedly acquired a post-ledger primary")
+        promote(store, validated)
+        if (
+            OutlookDeltaCheckpointStore(catalog, SOURCE).get_delta_link("inbox")
+            != "cursor-preledger-reconcile"
+        ):
+            pytest.fail("Equivalent pre-ledger message blocked valid provider cursor")
+        released = AcquisitionHandoffStore(catalog).list_release_entries(
+            SOURCE, AcquisitionStream.OUTLOOK_MAIL
+        )
+        if any(
+            fact.resource_identity == raw["id"]
+            for entry in released
+            for fact in AcquisitionHandoffStore(catalog).load_release_facts(
+                entry["release_entry_seq"]
+            )
+        ):
+            pytest.fail("Unreleased historical primary produced fabricated new work")
+    finally:
+        catalog.close()

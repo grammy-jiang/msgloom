@@ -22,6 +22,41 @@ from message_ingest.catalog.models.handoff import AcquisitionFact
 from message_ingest.catalog.stores.handoff import AcquisitionHandoffStore
 
 
+def _component_matches_parent_version(fact: FactSpec, version: str) -> bool:
+    """Check the exact original parent even for evidence-free terminal outcomes.
+
+    A terminal unsupported/unavailable Mail surface has no evidence locator.
+    The component state hash still includes its original resource_version,
+    so reconstruct that bounded producer-owned semantic state before deciding
+    whether a later accepted Full primary can serve as its exact parent.
+    """
+    locator = fact.source_version_locator
+    if locator is not None:
+        return locator.resource_version == version
+    if (
+        fact.resource_kind != "message_surface"
+        or not fact.component_kind
+        or fact.evidence_id is not None
+    ):
+        return False
+    from message_ingest.catalog.stores.microsoft.outlook._email_handoff import (
+        decode_surface_reason,
+    )
+
+    status, profile = decode_surface_reason(fact.transition_reason)
+    state = {
+        "surface": fact.component_kind,
+        "status": status,
+        "profile": profile,
+        "resource_version": version,
+    }
+    if status == "acquired":
+        if fact.component_kind != "discovery":
+            return False
+        state["representation"] = version
+    return source_state_key(state) == fact.source_state_key
+
+
 def stage_presence(
     store,
     session,
@@ -211,15 +246,20 @@ def release_mail_authority(
             )
             current = ledger.current_effective_state(session, primary_key)
             if current is None:
-                raise ValueError("Mail component has no accepted primary")
+                # Historical pre-ledger message state legitimately has no
+                # effective fact. A new component cannot fabricate its
+                # missing primary, but must not veto the provider cursor.
+                continue
             row = session.get(AcquisitionFact, current["fact_id"])
             if row is None:
                 raise ValueError("Mail component accepted primary is missing")
             accepted = FactSpec.from_json(row.payload)
+            version = accepted.source_state_key
             if (
-                accepted.fact_id != current["fact_id"]
+                version is None
+                or accepted.fact_id != current["fact_id"]
                 or accepted.effective_key != primary_key
-                or accepted.source_state_key != current["source_state_key"]
+                or version != current["source_state_key"]
             ):
                 raise ValueError("Mail component accepted primary is invalid")
             compatible = []
@@ -229,14 +269,10 @@ def release_mail_authority(
                 component = run_facts.get(member_id)
                 if component is None:
                     raise ValueError("Mail component member is not retained")
-                locator = component.source_version_locator
-                if (
-                    locator is not None
-                    and locator.resource_version != accepted.source_state_key
-                ):
-                    # An independently accepted newer primary can displace
-                    # an older run's discovery component. The late cursor
-                    # still wins; only this stale impact loses publication.
+                if not _component_matches_parent_version(component, version):
+                    # A later independent Full can replace the original
+                    # version without invalidating the winning Delta cursor.
+                    # This includes evidence-free terminal surface outcomes.
                     continue
                 compatible.append((member_id, role))
             if not compatible:
