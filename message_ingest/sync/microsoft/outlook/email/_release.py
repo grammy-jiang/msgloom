@@ -9,6 +9,7 @@ from message_ingest.acquisition.handoff import (
 )
 from message_ingest.acquisition.handoff import (
     AcquisitionStream,
+    EffectiveStateKey,
     FactSpec,
     ReleaseEntryKind,
     ReleaseEntrySpec,
@@ -128,6 +129,7 @@ def release_mail_authority(
         Kind.SCOPED_STATE_TRANSITION: ("transition", ReleaseEntryKind.TRANSITION),
     }
     impacts = {}
+    run_facts = {fact.fact_id: fact for fact in facts}
     included = set()
     for fact in sorted(facts, key=lambda value: value.fact_id):
         if fact.fact_id in retained and fact.fact_id not in winning:
@@ -161,18 +163,78 @@ def release_mail_authority(
         if (effective_id, role) in included:
             continue
         included.add((effective_id, role))
-        key = (
-            fact.resource_kind,
-            fact.resource_identity,
-            kind,
-            fact.parent_resource_kind,
-            fact.parent_resource_identity,
-            fact.scope_kind,
-            fact.scope_identity,
-        )
+        # A Mail component changes the exact message it belongs to. Releasing
+        # a stand-alone message_surface entry would force the A2 Reader to
+        # reconstruct a component without the immutable primary it requires.
+        # Preserve other direct impacts (folders, presence and transitions).
+        if (
+            kind == ReleaseEntryKind.COMPONENT
+            and fact.parent_resource_kind == "message"
+        ):
+            if not fact.parent_resource_identity:
+                raise ValueError("Mail component has no original message parent")
+            key = (
+                "message",
+                fact.parent_resource_identity,
+                ReleaseEntryKind.RESOURCE,
+                None,
+                None,
+                None,
+                None,
+            )
+        else:
+            key = (
+                fact.resource_kind,
+                fact.resource_identity,
+                kind,
+                fact.parent_resource_kind,
+                fact.parent_resource_identity,
+                fact.scope_kind,
+                fact.scope_identity,
+            )
         impacts.setdefault(key, []).append((fact.fact_id, role))
     for key, members in sorted(impacts.items(), key=lambda item: str(item[0])):
         resource, identity, kind, parent, parent_id, scope, scope_id = key
+        if (
+            resource == "message"
+            and kind == ReleaseEntryKind.RESOURCE
+            and not any(role == "primary" for _, role in members)
+        ):
+            # A later independently accepted Full capture can own the same
+            # exact message version as the winning Delta's component. Pin
+            # that accepted immutable parent, not the losing provisional row.
+            primary_key = EffectiveStateKey(
+                source_id=source_id,
+                stream=AcquisitionStream.OUTLOOK_MAIL,
+                resource_kind="message",
+                resource_identity=identity,
+            )
+            current = ledger.current_effective_state(session, primary_key)
+            if current is None:
+                raise ValueError("Mail component has no accepted primary")
+            row = session.get(AcquisitionFact, current["fact_id"])
+            if row is None:
+                raise ValueError("Mail component accepted primary is missing")
+            accepted = FactSpec.from_json(row.payload)
+            if (
+                accepted.fact_id != current["fact_id"]
+                or accepted.effective_key != primary_key
+                or accepted.source_state_key != current["source_state_key"]
+            ):
+                raise ValueError("Mail component accepted primary is invalid")
+            for member_id, role in members:
+                if role != "component":
+                    continue
+                component = run_facts.get(member_id)
+                if component is None:
+                    raise ValueError("Mail component member is not retained")
+                locator = component.source_version_locator
+                if (
+                    locator is not None
+                    and locator.resource_version != accepted.source_state_key
+                ):
+                    raise ValueError("Mail component parent version differs")
+            members.insert(0, (accepted.fact_id, "primary"))
         entries.append(
             ReleaseEntrySpec(
                 resource_kind=resource,
