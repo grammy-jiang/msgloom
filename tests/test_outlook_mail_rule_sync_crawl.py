@@ -61,6 +61,10 @@ def rules_sync_graph_server(tmp_path: Path):
             requests_seen.append(self.path)
             path = parsed.path.removeprefix("/v1.0")
             query = parse_qs(parsed.query)
+            # Observe or fail a response without replacing native crawl work.
+            hook = state.get("component_response")
+            if callable(hook) and hook(self, path):
+                return
 
             if path == "/me/mailFolders/delta":
                 self._json(
