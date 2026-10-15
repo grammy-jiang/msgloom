@@ -214,6 +214,10 @@ class MailAssociations:
         capture_id = capture_id or semantic_digest(identity)
         identifier(capture_id, 64)
         existing = session.get(Capture, capture_id)
+        if existing is None:
+            from ._email_observations import require_open
+
+            require_open(session, self.source, run_id, "message_delta")
         ordinal = (
             existing.ordinal
             if existing
@@ -269,7 +273,13 @@ class MailAssociations:
                 Binding.primary_fact_id == current.fact_id,
             )
         ).all()
-        selected = {row.selection_id: row for row in selections}
+        from ._email_pending_components import selection_is_accepted
+
+        selected = {
+            row.selection_id: row
+            for row in selections
+            if selection_is_accepted(session, row)
+        }
         if not selected:
             return
         rows = session.scalars(

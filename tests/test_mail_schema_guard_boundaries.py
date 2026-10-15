@@ -29,6 +29,11 @@ MAIL_DELTA_GUARDS = {
     "mail_folder_delta_candidate_bases_immutable_insert",
     "mail_folder_delta_candidate_bases_immutable_update",
 }
+MAIL_AUTHORITY_GUARDS = {
+    f"{table}_immutable_{operation}"
+    for table in ("mail_authority_observations", "mail_authority_decisions")
+    for operation in ("insert", "update", "delete")
+}
 SHARED_GUARDS = {
     "immutable_acquisition_facts_INSERT",
     "immutable_acquisition_release_groups_INSERT",
@@ -77,7 +82,9 @@ def seeded(tmp_path):
     actual_mail = {
         name
         for name in definitions
-        if name.startswith("mail_") and name not in MAIL_DELTA_GUARDS
+        if name.startswith("mail_")
+        and name not in MAIL_DELTA_GUARDS
+        and name not in MAIL_AUTHORITY_GUARDS
     }
     actual_causal = MAIL_DELTA_GUARDS & set(definitions)
     actual_shared = {
@@ -86,9 +93,11 @@ def seeded(tmp_path):
         if "BEFORE INSERT" in sql
         and name not in MAIL_GUARDS
         and name not in MAIL_DELTA_GUARDS
+        and name not in MAIL_AUTHORITY_GUARDS
     }
     if (
-        actual_mail != MAIL_GUARDS
+        (MAIL_AUTHORITY_GUARDS & set(definitions)) != MAIL_AUTHORITY_GUARDS
+        or actual_mail != MAIL_GUARDS
         or actual_causal != MAIL_DELTA_GUARDS
         or actual_shared != SHARED_GUARDS
     ):

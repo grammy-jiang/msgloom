@@ -11,7 +11,7 @@ from message_ingest.catalog.models.microsoft.outlook.email import (
     MailFolderSighting,
 )
 
-from ._email_handoff import MailFactWriter, is_stale
+from ._email_handoff import MailFactWriter
 from ._mail_delta_absence import bump_absence_generation
 
 
@@ -25,43 +25,21 @@ def mark_folder_removed(
     reason,
 ):
     """Stage exact folder control and transition facts without authority."""
+    from ._email_pending_folders import stage_folder
+
     with store.catalog.writer_session() as session:
-        presence = session.scalar(
-            select(MailFolderPresence).filter_by(
-                source_id=store.source_id,
-                folder_id=folder_id,
-            )
-        )
-        stale = is_stale(observed_at, presence.latest_observed_at if presence else None)
-        writer = MailFactWriter(store.catalog, store.source_id, store.spider_name)
-        outcome = writer.stage(
+        folder = {"id": folder_id}
+        if reason is not None:
+            folder["@removed"] = {"reason": reason}
+        return stage_folder(
+            store,
             session,
+            folder=folder,
             run_id=run_id,
-            resource_id=folder_id,
-            resource_kind="mail_folder",
-            kind=Kind.CONTROL_CONTEXT,
-            state={"is_present": False},
-            evidence_id=evidence_id,
             observed_at=observed_at,
-            stale=stale,
-            authority=True,
-        )
-        writer.stage(
-            session,
-            run_id=run_id,
-            resource_id=folder_id,
-            resource_kind="mail_folder",
-            kind=Kind.SCOPED_STATE_TRANSITION,
-            component="folder_presence",
-            scope_id=folder_id,
-            state={"is_present": False},
             evidence_id=evidence_id,
-            observed_at=observed_at,
-            stale=stale,
-            authority=True,
-            reason="folder_delta_removed",
+            present=False,
         )
-        return outcome
 
 
 def apply_folder_transitions(session, source_id, facts):
@@ -183,10 +161,15 @@ def mark_folder_present_in_session(
         presence.latest_run_id = run_id
         presence.latest_observed_at = observed_at
         presence.latest_evidence_id = evidence_id
+    record_folder_sighting(self, session, folder_id, run_id, observed_at, evidence_id)
+
+
+def record_folder_sighting(store, session, folder_id, run_id, observed_at, evidence_id):
+    """Keep a run's inventory evidence independently of metadata freshness."""
     if run_id:
         existing = session.scalar(
             select(MailFolderSighting.id).filter_by(
-                source_id=self.source_id,
+                source_id=store.source_id,
                 run_id=run_id,
                 folder_id=folder_id,
             )
@@ -194,7 +177,7 @@ def mark_folder_present_in_session(
         if existing is None:
             session.add(
                 MailFolderSighting(
-                    source_id=self.source_id,
+                    source_id=store.source_id,
                     run_id=run_id,
                     folder_id=folder_id,
                     observed_at=observed_at,

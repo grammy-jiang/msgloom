@@ -72,6 +72,7 @@ class OutlookMailSpider(GraphMail, OutlookMailboxSpider, ABC):
         *,
         observation_kind: str,
         evidence_id: str | None,
+        authority_scope: str | None = None,
     ) -> OutlookMailItem:
         """Retain the raw message beside searchable Mail projections."""
         return OutlookMailItem.from_graph(
@@ -79,6 +80,7 @@ class OutlookMailSpider(GraphMail, OutlookMailboxSpider, ABC):
             source_response_url=source_response_url,
             observed_at=observed_at,
             observation_kind=observation_kind,
+            authority_scope=authority_scope,
             evidence_id=evidence_id,
             run_id=self.run_id,
         )

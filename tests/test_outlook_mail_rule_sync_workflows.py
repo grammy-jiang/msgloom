@@ -118,6 +118,7 @@ def _capture_enabled_mail_workflow(
                     "lastModifiedDateTime": NOW,
                 },
                 kind="delta",
+                authority_scope="folder-inbox",
                 evidence_id=None,
                 observed_at=NOW,
             )
@@ -166,6 +167,7 @@ def test_rules_enabled_mail_sync_uses_runtime_full_targets_and_skips_legacy_back
             run_id="old-run",
             message={"id": "historical-backlog", "lastModifiedDateTime": NOW},
             kind="delta",
+            authority_scope="folder-inbox",
             evidence_id=None,
             observed_at=NOW,
         )
@@ -254,6 +256,7 @@ def test_rules_enabled_delta_refuses_unprofiled_current_observation(
                 "lastModifiedDateTime": NOW,
             },
             kind="delta",
+            authority_scope="folder-inbox",
             evidence_id=None,
             observed_at=NOW,
         )

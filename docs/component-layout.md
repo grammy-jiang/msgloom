@@ -597,6 +597,18 @@ The mailbox-level mailFolder delta cursor uses a **distinct**, source-scoped
 causal candidate table and the same transactional CAS rule; unlike message
 delta it rejects JOBDIR and always binds its first request in a fresh Spider
 start. Later arrival timestamps cannot establish Graph token ancestry.
+
+Mail delta input is provisional. The callback carries its original folder
+scope separately from the message's mutable `parentFolderId`. Mail-owned
+observation rows retain exact fields, evidence, fact identity, and local capture
+order. Only the validated cursor owner applies those rows, effective pointers,
+presence, and releases in its original writer transaction. Independent discovery
+and Full observations retain their existing freshness rules. Sealed decisions
+make exact promotion retries read-only. Legacy pending inputs without retained
+projections require reacquisition. See
+[Mail provisional authority](notes/mail-provisional-authority.md) for storage,
+recovery, and failure behavior.
+
 `protocol/calendar.py` validates timezone-aware increasing window bounds,
 derives series-master relations, and validates cancelled/exception occurrence
 lists. It does not decide topology freshness, persistence, or acquisition scope.

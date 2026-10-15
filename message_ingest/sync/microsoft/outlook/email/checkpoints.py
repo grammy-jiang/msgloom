@@ -234,6 +234,7 @@ class OutlookDeltaCheckpointStore:
         validated,
         *,
         committed_at: str,
+        validate_only: bool = False,
     ) -> int:
         """CAS all folder candidates against their first-request baseline.
 
@@ -293,6 +294,8 @@ class OutlookDeltaCheckpointStore:
             ):
                 raise RuntimeError("mail delta candidate displaced")
             updates.append((candidate, checkpoint))
+        if validate_only:
+            return len(candidates)
         for candidate, checkpoint in updates:
             if checkpoint is None:
                 session.add(

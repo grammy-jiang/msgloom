@@ -72,6 +72,23 @@ class OutlookMailComponentStore(OutlookMailLifecycleStore):
                     run_id=run_id,
                     capture_id=capture_id,
                 )
+            from ._email_pending_components import pending_primary, stage_surface
+
+            parent = pending_primary(session, self.source_id, run_id, message_id)
+            if parent is not None:
+                return stage_surface(
+                    self,
+                    session,
+                    parent,
+                    run_id=run_id,
+                    message_id=message_id,
+                    surface=surface,
+                    status=status,
+                    evidence_id=evidence_id,
+                    observed_at=observed_at,
+                    profile_version=profile_version,
+                    resource_version=resource_version,
+                )
             record = session.scalar(
                 select(MessageSurface).filter_by(
                     source_id=self.source_id,
@@ -188,6 +205,10 @@ class OutlookMailComponentStore(OutlookMailLifecycleStore):
                     capture_id=capture_id,
                     metadata=projection(attachment),
                 )
+            from ._email_pending_components import pending_primary
+
+            if pending_primary(session, self.source_id, run_id, message_id) is not None:
+                raise ValueError("Delta attachment requires an exact primary selection")
             record = session.scalar(
                 select(AttachmentRecord).filter_by(
                     source_id=self.source_id,
@@ -258,8 +279,9 @@ class OutlookMailComponentStore(OutlookMailLifecycleStore):
         """
         Persist observed folder metadata and its exact context fact together.
 
-        Metadata is accepted source observation. Folder-delta presence remains
-        staged by the lifecycle helper until the cursor transaction wins.
+        Folder-delta metadata and presence remain provisional until their
+        cursor wins. Independent inventory metadata retains freshness checks;
+        each run keeps its own sighting even when its metadata is older.
         """
         folder_id = folder["id"]
         fields = {
@@ -271,6 +293,18 @@ class OutlookMailComponentStore(OutlookMailLifecycleStore):
             "is_hidden": folder.get("isHidden"),
         }
         with self.catalog.writer_session() as session:
+            if self.spider_name == "outlook_folder_delta":
+                from ._email_pending_folders import stage_folder
+
+                return stage_folder(
+                    self,
+                    session,
+                    folder=folder,
+                    run_id=run_id,
+                    observed_at=observed_at,
+                    evidence_id=evidence_id,
+                    present=True,
+                )
             record = session.scalar(
                 select(MailFolderRecord).filter_by(
                     source_id=self.source_id,
@@ -313,7 +347,13 @@ class OutlookMailComponentStore(OutlookMailLifecycleStore):
                     observed_at=observed_at,
                     evidence_id=evidence_id,
                 )
-            return self._facts().stage(
+            else:
+                from ._email_release_folders import record_folder_sighting
+
+                record_folder_sighting(
+                    self, session, folder_id, run_id, observed_at, evidence_id
+                )
+            outcome = self._facts().stage(
                 session,
                 run_id=run_id,
                 resource_id=folder_id,
@@ -324,5 +364,9 @@ class OutlookMailComponentStore(OutlookMailLifecycleStore):
                 observed_at=observed_at,
                 stale=stale,
                 equivalent=equivalent,
-                authority=self.spider_name == "outlook_folder_delta",
             )
+            if not stale:
+                from ._email_observations import set_owner
+
+                set_owner(session, outcome.fact)
+            return outcome

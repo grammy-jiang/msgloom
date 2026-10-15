@@ -66,7 +66,7 @@ def test_equal_time_competing_states_fail_closed(tmp_path):
                     observed_at="2026-10-01T00:00:00+00:00",
                     authority=True,
                 )
-        with pytest.raises(ValueError, match="Ambiguous"):
+        with pytest.raises(RuntimeError, match="requires reacquisition"):
             folders.commit("r")
         if folders.get_delta_link() is not None:
             pytest.fail("Ambiguous state advanced folder cursor")
@@ -107,17 +107,15 @@ def test_many_equivalent_facts_make_one_bounded_impact(tmp_path):
     try:
         store, checkpoints = _seed_baseline(catalog)
         validated = _stage_current(store, checkpoints)
-        writer = MailFactWriter(catalog, SOURCE, "outlook_delta")
-        with catalog.writer_session() as session:
-            for order in range(130):
-                writer.stage(
-                    session,
-                    run_id="current",
-                    resource_id="new-message",
-                    state={"id": "new-message"},
-                    evidence_id=None,
-                    observed_at=f"2026-10-01T00:00:{order % 60:02d}.{order:06d}+00:00",
-                )
+        for order in range(130):
+            store.record_message(
+                run_id="current",
+                kind="delta",
+                authority_scope="keep",
+                message={"id": "new-message", "changeKey": "unchanged"},
+                evidence_id=None,
+                observed_at=f"2026-10-01T00:00:00.{order:06d}+00:00",
+            )
         promote_validated_mail_delta(catalog, source_id=SOURCE, validated=validated)
         with catalog.Session() as session:
             count = session.execute(

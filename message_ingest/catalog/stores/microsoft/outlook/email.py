@@ -40,10 +40,25 @@ class OutlookMailStore(OutlookMailComponentStore):
         evidence_id: str | None,
         observed_at: str,
         selection_id: str | None = None,
+        authority_scope: str | None = None,
     ) -> MailPersistenceOutcome:
         """Commit projection, observation, and exact primary fact together."""
         message_id = message["id"]
         with self.catalog.writer_session() as session:
+            if kind == "delta" or authority_scope is not None:
+                from ._email_pending_messages import record_pending_message
+
+                return record_pending_message(
+                    self,
+                    session,
+                    run_id=run_id,
+                    message=message,
+                    kind=kind,
+                    evidence_id=evidence_id,
+                    observed_at=observed_at,
+                    selection_id=selection_id,
+                    authority_scope=authority_scope,
+                )
             record = session.scalar(
                 select(MessageRecord).filter_by(
                     source_id=self.source_id,
@@ -140,6 +155,10 @@ class OutlookMailStore(OutlookMailComponentStore):
                 stale=stale,
                 equivalent=equivalent,
             )
+            if not stale:
+                from ._email_observations import set_owner
+
+                set_owner(session, outcome.fact)
             if selection_id is not None:
                 from message_ingest.acquisition.microsoft.outlook.email.profile import (
                     FULL_V1,
@@ -180,6 +199,48 @@ class OutlookMailStore(OutlookMailComponentStore):
     ) -> bool:
         """Record removal from one folder without inferring global deletion."""
         with self.catalog.writer_session() as session:
+            from message_ingest.acquisition.handoff import (
+                AcquisitionStream,
+                EffectiveStateKey,
+            )
+
+            from ._email_observations import (
+                capture_key,
+                head,
+                require_open,
+                retain,
+                verify_resource,
+            )
+
+            if not run_id or not folder_id:
+                raise ValueError("Membership removal requires original run and scope")
+            key = EffectiveStateKey(
+                source_id=self.source_id,
+                stream=AcquisitionStream.OUTLOOK_MAIL,
+                resource_kind="message",
+                resource_identity=message_id,
+                component_kind="folder_membership",
+                scope_kind="mail_folder",
+                scope_identity=folder_id,
+            ).digest
+            resource = {"id": message_id, "@removed": {}}
+            if removed_reason is not None:
+                resource["@removed"] = {"reason": removed_reason}
+            capture = capture_key(resource, folder_id, evidence_id, observed_at)
+            previous = head(
+                session,
+                self.source_id,
+                run_id,
+                "message_delta",
+                folder_id,
+                "message",
+                message_id,
+                effective_key=key,
+            )
+            if previous is not None and previous.capture_key == capture:
+                return False
+            require_open(session, self.source_id, run_id, "message_delta")
+            verify_resource(session, self.source_id, evidence_id, resource)
             observation, created = self._add_observation(
                 session,
                 MessageObservation(
@@ -195,7 +256,7 @@ class OutlookMailStore(OutlookMailComponentStore):
                     removed_reason=removed_reason,
                 ),
             )
-            self._facts().stage(
+            outcome = self._facts().stage(
                 session,
                 run_id=run_id,
                 resource_id=message_id,
@@ -208,6 +269,14 @@ class OutlookMailStore(OutlookMailComponentStore):
                 observation_id=observation.observation_id,
                 authority=True,
                 reason="folder_membership_removed",
+            )
+            retain(
+                session,
+                outcome.fact,
+                authority="message_delta",
+                scope=folder_id,
+                capture=capture,
+                payload={"resource": resource},
             )
             return created
 
@@ -269,7 +338,15 @@ class OutlookMailStore(OutlookMailComponentStore):
                 MessageRecord.latest_observed_at.desc(),
                 MessageRecord.message_id,
             )
-            return list(session.scalars(stmt).all())
+            ids = list(session.scalars(stmt).all())
+            if normalized_runs:
+                from ._email_authority_planning import pending_message_ids
+
+                pending = pending_message_ids(
+                    session, self.source_id, normalized_runs, normalized_kinds
+                )
+                ids.extend(sorted(pending - set(ids)))
+            return ids
 
     def full_binding_state(self, *, message_id: str) -> dict[str, Any]:
         """Return a coherent exact application and selected inventory."""

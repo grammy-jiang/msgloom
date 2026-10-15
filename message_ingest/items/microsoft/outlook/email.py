@@ -25,6 +25,7 @@ class OutlookMailItem(GraphOutlookMessageItem):
     observation_kind: str
     evidence_id: str | None
     run_id: str | None
+    authority_scope: str | None = None
 
 
 @dataclass(slots=True)

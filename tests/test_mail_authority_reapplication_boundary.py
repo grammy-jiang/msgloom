@@ -1,14 +1,12 @@
 """Guard Mail authority publication after A/B/A exact-capture reapplication."""
 
-from datetime import UTC, datetime
-
 import pytest
 
 from message_ingest.acquisition.handoff import AcquisitionStream, StorageRelation
 from message_ingest.catalog import Catalog
 from message_ingest.catalog.stores.handoff import AcquisitionHandoffStore
 from message_ingest.catalog.stores.microsoft.outlook.email import OutlookMailStore
-from message_ingest.sync.microsoft.outlook.email._release import release_mail_authority
+from tests._mail_provisional import prepare, promote
 from tests.source_reader.authority_release_helpers import CURRENT, MESSAGE
 from tests.source_reader.release_mail_helpers import mail_catalog as _mail_catalog
 from tests.source_reader.release_nonmail_helpers import SOURCE, save_evidence
@@ -26,6 +24,7 @@ def test_mail_authority_preserves_advanced_a_b_a_exact_capture(mail_catalog) -> 
     catalog = Catalog(f"sqlite:///{saved['database']}")
     store = OutlookMailStore(catalog, source_id=SOURCE)
     try:
+        validated = prepare(store, "same-authority-run", when=CURRENT)
         first = store.record_message(
             run_id="same-authority-run",
             message=a,
@@ -57,16 +56,11 @@ def test_mail_authority_preserves_advanced_a_b_a_exact_capture(mail_catalog) -> 
         ledger = AcquisitionHandoffStore(catalog)
         with catalog.writer_session() as writer:
             current = ledger.current_effective_state(writer, latest.fact.effective_key)
-            if current is None or current["fact_id"] != latest.fact.fact_id:
-                pytest.fail("Reapplied A is not effective prior to publication")
-            release_mail_authority(
-                catalog,
-                writer,
-                source_id=SOURCE,
-                run_id="same-authority-run",
-                committed_at=datetime.now(UTC).isoformat(),
-                subject="message_delta",
-            )
+            if current is not None:
+                pytest.fail(
+                    "Provisional A/B/A became effective before cursor ownership"
+                )
+        promote(store, validated)
         rows = ledger.list_release_entries(
             SOURCE, AcquisitionStream.OUTLOOK_MAIL, after_seq=0, limit=100
         )

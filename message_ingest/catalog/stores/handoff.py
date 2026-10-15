@@ -121,12 +121,18 @@ class AcquisitionHandoffStore:
         )
         return spec
 
-    def _make_effective(self, writer: Writer, spec: FactSpec) -> None:
+    def _make_effective(
+        self, writer: Writer, spec: FactSpec, *, exact: bool = False
+    ) -> None:
         if spec.source_state_key is None:
             raise ValueError("Effective state requires source_state_key")
         values = {"fact_id": spec.fact_id, "source_state_key": spec.source_state_key}
         current = self.current_effective_state(writer, spec.effective_key)
-        if current is not None and current["source_state_key"] == spec.source_state_key:
+        if (
+            not exact
+            and current is not None
+            and current["source_state_key"] == spec.source_state_key
+        ):
             return
         if current is None:
             writer.execute(
@@ -159,10 +165,19 @@ class AcquisitionHandoffStore:
         state; the old fact and every older recovery pin remain immutable.
         Repeating the currently effective application remains idempotent.
         """
+        current = self.current_effective_state(writer, spec.effective_key)
+        return self._stage_state(writer, spec, current, apply=True)
+
+    def stage_provisional_fact_in_session(self, writer, spec, current):
+        """Classify against a provider's pinned local head without publishing."""
+        return self._stage_state(writer, spec, current, apply=False)
+
+    from ._handoff_authority import apply_authority_facts_in_session
+
+    def _stage_state(self, writer, spec, current, *, apply):
         if spec.storage_relation == StorageRelation.AUTHORITY_STAGED:
             raise ValueError("Use authority staging for pending provider authority")
         spec = replace(spec, revalidated_fact_id=None)
-        current = self.current_effective_state(writer, spec.effective_key)
         existing = self._existing_fact(writer, spec)
         if (
             spec.storage_relation != StorageRelation.STALE
@@ -196,7 +211,7 @@ class AcquisitionHandoffStore:
                 revalidated_fact_id=current["fact_id"],
             )
         self._insert_fact(writer, spec)
-        if spec.storage_relation == StorageRelation.ADVANCED:
+        if apply and spec.storage_relation == StorageRelation.ADVANCED:
             self._make_effective(writer, spec)
         return spec
 

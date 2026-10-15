@@ -65,6 +65,10 @@ def page_payload(session, source, message, evidence, status):
 def record_page(store, session, item):
     """Retain a native page and its exact metadata references atomically."""
     source = store.source_id
+    if session.get(Page, item.page_id) is None:
+        from ._email_observations import require_open
+
+        require_open(session, source, item.run_id, "message_delta")
     for value in (item.page_id, item.inventory_id, item.selection_id):
         identifier(value, 64)
     for value in (

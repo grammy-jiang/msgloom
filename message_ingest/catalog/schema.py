@@ -6,10 +6,16 @@ from typing import cast
 from sqlalchemy import create_engine
 from sqlalchemy.pool import NullPool
 
-from message_ingest.catalog._email_bindings_schema import initialize_mail_bindings
+from message_ingest.catalog._email_bindings_schema import (
+    initialize_mail_bindings,
+    initialize_mail_tables,
+)
 from message_ingest.catalog._mail_delta_schema import initialize_mail_delta_baselines
 from message_ingest.catalog.legacy_evidence import migrate_legacy_evidence
 from message_ingest.catalog.models.base import Base
+from message_ingest.catalog.models.microsoft.outlook._email_authority import (
+    MAIL_AUTHORITY_TABLES,
+)
 from message_ingest.catalog.stores.handoff import initialize_handoff
 
 
@@ -38,6 +44,12 @@ def initialize_schema(database_url: str, *, in_memory: bool) -> bytes | None:
         with engine.connect() as connection:
             connection.exec_driver_sql("BEGIN IMMEDIATE")
             try:
+                initialize_mail_tables(
+                    connection,
+                    MAIL_AUTHORITY_TABLES,
+                    "Mail authority",
+                    mutable=("mail_projection_owners",),
+                )
                 initialize_mail_bindings(connection)
                 initialize_mail_delta_baselines(connection)
                 migrate_legacy_evidence(connection)

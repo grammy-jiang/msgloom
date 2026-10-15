@@ -37,7 +37,7 @@ def _message(
     store.record_message(
         run_id="fixture-run",
         message=payload,
-        kind="delta",
+        kind="discovery",
         selection_id=f"selection-{message_id}",
         evidence_id=evidence_id,
         observed_at=observed_at,
