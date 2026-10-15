@@ -19,6 +19,9 @@ from message_ingest.acquisition.handoff import (
     source_state_key,
 )
 from message_ingest.catalog.models.handoff import AcquisitionFact
+from message_ingest.catalog.models.microsoft.outlook._email_bindings import (
+    MailApplicationBinding,
+)
 from message_ingest.catalog.stores.handoff import AcquisitionHandoffStore
 
 
@@ -55,6 +58,33 @@ def _component_matches_parent_version(fact: FactSpec, version: str) -> bool:
             return False
         state["representation"] = version
     return source_state_key(state) == fact.source_state_key
+
+
+def _component_matches_primary_application(
+    session, fact: FactSpec, primary: str
+) -> bool:
+    """Exclude stale selected Full components after a semantically equal ABA.
+
+    Selected captures have immutable application bindings to exact primary fact
+    IDs, not merely to provider-version hashes. Current-equivalent captures
+    publish their revalidated effective fact ID. Unselected Delta/discovery
+    surfaces legitimately have no application binding and are version-checked
+    separately by the caller.
+    """
+    effective_id = (
+        fact.revalidated_fact_id
+        if fact.storage_relation == StorageRelation.CURRENT_EQUIVALENT
+        and fact.revalidated_fact_id
+        else fact.fact_id
+    )
+    parents = session.scalars(
+        select(MailApplicationBinding.primary_fact_id).where(
+            MailApplicationBinding.source_id == fact.source_id,
+            MailApplicationBinding.fact_id == effective_id,
+            MailApplicationBinding.capture_id.is_not(None),
+        )
+    ).all()
+    return not parents or primary in parents
 
 
 def stage_presence(
@@ -276,7 +306,11 @@ def release_mail_authority(
                 component = run_facts.get(member_id)
                 if component is None:
                     raise ValueError("Mail component member is not retained")
-                if _component_matches_parent_version(component, version):
+                if _component_matches_parent_version(
+                    component, version
+                ) and _component_matches_primary_application(
+                    session, component, accepted.fact_id
+                ):
                     selected.append((member_id, role))
                 # A stale component from either this run or a displaced run
                 # does not suppress legitimate cursor or primary publication.
