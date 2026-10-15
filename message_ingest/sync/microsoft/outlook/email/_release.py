@@ -298,6 +298,15 @@ def release_mail_authority(
             version = accepted.source_state_key
             if version is None:
                 raise ValueError("Mail accepted primary has no semantic version")
+            # CURRENT_EQUIVALENT revalidates effective application P with a
+            # new Q observation. Selected components bind P, while ADVANCED
+            # reapplications must keep their own exact fact ID.
+            primary_application = (
+                accepted.revalidated_fact_id
+                if accepted.storage_relation == StorageRelation.CURRENT_EQUIVALENT
+                and accepted.revalidated_fact_id is not None
+                else accepted.fact_id
+            )
             selected = []
             for member_id, role in members:
                 if role != "component":
@@ -309,7 +318,7 @@ def release_mail_authority(
                 if _component_matches_parent_version(
                     component, version
                 ) and _component_matches_primary_application(
-                    session, component, accepted.fact_id
+                    session, component, primary_application
                 ):
                     selected.append((member_id, role))
                 # A stale component from either this run or a displaced run
