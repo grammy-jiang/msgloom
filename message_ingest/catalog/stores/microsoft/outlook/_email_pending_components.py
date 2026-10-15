@@ -35,6 +35,7 @@ from ._email_observations import (
     local_current,
     require_open,
     retain,
+    set_owner,
 )
 
 
@@ -176,6 +177,38 @@ def stage_surface(
     return outcome
 
 
+def _matching_accepted_parent(session, ledger, row, parent_fact_id):
+    """Match the exact run-local parent against current accepted semantics.
+
+    A Full read may independently accept the same version while an earlier
+    Delta is waiting for cursor CAS. That newer primary needs no speculative
+    replacement, but the cursor winner's distinct discovery component remains
+    valid if its pinned original parent has exactly the accepted state key.
+    Never borrow a different run's parent by message ID alone.
+    """
+    local_parent = session.scalar(
+        select(Observation).where(
+            Observation.source_id == row.source_id,
+            Observation.run_id == row.run_id,
+            Observation.authority_kind == row.authority_kind,
+            Observation.scope_identity == row.scope_identity,
+            Observation.fact_id == parent_fact_id,
+            Observation.resource_kind == "message",
+            Observation.resource_id == row.resource_id,
+        )
+    )
+    if local_parent is None:
+        return False
+    parent = load_fact(session, local_parent)
+    if parent.storage_relation == StorageRelation.STALE:
+        return False
+    effective = ledger.current_effective_state(session, parent.effective_key)
+    return (
+        effective is not None
+        and effective["source_state_key"] == parent.source_state_key
+    )
+
+
 def apply_surfaces(store, session, rows, applied):
     """Apply only surfaces whose exact original primary was selected."""
     from message_ingest.catalog.models.microsoft.outlook.email import MessageSurface
@@ -189,7 +222,9 @@ def apply_surfaces(store, session, rows, applied):
         if fact.resource_kind != "message_surface":
             continue
         data = json.loads(row.payload)
-        if data["parent_fact_id"] not in accepted:
+        if data["parent_fact_id"] not in accepted and not _matching_accepted_parent(
+            session, ledger, row, data["parent_fact_id"]
+        ):
             continue
         application = application_fact(session, ledger, row, fact)
         if application is None:
@@ -224,5 +259,8 @@ def apply_surfaces(store, session, rows, applied):
         record.profile_version = data["profile_version"]
         record.evidence_id = fact.evidence_id
         record.observed_at = fact.provider_observed_at
+        # A winning cursor owns the component even when the provider's clock
+        # moved backward. Independent later writes explicitly clear this pin.
+        set_owner(session, fact, row)
         applied.append(application)
         session.info["mail_authority_applied"].add(fact.fact_id)

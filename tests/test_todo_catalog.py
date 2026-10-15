@@ -9,8 +9,14 @@ from scrapy.utils.test import get_crawler
 from sqlalchemy import create_engine, inspect, select
 
 from message_ingest.catalog import Base, Catalog
-from message_ingest.catalog._email_bindings_schema import initialize_mail_bindings
+from message_ingest.catalog._email_bindings_schema import (
+    initialize_mail_bindings,
+    initialize_mail_tables,
+)
 from message_ingest.catalog._mail_delta_schema import initialize_mail_delta_baselines
+from message_ingest.catalog.models.microsoft.outlook._email_authority import (
+    MAIL_AUTHORITY_TABLES,
+)
 from message_ingest.catalog.models.microsoft.todo import (
     TodoChecklistItemRecord,
     TodoLinkedResourceRecord,
@@ -199,6 +205,12 @@ def test_schema_adds_only_todo_tables_and_preserves_existing_data(tmp_path):
     try:
         with engine.begin() as connection:
             # ORM metadata omits the immutable guards required by Mail bindings.
+            initialize_mail_tables(
+                connection,
+                MAIL_AUTHORITY_TABLES,
+                "Mail authority",
+                mutable=("mail_projection_owners",),
+            )
             initialize_mail_bindings(connection)
             initialize_mail_delta_baselines(connection)
             Base.metadata.create_all(

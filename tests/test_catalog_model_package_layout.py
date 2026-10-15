@@ -146,10 +146,17 @@ MAIL_DELTA_CAUSAL_TABLE_NAMES = {
     "mail_folder_delta_candidate_bases",
     "mail_delta_absence_generations",
 }
+# The original signed historical table populations above remain unchanged.
+MAIL_AUTHORITY_TABLE_NAMES = {
+    "mail_authority_observations",
+    "mail_authority_decisions",
+    "mail_projection_owners",
+}
 EXPECTED_TABLES = (
     PRE_MAIL_BINDING_TABLE_NAMES
     | MAIL_BINDING_TABLE_NAMES
     | MAIL_DELTA_CAUSAL_TABLE_NAMES
+    | MAIL_AUTHORITY_TABLE_NAMES
 )
 
 

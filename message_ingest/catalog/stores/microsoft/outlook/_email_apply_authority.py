@@ -74,15 +74,23 @@ def apply_mail_observations(store, session, *, run_id, authority, scopes):
             )
         )
     )
-    legacy_messages = set(
-        session.scalars(
-            select(MessageObservation.message_id).where(
-                MessageObservation.source_id == store.source_id,
-                MessageObservation.run_id == run_id,
-                MessageObservation.kind == "delta",
-            )
+    # An entire message ID is not legacy just because the run also captured
+    # it through Delta. Reconciliation may independently fetch that very ID.
+    # Identify the exact historical delta observation's provenance instead.
+    legacy_delta = {}
+    for observation in session.scalars(
+        select(MessageObservation).where(
+            MessageObservation.source_id == store.source_id,
+            MessageObservation.run_id == run_id,
+            MessageObservation.kind == "delta",
         )
-    )
+    ):
+        version = (
+            observation.message_id,
+            observation.observed_at,
+            observation.evidence_id,
+        )
+        legacy_delta.setdefault(version, set()).add(observation.observation_id)
     from message_ingest.acquisition.handoff import FactSpec
 
     for payload in session.scalars(
@@ -98,7 +106,22 @@ def apply_mail_observations(store, session, *, run_id, authority, scopes):
             or (
                 fact.resource_kind == "message"
                 and fact.component_kind is None
-                and fact.resource_identity in legacy_messages
+                and (
+                    (
+                        matches := legacy_delta.get(
+                            (
+                                fact.resource_identity,
+                                fact.provider_observed_at,
+                                fact.evidence_id,
+                            )
+                        )
+                    )
+                    and (
+                        fact.source_version_locator is None
+                        or fact.source_version_locator.observation_id is None
+                        or fact.source_version_locator.observation_id in matches
+                    )
+                )
             )
         ):
             raise RuntimeError(

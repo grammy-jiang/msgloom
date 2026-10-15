@@ -247,3 +247,42 @@ def test_reconcile_message_is_not_mistaken_for_legacy_delta_projection(tmp_path)
             pytest.fail("Independent reconciliation projection was removed")
     finally:
         catalog.close()
+
+
+def test_reconcile_same_message_after_delta_is_not_legacy_projection(tmp_path):
+    """A separate reconciliation of the same ID is a valid independent fact."""
+    from tests._mail_provisional import LATER, capture, prepare, promote
+
+    catalog = _catalog(tmp_path)
+    store = OutlookMailStore(catalog, source_id=SOURCE, spider_name="outlook_delta")
+    try:
+        validated = prepare(store, "mixed")
+        capture(
+            store, "mixed", {"id": "m", "parentFolderId": "inbox", "changeKey": "v1"}
+        )
+        store.record_message(
+            run_id="mixed",
+            kind="reconcile",
+            observed_at=LATER,
+            evidence_id=None,
+            message={
+                "id": "m",
+                "parentFolderId": "outside",
+                "changeKey": "v2",
+                "subject": "reconciliation",
+            },
+        )
+        result = promote(store, validated)
+        if result["committed_folders"] != 1:
+            pytest.fail("Independent reconcile of captured Delta ID blocked commit")
+        with catalog.Session() as session:
+            current = session.scalar(
+                select(MessageRecord).filter_by(
+                    source_id=SOURCE,
+                    message_id="m",
+                )
+            )
+            if current is None or current.subject != "reconciliation":
+                pytest.fail("Reconciled primary was lost to an earlier Delta capture")
+    finally:
+        catalog.close()

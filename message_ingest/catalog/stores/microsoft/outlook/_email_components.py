@@ -141,7 +141,7 @@ class OutlookMailComponentStore(OutlookMailLifecycleStore):
                 record.evidence_id = evidence_id
                 record.observed_at = observed_at
                 record.profile_version = profile_version
-            return writer.stage(
+            outcome = writer.stage(
                 session,
                 run_id=run_id,
                 resource_id=message_id,
@@ -157,6 +157,12 @@ class OutlookMailComponentStore(OutlookMailLifecycleStore):
                 stale=stale,
                 equivalent=equivalent,
             )
+
+            if not stale:
+                from ._email_observations import set_owner
+
+                set_owner(session, outcome.fact)
+            return outcome
 
     def upsert_attachment(
         self,
