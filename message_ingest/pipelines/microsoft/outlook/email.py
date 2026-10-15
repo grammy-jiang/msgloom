@@ -311,6 +311,7 @@ class OutlookMailPipeline:
                 evidence_id=item.evidence_id,
                 observed_at=item.observed_at,
                 profile_version=profile,
+                observation_kind=kind,
             )
         return self._observation_stats(stat_prefix, outcome.observation_created)
 

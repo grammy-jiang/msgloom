@@ -46,6 +46,7 @@ class OutlookMailComponentStore(OutlookMailLifecycleStore):
         selection_id: str | None = None,
         parent_evidence_id: str | None = None,
         capture_id: str | None = None,
+        observation_kind: str | None = None,
     ) -> MailPersistenceOutcome | DeferredMailCapture:
         """
         Persist one surface with logical provenance and semantic component key.
@@ -74,7 +75,16 @@ class OutlookMailComponentStore(OutlookMailLifecycleStore):
                 )
             from ._email_pending_components import pending_primary, stage_surface
 
-            parent = pending_primary(session, self.source_id, run_id, message_id)
+            # Only Delta's own surface borrows its provisional primary.
+            # Reconciliation and discovery are independent accepted captures,
+            # even when they share a run ID with an older Delta observation.
+            parent = (
+                pending_primary(session, self.source_id, run_id, message_id)
+                if observation_kind in (None, "delta")
+                else None
+            )
+            if observation_kind == "delta" and parent is None:
+                raise ValueError("Delta surface requires its provisional primary")
             if parent is not None:
                 return stage_surface(
                     self,

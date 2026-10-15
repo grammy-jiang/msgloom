@@ -286,3 +286,52 @@ def test_reconcile_same_message_after_delta_is_not_legacy_projection(tmp_path):
                 pytest.fail("Reconciled primary was lost to an earlier Delta capture")
     finally:
         catalog.close()
+
+
+def test_same_run_reconcile_surface_does_not_borrow_pending_delta_primary(tmp_path):
+    """Native reconciliation must retain a newer independent discovery surface."""
+    import asyncio
+
+    from message_ingest.items.microsoft.outlook.email import OutlookMailItem
+    from message_ingest.pipelines.microsoft.outlook.email import OutlookMailPipeline
+    from tests._mail_provisional import LATER, capture, prepare, promote
+
+    catalog = _catalog(tmp_path)
+    store = OutlookMailStore(catalog, source_id=SOURCE, spider_name="outlook_delta")
+    try:
+        validated = prepare(store, "mixed")
+        capture(
+            store,
+            "mixed",
+            {"id": "m", "parentFolderId": "inbox", "changeKey": "v1"},
+        )
+        pipeline = object.__new__(OutlookMailPipeline)
+        pipeline.store = store
+        pipeline.stats = None
+        pipeline._write_lock = asyncio.Lock()
+        reconciliation = OutlookMailItem.from_graph(
+            {
+                "id": "m",
+                "parentFolderId": "outside",
+                "changeKey": "v2",
+                "subject": "newer-reconciliation",
+            },
+            source_response_url="https://graph.microsoft.com/v1.0/me/messages/m",
+            observed_at=LATER,
+            observation_kind="reconcile",
+            authority_scope=None,
+            evidence_id=None,
+            run_id="mixed",
+        )
+        asyncio.run(pipeline.process_item(reconciliation))
+        surface = store.get_surfaces(message_id="m").get("discovery")
+        if surface is None or surface["observed_at"] != LATER:
+            pytest.fail("Independent reconciliation discovery surface was not saved")
+        promote(store, validated)
+        current = store.get_message_state(message_id="m")
+        if current is None or current["latest_observed_at"] != LATER:
+            pytest.fail("Older Delta promotion overwrote the independent newer message")
+        if store.get_surfaces(message_id="m")["discovery"] != surface:
+            pytest.fail("Older Delta promotion changed independent discovery surface")
+    finally:
+        catalog.close()
