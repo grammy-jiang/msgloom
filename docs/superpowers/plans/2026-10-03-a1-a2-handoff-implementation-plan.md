@@ -1,8 +1,10 @@
 # A1 to A2 Durable Handoff Implementation Plan
 
-> Status: runtime implemented and qualified; Tasks 1–14 accepted by PRIMARY.
-> Task 15 documentation review and final independent acceptance remain pending.
-> See the [qualification record](../../notes/a1-closeout.md#handoff-qualification-record--2026-10-07).
+> Status: Task 15 final qualification and design signoff are **PENDING**.
+> Runtime code is integrated; Tasks 1–14 have historical PRIMARY acceptance.
+> Official exact-SHA gates, independent QA, and final approval remain unfinished.
+> See the [pending closeout report](../../notes/task15-final-qualification-20261016.md).
+> Earlier evidence remains in the [historical qualification record](../../notes/a1-closeout.md#handoff-qualification-record--2026-10-07).
 >
 > Design authority: docs/superpowers/specs/2026-10-03-a1-a2-handoff-contract-design.md
 >
@@ -103,8 +105,8 @@ Create:
 
 Modify:
 
-- message_ingest/catalog/models/__init__.py
-- message_ingest/catalog/__init__.py
+- `message_ingest/catalog/models/__init__.py`
+- `message_ingest/catalog/__init__.py`
 - message_ingest/catalog/schema.py
 
 ### Contracts
@@ -428,7 +430,7 @@ Create:
 
 Modify:
 
-- msgloom/sources/__init__.py
+- `msgloom/sources/__init__.py`
 - msgloom/sources/models.py as needed only for common read limits
 
 Tests:
@@ -803,7 +805,7 @@ Create:
 
 Modify:
 
-- msgloom/preparation_pipeline/__init__.py
+- `msgloom/preparation_pipeline/__init__.py`
 - msgloom/persistence/store.py
 - msgloom/persistence/async_store.py
 
@@ -946,6 +948,19 @@ Tests:
 - no background work after command exit.
 
 ## Task 15 — End-to-end qualification, documentation, and closeout
+
+**Preparation status, 2026-10-16: PENDING.** Final candidate: `TO_BE_FROZEN`.
+Freeze the reviewed candidate before the official 28-gate invocation. Map all
+20 installed Spiders, including Teams native fixtures, and all 13 scenarios
+to passing exact test nodes from that invocation. Live tenant acceptance is
+outside this gate. The reported 98 verified preflight test nodes and PR50/PR51
+CI are supporting evidence, not the official run. Preserve the interrupted
+`d5d0201` record: 7/28 gates passed, one interrupted, and 20 not run.
+
+Use the [operator checklist](../../notes/a1-a2-qualification-checklist.md) and
+[pending report](../../notes/task15-final-qualification-20261016.md) to retain exact
+SHAs, artifacts, and separate independent QA. Documentation preparation does
+not mark this design signed off or Task 15 accepted.
 
 ### End-to-end scenarios
 

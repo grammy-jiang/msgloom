@@ -10,12 +10,13 @@ clients, or report transports.
 
 Recurring schedules and external triggers remain deployment configuration.
 The implemented `prepare-scheduled` command accepts finite A2 intake settings;
-it does not install or run an external scheduler. A4, A6, and A7 are rejected
+it does not install or run an external scheduler. It starts no detached
+background scheduling work. A4, A6, and A7 are rejected
 by the configuration/admission boundary before a factory can be selected.
 
 ## Settings sources and precedence
 
-The loader uses the pinned pydantic-settings 2.15.0 custom-source API.
+The loader uses the pinned pydantic-settings 2.16.0 custom-source API.
 OperatorSettings.settings_customise_sources defines this exact precedence,
 highest first:
 
@@ -260,10 +261,13 @@ context changes retain their scope in accepted `prepared_transitions` results.
 
 Missing or corrupt evidence creates a held entry disposition. This permits
 later valid entries to progress but does not claim the held content was
-prepared. Retain the workset and evidence for operator inspection. Within an
-existing catalog scope, intake rejects catalog identity or cursor-anchor
+prepared. Retain the exact release reference, held reason, workset, and evidence
+for operator inspection. A later schedule does not automatically repair held
+evidence. Explicit repair/replay must preserve the frozen input identities.
+Within an existing catalog scope, intake rejects catalog identity or cursor-anchor
 mismatch. A different catalog identity at the start of a new scheduled
-invocation selects another scope, without comparison to the old cursor.
+invocation selects another scope only after the operator explicitly
+configures the matching trusted catalog pin. It is not compared to the old cursor.
 Restore consistent catalog, Phase 1 store, and evidence state together; do
 not rely on catalog replacement to recover an existing scope. Do not reset
 or edit the cursor to bypass anchor checks. This command has no automatic
@@ -273,9 +277,9 @@ Future-only intake does not admit unchanged pre-ledger historical records.
 Manual `prepare` and explicit preparation replay keep their existing
 exact-selection contracts. See the
 [collection/preparation boundary](../phase-1/architecture.md#durable-incremental-handoff).
-The handoff runtime is implemented and qualified. Final documentation review
-and independent acceptance remain pending; see the
-[qualification record](a1-closeout.md#handoff-qualification-record--2026-10-07).
+Runtime code is integrated. Official exact-SHA qualification, independent QA,
+and final approval remain **PENDING**; see the
+[pending closeout report](task15-final-qualification-20261016.md).
 
 ### Explicit historical baseline
 
@@ -312,8 +316,8 @@ workset or cursor progress. A new attempt captures the then-current cutoff;
 it does not preserve a failed attempt's cutoff. After successful admission,
 retry preparation from the saved pending workset through scheduled preparation.
 Do not rerun baseline admission or change its immutable input. Baseline support
-is implemented and included in the qualified runtime. Final documentation
-review and independent acceptance remain pending.
+is implemented and has scoped test evidence. Final exact-SHA qualification
+and independent acceptance remain pending.
 
 ## Secrets
 

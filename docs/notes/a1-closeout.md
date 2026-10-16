@@ -1,6 +1,6 @@
 # A1 Microsoft collection closeout
 
-**Status:** closed
+**Status:** A1 source-capability closeout closed; Task 15 final qualification PENDING
 **Closeout date:** 2026-10-03
 **Implementation head before closeout documentation:**
 `d1c703d4c93e966b8c025d0ec77c2929c2ac9a77`
@@ -108,8 +108,9 @@ contract without requiring A1 to be redesigned.
 The A1 source-capability closeout above remains closed. The integrated
 handoff extension adds a release ledger to the existing catalog. It does not
 add a Microsoft product or change the read-only acquisition boundary. The
-runtime is implemented and qualified; Tasks 1–14 have PRIMARY acceptance.
-Task 15 documentation review and final independent acceptance remain pending.
+runtime code is integrated; Tasks 1–14 have historical PRIMARY acceptance.
+The official exact-SHA Task 15 gates and final independent acceptance remain
+pending. See the [pending closeout report](task15-final-qualification-20261016.md).
 The closeout counts above are historical A1 evidence, not handoff gate results.
 
 A1 records immutable acquisition facts with the state they describe. Eligible
@@ -188,3 +189,20 @@ Astra/MAX review of the full diff from the original plan base to the exact final
 candidate, and PRIMARY acceptance of all 15 tasks. The historical Task 15
 preparation checklist remains a preparation record. It does not replace the
 current gate evidence or claim those remaining approvals.
+
+### Task 15 preparation update — 2026-10-16
+
+Final candidate: `TO_BE_FROZEN`. Final qualification and design signoff remain
+**PENDING**. The reported preflight verified 98 test nodes. PR50/PR51 CI is
+separate supporting evidence. Neither replaces the official exact-SHA 28-gate
+run or independent QA. The prior candidate `d5d0201` has interrupted evidence:
+7/28 gates passed, one interrupted, and 20 not run. Preserve those outcomes
+under their original candidate; do not transfer them to the final candidate.
+
+The installed inventory is 20 Spiders: the original 17 and three Teams Spiders.
+Teams native fixture coverage includes acquisition, immutable release, and A2
+intake. Live work/school tenant acceptance remains excluded. The original A1
+source-capability closeout and all historical evidence above remain unchanged.
+
+Use the [pending report](task15-final-qualification-20261016.md) for the future
+exact-SHA results, real artifact digests, independent review, and final approval.
