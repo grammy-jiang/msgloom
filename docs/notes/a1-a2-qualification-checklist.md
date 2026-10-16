@@ -1,6 +1,7 @@
 # A1-to-A2 qualification preparation checklist
 
-Status: preparation only; official exact-SHA Task15 qualification is **PENDING**.
+Status: preparation only; official exact-SHA Task15 qualification is
+**PENDING**.
 Final candidate: `TO_BE_FROZEN`. See the
 [pending closeout report](task15-final-qualification-20261016.md).
 The reported 98 verified preflight test nodes and PR50/PR51 CI are supporting
@@ -166,9 +167,8 @@ The coverage JSON has `base_sha`, `candidate_sha`, `spiders` and
 `scenarios`. The `spiders` object must contain the 17 original names and
 the three qualified Teams extensions, with no extra names.
 The `scenarios` object must contain exactly string keys `"1"` through
-`"13"`. Every value is a nonempty list of exact pytest node IDs, for example
-`tests/test_teams_handoff_release.py::test_native_chat_crawl_to_exact_a2_intake`
-**only when it passes in the exact-candidate invocation**. Parameterized
+`"13"`. Every value is a nonempty list of exact pytest node IDs.
+Every node must pass in the exact-candidate invocation; parameterized
 suffixes and class names must match exactly.
 
 The audit checks the installed loader, committed design matrix, candidate
