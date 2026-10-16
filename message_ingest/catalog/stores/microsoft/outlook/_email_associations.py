@@ -7,7 +7,6 @@ from __future__ import annotations
 import json
 from dataclasses import dataclass
 from datetime import datetime
-from typing import Any
 
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
@@ -25,6 +24,8 @@ from message_ingest.catalog.models.microsoft.outlook.email import (
     MessageSurface,
 )
 
+from ._email_association_values import append_row, bounded_json, identifier
+from ._email_association_values import projection as projection  # noqa: PLC0414
 from ._email_handoff import (
     MailPersistenceOutcome,
     is_stale,
@@ -41,59 +42,6 @@ class DeferredMailCapture:
 
     capture_id: str
     fact: None = None
-
-
-def bounded_json(value: object, limit: int = 8192) -> str:
-    """Bound local structured metadata independently of shared wire fields."""
-    text = json.dumps(value, sort_keys=True, separators=(",", ":"), allow_nan=False)
-    if len(text.encode()) > limit:
-        raise ValueError("Oversized Mail binding metadata")
-    return text
-
-
-def identifier(value: str, limit: int = 2048) -> str:
-    """Reject absent, oversized or non-string association identities."""
-    if not isinstance(value, str) or not value or len(value.encode()) > limit:
-        raise ValueError("Invalid Mail binding identifier")
-    return value
-
-
-def append_row(session: Session, model, key, values: dict[str, Any]):
-    """Accept exact repeats; reject conflicting identities before insertion."""
-    existing = session.get(model, key)
-    if existing is not None:
-        if any(getattr(existing, name) != value for name, value in values.items()):
-            raise ValueError("Conflicting immutable Mail binding")
-        return existing
-    row = model(**values)
-    session.add(row)
-    session.flush()
-    return row
-
-
-def projection(attachment: dict[str, Any]) -> dict[str, Any]:
-    """Retain only the existing attachment metadata representation."""
-    if not isinstance(attachment, dict):
-        raise TypeError("Invalid attachment metadata")
-    for field in ("@odata.type", "name", "contentType"):
-        value = attachment.get(field)
-        if value is not None and (
-            not isinstance(value, str) or len(value.encode()) > 4096
-        ):
-            raise ValueError("Invalid attachment text metadata")
-    size, inline = attachment.get("size"), attachment.get("isInline")
-    if size is not None and (type(size) is not int or not 0 <= size < 2**63):
-        raise ValueError("Invalid attachment size")
-    if inline is not None and type(inline) is not bool:
-        raise ValueError("Invalid attachment inline flag")
-    return {
-        "attachment_id": identifier(attachment["id"]),
-        "attachment_type": attachment.get("@odata.type"),
-        "name": attachment.get("name"),
-        "content_type": attachment.get("contentType"),
-        "size": attachment.get("size"),
-        "is_inline": attachment.get("isInline"),
-    }
 
 
 class MailAssociations:
@@ -405,6 +353,57 @@ class MailAssociations:
         }
         key = semantic_digest([row.capture_id, primary_id, fact.fact_id])
         append_row(session, Binding, key, dict(binding_id=key, **values))
+        if fact.storage_relation == "current_equivalent":
+            # Keep C2's new selection bound to effective C1 without rewriting
+            # either immutable fact or C1's earlier A/B/A application.
+            effective_id = fact.revalidated_fact_id
+            effective_row = session.get(AcquisitionFact, effective_id)
+            if effective_row is None:
+                raise ValueError("Equivalent Mail component has no effective fact")
+            from message_ingest.acquisition.handoff import FactSpec
+
+            effective = FactSpec.from_json(effective_row.payload)
+            if (
+                effective.fact_id != effective_id
+                or effective.effective_key != fact.effective_key
+                or effective.source_state_key != fact.source_state_key
+            ):
+                raise ValueError("Equivalent Mail component changed effective identity")
+            applications = session.scalars(
+                select(Binding).where(
+                    Binding.source_id == self.source,
+                    Binding.fact_id == effective_id,
+                    Binding.capture_id.is_not(None),
+                )
+            ).all()
+            if any(link.primary_fact_id == primary_id for link in applications):
+                return
+            # Preserve the effective C1 fact's single canonical inventory
+            # manifest. The new C2 chain is separately retained as this
+            # application capture_manifest, never substituted for C1.
+            old_manifests = {
+                bounded_json(json.loads(link.payload)["manifest"])
+                for link in applications
+            }
+            if len(old_manifests) > 1:
+                raise ValueError("Equivalent Mail fact has conflicting manifests")
+            alias_payload = json.loads(values["payload"])
+            if old_manifests:
+                alias_payload["manifest"] = json.loads(next(iter(old_manifests)))
+            alias_id = semantic_digest([row.capture_id, primary_id, effective_id])
+            append_row(
+                session,
+                Binding,
+                alias_id,
+                dict(
+                    binding_id=alias_id,
+                    **{
+                        **values,
+                        "fact_id": effective_id,
+                        "payload": bounded_json(alias_payload),
+                    },
+                ),
+            )
 
     @staticmethod
     def project(session, row, data):

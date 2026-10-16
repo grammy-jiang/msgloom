@@ -23,7 +23,7 @@ from tests.source_reader.release_nonmail_helpers import (
 )
 
 
-@pytest.mark.parametrize("replacement_mime", [False, True])
+@pytest.mark.parametrize("replacement_mime", ["none", "changed", "equivalent"])
 def test_selected_mime_from_first_a_cannot_poison_later_same_run_a(
     mail_catalog, replacement_mime
 ):
@@ -36,6 +36,7 @@ def test_selected_mime_from_first_a_cannot_poison_later_same_run_a(
         ("a-return", message_a),
         ("old-mime", b"From: first@example.test\r\nSubject: first\r\n\r\nOld MIME"),
         ("new-mime", b"From: later@example.test\r\nSubject: later\r\n\r\nNew MIME"),
+        ("equiv-mime", b"From: first@example.test\r\nSubject: first\r\n\r\nOld MIME"),
     ):
         save_evidence(mail_catalog, evidence_id, body)
     catalog = Catalog(f"sqlite:///{mail_catalog['database']}")
@@ -81,13 +82,15 @@ def test_selected_mime_from_first_a_cannot_poison_later_same_run_a(
             selection_id="later-a",
         )
         current_mime_id = original.fact.fact_id
-        if replacement_mime:
+        if replacement_mime != "none":
             applied_mime = store.set_surface(
                 run_id="aba-selected",
                 message_id=message_a["id"],
                 surface="mime",
                 status="acquired",
-                evidence_id="new-mime",
+                evidence_id=(
+                    "equiv-mime" if replacement_mime == "equivalent" else "new-mime"
+                ),
                 observed_at="2026-10-03T00:00:00+00:00",
                 profile_version="full-v1",
                 resource_version=latest.fact.source_state_key,
@@ -96,7 +99,16 @@ def test_selected_mime_from_first_a_cannot_poison_later_same_run_a(
             )
             if applied_mime.fact is None:
                 pytest.fail("The selected later-A MIME was not persisted")
-            current_mime_id = applied_mime.fact.fact_id
+            if replacement_mime == "equivalent" and (
+                applied_mime.fact.storage_relation != "current_equivalent"
+                or applied_mime.fact.revalidated_fact_id != original.fact.fact_id
+            ):
+                pytest.fail("Selected same-byte MIME did not revalidate C1 through C2")
+            current_mime_id = (
+                original.fact.fact_id
+                if replacement_mime == "equivalent"
+                else applied_mime.fact.fact_id
+            )
         if (
             first.fact.source_state_key != latest.fact.source_state_key
             or first.fact.fact_id == latest.fact.fact_id
@@ -142,21 +154,24 @@ def test_selected_mime_from_first_a_cannot_poison_later_same_run_a(
             if len(impacts) != 1:
                 pytest.fail("ABA must leave one exact readable primary impact")
             released = await reader.read_entry(impacts[0].reference)
-            if released.selection is None or len(released.components) != int(
-                replacement_mime
+            if released.selection is None or len(released.components) != (
+                replacement_mime != "none"
             ):
                 pytest.fail("Old first-A MIME contaminated later A application")
-            if replacement_mime:
+            if replacement_mime != "none":
                 from hashlib import sha256
 
+                expected_bytes = (
+                    b"From: first@example.test\r\nSubject: first\r\n\r\nOld MIME"
+                    if replacement_mime == "equivalent"
+                    else b"From: later@example.test\r\nSubject: later\r\n\r\nNew MIME"
+                )
                 bodies = released.selection.record.alternate_bodies
                 if (
                     len(bodies) != 1
                     or bodies[0].saved_bytes is None
                     or bodies[0].saved_bytes.sha256
-                    != sha256(
-                        b"From: later@example.test\r\nSubject: later\r\n\r\nNew MIME"
-                    ).hexdigest()
+                    != sha256(expected_bytes).hexdigest()
                 ):
                     pytest.fail("The selected later-A MIME was lost or replaced")
             facts = released.facts
