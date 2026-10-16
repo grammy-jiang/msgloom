@@ -19,9 +19,11 @@ remains `msgloom`.
 The integrated handoff keeps Scrapy component ownership unchanged. Spiders
 still own traversal, pipelines await persistence, and extensions or workflows
 own completion gates. A1 does not import A2 source-reader or preparation code.
-The runtime is implemented and qualified. Final documentation review and
-independent acceptance remain pending; see the
-[qualification record](notes/a1-closeout.md#handoff-qualification-record--2026-10-07).
+Runtime code is integrated. Official exact-SHA qualification, independent QA,
+and final approval remain **PENDING**; see the
+[pending closeout report](notes/task15-final-qualification-20261016.md).
+Earlier scoped results remain in the
+[historical qualification record](notes/a1-closeout.md#handoff-qualification-record--2026-10-07).
 
 | Component | Responsibility |
 | --- | --- |
@@ -50,7 +52,17 @@ catalog identity, cursor-anchor checks reject restore behind the cursor and
 a changed cursor entry. A different catalog identity at the start of a new
 scheduled invocation selects another cursor scope; it is not compared with
 the old catalog cursor.
-No parser runs inside an A1 authority transaction or the short intake commit.
+The configured `expected_catalog` pin must match before pending replay or
+fresh admission. A replacement catalog needs explicit operator reconciliation
+and configuration; replacement is not automatic recovery. Missing or corrupt
+evidence receives a durable held disposition, not a successful preparation
+receipt. No parser runs inside an A1 authority transaction or the short intake
+commit. Scheduled work is finite and awaited; no detached background scheduling
+continues after command exit.
+
+The installed inventory is 20 Spiders: the original 17 plus Teams chat, channel,
+and notification reconciliation. Native local fixture tests cover Teams release
+and intake. These tests do not qualify live work/school tenant access.
 
 See [Phase 1 architecture](phase-1/architecture.md#durable-incremental-handoff)
 and [scheduled preparation](notes/operator-configuration.md#scheduled-preparation).

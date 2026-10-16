@@ -1,14 +1,20 @@
 # A1-to-A2 qualification preparation checklist
 
-Status: preparation only. Final Task15 gates have not been executed here.
+Status: preparation only; official exact-SHA Task15 qualification is **PENDING**.
+Final candidate: `TO_BE_FROZEN`. See the
+[pending closeout report](task15-final-qualification-20261016.md).
+The reported 98 verified preflight test nodes and PR50/PR51 CI are supporting
+evidence only. Prior candidate `d5d0201` stopped at 7/28 gates passed, one
+interrupted, and 20 not run. Preserve that record; do not call it a final pass.
 This file does not mark the design implemented, accept another shard, or
 replace the manager's integration and independent review.
 
 Authority: the complete committed handoff design and implementation plan,
 Task15 and its 13 scenarios; Task10 supplies the real Scrapy coverage matrix.
 Repository commands come from `pyproject.toml`, `AGENTS.md`,
-`docs/component-layout.md`, and `.pre-commit-config.yaml`. No CI workflow is
-tracked at the preparation base.
+`docs/component-layout.md`, and `.pre-commit-config.yaml`. No CI workflow was
+tracked at the original preparation base. The current tree has
+`.github/workflows/ci.yml`; CI remains separate from the official Task15 run.
 
 ## Candidate and execution
 
@@ -37,7 +43,7 @@ execution has this shape; replace every placeholder with the final values:
 
 ~~~console
 .venv/bin/python scripts/qualify_a1_a2_handoff.py --execute \
-  --base ORIGINAL_BASE_SHA --candidate EXACT_CANDIDATE_SHA \
+  --base ORIGINAL_BASE_SHA --candidate TO_BE_FROZEN \
   --output-root /tmp/msgloom-final-qualification-UNIQUE \
   --python312 /prepared/py312/bin/python \
   --python313 /prepared/py313/bin/python \
@@ -45,21 +51,25 @@ execution has this shape; replace every placeholder with the final values:
   --python312fastmcp /prepared/py312-fastmcp4/bin/python \
   --python313fastmcp /prepared/py313-fastmcp4/bin/python \
   --python314fastmcp /prepared/py314-fastmcp4/bin/python \
-  --coverage-map /prepared/exact-candidate-coverage.json
+  --coverage-map /prepared/exact-candidate-coverage.json \
+  --precommit-python /prepared/precommit/bin/python \
+  --precommit-cache /prepared/pre-commit-cache
 ~~~
 
 Run from the candidate repository root. Do not resolve interpreter executable
 symlinks: doing so can discard virtual-environment identity. The normal 3.13
 runtime must be Python 3.13.5; every environment must have Scrapy 2.19.0,
-pytest 8, pytest-cov 7.1.0 and pytest-xdist 3.8.0. Compatibility environments
-also require FastMCP 4.1.0.
+pytest 9.1.1, pytest-cov 7.1.0, pytest-xdist 3.8.0, and Ruff 0.17.0.
+Compatibility environments also require FastMCP 4.1.0.
 
-The inspected host has Python 3.13.5 with Scrapy 2.19.0 at the existing
-`.venv/bin/python`. Its existing `.tox/py313-fastmcp4/bin/python` has the
-pinned compatibility dependencies. Installed base interpreters 3.12.14 and
-3.14.7 were found, but those inspected interpreters lack Scrapy and the test
-dependencies. They are not qualified matrix environments. Provisioning is
-outside this preparation; this runner never installs or upgrades dependencies.
+At the original preparation, the inspected host had Python 3.13.5 with
+Scrapy 2.19.0 at `.venv/bin/python`. Its
+`.tox/py313-fastmcp4/bin/python` had the pinned compatibility dependencies.
+Installed base interpreters 3.12.14 and 3.14.7 were found, but those inspected
+interpreters lacked Scrapy and the test dependencies. Those observations do
+not establish qualified matrix environments for the final candidate. Revalidate
+all six paths before the formal run. Provisioning is outside this preparation;
+this runner never installs or upgrades dependencies.
 
 ## Final gates, all pending
 
@@ -142,7 +152,9 @@ from Task10. Loading names alone never proves semantic qualification.
 | outlook_calendar_full | Per-event profile, multi-target partial success. |
 
 The following three Teams extensions supplement the original matrix.
-They require actual native and release tests from the Teams development.
+Together the tables cover all 20 installed Spiders. They require actual native
+Scrapy fixture, release, and intake tests from the Teams development. Live
+work/school tenant acceptance is excluded. Listing names alone is insufficient.
 
 | Teams Spider | Required extension evidence |
 | --- | --- |
@@ -155,9 +167,9 @@ The coverage JSON has `base_sha`, `candidate_sha`, `spiders` and
 the three qualified Teams extensions, with no extra names.
 The `scenarios` object must contain exactly string keys `"1"` through
 `"13"`. Every value is a nonempty list of exact pytest node IDs, for example
-`tests/test_a1_handoff_end_to_end.py::test_profile_no_release` **only if that
-test actually exists and passes**. Parameterized suffixes and class names
-must match exactly.
+`tests/test_teams_handoff_release.py::test_native_chat_crawl_to_exact_a2_intake`
+**only when it passes in the exact-candidate invocation**. Parameterized
+suffixes and class names must match exactly.
 
 The audit checks the installed loader, committed design matrix, candidate
 identity and JUnit artifact digests. It requires mapped cases to have passed

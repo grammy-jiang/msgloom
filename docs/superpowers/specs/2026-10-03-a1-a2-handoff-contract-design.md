@@ -2,9 +2,12 @@
 
 ## Status
 
-**Status:** Runtime implemented and qualified; Tasks 1–14 accepted by PRIMARY.
-Task 15 documentation review and final independent acceptance remain pending.
-See the [qualification record](../../notes/a1-closeout.md#handoff-qualification-record--2026-10-07).
+**Status:** Task 15 final qualification and design signoff are **PENDING**.
+Runtime code is integrated; Tasks 1–14 have historical PRIMARY acceptance.
+The official exact-SHA 28-gate run, independent QA, and final approval remain
+unfinished. See the [pending closeout report](../../notes/task15-final-qualification-20261016.md).
+Earlier scoped results remain in the
+[historical qualification record](../../notes/a1-closeout.md#handoff-qualification-record--2026-10-07).
 
 **Design date:** 2026-10-03.
 
@@ -93,9 +96,11 @@ This design covers the current A1 Microsoft acquisition surface:
 - Contacts custom-folder delta;
 - Microsoft profile acquisition as an explicit non-handoff exception.
 
-The currently installed Scrapy project exposes 17 Microsoft Spiders. Teams is
-not part of the current live A1 surface and therefore has no release mapping in
-this design.
+The original 2026-10-03 scope comprised 17 Microsoft Spiders. The installed
+project now exposes **20 Spiders**, including the three Teams extensions in
+section 12. Teams native Scrapy fixture coverage belongs to this handoff
+qualification. Live work/school tenant acceptance remains excluded; local
+fixtures and CI do not establish live Teams support.
 
 ## Non-goals
 
@@ -220,7 +225,12 @@ A durable acquisition family used for downstream cursors:
 - outlook_calendar;
 - todo;
 - onedrive;
-- contacts.
+- contacts;
+- teams_chat;
+- teams_channel.
+
+Teams notification reconciliation contributes to the two Teams streams; it
+does not create a third stream.
 
 Profile output is operational output, not an A2 stream.
 
@@ -1731,7 +1741,8 @@ This design is ready for implementation planning only when review agrees that:
 - A1 does not depend on A2 models;
 - A2 owns cursors and immutable worksets;
 - current provider tables are not handoff replay truth;
-- all 17 current Spiders have an explicit release or non-release contract;
+- all 20 installed Spiders (17 original plus three Teams extensions) have an
+  explicit release or non-release contract;
 - the listed prerequisites are sufficient without redesigning existing Spider
   traversal.
 

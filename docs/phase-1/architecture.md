@@ -106,8 +106,9 @@ content, and notification effects cannot retroactively mutate an earlier
 release. A2 admits component-only changes as a scoped parent refresh and
 preserves deletion or restoration as explicit transitions. The third Teams
 Spider reconciles notifications but does not create a separate A2 stream.
-These paths have local Scrapy/Graph-fixture and CI qualification; company
-Teams live-account acceptance remains separate.
+The installed inventory is 20 Spiders: the original 17 plus these three Teams
+Spiders. These paths have local native Scrapy/Graph-fixture and CI evidence.
+Live work/school tenant acceptance remains excluded from Task 15.
 
 `HistoricalBaselineService.run` provides explicit historical admission for a
 new consumer scope. It accepts caller-approved bounded exact versions, verifies
@@ -119,12 +120,14 @@ for the service API and retry limits.
 
 The `prepare-scheduled` CLI runs one finite invocation and awaits writes,
 worker cleanup, and reader closure. The external scheduler owns timing and
-repeated invocation. Manual `prepare` and explicit preparation replay remain
+repeated invocation. No detached background work survives command exit.
+Manual `prepare` and explicit preparation replay remain
 available. See [operator configuration](../notes/operator-configuration.md#scheduled-preparation)
 for exact command syntax, stable consumer identity, limits, and recovery.
-The handoff runtime is implemented and qualified. Final documentation review
-and independent acceptance remain pending; see the
-[qualification record](../notes/a1-closeout.md#handoff-qualification-record--2026-10-07).
+Runtime code is integrated. The official exact-SHA 28-gate run, independent
+QA, and final approval remain **PENDING**; see the
+[pending closeout report](../notes/task15-final-qualification-20261016.md).
+Historical scoped results, preflight, and PR50/PR51 CI do not replace that run.
 This does not qualify an external scheduler deployment.
 
 ## 4. Preparation and AI execution
