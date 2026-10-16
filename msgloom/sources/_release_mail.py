@@ -204,7 +204,7 @@ def _inventory(fact, evidence, application):
                 raise SourceReferenceError("Broken Mail inventory chain")
         elif (
             pd["next_link"] is not None
-            or pd["evidence_id"] != fact.evidence_id
+            or pd["evidence_id"] != data["evidence_id"]
             or pd["status"] != data["status"]
         ):
             raise SourceReferenceError("Mail inventory terminal mismatch")
