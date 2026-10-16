@@ -56,7 +56,7 @@ def calendar(root, origin, *, end=END):
     )
 
 
-def contacts_crawl(root, origin, *, delta=False, folder="folder-delta"):
+def contacts_crawl(root, origin, *, delta=False, folder="folder-delta", timeout=30):
     """
     Wait for one real Contacts command using the repository fixture limit.
     """
@@ -65,6 +65,6 @@ def contacts_crawl(root, origin, *, delta=False, folder="folder-delta"):
         cwd=ROOT,
         capture_output=True,
         text=True,
-        timeout=30,
+        timeout=timeout,
         check=False,
     )

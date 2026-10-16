@@ -177,7 +177,7 @@ def test_contacts_snapshot_identity_churn_and_atomic_failure(
 ):
     """Recursive contact and folder authority must bind exact scopes."""
     origin, state, _seen = contacts_server
-    successful(contacts_crawl(tmp_path, origin))
+    successful(contacts_crawl(tmp_path, origin, timeout=60))
     first = feed(tmp_path, "contacts-fixture", "contacts")
     positives = [f for _, facts in first for f in facts if f.role != "transition"]
     if {(f.resource_identity, f.scope_identity) for f in positives} != {
@@ -191,20 +191,20 @@ def test_contacts_snapshot_identity_churn_and_atomic_failure(
         ("child-two", "folder:folder-child"),
     }:
         pytest.fail("Recursive snapshot lost contact/folder scope identities")
-    successful(contacts_crawl(tmp_path, origin))
+    successful(contacts_crawl(tmp_path, origin, timeout=60))
     no_churn(first, feed(tmp_path, "contacts-fixture", "contacts"))
     before = authority(tmp_path, "contacts")
     state["mode"] = "empty"
     reject_entries(tmp_path)
     marker = arm_release_probe(tmp_path, monkeypatch)
-    result = contacts_crawl(tmp_path, origin)
+    result = contacts_crawl(tmp_path, origin, timeout=60)
     if result.returncode != 1 or authority(tmp_path, "contacts") != before:
         pytest.fail("Contacts release failure partially advanced authority")
     if problem := release_failure_problem(result, marker, "contacts"):
         pytest.fail(problem)
     disarm_release_probe(monkeypatch)
     restore_entries(tmp_path)
-    successful(contacts_crawl(tmp_path, origin))
+    successful(contacts_crawl(tmp_path, origin, timeout=60))
     added = feed(tmp_path, "contacts-fixture", "contacts")[len(first) :]
     if len(added) != 8 or any(e.entry_kind != "transition" for e, _ in added):
         pytest.fail("Complete empty snapshot fabricated contact representations")

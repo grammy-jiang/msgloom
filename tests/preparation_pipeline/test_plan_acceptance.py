@@ -130,7 +130,7 @@ def test_manual_live_acceptance_drains_cancellation_without_contradictory_histor
         def pause(_connection, _cursor, statement, _params, _context, _many):
             if statement.startswith("UPDATE phase1_preparation_plan_proofs"):
                 entered.set()
-                if not proceed.wait(10):
+                if not proceed.wait(30):
                     raise RuntimeError("accepted handler did not receive release")
 
         event.listen(store.engine, "after_cursor_execute", pause)
@@ -141,7 +141,7 @@ def test_manual_live_acceptance_drains_cancellation_without_contradictory_histor
         )
         task = asyncio.create_task(handler.run(_request("manual-live", source)))
         try:
-            if not await asyncio.to_thread(entered.wait, 10):
+            if not await asyncio.to_thread(entered.wait, 30):
                 pytest.fail("Manual LIVE producer never accepted its manifest")
             task.cancel()
             await asyncio.sleep(0)

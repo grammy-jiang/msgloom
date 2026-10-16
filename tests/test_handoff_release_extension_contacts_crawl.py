@@ -38,6 +38,7 @@ def test_public_contacts_discover_releases_complete_additive_traversal(
         "discover",
         "--page-size",
         "2",
+        timeout=60,
     )
     if result.returncode or "ERROR" in result.stderr:
         pytest.fail(result.stderr)

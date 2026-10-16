@@ -192,12 +192,12 @@ def _settings(tmp_path, origin):
     }
 
 
-def _run(tmp_path, origin, *args):
+def _run(tmp_path, origin, *args, timeout=30):
     command = [sys.executable, "-m", "scrapy", *args]
     for key, value in _settings(tmp_path, origin).items():
         command.extend(["-s", f"{key}={value}"])
     return subprocess.run(
-        command, cwd=ROOT, capture_output=True, text=True, timeout=30, check=False
+        command, cwd=ROOT, capture_output=True, text=True, timeout=timeout, check=False
     )
 
 
