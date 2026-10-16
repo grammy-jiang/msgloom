@@ -323,6 +323,34 @@ def release_mail_authority(
                     selected.append((member_id, role))
                 # A stale component from either this run or a displaced run
                 # does not suppress legitimate cursor or primary publication.
+            # A terminal inventory limitation has empty *current* membership.
+            # Earlier accepted inventory pages are provenance, not new child
+            # impacts. Suppress only this impact's partial attachment members;
+            # the inventory completion itself still publishes as a limitation.
+            from message_ingest.catalog.stores.microsoft.outlook._email_handoff import (
+                decode_surface_reason,
+            )
+
+            terminal_inventory = any(
+                role == "component"
+                and (component := run_facts.get(fact_id)) is not None
+                and component.component_kind == "attachments"
+                and decode_surface_reason(component.transition_reason)[0] != "acquired"
+                for fact_id, role in selected
+            )
+            if terminal_inventory:
+                kept = []
+                for fact_id, role in selected:
+                    if role == "component":
+                        child = run_facts.get(fact_id)
+                        if child is None:
+                            raise ValueError("Mail inventory child fact is missing")
+                        if child.component_kind == "attachment_metadata" or (
+                            child.component_kind or ""
+                        ).startswith(("attachment_raw:", "item_attachment_detail:")):
+                            continue
+                    kept.append((fact_id, role))
+                selected = kept
             if not primary_ids:
                 if not selected:
                     continue
