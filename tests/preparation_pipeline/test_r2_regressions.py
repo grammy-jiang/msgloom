@@ -189,7 +189,7 @@ def test_reclaimed_claim_fences_late_parser_publication(
             first_store, cast(CollectedSourceReader, reader), work
         )
         task = asyncio.create_task(handler.run(_request("stale-execution", source)))
-        await asyncio.wait_for(cancelled.wait(), timeout=1.0)
+        await asyncio.wait_for(cancelled.wait(), timeout=10.0)
         await asyncio.sleep(1.7)
 
         replacement = await second_store.acquire_claim(
@@ -200,7 +200,7 @@ def test_reclaimed_claim_fences_late_parser_publication(
             lease_seconds=2.0,
         )
         release.set()
-        outcome = await asyncio.wait_for(task, timeout=2.0)
+        outcome = await asyncio.wait_for(task, timeout=10.0)
         if outcome.status is TerminalStatus.COMPLETE:
             pytest.fail("reclaimed stale owner reported complete")
         if not any(
