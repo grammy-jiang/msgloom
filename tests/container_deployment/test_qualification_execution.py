@@ -5,7 +5,6 @@ from __future__ import annotations
 import importlib.util
 import json
 import shutil
-import subprocess
 import sys
 import zipfile
 from pathlib import Path
@@ -22,6 +21,7 @@ from deployment.qualification import (
     wheel_metadata,
 )
 from tests.container_deployment.helpers import daemon_result
+from tests.container_deployment.package_build import build_wheel, run_command
 
 ROOT = Path(__file__).resolve().parents[2]
 DOCKERFILE = ROOT / "deployment" / "Dockerfile"
@@ -53,9 +53,6 @@ def _targets() -> tuple[Target, ...]:
 
 
 def test_real_sdist_built_wheel_installs_by_valid_filename(tmp_path: Path) -> None:
-    uv = shutil.which("uv")
-    if uv is None:
-        pytest.fail("uv is required for package qualification tests")
     source = tmp_path / "mini"
     template = source / "src/msgloom/reporting/templates/report.html.j2"
     template.parent.mkdir(parents=True)
@@ -74,59 +71,17 @@ def test_real_sdist_built_wheel_installs_by_valid_filename(tmp_path: Path) -> No
         'msgloom=["reporting/templates/*.j2"]\n',
         encoding="utf-8",
     )
-    sdist_dir = tmp_path / "sdist"
-    wheel_dir = tmp_path / "wheel"
-    subprocess.run(
-        [
-            uv,
-            "build",
-            "--offline",
-            "--no-progress",
-            "--no-config",
-            "--sdist",
-            "--out-dir",
-            str(sdist_dir),
-            str(source),
-        ],
-        check=True,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.STDOUT,
-        text=True,
-        timeout=30,
-    )
-    sdist = next(sdist_dir.glob("*.tar.gz"))
-    subprocess.run(
-        [
-            uv,
-            "build",
-            "--offline",
-            "--no-progress",
-            "--no-config",
-            "--wheel",
-            "--out-dir",
-            str(wheel_dir),
-            str(sdist),
-        ],
-        check=True,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.STDOUT,
-        text=True,
-        timeout=30,
-    )
-    wheel = next(wheel_dir.glob("*.whl"))
+    wheel = build_wheel(source, tmp_path)
     metadata = wheel_metadata(wheel)
     validate_resources(metadata, (RESOURCE,))
     venv = tmp_path / "venv"
-    subprocess.run(
+    run_command(
         [sys.executable, "-m", "venv", str(venv)],
-        check=True,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.STDOUT,
-        text=True,
-        timeout=30,
     )
-    installed_python = venv / "bin/python"
-    subprocess.run(
+    installed_python = venv / (
+        "Scripts/python.exe" if sys.platform == "win32" else "bin/python"
+    )
+    run_command(
         [
             str(installed_python),
             "-m",
@@ -136,13 +91,8 @@ def test_real_sdist_built_wheel_installs_by_valid_filename(tmp_path: Path) -> No
             "--no-deps",
             str(wheel),
         ],
-        check=True,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.STDOUT,
-        text=True,
-        timeout=30,
     )
-    probe = subprocess.run(
+    probe = run_command(
         [
             str(installed_python),
             "-I",
@@ -156,10 +106,6 @@ def test_real_sdist_built_wheel_installs_by_valid_filename(tmp_path: Path) -> No
             ),
         ],
         cwd=tmp_path,
-        check=True,
-        text=True,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.STDOUT,
         timeout=10,
     )
     if probe.stdout.strip() != "0.0.1 True":
