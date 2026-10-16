@@ -115,11 +115,56 @@ def assert_release_contract(
                         continue
                     fact = json.loads(fact_row["payload"])
                     state_key = fact["source_state_key"]
+                    foreign_parent = (
+                        authoritative and fact_row["run_id"] != owner_run_id
+                    )
+                    if foreign_parent:
+                        # A previously accepted independent Full may own the
+                        # exact same message version as a winning late Delta's
+                        # component. Its original run must stay truthful.
+                        if not (
+                            stream == "outlook_mail"
+                            and group["subject_kind"] == "message_delta"
+                            and member["role"] == "primary"
+                            and entry["entry_kind"] == "resource"
+                            and entry["resource_kind"] == "message"
+                            and fact["fact_kind"] == "resource_observation"
+                            and connection.execute(
+                                "SELECT 1 FROM acquisition_effective_states "
+                                "WHERE fact_id=? LIMIT 1",
+                                (member["fact_id"],),
+                            ).fetchone()
+                            is not None
+                        ):
+                            pytest.fail("Authority borrowed an unrelated run's fact")
+                        child_ids = [
+                            child_id
+                            for child_id, child_role in entry["facts"]
+                            if child_role == "component"
+                        ]
+                        if not child_ids:
+                            pytest.fail("Cross-run accepted parent has no components")
+                        for child_id in child_ids:
+                            child_row = connection.execute(
+                                "SELECT payload FROM acquisition_facts WHERE fact_id=?",
+                                (child_id,),
+                            ).fetchone()
+                            child = (
+                                json.loads(child_row["payload"]) if child_row else {}
+                            )
+                            locator = child.get("source_version_locator")
+                            if (
+                                child.get("run_id") != owner_run_id
+                                or not isinstance(locator, dict)
+                                or locator.get("resource_version") != state_key
+                            ):
+                                pytest.fail(
+                                    "Cross-run parent lacks exact component pin"
+                                )
                     if (
                         fact_row["source_id"] != source_id
                         or fact_row["stream"] != stream
                         or fact_row["run_id"] != fact["run_id"]
-                        or (authoritative and fact_row["run_id"] != owner_run_id)
                         or fact_row["source_state_key"] != state_key
                         or not isinstance(state_key, str)
                         or len(state_key) != 64

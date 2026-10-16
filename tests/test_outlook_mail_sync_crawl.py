@@ -293,7 +293,7 @@ def test_mail_sync_delta_then_full_refresh_in_one_scrapy_process(
         stream="outlook_mail",
         expected_groups={
             ("folder_delta", "sync-fixture"): ("authority_scope", True, 2),
-            ("message_delta", "sync-fixture"): ("authority_scope", True, 2),
+            ("message_delta", "sync-fixture"): ("authority_scope", True, 1),
             ("message", MESSAGE_ID): ("resource_profile", False, 1),
         },
         expected_entries={
@@ -307,12 +307,11 @@ def test_mail_sync_delta_then_full_refresh_in_one_scrapy_process(
                 ),
             ),
             ("message_delta", "sync-fixture"): (
-                ("resource", "message", MESSAGE_ID, (("primary", None),)),
                 (
-                    "component",
-                    "message_surface",
+                    "resource",
+                    "message",
                     MESSAGE_ID,
-                    (("component", "discovery"),),
+                    (("primary", None), ("component", "discovery")),
                 ),
             ),
             ("message", MESSAGE_ID): (

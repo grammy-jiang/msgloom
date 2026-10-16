@@ -426,7 +426,7 @@ body_contains = ["escalate"]
         stream="outlook_mail",
         expected_groups={
             ("folder_delta", "rules-sync-fixture"): ("authority_scope", True, 2),
-            ("message_delta", "rules-sync-fixture"): ("authority_scope", True, 3),
+            ("message_delta", "rules-sync-fixture"): ("authority_scope", True, 2),
             ("message", RULE_FULL_ID): ("resource_profile", False, 1),
         },
         expected_entries={
@@ -440,18 +440,17 @@ body_contains = ["escalate"]
                 ),
             ),
             ("message_delta", "rules-sync-fixture"): (
-                ("resource", "message", RULE_DISCOVERY_ID, (("primary", None),)),
                 (
-                    "component",
-                    "message_surface",
+                    "resource",
+                    "message",
                     RULE_DISCOVERY_ID,
-                    (("component", "discovery"),),
+                    (("primary", None), ("component", "discovery")),
                 ),
                 (
-                    "component",
-                    "message_surface",
+                    "resource",
+                    "message",
                     RULE_FULL_ID,
-                    (("component", "discovery"),),
+                    (("primary", None), ("component", "discovery")),
                 ),
             ),
             ("message", RULE_FULL_ID): (

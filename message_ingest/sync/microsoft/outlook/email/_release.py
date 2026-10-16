@@ -9,6 +9,7 @@ from message_ingest.acquisition.handoff import (
 )
 from message_ingest.acquisition.handoff import (
     AcquisitionStream,
+    EffectiveStateKey,
     FactSpec,
     ReleaseEntryKind,
     ReleaseEntrySpec,
@@ -18,7 +19,72 @@ from message_ingest.acquisition.handoff import (
     source_state_key,
 )
 from message_ingest.catalog.models.handoff import AcquisitionFact
+from message_ingest.catalog.models.microsoft.outlook._email_bindings import (
+    MailApplicationBinding,
+)
 from message_ingest.catalog.stores.handoff import AcquisitionHandoffStore
+
+
+def _component_matches_parent_version(fact: FactSpec, version: str) -> bool:
+    """Check the exact original parent even for evidence-free terminal outcomes.
+
+    A terminal unsupported/unavailable Mail surface has no evidence locator.
+    The component state hash still includes its original resource_version,
+    so reconstruct that bounded producer-owned semantic state before deciding
+    whether a later accepted Full primary can serve as its exact parent.
+    """
+    locator = fact.source_version_locator
+    if locator is not None:
+        return locator.resource_version == version
+    if (
+        fact.resource_kind != "message_surface"
+        or not fact.component_kind
+        or fact.evidence_id is not None
+    ):
+        return False
+    from message_ingest.catalog.stores.microsoft.outlook._email_handoff import (
+        decode_surface_reason,
+    )
+
+    status, profile = decode_surface_reason(fact.transition_reason)
+    state = {
+        "surface": fact.component_kind,
+        "status": status,
+        "profile": profile,
+        "resource_version": version,
+    }
+    if status == "acquired":
+        if fact.component_kind != "discovery":
+            return False
+        state["representation"] = version
+    return source_state_key(state) == fact.source_state_key
+
+
+def _component_matches_primary_application(
+    session, fact: FactSpec, primary: str
+) -> bool:
+    """Exclude stale selected Full components after a semantically equal ABA.
+
+    Selected captures have immutable application bindings to exact primary fact
+    IDs, not merely to provider-version hashes. Current-equivalent captures
+    publish their revalidated effective fact ID. Unselected Delta/discovery
+    surfaces legitimately have no application binding and are version-checked
+    separately by the caller.
+    """
+    effective_id = (
+        fact.revalidated_fact_id
+        if fact.storage_relation == StorageRelation.CURRENT_EQUIVALENT
+        and fact.revalidated_fact_id
+        else fact.fact_id
+    )
+    parents = session.scalars(
+        select(MailApplicationBinding.primary_fact_id).where(
+            MailApplicationBinding.source_id == fact.source_id,
+            MailApplicationBinding.fact_id == effective_id,
+            MailApplicationBinding.capture_id.is_not(None),
+        )
+    ).all()
+    return not parents or primary in parents
 
 
 def stage_presence(
@@ -128,6 +194,7 @@ def release_mail_authority(
         Kind.SCOPED_STATE_TRANSITION: ("transition", ReleaseEntryKind.TRANSITION),
     }
     impacts = {}
+    run_facts = {fact.fact_id: fact for fact in facts}
     included = set()
     for fact in sorted(facts, key=lambda value: value.fact_id):
         if fact.fact_id in retained and fact.fact_id not in winning:
@@ -161,18 +228,137 @@ def release_mail_authority(
         if (effective_id, role) in included:
             continue
         included.add((effective_id, role))
-        key = (
-            fact.resource_kind,
-            fact.resource_identity,
-            kind,
-            fact.parent_resource_kind,
-            fact.parent_resource_identity,
-            fact.scope_kind,
-            fact.scope_identity,
-        )
+        # A Mail component changes the exact message it belongs to. Releasing
+        # a stand-alone message_surface entry would force the A2 Reader to
+        # reconstruct a component without the immutable primary it requires.
+        # Preserve other direct impacts (folders, presence and transitions).
+        if (
+            kind == ReleaseEntryKind.COMPONENT
+            and fact.parent_resource_kind == "message"
+        ):
+            if not fact.parent_resource_identity:
+                raise ValueError("Mail component has no original message parent")
+            key = (
+                "message",
+                fact.parent_resource_identity,
+                ReleaseEntryKind.RESOURCE,
+                None,
+                None,
+                None,
+                None,
+            )
+        else:
+            key = (
+                fact.resource_kind,
+                fact.resource_identity,
+                kind,
+                fact.parent_resource_kind,
+                fact.parent_resource_identity,
+                fact.scope_kind,
+                fact.scope_identity,
+            )
         impacts.setdefault(key, []).append((fact.fact_id, role))
     for key, members in sorted(impacts.items(), key=lambda item: str(item[0])):
         resource, identity, kind, parent, parent_id, scope, scope_id = key
+        if resource == "message" and kind == ReleaseEntryKind.RESOURCE:
+            primary_ids = [fact_id for fact_id, role in members if role == "primary"]
+            if len(primary_ids) > 1:
+                raise ValueError("Mail impact has ambiguous primary")
+            primary_key = EffectiveStateKey(
+                source_id=source_id,
+                stream=AcquisitionStream.OUTLOOK_MAIL,
+                resource_kind="message",
+                resource_identity=identity,
+            )
+            if primary_ids:
+                # Even a same-run Full primary cannot acquire a component
+                # captured against an earlier version of the message.
+                accepted = run_facts.get(primary_ids[0])
+                if accepted is None or accepted.effective_key != primary_key:
+                    raise ValueError("Mail impact primary identity is invalid")
+            else:
+                # A later independently accepted Full can provide the exact
+                # same-version primary for a pending Delta component.
+                current = ledger.current_effective_state(session, primary_key)
+                if current is None:
+                    # Pre-ledger history may have no effective fact. Do not
+                    # fabricate a primary or veto the provider cursor.
+                    continue
+                row = session.get(AcquisitionFact, current["fact_id"])
+                if row is None:
+                    raise ValueError("Mail component accepted primary is missing")
+                accepted = FactSpec.from_json(row.payload)
+                if (
+                    accepted.fact_id != current["fact_id"]
+                    or accepted.effective_key != primary_key
+                    or accepted.source_state_key != current["source_state_key"]
+                ):
+                    raise ValueError("Mail component accepted primary is invalid")
+
+            version = accepted.source_state_key
+            if version is None:
+                raise ValueError("Mail accepted primary has no semantic version")
+            # CURRENT_EQUIVALENT revalidates effective application P with a
+            # new Q observation. Selected components bind P, while ADVANCED
+            # reapplications must keep their own exact fact ID.
+            primary_application = (
+                accepted.revalidated_fact_id
+                if accepted.storage_relation == StorageRelation.CURRENT_EQUIVALENT
+                and accepted.revalidated_fact_id is not None
+                else accepted.fact_id
+            )
+            selected = []
+            for member_id, role in members:
+                if role != "component":
+                    selected.append((member_id, role))
+                    continue
+                component = run_facts.get(member_id)
+                if component is None:
+                    raise ValueError("Mail component member is not retained")
+                if _component_matches_parent_version(
+                    component, version
+                ) and _component_matches_primary_application(
+                    session, component, primary_application
+                ):
+                    selected.append((member_id, role))
+                # A stale component from either this run or a displaced run
+                # does not suppress legitimate cursor or primary publication.
+            # A terminal inventory limitation has empty *current* membership.
+            # Earlier accepted inventory pages are provenance, not new child
+            # impacts. Suppress only this impact's partial attachment members;
+            # the inventory completion itself still publishes as a limitation.
+            from message_ingest.catalog.stores.microsoft.outlook._email_handoff import (
+                decode_surface_reason,
+            )
+
+            terminal_inventory = any(
+                role == "component"
+                and (component := run_facts.get(fact_id)) is not None
+                and component.component_kind == "attachments"
+                and decode_surface_reason(component.transition_reason)[0] != "acquired"
+                for fact_id, role in selected
+            )
+            if terminal_inventory:
+                kept = []
+                for fact_id, role in selected:
+                    if role == "component":
+                        child = run_facts.get(fact_id)
+                        if child is None:
+                            raise ValueError("Mail inventory child fact is missing")
+                        if child.component_kind == "attachment_metadata" or (
+                            child.component_kind or ""
+                        ).startswith(("attachment_raw:", "item_attachment_detail:")):
+                            continue
+                    kept.append((fact_id, role))
+                selected = kept
+            if not primary_ids:
+                if not selected:
+                    continue
+                selected.insert(0, (accepted.fact_id, "primary"))
+            members = selected
+            # Fact iteration is hash ordered. Preserve primary-first membership
+            # independent of callback completion order.
+            members.sort(key=lambda item: (item[1] != "primary", item[0]))
         entries.append(
             ReleaseEntrySpec(
                 resource_kind=resource,

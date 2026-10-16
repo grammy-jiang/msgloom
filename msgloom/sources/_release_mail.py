@@ -39,6 +39,65 @@ def _rows(evidence, sql, args):
     return [dict(row) for row in rows]
 
 
+def _equivalent_evidence(fact, binding, evidence, current_evidence):
+    """Verify a selected revalidation without treating two captures as one fact.
+
+    The published fact is C1; a later selected capture C2 may revalidate its
+    semantic bytes. The producer stores C2's exact immutable association
+    and an additive alias C1 -> this *new* primary. Every alias is checked
+    against the retained C2 fact and the canonical C1 byte digest.
+    """
+    staged_id = binding.get("staged_fact_id")
+    if not isinstance(staged_id, str) or staged_id == fact.fact_id:
+        return False
+    from message_ingest.acquisition.handoff import FactSpec, StorageRelation
+
+    rows = _rows(
+        evidence,
+        "SELECT payload FROM acquisition_facts WHERE source_id=? AND fact_id=?",
+        (fact.source_id, staged_id),
+    )
+    if len(rows) != 1:
+        return False
+    try:
+        staged = FactSpec.from_json(rows[0]["payload"])
+    except (ValueError, TypeError, KeyError):
+        return False
+    if (
+        staged.fact_id != staged_id
+        or staged.storage_relation != StorageRelation.CURRENT_EQUIVALENT
+        or staged.revalidated_fact_id != fact.fact_id
+        or staged.source_id != fact.source_id
+        or staged.stream != fact.stream
+        or staged.source_state_key != fact.source_state_key
+        or staged.resource_kind != fact.resource_kind
+        or staged.resource_identity != fact.resource_identity
+        or staged.component_kind != fact.component_kind
+        or (staged.parent_resource_kind, staged.parent_resource_identity)
+        != (fact.parent_resource_kind, fact.parent_resource_identity)
+        or (staged.scope_kind, staged.scope_identity)
+        != (fact.scope_kind, fact.scope_identity)
+        or staged.evidence_id != current_evidence
+    ):
+        return False
+    if staged.evidence_id is None or fact.evidence_id is None:
+        return staged.evidence_id is None and fact.evidence_id is None
+    # MIME and raw data must be byte-identical. For semantic inventories the
+    # content hash is the sorted validated membership, not the HTTP page bytes.
+    _, current = evidence.load(staged.evidence_id, staged.source_id)
+    _, original = evidence.load(fact.evidence_id, fact.source_id)
+    status, _ = outcome(fact)
+    # Terminal error bodies do not participate in the semantic state hash.
+    # Both saved captures are verified; only acquired byte surfaces require
+    # byte identity. Inventories bind their semantic membership separately.
+    return (
+        current.sha256 == original.sha256
+        if status == "acquired"
+        and staged.component_kind not in {"attachments", "attachment_metadata"}
+        else True
+    )
+
+
 def _application(primary, fact, evidence):
     """Resolve an exact retained application when this is a selected capture."""
     bindings = _rows(
@@ -61,21 +120,31 @@ def _application(primary, fact, evidence):
             continue
         capture = captures[0]
         data = json.loads(capture["payload"])
+        application_binding = json.loads(binding["payload"])
         if (
             capture["source_id"],
             capture["message_id"],
             capture["parent_key"],
             capture["component"],
             capture["resource_id"],
-            data["evidence_id"],
         ) != (
             fact.source_id,
             primary.resource_identity,
             primary.source_state_key,
             fact.component_kind,
             fact.resource_identity,
-            fact.evidence_id,
         ):
+            continue
+        staged_id = application_binding.get("staged_fact_id")
+        if staged_id != fact.fact_id:
+            # Cached/reused evidence does not turn a distinct selected C2
+            # application into the original C1 application. Verify the
+            # immutable revalidation pin even when both share evidence IDs.
+            if not _equivalent_evidence(
+                fact, application_binding, evidence, data["evidence_id"]
+            ):
+                continue
+        elif data["evidence_id"] != fact.evidence_id:
             continue
         parents = _rows(
             evidence,
@@ -92,7 +161,7 @@ def _application(primary, fact, evidence):
             for parent in parents
         ):
             continue
-        return capture, data, json.loads(binding["payload"])
+        return capture, data, application_binding
     raise SourceReferenceError("Mail component lacks exact primary application")
 
 
@@ -144,7 +213,7 @@ def _inventory(fact, evidence, application):
                 raise SourceReferenceError("Broken Mail inventory chain")
         elif (
             pd["next_link"] is not None
-            or pd["evidence_id"] != fact.evidence_id
+            or pd["evidence_id"] != data["evidence_id"]
             or pd["status"] != data["status"]
         ):
             raise SourceReferenceError("Mail inventory terminal mismatch")

@@ -49,15 +49,17 @@ jobs:
         with:
           path: ~/.cache/pre-commit
           key: precommit-v1-${{ runner.os }}-${{ runner.arch }}-py313-node24-${{ hashFiles('.pre-commit-config.yaml') }}
-      # OSV audits the lock's runtime, dev and compatibility groups.
-      # PYSEC-2017-83 has no upstream fix. Surface it once one becomes available.
+      # Audit all locked groups and Python releases. Two reviewed, scope-
+      # restricted advisories lack a fixed release; each exception expires
+      # automatically once OSV reports a fix. See dependency-vulnerability-policy.
       - name: Audit locked Python dependencies
         if: ${{ steps.change_scope.outputs.docs_only != 'true' }}
         run: |
           for version in 3.12 3.13 3.14; do
             uv audit --locked --no-progress --preview-features audit-command \
               --python-version "$version" \
-              --ignore-until-fixed PYSEC-2017-83
+              --ignore-until-fixed PYSEC-2017-83 \
+              --ignore-until-fixed GHSA-8pqf-f4m5-798g
           done
       - name: Install locked development dependencies
         if: ${{ steps.change_scope.outputs.docs_only != 'true' }}
