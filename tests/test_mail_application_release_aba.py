@@ -23,9 +23,18 @@ from tests.source_reader.release_nonmail_helpers import (
 )
 
 
-@pytest.mark.parametrize("replacement_mime", ["none", "changed", "equivalent"])
+@pytest.mark.parametrize(
+    ("replacement_mime", "tamper_stage"),
+    [
+        ("none", False),
+        ("changed", False),
+        ("equivalent", False),
+        ("equivalent_shared", False),
+        ("equivalent_shared", True),
+    ],
+)
 def test_selected_mime_from_first_a_cannot_poison_later_same_run_a(
-    mail_catalog, replacement_mime
+    mail_catalog, replacement_mime, tamper_stage
 ):
     """A1->B->A2 must preserve only components bound to the selected A2."""
     message_a = {**RAW, "changeKey": "v1", "parentFolderId": "inbox"}
@@ -82,6 +91,7 @@ def test_selected_mime_from_first_a_cannot_poison_later_same_run_a(
             selection_id="later-a",
         )
         current_mime_id = original.fact.fact_id
+        staged_component_id = None
         if replacement_mime != "none":
             applied_mime = store.set_surface(
                 run_id="aba-selected",
@@ -89,7 +99,11 @@ def test_selected_mime_from_first_a_cannot_poison_later_same_run_a(
                 surface="mime",
                 status="acquired",
                 evidence_id=(
-                    "equiv-mime" if replacement_mime == "equivalent" else "new-mime"
+                    "old-mime"
+                    if replacement_mime == "equivalent_shared"
+                    else "equiv-mime"
+                    if replacement_mime == "equivalent"
+                    else "new-mime"
                 ),
                 observed_at="2026-10-03T00:00:00+00:00",
                 profile_version="full-v1",
@@ -99,14 +113,15 @@ def test_selected_mime_from_first_a_cannot_poison_later_same_run_a(
             )
             if applied_mime.fact is None:
                 pytest.fail("The selected later-A MIME was not persisted")
-            if replacement_mime == "equivalent" and (
+            staged_component_id = applied_mime.fact.fact_id
+            if replacement_mime.startswith("equivalent") and (
                 applied_mime.fact.storage_relation != "current_equivalent"
                 or applied_mime.fact.revalidated_fact_id != original.fact.fact_id
             ):
                 pytest.fail("Selected same-byte MIME did not revalidate C1 through C2")
             current_mime_id = (
                 original.fact.fact_id
-                if replacement_mime == "equivalent"
+                if replacement_mime.startswith("equivalent")
                 else applied_mime.fact.fact_id
             )
         if (
@@ -138,6 +153,25 @@ def test_selected_mime_from_first_a_cannot_poison_later_same_run_a(
     finally:
         catalog.close()
 
+    if tamper_stage:
+        if staged_component_id is None:
+            pytest.fail("Tamper case did not retain a staged C2 fact")
+        # Model a corrupted immutable C2 application after the release is
+        # sealed; C2 is not a release member, so Reader must validate the
+        # staged revalidation named by the additive alias.
+        import sqlite3
+
+        with sqlite3.connect(mail_catalog["database"]) as db:
+            for (name,) in db.execute(
+                "SELECT name FROM sqlite_master WHERE type='trigger' "
+                "AND tbl_name='acquisition_facts'"
+            ):
+                db.execute(f'DROP TRIGGER "{name}"')
+            db.execute(
+                "DELETE FROM acquisition_facts WHERE fact_id=?",
+                (staged_component_id,),
+            )
+
     async def check():
         reader = reader_api(mail_catalog)
         try:
@@ -153,6 +187,15 @@ def test_selected_mime_from_first_a_cannot_poison_later_same_run_a(
             ]
             if len(impacts) != 1:
                 pytest.fail("ABA must leave one exact readable primary impact")
+            if tamper_stage:
+                from msgloom.sources.models import SourceReferenceError
+
+                with pytest.raises(
+                    SourceReferenceError,
+                    match="Mail component lacks exact primary application",
+                ):
+                    await reader.read_entry(impacts[0].reference)
+                return
             released = await reader.read_entry(impacts[0].reference)
             if released.selection is None or len(released.components) != (
                 replacement_mime != "none"
@@ -163,7 +206,7 @@ def test_selected_mime_from_first_a_cannot_poison_later_same_run_a(
 
                 expected_bytes = (
                     b"From: first@example.test\r\nSubject: first\r\n\r\nOld MIME"
-                    if replacement_mime == "equivalent"
+                    if replacement_mime.startswith("equivalent")
                     else b"From: later@example.test\r\nSubject: later\r\n\r\nNew MIME"
                 )
                 bodies = released.selection.record.alternate_bodies

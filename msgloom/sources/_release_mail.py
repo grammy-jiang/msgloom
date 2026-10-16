@@ -86,9 +86,14 @@ def _equivalent_evidence(fact, binding, evidence, current_evidence):
     # content hash is the sorted validated membership, not the HTTP page bytes.
     _, current = evidence.load(staged.evidence_id, staged.source_id)
     _, original = evidence.load(fact.evidence_id, fact.source_id)
+    status, _ = outcome(fact)
+    # Terminal error bodies do not participate in the semantic state hash.
+    # Both saved captures are verified; only acquired byte surfaces require
+    # byte identity. Inventories bind their semantic membership separately.
     return (
         current.sha256 == original.sha256
-        if staged.component_kind not in {"attachments", "attachment_metadata"}
+        if status == "acquired"
+        and staged.component_kind not in {"attachments", "attachment_metadata"}
         else True
     )
 
@@ -130,12 +135,16 @@ def _application(primary, fact, evidence):
             fact.resource_identity,
         ):
             continue
-        if data["evidence_id"] != fact.evidence_id and not _equivalent_evidence(
-            fact,
-            application_binding,
-            evidence,
-            data["evidence_id"],
-        ):
+        staged_id = application_binding.get("staged_fact_id")
+        if staged_id != fact.fact_id:
+            # Cached/reused evidence does not turn a distinct selected C2
+            # application into the original C1 application. Verify the
+            # immutable revalidation pin even when both share evidence IDs.
+            if not _equivalent_evidence(
+                fact, application_binding, evidence, data["evidence_id"]
+            ):
+                continue
+        elif data["evidence_id"] != fact.evidence_id:
             continue
         parents = _rows(
             evidence,
