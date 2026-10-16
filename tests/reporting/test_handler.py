@@ -36,7 +36,9 @@ from tests.reporting.helpers import (
 )
 
 
-def _config(identity: str = "report-result") -> ReportHandlerConfig:
+def _config(
+    identity: str = "report-result", *, timeout_seconds: float = 5.0
+) -> ReportHandlerConfig:
     return ReportHandlerConfig(
         report_ref=ref("report", identity),
         result_id=identity,
@@ -47,8 +49,8 @@ def _config(identity: str = "report-result") -> ReportHandlerConfig:
         attempt=AttemptIdentity(f"attempt-{identity}"),
         code_version="report-build-test",
         expected_parameters=(("mode", "scheduled"),),
-        timeout_seconds=5.0,
-        claim_lease_seconds=10.0,
+        timeout_seconds=timeout_seconds,
+        claim_lease_seconds=max(10.0, timeout_seconds + 5.0),
     )
 
 
@@ -67,7 +69,11 @@ def _request(
 
 
 def _handler(
-    store: object, selection: ReportSelectionPlan, identity: str = "report-result"
+    store: object,
+    selection: ReportSelectionPlan,
+    identity: str = "report-result",
+    *,
+    timeout_seconds: float = 5.0,
 ) -> ReportBuildHandler:
     return ReportBuildHandler(
         policy=policy(),
@@ -78,7 +84,7 @@ def _handler(
             max_total_bytes=300_000,
             max_parts=8,
         ),
-        config=_config(identity),
+        config=_config(identity, timeout_seconds=timeout_seconds),
     )
 
 

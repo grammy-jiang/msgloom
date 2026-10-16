@@ -85,9 +85,17 @@ async def build_report(store: Phase1Persistence) -> tuple[ResultRef, SavedReport
     """Build an actual report through ReportBuildHandler and reload it."""
     triage_ref = await save_triage(store, triage_data(topic()))
     selection = plan(triage_ref)
-    outcome = await build_handler(store, selection).run(build_request(selection))
+    # This is delivery test setup, not the REPORT_BUILD deadline contract.
+    # Full-suite parallelism and coverage can delay otherwise correct SQLite
+    # persistence. Keep timeout tests using the reporting helper's 5s default.
+    outcome = await build_handler(store, selection, timeout_seconds=30.0).run(
+        build_request(selection)
+    )
     if outcome.status is not TerminalStatus.COMPLETE:
-        raise RuntimeError("synthetic report build failed")
+        codes = tuple(failure.code for failure in outcome.failures)
+        raise RuntimeError(
+            f"synthetic report build failed: {outcome.status.value}; codes={codes}"
+        )
     ref = outcome.result_refs[0]
     result = await store.get_result(ref.result_id)
     if result is None or result.semantic_data_ref is None:

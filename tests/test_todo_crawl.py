@@ -400,7 +400,10 @@ def test_real_todo_sync_promotes_only_after_full_multipage_traversal(
 @pytest.mark.parametrize("mode", ["failure", "malformed"])
 def test_real_todo_sync_failure_keeps_promoted_presence(tmp_path, graph_server, mode):
     origin, state, _requests, _pages = graph_server
-    first = _crawl(tmp_path, origin, action="sync")
+    # A native two-phase Scrapy sync shares workers with coverage in full CI.
+    # Bound each subprocess independently without imposing a 30s host-speed
+    # assumption on the successfully completed initial crawl.
+    first = _crawl(tmp_path, origin, action="sync", timeout=60)
     if first.returncode:
         pytest.fail(first.stderr)
     catalog = Catalog(f"sqlite:///{tmp_path / 'catalog.sqlite3'}")
@@ -408,7 +411,7 @@ def test_real_todo_sync_failure_keeps_promoted_presence(tmp_path, graph_server, 
         with catalog.Session() as session:
             before = _presence_state(session)
         state["mode"] = mode
-        failed = _crawl(tmp_path, origin, action="sync")
+        failed = _crawl(tmp_path, origin, action="sync", timeout=60)
         if failed.returncode != 1:
             pytest.fail("Incomplete or failed authoritative sync must fail the command")
         _private_logs(failed.stderr)
