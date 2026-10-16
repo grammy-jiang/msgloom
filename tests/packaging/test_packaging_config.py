@@ -41,7 +41,7 @@ def test_build_backend_and_development_pins_are_exact() -> None:
     groups = _table(project["dependency-groups"], "dependency groups")
     dev = set(cast(list[str], groups["dev"]))
     for requirement in (
-        "tox==4.65.5",
+        "tox==4.65.6",
         "tox-uv==1.37.0",
         "pytest-xdist==3.8.0",
         "pytest-cov==7.1.0",

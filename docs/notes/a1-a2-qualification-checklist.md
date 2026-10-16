@@ -60,7 +60,7 @@ execution has this shape; replace every placeholder with the final values:
 Run from the candidate repository root. Do not resolve interpreter executable
 symlinks: doing so can discard virtual-environment identity. The normal 3.13
 runtime must be Python 3.13.5; every environment must have Scrapy 2.19.0,
-pytest 9.1.1, pytest-cov 7.1.0, pytest-xdist 3.8.0, and Ruff 0.17.0.
+pytest 9.1.1, pytest-cov 7.1.0, pytest-xdist 3.8.0, and Ruff 0.17.1.
 Compatibility environments also require FastMCP 4.1.0.
 
 At the original preparation, the inspected host had Python 3.13.5 with
