@@ -92,10 +92,10 @@ later valid entries can progress without claiming that held content succeeded.
 
 The installed scope is **20 Spiders**: the original 17 plus Teams chat, channel,
 and notification reconciliation. Teams native local fixtures prove crawl,
-release, and A2 intake behavior. **Out of scope:** live work/school Teams tenant
-acceptance and any external scheduler deployment. `prepare-scheduled` runs one
-finite invocation; this qualification installs no scheduler, daemon, or
-detached workflow. It is not a broader Phase 1 product release.
+release, and A2 intake behavior. **Out of scope:** live work/school Teams
+tenant acceptance and any external scheduler deployment. `prepare-scheduled`
+runs one finite invocation; this qualification installs no scheduler, daemon,
+or detached workflow. It is not a broader Phase 1 product release.
 
 ## Official invocation record
 
@@ -110,6 +110,7 @@ detached workflow. It is not a broader Phase 1 product release.
 | Evidence directory and manifest | `/tmp/msgloom-task15-final-qualification-34057c6-20261023-r1/manifest.json`, SHA-256 `69b492287e14fb31344ba0c9f7a508235854f81d1c2f86c97c3450a5c888e9b1` |
 | Command | `systemd-run --user --scope -p Delegate=yes --quiet <py313>/bin/python scripts/qualify_a1_a2_handoff.py --execute --base 765d3c6… --candidate 34057c6… --output-root <evidence> --python312 … --python314fastmcp … --coverage-map <map> --precommit-python <py313>/bin/python --precommit-cache ~/.cache/pre-commit`; exit code 2 (automated gates passed; external review required). |
 | Candidate-bound map | `/tmp/msgloom-task15-map-34057c6-20261023.json`, SHA-256 `ea996d5b233108fb2535d3a21c1609926fa38a717bc6bb69a27bf625c8937b60`; 20 Spiders, 13 scenarios, 105 exact node IDs, all passed in `a1` or `normal313`. |
+| Durable evidence archive | `/home/grammy-jiang/Projects/msgloom-agent-handoffs/task15-opus55-20261023/evidence/msgloom-task15-34057c6-qualification-evidence-20261023.tar.gz`, SHA-256 `b8a503b787209124b4bbf86a40f1d08970a9526b74b7b41ac0ae2c64f877b801`. It holds the manifest, postcheck, all 77 artifacts, map, launcher log, runner output, the independent review record, the primary audit, and the manifests and postchecks of every earlier attempt, with a `SHA256SUMS` list of the original files (`sha256sum -c SHA256SUMS` after extraction). The `/tmp` copies are subject to the host's 10-day `systemd-tmpfiles` cleanup; the archive is the durable local copy. |
 | Artifact digests | The manifest records SHA-256 and size for all 77 artifacts. The retained postcheck (`independent-postcheck.json`, SHA-256 `748b30363bd8df5610d4dfdbddc74bfb9a1bd357d93cbc3629d7cd2961d57352`), a separate primary-agent audit, and the independent review recomputed them: 0 mismatches. |
 | Independent QA | **ACCEPT** — `/home/grammy-jiang/Projects/msgloom-agent-handoffs/task15-opus55-20261023/INDEPENDENT_REVIEW.md`, SHA-256 `392eb7c583a8365fd874e04cc6abf70bbef9d54954901a63e43415f212ea2602` |
 | Final approval and Task 15 acceptance | **ACCEPTED** — owner-approved merge of this documentation-only closeout after 10/10 CI; PRIMARY acceptance by the primary agent |

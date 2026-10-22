@@ -1,6 +1,7 @@
 # A1 Microsoft collection closeout
 
-**Status:** A1 source-capability closeout closed; Task 15 accepted on `34057c6` (2026-10-23)
+**Status:** A1 source-capability closeout closed; Task 15 accepted on
+`34057c6` (2026-10-23)
 **Closeout date:** 2026-10-03
 **Implementation head before closeout documentation:**
 `d1c703d4c93e966b8c025d0ec77c2929c2ac9a77`
@@ -211,12 +212,13 @@ exact-SHA results, real artifact digests, independent review, and final approval
 ### Task 15 qualification update — 2026-10-23
 
 The official exact-SHA 28-gate run passed every automated gate on source
-`34057c6c9f85688fd2bd1868d90302ab5a61205f`. The earlier `2ce2ec0` failures were native child
-watchdogs that expired while their crawls still progressed during host
-storage stalls; a test-only shared watchdog repaired them (PR #58).
-Dependency advisories published after the 2026-10-17 green master were
-remediated by lock-only updates (PRs #59 and #60). The separate independent
-GPT-6 Astra/max review accepted the full source diff and the same-SHA
-evidence; its record has SHA-256 `392eb7c583a8365fd874e04cc6abf70bbef9d54954901a63e43415f212ea2602`. All earlier attempts keep
-their original outcomes. Live work/school tenant acceptance and scheduler
-deployment remain out of scope.
+`34057c6c9f85688fd2bd1868d90302ab5a61205f`. The earlier `2ce2ec0` failures were
+native child watchdogs that expired while their crawls still progressed
+during host storage stalls; a test-only shared watchdog repaired them
+(PR #58). Dependency advisories published after the 2026-10-17 green master
+were remediated by lock-only updates (PRs #59 and #60). The separate
+independent GPT-6 Astra/max review accepted the full source diff and the
+same-SHA evidence. Its record has SHA-256
+`392eb7c583a8365fd874e04cc6abf70bbef9d54954901a63e43415f212ea2602`.
+All earlier attempts keep their original outcomes. Live work/school tenant
+acceptance and scheduler deployment remain out of scope.

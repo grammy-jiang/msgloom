@@ -952,16 +952,16 @@ Tests:
 ## Task 15 — End-to-end qualification, documentation, and closeout
 
 **Qualification status, 2026-10-23: ACCEPTED.** Formally qualified source:
-`34057c6c9f85688fd2bd1868d90302ab5a61205f`. The official 28-gate run mapped all 20
-installed Spiders, including Teams native fixtures, and all 13 scenarios to
-exact test nodes that passed in that invocation. The separate independent
-review accepted the source and evidence. Live tenant acceptance and
-scheduler deployment are outside this gate. Earlier interrupted, failed, and
-blocked attempts keep their original records.
+`34057c6c9f85688fd2bd1868d90302ab5a61205f`. The official 28-gate run mapped
+all 20 installed Spiders, including Teams native fixtures, and all 13
+scenarios to exact test nodes that passed in that invocation. The separate
+independent review accepted the source and evidence. Live tenant acceptance
+and scheduler deployment are outside this gate. Earlier interrupted, failed,
+and blocked attempts keep their original records.
 
 Use the [operator checklist](../../notes/a1-a2-qualification-checklist.md) and
-[closeout report](../../notes/task15-final-qualification-20261016.md) for the exact
-SHAs, artifacts, review record, and attempt history.
+[closeout report](../../notes/task15-final-qualification-20261016.md) for the
+exact SHAs, artifacts, review record, and attempt history.
 
 ### End-to-end scenarios
 

@@ -3,11 +3,12 @@
 ## Status
 
 **Status:** Implemented and accepted. The official exact-SHA 28-gate run
-passed every automated gate on source `34057c6c9f85688fd2bd1868d90302ab5a61205f`
-(2026-10-23). The separate independent GPT-6 Astra/max review accepted the
-full source diff from the original base and the same-SHA evidence. Task 15
-is accepted. Live work/school Teams tenant acceptance and external scheduler
-deployment remain out of scope. See the
+passed every automated gate on source
+`34057c6c9f85688fd2bd1868d90302ab5a61205f` (2026-10-23). The separate
+independent GPT-6 Astra/max review accepted the full source diff from the
+original base and the same-SHA evidence. Task 15 is accepted. Live
+work/school Teams tenant acceptance and external scheduler deployment remain
+out of scope. See the
 [Task 15 closeout report](../../notes/task15-final-qualification-20261016.md).
 Earlier scoped results remain in the
 [historical qualification record](../../notes/a1-closeout.md#handoff-qualification-record--2026-10-07).
@@ -20,8 +21,8 @@ This document defines the durable work-selection boundary between the completed
 A1 Microsoft acquisition subsystem and A2 preparation. Kedro orchestration
 remains downstream. This governing contract was originally design-only; later
 user authorization approved its implementation. The requirements and readiness
-amendments below remain in force. Runtime qualification does not claim final
-Task 15 acceptance or installation of an external scheduler.
+amendments below remain in force. Task 15 acceptance does not include the
+installation or deployment of an external scheduler.
 
 This design supersedes earlier conversational proposals that treated either one
 CLI command or one Spider run_id as the universal A1-to-A2 batch. Neither

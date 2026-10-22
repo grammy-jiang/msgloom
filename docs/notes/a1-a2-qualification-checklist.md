@@ -1,7 +1,7 @@
 # A1-to-A2 qualification checklist
 
 Status: complete. The official exact-SHA run passed all 28 automated gates on
-source `34057c6c9f85688fd2bd1868d90302ab5a61205f` (2026-10-23), and the separate
+source `34057c6c9f85688fd2bd1868d90302ab5a61205f` on 2026-10-23. The separate
 independent review accepted the source and the same-SHA evidence. See the
 [closeout report](task15-final-qualification-20261016.md) for gate results,
 evidence paths, digests, the review record, and the retained attempt history.
