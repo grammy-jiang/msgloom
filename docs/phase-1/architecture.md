@@ -124,10 +124,10 @@ repeated invocation. No detached background work survives command exit.
 Manual `prepare` and explicit preparation replay remain
 available. See [operator configuration](../notes/operator-configuration.md#scheduled-preparation)
 for exact command syntax, stable consumer identity, limits, and recovery.
-Runtime code is integrated. The official exact-SHA 28-gate run, independent
-QA, and final approval remain **PENDING**; see the
-[pending closeout report](../notes/task15-final-qualification-20261016.md).
-Historical scoped results, preflight, and PR50/PR51 CI do not replace that run.
+Runtime code is integrated. The official exact-SHA 28-gate run passed on
+source `34057c6`, and the independent review accepted it; see the
+[Task 15 closeout report](../notes/task15-final-qualification-20261016.md).
+Historical scoped results, preflight, and CI runs do not replace that run.
 This does not qualify an external scheduler deployment.
 
 ## 4. Preparation and AI execution

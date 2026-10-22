@@ -277,9 +277,9 @@ Future-only intake does not admit unchanged pre-ledger historical records.
 Manual `prepare` and explicit preparation replay keep their existing
 exact-selection contracts. See the
 [collection/preparation boundary](../phase-1/architecture.md#durable-incremental-handoff).
-Runtime code is integrated. Official exact-SHA qualification, independent QA,
-and final approval remain **PENDING**; see the
-[pending closeout report](task15-final-qualification-20261016.md).
+Runtime code is integrated. The official exact-SHA 28-gate run passed on
+source `34057c6`, and the independent review accepted it; see the
+[Task 15 closeout report](task15-final-qualification-20261016.md).
 
 ### Explicit historical baseline
 
@@ -316,8 +316,8 @@ workset or cursor progress. A new attempt captures the then-current cutoff;
 it does not preserve a failed attempt's cutoff. After successful admission,
 retry preparation from the saved pending workset through scheduled preparation.
 Do not rerun baseline admission or change its immutable input. Baseline support
-is implemented and has scoped test evidence. Final exact-SHA qualification
-and independent acceptance remain pending.
+is implemented, passed the exact-SHA qualification on `34057c6`, and is part
+of the independently accepted Task 15 source.
 
 ## Secrets
 

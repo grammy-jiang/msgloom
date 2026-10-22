@@ -19,9 +19,9 @@ remains `msgloom`.
 The integrated handoff keeps Scrapy component ownership unchanged. Spiders
 still own traversal, pipelines await persistence, and extensions or workflows
 own completion gates. A1 does not import A2 source-reader or preparation code.
-Runtime code is integrated. Official exact-SHA qualification, independent QA,
-and final approval remain **PENDING**; see the
-[pending closeout report](notes/task15-final-qualification-20261016.md).
+Runtime code is integrated. The official exact-SHA 28-gate run passed on
+source `34057c6`, and the independent review accepted it; see the
+[Task 15 closeout report](notes/task15-final-qualification-20261016.md).
 Earlier scoped results remain in the
 [historical qualification record](notes/a1-closeout.md#handoff-qualification-record--2026-10-07).
 

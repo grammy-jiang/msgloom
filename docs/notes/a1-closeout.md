@@ -1,6 +1,6 @@
 # A1 Microsoft collection closeout
 
-**Status:** A1 source-capability closeout closed; Task 15 final qualification PENDING
+**Status:** A1 source-capability closeout closed; Task 15 accepted on `34057c6` (2026-10-23)
 **Closeout date:** 2026-10-03
 **Implementation head before closeout documentation:**
 `d1c703d4c93e966b8c025d0ec77c2929c2ac9a77`
@@ -30,8 +30,8 @@ Graph-over-Scrapy architecture.
 The later Teams T1/T2 local acquisition implementation and the durable
 Teams A1-to-A2 release/intake extension were integrated through PR #35 on
 2026-10-14. This is code and CI qualification only: work/school tenant live
-acceptance remains blocked, and Task 15 still requires separate end-to-end
-qualification and independent signoff. This update does not reopen the
+acceptance remains blocked. Task 15 end-to-end qualification later passed on
+`34057c6` and was independently accepted. This update does not reopen the
 2026-10-03 source-capability closeout.
 
 Microsoft source expansion stops after Contacts for this program.
@@ -109,8 +109,9 @@ The A1 source-capability closeout above remains closed. The integrated
 handoff extension adds a release ledger to the existing catalog. It does not
 add a Microsoft product or change the read-only acquisition boundary. The
 runtime code is integrated; Tasks 1–14 have historical PRIMARY acceptance.
-The official exact-SHA Task 15 gates and final independent acceptance remain
-pending. See the [pending closeout report](task15-final-qualification-20261016.md).
+The official exact-SHA Task 15 gates passed on `34057c6` on 2026-10-23, and
+the independent review accepted the source and evidence. See the
+[Task 15 closeout report](task15-final-qualification-20261016.md).
 The closeout counts above are historical A1 evidence, not handoff gate results.
 
 A1 records immutable acquisition facts with the state they describe. Eligible
@@ -204,5 +205,18 @@ Teams native fixture coverage includes acquisition, immutable release, and A2
 intake. Live work/school tenant acceptance remains excluded. The original A1
 source-capability closeout and all historical evidence above remain unchanged.
 
-Use the [pending report](task15-final-qualification-20261016.md) for the future
+Use the [closeout report](task15-final-qualification-20261016.md) for the
 exact-SHA results, real artifact digests, independent review, and final approval.
+
+### Task 15 qualification update — 2026-10-23
+
+The official exact-SHA 28-gate run passed every automated gate on source
+`34057c6c9f85688fd2bd1868d90302ab5a61205f`. The earlier `2ce2ec0` failures were native child
+watchdogs that expired while their crawls still progressed during host
+storage stalls; a test-only shared watchdog repaired them (PR #58).
+Dependency advisories published after the 2026-10-17 green master were
+remediated by lock-only updates (PRs #59 and #60). The separate independent
+GPT-6 Astra/max review accepted the full source diff and the same-SHA
+evidence; its record has SHA-256 `392eb7c583a8365fd874e04cc6abf70bbef9d54954901a63e43415f212ea2602`. All earlier attempts keep
+their original outcomes. Live work/school tenant acceptance and scheduler
+deployment remain out of scope.

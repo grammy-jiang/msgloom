@@ -1,9 +1,11 @@
 # A1 to A2 Durable Handoff Implementation Plan
 
-> Status: Task 15 final qualification and design signoff are **PENDING**.
-> Runtime code is integrated; Tasks 1–14 have historical PRIMARY acceptance.
-> Official exact-SHA gates, independent QA, and final approval remain unfinished.
-> See the [pending closeout report](../../notes/task15-final-qualification-20261016.md).
+> Status: Implemented and accepted. Task 15 passed the official exact-SHA
+> 28-gate qualification on source `34057c6c9f85688fd2bd1868d90302ab5a61205f`
+> (2026-10-23), and the separate independent GPT-6 Astra/max review accepted
+> the source and evidence. Tasks 1–14 have historical PRIMARY acceptance; the
+> closeout report records Task 15 PRIMARY acceptance.
+> See the [Task 15 closeout report](../../notes/task15-final-qualification-20261016.md).
 > Earlier evidence remains in the [historical qualification record](../../notes/a1-closeout.md#handoff-qualification-record--2026-10-07).
 >
 > Design authority: docs/superpowers/specs/2026-10-03-a1-a2-handoff-contract-design.md
@@ -949,18 +951,17 @@ Tests:
 
 ## Task 15 — End-to-end qualification, documentation, and closeout
 
-**Preparation status, 2026-10-16: PENDING.** Final candidate: `TO_BE_FROZEN`.
-Freeze the reviewed candidate before the official 28-gate invocation. Map all
-20 installed Spiders, including Teams native fixtures, and all 13 scenarios
-to passing exact test nodes from that invocation. Live tenant acceptance is
-outside this gate. The reported 98 verified preflight test nodes and PR50/PR51
-CI are supporting evidence, not the official run. Preserve the interrupted
-`d5d0201` record: 7/28 gates passed, one interrupted, and 20 not run.
+**Qualification status, 2026-10-23: ACCEPTED.** Formally qualified source:
+`34057c6c9f85688fd2bd1868d90302ab5a61205f`. The official 28-gate run mapped all 20
+installed Spiders, including Teams native fixtures, and all 13 scenarios to
+exact test nodes that passed in that invocation. The separate independent
+review accepted the source and evidence. Live tenant acceptance and
+scheduler deployment are outside this gate. Earlier interrupted, failed, and
+blocked attempts keep their original records.
 
 Use the [operator checklist](../../notes/a1-a2-qualification-checklist.md) and
-[pending report](../../notes/task15-final-qualification-20261016.md) to retain exact
-SHAs, artifacts, and separate independent QA. Documentation preparation does
-not mark this design signed off or Task 15 accepted.
+[closeout report](../../notes/task15-final-qualification-20261016.md) for the exact
+SHAs, artifacts, review record, and attempt history.
 
 ### End-to-end scenarios
 

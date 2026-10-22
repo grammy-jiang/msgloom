@@ -1,14 +1,12 @@
-# A1-to-A2 qualification preparation checklist
+# A1-to-A2 qualification checklist
 
-Status: preparation only; official exact-SHA Task15 qualification is
-**PENDING**.
-Final candidate: `TO_BE_FROZEN`. See the
-[pending closeout report](task15-final-qualification-20261016.md).
-The reported 98 verified preflight test nodes and PR50/PR51 CI are supporting
-evidence only. Prior candidate `d5d0201` stopped at 7/28 gates passed, one
-interrupted, and 20 not run. Preserve that record; do not call it a final pass.
-This file does not mark the design implemented, accept another shard, or
-replace the manager's integration and independent review.
+Status: complete. The official exact-SHA run passed all 28 automated gates on
+source `34057c6c9f85688fd2bd1868d90302ab5a61205f` (2026-10-23), and the separate
+independent review accepted the source and the same-SHA evidence. See the
+[closeout report](task15-final-qualification-20261016.md) for gate results,
+evidence paths, digests, the review record, and the retained attempt history.
+Earlier failed, blocked, and interrupted attempts keep their original
+outcomes.
 
 Authority: the complete committed handoff design and implementation plan,
 Task15 and its 13 scenarios; Task10 supplies the real Scrapy coverage matrix.
@@ -19,18 +17,18 @@ tracked at the original preparation base. The current tree has
 
 ## Candidate and execution
 
-- [ ] Integrate and review all prerequisite shards before final qualification.
-- [ ] Select a clean exact candidate SHA and its exact original review base.
-- [ ] Supply installed interpreter paths for all six matrix environments.
-- [ ] Reserve the host; do not overlap this run with other pytest/tox runs.
-- [ ] Run on Linux cgroup v2 with a writable delegated child and `cgroup.kill`.
-- [ ] Supply a candidate-bound coverage map for the original 17 spiders,
+- [x] Integrate all prerequisite shards before final qualification.
+- [x] Select a clean exact candidate SHA and its exact original review base.
+- [x] Supply installed interpreter paths for all six matrix environments.
+- [x] Reserve the host; do not overlap this run with other pytest/tox runs.
+- [x] Run on Linux cgroup v2 with a writable delegated child and `cgroup.kill`.
+- [x] Supply a candidate-bound coverage map for the original 17 spiders,
       three Teams extensions, and all 13 scenarios.
-- [ ] Use a fresh evidence directory outside every source checkout.
-- [ ] Run the complete plan once; retain failures and interruptions.
-- [ ] Obtain the separate independent GPT-6 Astra/max review of the full
+- [x] Use a fresh evidence directory outside every source checkout.
+- [x] Run the complete plan once; retain failures and interruptions.
+- [x] Obtain the separate independent GPT-6 Astra/max review of the full
       original-base-to-exact-candidate diff and evidence.
-- [ ] Let the manager reconcile gates, review and closeout documentation.
+- [x] Let the manager reconcile gates, review and closeout documentation.
 
 List the exact argument vectors without running anything:
 
@@ -72,7 +70,10 @@ not establish qualified matrix environments for the final candidate. Revalidate
 all six paths before the formal run. Provisioning is outside this preparation;
 this runner never installs or upgrades dependencies.
 
-## Final gates, all pending
+## Final gates
+
+All 28 gates passed on `34057c6`, and the independent review accepted the
+source and evidence.
 
 | Gate | Resolved execution |
 | --- | --- |
@@ -181,7 +182,7 @@ must still check that mapped tests prove their claimed behavior.
 
 ## Thirteen Task15 scenarios
 
-All remain pending in this preparation:
+Each scenario maps to exact test nodes that passed in the `34057c6` run:
 
 1. New Mail acquisition, scheduled intake and preparation once.
 2. Future-only bootstrap excludes unchanged pre-ledger history.
@@ -236,6 +237,17 @@ reaped. Normal parent exit with any remaining owned process is non-passing and
 hard-stops later gates. Cleanup sends bounded SIGTERM only after PID/start-time
 and cgroup ownership revalidation, then uses `cgroup.kill` for the complete
 subtree if needed. Timeout and runner interruption use the same boundary.
+
+The qualification host shares one NVMe device and four CPU cores with other
+local sessions. Under the suites' own write load, its storage latency can rise
+from below 1 ms to 9–33 ms for minutes. Native child-command tests therefore
+use the shared watchdog in `tests/native_watchdog.py`: 300 s per child command
+and 120 s per fixture barrier. These budgets bound hangs; they do not assert
+speed. Provision the six environments from the exact candidate `uv.lock`, for
+example with `uv sync --locked --no-install-project --compile-bytecode
+--group dev` and, for compatibility environments, `--group compat-fastmcp4`.
+A run blocked by another session's `pytest` or `tox` process at a gate
+boundary is retained and repeated in a new evidence directory.
 
 The platform prerequisite is Linux cgroup v2 with permission to create a child
 below the runner's current delegated cgroup and with `cgroup.kill` available.

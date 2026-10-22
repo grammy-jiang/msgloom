@@ -2,10 +2,13 @@
 
 ## Status
 
-**Status:** Task 15 final qualification and design signoff are **PENDING**.
-Runtime code is integrated; Tasks 1–14 have historical PRIMARY acceptance.
-The official exact-SHA 28-gate run, independent QA, and final approval remain
-unfinished. See the [pending closeout report](../../notes/task15-final-qualification-20261016.md).
+**Status:** Implemented and accepted. The official exact-SHA 28-gate run
+passed every automated gate on source `34057c6c9f85688fd2bd1868d90302ab5a61205f`
+(2026-10-23). The separate independent GPT-6 Astra/max review accepted the
+full source diff from the original base and the same-SHA evidence. Task 15
+is accepted. Live work/school Teams tenant acceptance and external scheduler
+deployment remain out of scope. See the
+[Task 15 closeout report](../../notes/task15-final-qualification-20261016.md).
 Earlier scoped results remain in the
 [historical qualification record](../../notes/a1-closeout.md#handoff-qualification-record--2026-10-07).
 
