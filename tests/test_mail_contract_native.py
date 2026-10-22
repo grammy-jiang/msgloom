@@ -3,7 +3,6 @@
 import json
 import os
 import sqlite3
-import subprocess
 import sys
 import tempfile
 import textwrap
@@ -15,6 +14,8 @@ from typing import Any
 from urllib.parse import urlsplit
 
 from test_outlook_mail_handoff_facts import setup as setup  # noqa: PLC0414
+
+from tests.native_watchdog import NATIVE_BARRIER_TIMEOUT, run_native_command
 
 
 def test_native_full_bindings_across_orders_and_cache(tmp_path):
@@ -39,7 +40,9 @@ def test_native_full_bindings_across_orders_and_cache(tmp_path):
         ]
 
     def wait_fact(database, message, components):
-        deadline = time.monotonic() + 8
+        # The detail commit queues behind other serialized catalog writes;
+        # the shared barrier budget tolerates host I/O stalls.
+        deadline = time.monotonic() + NATIVE_BARRIER_TIMEOUT
         while time.monotonic() < deadline:
             seen = {
                 f["component_kind"]
@@ -183,6 +186,8 @@ def test_native_full_bindings_across_orders_and_cache(tmp_path):
     from scrapy.cmdline import execute
     from pathlib import Path
     sys.path.insert(0, str(Path.cwd() / "tests"))
+    from native_watchdog import install_child_diagnostics
+    install_child_diagnostics()
     from test_mail_contract_native_sync import install_pipeline_order
     install_pipeline_order()
     from message_ingest.spiders.microsoft.outlook.email.full import OutlookFullSpider
@@ -224,15 +229,7 @@ def test_native_full_bindings_across_orders_and_cache(tmp_path):
                     cmd.extend(["-s", f"{key}={value}"])
                 env = os.environ.copy()
                 env["PYTHONDONTWRITEBYTECODE"] = "1"
-                completed = subprocess.run(
-                    cmd,
-                    cwd=ROOT,
-                    capture_output=True,
-                    text=True,
-                    timeout=30,
-                    env=env,
-                    check=False,
-                )
+                completed = run_native_command(cmd, cwd=ROOT, env=env)
                 log = Path(str(PREFIX) + f"crawl-{number}.log")
                 log.write_text(completed.stdout + completed.stderr)
                 snap = summarize(db)
@@ -312,6 +309,10 @@ def test_native_full_bindings_across_orders_and_cache(tmp_path):
 
 INTERLEAVE_RUNNER = r"""
 import asyncio, json, os, sys, time
+from pathlib import Path
+sys.path.append(str(Path.cwd() / "tests"))
+from native_watchdog import NATIVE_BARRIER_TIMEOUT, install_child_diagnostics
+install_child_diagnostics()
 from sqlalchemy import select
 from scrapy.cmdline import execute
 from message_ingest.catalog.models.microsoft.outlook._email_bindings import (
@@ -332,7 +333,8 @@ def remember(self, response, **kwargs):
 async def delay(self, item):
     if (sys.argv[2] == "2" and isinstance(item, OutlookMailDetailItem)
             and item.message_id == "m"):
-        deadline = time.monotonic() + 8
+        # Both barriers wait for real catalog commits from other responses.
+        deadline = time.monotonic() + NATIVE_BARRIER_TIMEOUT
         old = None
         while time.monotonic() < deadline:
             with self.catalog.Session() as session:
@@ -362,7 +364,7 @@ async def delay(self, item):
         active.crawler.engine.crawl(active._attachments_request(
             "m", page_number=1, url=active.graph_root +
             "/me/messages/m/attachments?old=1", verbatim_url=True, **pin))
-        deadline = time.monotonic() + 8
+        deadline = time.monotonic() + NATIVE_BARRIER_TIMEOUT
         while time.monotonic() < deadline:
             with self.catalog.Session() as session:
                 rows = session.scalars(select(Capture).where(

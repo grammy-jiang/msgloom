@@ -29,6 +29,7 @@ from test_raw_evidence_transactions import _rows
 
 from message_ingest.items.microsoft.outlook.email import OutlookMailDetailItem
 from message_ingest.pipelines.microsoft.outlook.email import OutlookMailPipeline
+from tests.native_watchdog import NATIVE_COMMAND_TIMEOUT
 
 
 class Entry:
@@ -319,7 +320,7 @@ def _run(directory, mode, failure, cancels):
         ],
         capture_output=True,
         text=True,
-        timeout=30,
+        timeout=NATIVE_COMMAND_TIMEOUT,
         env=environment,
         check=False,
     )

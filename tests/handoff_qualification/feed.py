@@ -15,6 +15,7 @@ import pytest
 from message_ingest.catalog import Catalog
 from msgloom.sources import HandoffCatalog, SourceReaderLimits
 from msgloom.sources.handoff_models import Stream
+from tests.native_watchdog import NATIVE_BARRIER_TIMEOUT
 
 LEDGER_TABLES = (
     "acquisition_release_groups",
@@ -140,12 +141,12 @@ def wait_staged(root: Path):
     The fixture barrier remains closed while this bounded read-only probe
     waits for a durable observation; it cannot promote authority itself.
     """
-    deadline = monotonic() + 5
+    deadline = monotonic() + NATIVE_BARRIER_TIMEOUT
     while monotonic() < deadline:
         if facts := staged(root):
             return facts
         sleep(0.01)
-    pytest.fail("Held crawl did not persist its observation within five seconds")
+    pytest.fail("Held crawl did not persist its observation within its barrier")
 
 
 def feed(root: Path, source: str, stream: Stream, *, limit: int = 7):

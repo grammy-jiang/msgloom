@@ -12,6 +12,8 @@ from urllib.parse import parse_qs, urlsplit
 
 import pytest
 
+from tests.native_watchdog import NATIVE_COMMAND_TIMEOUT
+
 ROOT = Path(__file__).parents[1]
 TARGET = "shared.owner@example.test"
 ENCODED = "shared.owner%40example.test"
@@ -208,7 +210,7 @@ def test_shared_mail_sync_uses_users_scope_for_every_phase(tmp_path: Path) -> No
             cwd=ROOT,
             capture_output=True,
             text=True,
-            timeout=30,
+            timeout=NATIVE_COMMAND_TIMEOUT,
             check=False,
         )
     finally:
@@ -342,7 +344,7 @@ def test_shared_calendar_sync_uses_users_scope_for_every_phase(tmp_path: Path) -
             cwd=ROOT,
             capture_output=True,
             text=True,
-            timeout=30,
+            timeout=NATIVE_COMMAND_TIMEOUT,
             check=False,
         )
     finally:

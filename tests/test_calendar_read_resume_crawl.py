@@ -26,6 +26,7 @@ from test_calendar_full_crawl import (
 )
 
 from message_ingest.catalog import CalendarEventObservation, Catalog
+from tests.native_watchdog import NATIVE_COMMAND_TIMEOUT
 
 WINDOW_PAUSE_SETUP = r"""
 import asyncio
@@ -89,7 +90,7 @@ def _window_run(graph_root: str, tmp_path: Path, *, setup: str = ""):
         cwd=ROOT,
         capture_output=True,
         text=True,
-        timeout=30,
+        timeout=NATIVE_COMMAND_TIMEOUT,
         check=False,
     )
 
@@ -111,7 +112,7 @@ def _full_run(graph_root: str, tmp_path: Path, *, setup: str = ""):
         cwd=ROOT,
         capture_output=True,
         text=True,
-        timeout=30,
+        timeout=NATIVE_COMMAND_TIMEOUT,
         check=False,
     )
 

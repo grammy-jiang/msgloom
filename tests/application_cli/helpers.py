@@ -5,6 +5,8 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
+from tests.native_watchdog import NATIVE_COMMAND_TIMEOUT
+
 
 def minimal_config(path: Path, capabilities: tuple[str, ...] = ("a2_prepare",)) -> Path:
     """Write one explicit minimal operator configuration."""
@@ -43,6 +45,6 @@ def invoke(module_root: Path, *arguments: str):
         env=environment,
         capture_output=True,
         text=True,
-        timeout=20,
+        timeout=NATIVE_COMMAND_TIMEOUT,
         check=False,
     )

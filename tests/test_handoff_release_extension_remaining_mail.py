@@ -8,6 +8,8 @@ import pytest
 from handoff_full_crawl_helpers import snapshot
 from test_outlook_crawls import ROOT, RUN_COMMAND, graph_server
 
+from tests.native_watchdog import NATIVE_COMMAND_TIMEOUT
+
 __all__ = ["graph_server"]
 
 
@@ -69,7 +71,7 @@ def test_native_mail_cache_release_retains_effective_policy(
             cwd=ROOT,
             capture_output=True,
             text=True,
-            timeout=30,
+            timeout=NATIVE_COMMAND_TIMEOUT,
             check=False,
         )
         if result.returncode or "Traceback (most recent call last)" in result.stderr:

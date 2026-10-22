@@ -15,6 +15,7 @@ from message_ingest.acquisition.handoff import AcquisitionStream
 from message_ingest.catalog import Catalog
 from message_ingest.catalog.models.handoff import AcquisitionReleaseGroup
 from message_ingest.catalog.stores.handoff import AcquisitionHandoffStore
+from tests.native_watchdog import NATIVE_COMMAND_TIMEOUT
 
 ROOT = Path(__file__).parents[1]
 ENABLE = """
@@ -110,7 +111,7 @@ def run(tmp_path, root, mode, *, direct=False, failure: bool | str = False):
             cwd=ROOT,
             text=True,
             capture_output=True,
-            timeout=30,
+            timeout=NATIVE_COMMAND_TIMEOUT,
             check=False,
         )
     except subprocess.TimeoutExpired as exc:

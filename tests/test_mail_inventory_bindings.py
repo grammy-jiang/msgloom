@@ -274,7 +274,6 @@ def test_equivalent_inventory_keeps_one_exact_manifest_per_fact(setup):
 def test_native_inventory_changes_and_delayed_parent_gap_only(tmp_path, mode):
     """Native interleavings retain v2 through delayed v1 and reacquire gaps."""
     import os
-    import subprocess
     import sys
     import threading
     from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
@@ -287,6 +286,7 @@ def test_native_inventory_changes_and_delayed_parent_gap_only(tmp_path, mode):
     )
     from message_ingest.catalog import Catalog
     from message_ingest.catalog.stores.microsoft.outlook.email import OutlookMailStore
+    from tests.native_watchdog import run_native_command
 
     requests = []
     phase = 1
@@ -389,13 +389,9 @@ def test_native_inventory_changes_and_delayed_parent_gap_only(tmp_path, mode):
             ]
             for key, value in settings.items():
                 command.extend(["-s", f"{key}={value}"])
-            completed = subprocess.run(
+            completed = run_native_command(
                 command,
                 cwd=Path(__file__).resolve().parents[1],
-                capture_output=True,
-                text=True,
-                timeout=30,
-                check=False,
                 env={
                     **os.environ,
                     "PYTHONDONTWRITEBYTECODE": "1",

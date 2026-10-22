@@ -20,6 +20,7 @@ from message_ingest.acquisition.evidence_link import EvidenceLinkPipeline
 from message_ingest.extensions.catalog import CatalogService
 from message_ingest.items.acquisition import RawHttpEvidenceItem
 from message_ingest.pipelines.evidence import RawEvidencePipeline
+from tests.native_watchdog import NATIVE_COMMAND_TIMEOUT
 
 
 @dataclass(slots=True)
@@ -282,7 +283,7 @@ def test_feed_export_sees_only_successful_canonicalized_items(
         env={**os.environ, "PYTHONPATH": str(ROOT)},
         capture_output=True,
         text=True,
-        timeout=20,
+        timeout=NATIVE_COMMAND_TIMEOUT,
         check=False,
     )
     if result.returncode != 0:

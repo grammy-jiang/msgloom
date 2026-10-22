@@ -30,6 +30,7 @@ from message_ingest.sync.microsoft.outlook.email.checkpoints import (
     OutlookDeltaCheckpointStore,
     OutlookFolderDeltaCheckpointStore,
 )
+from tests.native_watchdog import NATIVE_COMMAND_TIMEOUT
 
 ROOT = Path(__file__).parents[1]
 START = "2026-09-27T00:00:00+10:00"
@@ -218,7 +219,7 @@ def test_mail_sync_runs_delta_then_refreshes_changed_message(tmp_path: Path) -> 
             cwd=ROOT,
             capture_output=True,
             text=True,
-            timeout=30,
+            timeout=NATIVE_COMMAND_TIMEOUT,
             check=False,
         )
     finally:
@@ -345,7 +346,7 @@ def test_calendar_sync_runs_discover_delta_then_versioned_enrichment(
             cwd=ROOT,
             capture_output=True,
             text=True,
-            timeout=30,
+            timeout=NATIVE_COMMAND_TIMEOUT,
             check=False,
         )
     finally:

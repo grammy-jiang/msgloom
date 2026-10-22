@@ -3,7 +3,6 @@
 import json
 import os
 import sqlite3
-import subprocess
 import sys
 import threading
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
@@ -17,11 +16,15 @@ from message_ingest.acquisition.microsoft.outlook.email.planner import (
 )
 from message_ingest.catalog import Catalog
 from message_ingest.catalog.stores.microsoft.outlook.email import OutlookMailStore
+from tests.native_watchdog import NATIVE_BARRIER_TIMEOUT, run_native_command
 
 ROOT = Path(__file__).resolve().parents[1]
 RUNNER = r"""
 import asyncio, json, pickle, sys
 from pathlib import Path
+sys.path.append(str(Path.cwd() / "tests"))
+from native_watchdog import NATIVE_BARRIER_TIMEOUT, install_child_diagnostics
+install_child_diagnostics()
 from sqlalchemy import text
 from scrapy import signals
 from scrapy.crawler import CrawlerProcess
@@ -66,10 +69,11 @@ async def process_item(self, item):
     services[source] = service
     if phase == "overlap" and isinstance(item, OutlookMailDetailItem):
         events.append([source, "detail-enter"])
-        await asyncio.wait_for(barrier.wait(), 8)
+        # Each barrier waits for real catalog commits by the other source.
+        await asyncio.wait_for(barrier.wait(), NATIVE_BARRIER_TIMEOUT)
         if source == "b":
-            await asyncio.wait_for(a_primary.wait(), 8)
-            await asyncio.wait_for(b_pending.wait(), 8)
+            await asyncio.wait_for(a_primary.wait(), NATIVE_BARRIER_TIMEOUT)
+            await asyncio.wait_for(b_pending.wait(), NATIVE_BARRIER_TIMEOUT)
             facts = rows(self, "SELECT payload FROM acquisition_facts "
                          "WHERE source_id=:source", source="b")
             bindings = rows(self, "SELECT * FROM mail_application_bindings "
@@ -100,7 +104,7 @@ async def process_item(self, item):
             a_primary.set()
         return result
     if phase == "overlap" and source == "a" and isinstance(item, components):
-        await asyncio.wait_for(a_primary.wait(), 8)
+        await asyncio.wait_for(a_primary.wait(), NATIVE_BARRIER_TIMEOUT)
     result = await original(self, item)
     if phase == "overlap" and isinstance(item, components):
         events.append([source, "component-committed"])
@@ -295,7 +299,7 @@ def test_native_concurrent_sources_keep_exact_bindings(tmp_path, fail_primary):
             content_type = "application/json"
             if not leaf:
                 if active_phase[0] == "overlap":
-                    response_barrier.wait(timeout=8)
+                    response_barrier.wait(timeout=NATIVE_BARRIER_TIMEOUT)
                     response_overlap.append(source)
                 body = {
                     "id": "m",
@@ -343,14 +347,10 @@ def test_native_concurrent_sources_keep_exact_bindings(tmp_path, fail_primary):
             phase,
             "yes" if fail_primary else "no",
         ]
-        completed = subprocess.run(
+        completed = run_native_command(
             command,
             cwd=ROOT,
-            text=True,
-            capture_output=True,
-            timeout=30,
             env={**os.environ, "PYTHONDONTWRITEBYTECODE": "1"},
-            check=False,
         )
         (tmp_path / f"{phase}.log").write_text(completed.stdout + completed.stderr)
         if completed.returncode or not (tmp_path / f"{phase}.json").exists():

@@ -23,6 +23,7 @@ from message_ingest.catalog.models.microsoft.onedrive import (
     OneDriveDriveRecord,
     OneDriveItemRecord,
 )
+from tests.native_watchdog import NATIVE_COMMAND_TIMEOUT
 
 ROOT = Path(__file__).parents[1]
 DRIVE = "/v1.0/me/drive"
@@ -146,7 +147,12 @@ def _crawl(tmp_path, origin, action="delta", *, setup=""):
     for key, value in settings.items():
         args.extend(["-s", f"{key}={value}"])
     return subprocess.run(
-        args, cwd=ROOT, capture_output=True, text=True, timeout=30, check=False
+        args,
+        cwd=ROOT,
+        capture_output=True,
+        text=True,
+        timeout=NATIVE_COMMAND_TIMEOUT,
+        check=False,
     )
 
 

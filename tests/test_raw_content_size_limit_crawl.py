@@ -14,6 +14,7 @@ import pytest
 
 from message_ingest.catalog import Catalog
 from message_ingest.catalog.stores.microsoft.outlook.email import OutlookMailStore
+from tests.native_watchdog import NATIVE_COMMAND_TIMEOUT
 
 ROOT = Path(__file__).parents[1]
 MESSAGE_ID = "large-message"
@@ -111,7 +112,7 @@ def test_native_maxsize_records_terminal_mime_omission_without_failing_run(
         cwd=ROOT,
         capture_output=True,
         text=True,
-        timeout=30,
+        timeout=NATIVE_COMMAND_TIMEOUT,
         check=False,
     )
     if result.returncode != 0:
@@ -248,7 +249,7 @@ def _cache_refresh_crawl(
         cwd=ROOT,
         capture_output=True,
         text=True,
-        timeout=35,
+        timeout=NATIVE_COMMAND_TIMEOUT,
         check=False,
     )
 
