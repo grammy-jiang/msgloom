@@ -34,17 +34,17 @@ flowchart TD
 | [Microsoft Graph Live Acceptance](microsoft-live-acceptance.md) | Operator qualification | Read-only real-account smoke workflow and local acceptance evidence. |
 | [A1 Microsoft Collection Closeout](notes/a1-closeout.md) | Phase 1 A1 | Closed source-capability matrix, fresh validation gates and the durable A1-to-A2 boundary. |
 | [Teams T1/T2 Final Report](implementation/teams/final-report.md) | Phase 1 A1 Teams | Local acquisition acceptance, enterprise live limitations, and follow-up scope. |
-| [A1 to A2 Handoff Contract](superpowers/specs/2026-10-03-a1-a2-handoff-contract-design.md) | Phase 1 A1/A2 boundary | Governing contract for integrated handoff code; official exact-SHA qualification and design signoff pending. |
-| [A1 to A2 Handoff Implementation Plan](superpowers/plans/2026-10-03-a1-a2-handoff-implementation-plan.md) | Phase 1 A1/A2 implementation | Governing task/DAG plan; Tasks 1–14 accepted, Task 15 final review and acceptance pending. |
-| [Task 15 Pending Closeout](notes/task15-final-qualification-20261016.md) | Final qualification | Evidence scope, 28-gate result template, exact candidate freeze, and independent approval requirements. |
+| [A1 to A2 Handoff Contract](superpowers/specs/2026-10-03-a1-a2-handoff-contract-design.md) | Phase 1 A1/A2 boundary | Governing contract for integrated handoff code; implemented, exact-SHA qualified, and independently accepted. |
+| [A1 to A2 Handoff Implementation Plan](superpowers/plans/2026-10-03-a1-a2-handoff-implementation-plan.md) | Phase 1 A1/A2 implementation | Governing task/DAG plan; Tasks 1–15 accepted. |
+| [Task 15 Qualification Closeout](notes/task15-final-qualification-20261016.md) | Final qualification | Exact-SHA 28-gate results, evidence digests, independent review record, and attempt history. |
 | [Operator Configuration](notes/operator-configuration.md#scheduled-preparation) | Finite A2 operation | Stable scheduled intake targets, invocation format, explicit historical baseline service, pending-work retry, and recovery. |
 | [Microsoft Graph Change Notifications](microsoft-change-notifications.md) | Deployment integration | Webhook validation/renewal boundary and privacy-safe sync-trigger contract. |
 
 The integrated incremental handoff is documented in the
 [Phase 1 collection/preparation boundary](phase-1/architecture.md#durable-incremental-handoff).
-Runtime code is integrated. Official exact-SHA qualification, independent QA,
-and final approval remain **PENDING**; see the
-[pending closeout report](notes/task15-final-qualification-20261016.md).
+Runtime code is integrated. The official exact-SHA 28-gate run passed on
+source `34057c6`, and the independent review accepted it; see the
+[Task 15 closeout report](notes/task15-final-qualification-20261016.md).
 Earlier scoped results remain in the
 [historical qualification record](notes/a1-closeout.md#handoff-qualification-record--2026-10-07).
 The closed A1 source-capability closeout is unchanged.
