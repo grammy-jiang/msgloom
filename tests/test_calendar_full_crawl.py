@@ -20,6 +20,7 @@ from message_ingest.catalog import (
     Catalog,
     RawHttpEvidence,
 )
+from tests.native_watchdog import NATIVE_COMMAND_TIMEOUT
 
 ROOT = Path(__file__).parents[1]
 
@@ -201,7 +202,7 @@ def _run(graph_root: str, args: list[str]) -> subprocess.CompletedProcess:
         cwd=ROOT,
         capture_output=True,
         text=True,
-        timeout=30,
+        timeout=NATIVE_COMMAND_TIMEOUT,
         check=False,
     )
 

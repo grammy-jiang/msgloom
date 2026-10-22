@@ -20,6 +20,7 @@ from message_ingest.catalog import Catalog
 from message_ingest.catalog.stores.microsoft.outlook.calendar import (
     OutlookCalendarStore,
 )
+from tests.native_watchdog import NATIVE_COMMAND_TIMEOUT
 
 ROOT = Path(__file__).parents[1]
 START = "2026-09-27T00:00:00+10:00"
@@ -211,7 +212,7 @@ def test_calendar_sync_collects_all_calendars_then_enriches_current_events(
         cwd=ROOT,
         capture_output=True,
         text=True,
-        timeout=30,
+        timeout=NATIVE_COMMAND_TIMEOUT,
         check=False,
     )
     if result.returncode != 0:

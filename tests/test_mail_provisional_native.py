@@ -26,6 +26,7 @@ from message_ingest.spiders.microsoft.outlook.email.delta import OutlookDeltaSpi
 from message_ingest.sync.microsoft.outlook.email.checkpoints import (
     OutlookDeltaCheckpointStore,
 )
+from tests.native_watchdog import NATIVE_BARRIER_TIMEOUT, NATIVE_COMMAND_TIMEOUT
 
 
 class FixtureGraphHandler:
@@ -51,7 +52,9 @@ class FixtureGraphHandler:
             payload = {"value": []}
         elif path.endswith("/messages/delta"):
             if self.flavor == "loser":
-                await asyncio.wait_for(self.winner_captured.wait(), 30)
+                await asyncio.wait_for(
+                    self.winner_captured.wait(), NATIVE_BARRIER_TIMEOUT
+                )
             payload = {
                 "value": [
                     {
@@ -64,13 +67,13 @@ class FixtureGraphHandler:
                 "@odata.nextLink": "https://graph.microsoft.com/" + self.flavor,
             }
         elif path == "/winner":
-            await asyncio.wait_for(self.loser_captured.wait(), 30)
+            await asyncio.wait_for(self.loser_captured.wait(), NATIVE_BARRIER_TIMEOUT)
             payload = {
                 "value": [],
                 "@odata.deltaLink": "https://graph.microsoft.com/won",
             }
         elif path == "/loser":
-            await asyncio.wait_for(self.winner_closed.wait(), 30)
+            await asyncio.wait_for(self.winner_closed.wait(), NATIVE_BARRIER_TIMEOUT)
             payload = {
                 "value": [
                     {
@@ -145,7 +148,7 @@ async def run_fixture(root):
             crawler.signals.connect(closed, signal=signals.spider_closed, weak=False)
         tasks.append(runner.crawl(crawler, reconcile_global="0"))
     try:
-        await asyncio.wait_for(asyncio.gather(*tasks), 60)
+        await asyncio.wait_for(asyncio.gather(*tasks), NATIVE_COMMAND_TIMEOUT)
     finally:
         (root / "errors.json").write_text(json.dumps(errors))
         (root / "stats.json").write_text(
@@ -173,7 +176,8 @@ def test_native_late_loser_preserves_exact_original_folder_scope(tmp_path):
         cwd=Path(__file__).resolve().parents[1],
         capture_output=True,
         text=True,
-        timeout=90,
+        # The child bounds its own crawls first and then writes its stats.
+        timeout=NATIVE_COMMAND_TIMEOUT + NATIVE_BARRIER_TIMEOUT,
     )
     if completed.returncode:
         pytest.fail(completed.stderr[-6000:])

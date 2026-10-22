@@ -22,6 +22,7 @@ from message_ingest.sync.microsoft.outlook.email.checkpoints import (
 from tests.handoff_qualification.release_assertions import (
     assert_release_contract,
 )
+from tests.native_watchdog import NATIVE_COMMAND_TIMEOUT
 
 ROOT = Path(__file__).parents[1]
 MESSAGE_ID = "sync-message-1"
@@ -316,7 +317,7 @@ body_contains = ["escalate"]
         cwd=ROOT,
         capture_output=True,
         text=True,
-        timeout=35,
+        timeout=NATIVE_COMMAND_TIMEOUT,
         check=False,
     )
     if result.returncode != 0:

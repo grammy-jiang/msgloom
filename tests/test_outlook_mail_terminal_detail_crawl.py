@@ -10,6 +10,8 @@ from threading import Thread
 import pytest
 from test_outlook_crawls import ROOT, RUN_COMMAND
 
+from tests.native_watchdog import NATIVE_COMMAND_TIMEOUT
+
 EVIDENCE_GUARD = """
 import message_ingest.settings as settings
 from message_ingest.extensions.catalog import CatalogService
@@ -84,7 +86,12 @@ def test_native_failed_detail_retains_only_proven_terminal_state(tmp_path, statu
         args.extend(["-s", f"{key}={value}"])
     try:
         result = subprocess.run(
-            args, cwd=ROOT, capture_output=True, text=True, timeout=30, check=False
+            args,
+            cwd=ROOT,
+            capture_output=True,
+            text=True,
+            timeout=NATIVE_COMMAND_TIMEOUT,
+            check=False,
         )
     finally:
         server.shutdown()

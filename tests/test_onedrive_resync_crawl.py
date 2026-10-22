@@ -20,6 +20,7 @@ from message_ingest.catalog.models.microsoft.onedrive import (
     OneDriveDeltaResyncObservation,
     OneDriveItemRecord,
 )
+from tests.native_watchdog import NATIVE_COMMAND_TIMEOUT
 
 ROOT = Path(__file__).parents[1]
 DELTA = "/v1.0/me/drive/root/delta"
@@ -134,7 +135,7 @@ def _crawl(tmp_path, origin, *, setup=""):
         cwd=ROOT,
         capture_output=True,
         text=True,
-        timeout=35,
+        timeout=NATIVE_COMMAND_TIMEOUT,
         check=False,
     )
 

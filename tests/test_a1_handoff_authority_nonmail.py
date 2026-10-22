@@ -36,6 +36,7 @@ from tests.handoff_qualification.feed import (
 )
 from tests.handoff_qualification.inventory import MATRIX
 from tests.handoff_qualification.server import END, OTHER_END, START, local_graph
+from tests.native_watchdog import NATIVE_BARRIER_TIMEOUT, NATIVE_COMMAND_TIMEOUT
 
 graph_server = todo.graph_server
 contacts_server = contacts.contacts_server
@@ -87,8 +88,8 @@ def test_todo_large_group_pages_and_unchanged_round(tmp_path, graph_server):
     # These 42 lists require 51 response writes plus serialized content and
     # traversal proof writes. Under the four-worker A1 gate, the ordinary
     # 30-second budget expired after only 18 responses with progress ongoing.
-    # Give both large rounds a bounded budget; retain all publication checks.
-    successful(todo._crawl(tmp_path, origin, action="sync", timeout=120))
+    # The shared native watchdog bounds both rounds; all checks remain.
+    successful(todo._crawl(tmp_path, origin, action="sync"))
     first = feed(tmp_path, "todo-fixture", "todo", limit=7)
     positive = [f for _, facts in first for f in facts if f.role != "transition"]
     expected = {
@@ -118,7 +119,7 @@ def test_todo_large_group_pages_and_unchanged_round(tmp_path, graph_server):
             pytest.fail("Component/task lost its exact hierarchical parent")
     if len(first) != 96 or len({e.release_group_id for e, _ in first}) != 1:
         pytest.fail("Large snapshot was split, omitted or duplicated")
-    successful(todo._crawl(tmp_path, origin, action="sync", timeout=120))
+    successful(todo._crawl(tmp_path, origin, action="sync"))
     no_churn(first, feed(tmp_path, "todo-fixture", "todo", limit=7))
     if [g["authority_revision"] for g in groups(tmp_path)] != ["1", "2"]:
         pytest.fail("Unchanged snapshot did not record zero-entry authority")
@@ -177,7 +178,7 @@ def test_contacts_snapshot_identity_churn_and_atomic_failure(
 ):
     """Recursive contact and folder authority must bind exact scopes."""
     origin, state, _seen = contacts_server
-    successful(contacts_crawl(tmp_path, origin, timeout=60))
+    successful(contacts_crawl(tmp_path, origin))
     first = feed(tmp_path, "contacts-fixture", "contacts")
     positives = [f for _, facts in first for f in facts if f.role != "transition"]
     if {(f.resource_identity, f.scope_identity) for f in positives} != {
@@ -191,20 +192,20 @@ def test_contacts_snapshot_identity_churn_and_atomic_failure(
         ("child-two", "folder:folder-child"),
     }:
         pytest.fail("Recursive snapshot lost contact/folder scope identities")
-    successful(contacts_crawl(tmp_path, origin, timeout=60))
+    successful(contacts_crawl(tmp_path, origin))
     no_churn(first, feed(tmp_path, "contacts-fixture", "contacts"))
     before = authority(tmp_path, "contacts")
     state["mode"] = "empty"
     reject_entries(tmp_path)
     marker = arm_release_probe(tmp_path, monkeypatch)
-    result = contacts_crawl(tmp_path, origin, timeout=60)
+    result = contacts_crawl(tmp_path, origin)
     if result.returncode != 1 or authority(tmp_path, "contacts") != before:
         pytest.fail("Contacts release failure partially advanced authority")
     if problem := release_failure_problem(result, marker, "contacts"):
         pytest.fail(problem)
     disarm_release_probe(monkeypatch)
     restore_entries(tmp_path)
-    successful(contacts_crawl(tmp_path, origin, timeout=60))
+    successful(contacts_crawl(tmp_path, origin))
     added = feed(tmp_path, "contacts-fixture", "contacts")[len(first) :]
     if len(added) != 8 or any(e.entry_kind != "transition" for e, _ in added):
         pytest.fail("Complete empty snapshot fabricated contact representations")
@@ -271,7 +272,7 @@ def test_contacts_new_snapshot_fences_inflight_delta(tmp_path):
             text=True,
         )
         try:
-            if not reached.wait(15):
+            if not reached.wait(NATIVE_BARRIER_TIMEOUT):
                 pytest.fail("Older delta never reached the local barrier")
             pending = wait_staged(tmp_path)
             if not pending or groups(tmp_path):
@@ -279,7 +280,7 @@ def test_contacts_new_snapshot_fences_inflight_delta(tmp_path):
             successful(contacts_crawl(tmp_path, origin))
             winner = authority(tmp_path, "contacts")
             release.set()
-            _stdout, stderr = process.communicate(timeout=30)
+            _stdout, stderr = process.communicate(timeout=NATIVE_COMMAND_TIMEOUT)
             if "contacts_delta_promotion_failed" not in stderr:
                 pytest.fail("Older delta was not fenced by the shared generation")
             if authority(tmp_path, "contacts") != winner:

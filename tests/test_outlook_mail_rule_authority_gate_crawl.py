@@ -20,6 +20,7 @@ import pytest
 
 from message_ingest.acquisition.microsoft.outlook.email.profile import FULL_V1
 from message_ingest.catalog import Catalog, DeltaCheckpoint
+from tests.native_watchdog import NATIVE_COMMAND_TIMEOUT
 from tests.test_outlook_mail_rule_sync_crawl import (
     ROOT,
     RULE_DISCOVERY_ID,
@@ -128,7 +129,12 @@ def _run_sync(tmp_path: Path, root: str, database_url: str):
     for key, value in settings.items():
         args.extend(["-s", f"{key}={value}"])
     return subprocess.run(
-        args, cwd=ROOT, capture_output=True, text=True, timeout=35, check=False
+        args,
+        cwd=ROOT,
+        capture_output=True,
+        text=True,
+        timeout=NATIVE_COMMAND_TIMEOUT,
+        check=False,
     )
 
 

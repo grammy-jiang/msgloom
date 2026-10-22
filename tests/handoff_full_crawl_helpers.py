@@ -21,6 +21,7 @@ from message_ingest.catalog.models.handoff import (
     AcquisitionReleaseGroup,
 )
 from message_ingest.catalog.stores.handoff import AcquisitionHandoffStore
+from tests.native_watchdog import NATIVE_COMMAND_TIMEOUT
 
 ROOT = Path(__file__).parents[1]
 COMMAND = """
@@ -181,7 +182,7 @@ def run_full(
         cwd=ROOT,
         capture_output=True,
         text=True,
-        timeout=30,
+        timeout=NATIVE_COMMAND_TIMEOUT,
         check=False,
     )
     if result.returncode != expected_returncode or (

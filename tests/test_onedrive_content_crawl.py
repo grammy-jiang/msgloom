@@ -17,6 +17,7 @@ from sqlalchemy import select
 from message_ingest.catalog import Catalog
 from message_ingest.catalog.models import RawHttpEvidence
 from message_ingest.catalog.models.microsoft.onedrive import OneDriveContentRecord
+from tests.native_watchdog import NATIVE_COMMAND_TIMEOUT
 
 ROOT = Path(__file__).parents[1]
 TOKEN = "OBVIOUS-PREAUTHENTICATED-SECRET-TOKEN"
@@ -115,7 +116,7 @@ def crawl(tmp_path, origin, *, maxsize=1024):
         env={**os.environ, "PYTHONPATH": str(ROOT)},
         capture_output=True,
         text=True,
-        timeout=40,
+        timeout=NATIVE_COMMAND_TIMEOUT,
         check=False,
     )
 

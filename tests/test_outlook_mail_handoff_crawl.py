@@ -15,6 +15,7 @@ from message_ingest.catalog.models.handoff import (
     AcquisitionReleaseEntry,
 )
 from message_ingest.catalog.models.microsoft.outlook.email import MessageObservation
+from tests.native_watchdog import NATIVE_COMMAND_TIMEOUT
 
 __all__ = ["graph_server"]
 
@@ -76,7 +77,12 @@ OutlookDiscoverSpider.parse = interrupted_parse
             )
             command = [sys.executable, str(runner), *args[3:]]
         result = subprocess.run(
-            command, cwd=ROOT, capture_output=True, text=True, timeout=30, check=False
+            command,
+            cwd=ROOT,
+            capture_output=True,
+            text=True,
+            timeout=NATIVE_COMMAND_TIMEOUT,
+            check=False,
         )
         (tmp_path / f"crawl-{attempt}.stderr.log").write_text(result.stderr)
         (tmp_path / f"crawl-{attempt}.stdout.log").write_text(result.stdout)

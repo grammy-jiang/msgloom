@@ -20,6 +20,7 @@ from message_ingest.catalog.stores.microsoft.outlook.email import OutlookMailSto
 from message_ingest.sync.microsoft.outlook.email.checkpoints import (
     OutlookDeltaCheckpointStore,
 )
+from tests.native_watchdog import NATIVE_COMMAND_TIMEOUT
 
 ROOT = Path(__file__).parents[1]
 FIXTURES = Path(__file__).parent / "fixtures" / "microsoft_graph"
@@ -168,7 +169,7 @@ def test_outlook_command_crawls_local_graph_with_native_components(
         cwd=ROOT,
         capture_output=True,
         text=True,
-        timeout=30,
+        timeout=NATIVE_COMMAND_TIMEOUT,
         check=False,
     )
     if result.returncode != 0:

@@ -8,6 +8,8 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from threading import Event, Thread
 from urllib.parse import parse_qs, urlsplit
 
+from tests.native_watchdog import NATIVE_BARRIER_TIMEOUT
+
 START = "2026-09-27T00:00:00+00:00"
 END = "2026-10-04T00:00:00+00:00"
 OTHER_END = "2026-10-05T00:00:00+00:00"
@@ -97,7 +99,7 @@ def local_graph():
                 }
             elif split.path == "/held-terminal":
                 reached.set()
-                if not release.wait(20):
+                if not release.wait(NATIVE_BARRIER_TIMEOUT):
                     status = 500
                     payload = {"error": {"code": "FixtureBarrierTimeout"}}
                 else:

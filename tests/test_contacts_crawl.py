@@ -23,6 +23,7 @@ from message_ingest.catalog.models.microsoft.contacts import (
     ContactRecord,
     ContactsSnapshotState,
 )
+from tests.native_watchdog import NATIVE_COMMAND_TIMEOUT
 
 ROOT = Path(__file__).resolve().parents[1]
 FOLDER_PARENT = "folder-parent"
@@ -192,7 +193,7 @@ def _settings(tmp_path, origin):
     }
 
 
-def _run(tmp_path, origin, *args, timeout=30):
+def _run(tmp_path, origin, *args, timeout=NATIVE_COMMAND_TIMEOUT):
     command = [sys.executable, "-m", "scrapy", *args]
     for key, value in _settings(tmp_path, origin).items():
         command.extend(["-s", f"{key}={value}"])

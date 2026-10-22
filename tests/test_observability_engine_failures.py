@@ -8,6 +8,8 @@ from pathlib import Path
 
 import pytest
 
+from tests.native_watchdog import NATIVE_COMMAND_TIMEOUT
+
 ROOT = Path(__file__).parents[1]
 PROCESS_SECRET = "private-pipeline-payload-9f0d"
 CLOSE_SECRET = "private-close-payload-a18b"
@@ -114,7 +116,7 @@ def test_engine_failure_is_failed_and_private_text_is_redacted(kind: str) -> Non
         cwd=ROOT,
         capture_output=True,
         text=True,
-        timeout=20,
+        timeout=NATIVE_COMMAND_TIMEOUT,
         check=False,
     )
     output = result.stdout + result.stderr

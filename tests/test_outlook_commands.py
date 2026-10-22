@@ -17,6 +17,7 @@ from scrapy.exceptions import UsageError
 
 from message_ingest.acquisition.microsoft.outlook.email.profile import FULL_V1
 from message_ingest.commands.microsoft import Command as MicrosoftCommand
+from tests.native_watchdog import NATIVE_COMMAND_TIMEOUT
 
 
 class FakeStats:
@@ -286,7 +287,7 @@ def test_identity_gate_failure_uses_microsoft_namespace(tmp_path: Path) -> None:
         cwd=root,
         capture_output=True,
         text=True,
-        timeout=20,
+        timeout=NATIVE_COMMAND_TIMEOUT,
         check=False,
     )
     if result.returncode != 1:

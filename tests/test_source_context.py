@@ -26,6 +26,7 @@ from message_ingest.fingerprints.microsoft_graph import (
 from message_ingest.spiders.microsoft.outlook.email.discover import (
     OutlookDiscoverSpider,
 )
+from tests.native_watchdog import NATIVE_COMMAND_TIMEOUT
 
 ROOT = Path(__file__).parents[1]
 
@@ -218,7 +219,7 @@ def test_real_cli_rejects_jobdir_from_other_context_before_download(
         cwd=ROOT,
         capture_output=True,
         text=True,
-        timeout=20,
+        timeout=NATIVE_COMMAND_TIMEOUT,
         check=False,
     )
     output = result.stdout + result.stderr

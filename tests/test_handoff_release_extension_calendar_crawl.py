@@ -23,6 +23,7 @@ from message_ingest.acquisition.handoff import AcquisitionStream
 from message_ingest.catalog import Catalog
 from message_ingest.catalog.models.handoff import AcquisitionReleaseGroup
 from message_ingest.catalog.stores.handoff import AcquisitionHandoffStore
+from tests.native_watchdog import NATIVE_COMMAND_TIMEOUT
 
 __all__ = ["calendar_server"]
 ENABLE = """
@@ -54,7 +55,7 @@ def run(tmp_path, root, *, window=True, direct=False, pause=False, job=False):
         cwd=ROOT,
         capture_output=True,
         text=True,
-        timeout=30,
+        timeout=NATIVE_COMMAND_TIMEOUT,
         check=False,
     )
     if (
@@ -219,7 +220,7 @@ OutlookCalendarPipeline.process_item = failed_item
         cwd=ROOT,
         capture_output=True,
         text=True,
-        timeout=30,
+        timeout=NATIVE_COMMAND_TIMEOUT,
         check=False,
     )
     expected = "spider_error" if failure == "callback" else "item_error"

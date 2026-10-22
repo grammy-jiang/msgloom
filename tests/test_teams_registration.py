@@ -7,6 +7,8 @@ import sys
 
 import pytest
 
+from tests.native_watchdog import NATIVE_COMMAND_TIMEOUT
+
 
 def test_catalog_import_registers_teams_and_preserves_legacy_binding(tmp_path):
     """Opening a pre-Teams catalog must register models without a lane import."""
@@ -41,7 +43,7 @@ catalog.close()
         [sys.executable, "-c", script, str(database)],
         capture_output=True,
         text=True,
-        timeout=30,
+        timeout=NATIVE_COMMAND_TIMEOUT,
         check=True,
     )
     data = json.loads(result.stdout)

@@ -18,6 +18,7 @@ from msgloom.configuration import load_operator_configuration
 from msgloom.preparation import DocumentFormat
 from tests.application_cli.helpers import minimal_config
 from tests.handoff_release_reader_helpers import bind_fixture_source
+from tests.native_watchdog import NATIVE_COMMAND_TIMEOUT
 from tests.preparation_pipeline.helpers import filter_config, profiles
 from tests.test_outlook_crawls import FIXTURES, ROOT, RUN_COMMAND
 
@@ -102,7 +103,7 @@ def acquire_one(root: Path) -> bytes:
             cwd=ROOT,
             capture_output=True,
             text=True,
-            timeout=30,
+            timeout=NATIVE_COMMAND_TIMEOUT,
             check=False,
         )
         if result.returncode or "ERROR" in result.stderr:

@@ -21,6 +21,8 @@ from threading import Lock, Thread
 
 import pytest
 
+from tests.native_watchdog import NATIVE_COMMAND_TIMEOUT
+
 ROOT = Path(__file__).resolve().parents[1]
 
 
@@ -156,7 +158,7 @@ def crawl(
     arguments: Sequence[str],
     *,
     extra_settings: Mapping[str, object] | None = None,
-    timeout: int = 60,
+    timeout: float = NATIVE_COMMAND_TIMEOUT,
 ) -> subprocess.CompletedProcess[str]:
     """Run ``scrapy`` arguments with isolated fixture settings and storage.
 

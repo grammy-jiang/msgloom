@@ -6,6 +6,7 @@ from pathlib import Path
 
 from tests import test_contacts_crawl as contacts
 from tests.handoff_qualification.server import END, START
+from tests.native_watchdog import NATIVE_COMMAND_TIMEOUT
 
 ROOT = Path(__file__).resolve().parents[2]
 
@@ -52,14 +53,19 @@ def calendar(root, origin, *, end=END):
     for key, value in settings.items():
         args.extend(["-s", f"{key}={value}"])
     return subprocess.run(
-        args, cwd=ROOT, capture_output=True, text=True, timeout=30, check=False
+        args,
+        cwd=ROOT,
+        capture_output=True,
+        text=True,
+        timeout=NATIVE_COMMAND_TIMEOUT,
+        check=False,
     )
 
 
-def contacts_crawl(root, origin, *, delta=False, folder="folder-delta", timeout=30):
-    """
-    Wait for one real Contacts command using the repository fixture limit.
-    """
+def contacts_crawl(
+    root, origin, *, delta=False, folder="folder-delta", timeout=NATIVE_COMMAND_TIMEOUT
+):
+    """Wait for one real Contacts command under the shared native watchdog."""
     return subprocess.run(
         contacts_args(root, origin, delta=delta, folder=folder),
         cwd=ROOT,
