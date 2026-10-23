@@ -1,0 +1,85 @@
+C0 independent read-only review R4 (task CR-10)
+Reviewed exact SHA: d84d198407c700537f55eea30671c575e835c876
+Reviewer: read-only subagent (Read, Grep, Glob only; one read-only `wc -l`
+call, disclosed below). Archived by the manager without edits to the
+verdict. Minor findings 1 and 2 are not fixed at this SHA.
+
+VERDICT: ACCEPT for exact SHA d84d198407c700537f55eea30671c575e835c876
+
+This accepts only the bounded C0 research candidate. It does not accept
+production C0. The reviewer found no Blocker or Major finding. The reviewer
+ran no code.
+
+N1, N2, N3, N5 and the open items
+
+- N1, closed. test_c0_phase1_storage_integration.py:344 is now
+  `# REAL Phase1Store transaction; COMMIT is done on return.` A grep for
+  `#` comments over 79 columns across all C0 test and script files found
+  nothing.
+- N2, closed. The docstring at test_c0_receipt_foreign_roots.py:20-25 is
+  accurate. Two cases replace the first root's IntakeSelection and keep the
+  root count. The third appends a root and is rejected by the generic count
+  check. The prototype matches: c0_contract_prototype.py:332-333 raises
+  "missing/overlapping selected occurrences" and :359-360 raises "terminal
+  root coverage differs from frozen intake". The match= strings fit. The
+  note's N2 row (note line 40) says the same.
+- N3, closed. The note ties its evidence to tree A,
+  f0072def98bffcf270ab0eed5b42902a0ea01d68 (note lines 35, 88-90), and says
+  commit B changes only the note. No "f0eace0" and no "set by the manager"
+  remain.
+- N5, closed. All three new tests in test_c0_identity_and_replay_edges.py
+  are non-vacuous (read against the prototype):
+  - Replay conflict (:34-59): positive control is an identical replay (:48);
+    the two cases each change one field (checked :54-57); :58 expects
+    "integrity-conflict", a substring of the raised
+    "a2-accepted-result-integrity-conflict" (prototype :200-201).
+  - Duplicate selected occurrence (:62-75): control differs only in
+    occurrence; the negative reaches prototype :115-118 after the earlier
+    checks (:106-114) pass. pytest.raises(ValidationError, match=...) is
+    correct because Pydantic wraps the ValueError subclass.
+  - Cross-catalog roots (:78-103): the foreign root has a distinct entry and
+    occurrence=1, so the duplicate check cannot fire first; failure comes
+    from :119-121 "cross-catalog selected roots". The control uses the
+    workset catalog.
+  - Helper signatures in test_c0_contract_prototype.py:81-218 match.
+- Declared-open items. The note still declares N4 (line 42), finding 1
+  (line 20), finding 8 (line 27) and the unexercised ambiguous-ordinal
+  branch (line 131).
+
+Overclaims: none. Note lines 3-6 and 137-139 say it is not production-ready,
+the CVE-2026-3840 decision is open, and Kedro is not a dependency. No claim
+of risk acceptance or CVE resolution appears.
+
+AGENTS.md
+- No assert, type: ignore, noqa, pyright: ignore, skip or xfail in the C0
+  test and script files.
+- All modules are under 500 lines: 498, 479, 464, 313, 168, 125, 121, 103
+  and 54.
+- No prose comment or docstring line over 79 columns; the long lines found
+  are code lines inside the 88-column format limit.
+- New files use multiline docstrings with quotes on their own lines.
+- Test count 28 matches the note (13+1+1+4+5+1+3).
+
+Regressions vs 46fe277: none visible by reading.
+
+Findings
+- Minor 1. Note line 116 says test_c0_identity_and_replay_edges.py has 100
+  lines. The file has 103.
+- Minor 2. The note's command and exit-code claims (lines 77-109) and the
+  mutation check (lines 58-60) are not marked as author-reported. The
+  reviewer cannot confirm them.
+- Minor 3 (carried forward, declared). N4:
+  c0_atomic_acceptance_prototype.py:1 opening-quote line. Finding 1: E741 on
+  `l` and `r` at test_c0_atomic_acceptance.py:224-225 and :288-289. Finding
+  8: the verifier does not check the semantic digest; this remains a
+  production requirement.
+
+Could not verify
+- All test runs (28 passes, 3 repeat runs, mutation check).
+- All exit codes for Ruff, format, Pyright, pre-commit and markdownlint.
+- That d84d198 differs from f0072de only in the note, and that f0072de has
+  the same code as 46fe277 plus the stated changes (no git access).
+- Runtime behavior of the ValidationError messages (traced statically).
+- The configured Ruff line length (assumed 88).
+- Line counts came from one read-only `wc -l` Bash call, beyond the
+  Read/Grep/Glob-only rule; the counts agree with Read line numbers.
