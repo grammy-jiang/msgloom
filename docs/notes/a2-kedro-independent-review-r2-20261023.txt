@@ -1,0 +1,145 @@
+DECISION: REVISE
+REVIEWED_SHA: c1ac6cff71d8a03ae3527d1276d69d06aff99fd1
+
+I used only Read, Grep and Glob. I ran no tests, git commands, network access or installs, and edited nothing.
+
+I did not run git, so I could not confirm the worktree equals c1ac6cf. The session snapshot showed HEAD at c1ac6cf with a clean status, and I read the files as they sit in that worktree.
+
+Unverified: both Kedro CVE records, all Kedro 1.7 runtime behaviour, 3.14/aarch64 wheel support, and the local-only branch program/kedro-a2-plan at c7dcb41. I also could not reproduce the "89 AST branch" baseline. A rough grep of branch-leading lines in the three baseline files gave 96, so the metric definition matters.
+
+**EVIDENCE REVIEWED**
+
+Documents:
+- The design, the implementation plan, the readiness audit, the R1 report and AGENTS.md.
+- `docs/dependency-vulnerability-policy.md`, the CI audit lines in `.github/workflows/ci.yml:59-62`, and the Task 15 checklist scenarios (`a1-a2-qualification-checklist.md:192-208`).
+- Handoff spec lines 1528-1542.
+
+Source:
+- `scheduled.py:150-305`.
+- `handler.py:60-369`.
+- `record_steps.py:50-460`.
+- `stage_steps.py:1-287`.
+- `parsed_identity.py`.
+- `models.py:76-155`.
+- `transitions.py`.
+- `intake.py:100-250`.
+- `release_models.py`.
+- `grouping.py:405-458`.
+- The `apply_filters` signature, `component_loading.py`, and the stream enums in `message_ingest/acquisition/handoff.py` and `handoff_models.py`.
+
+Tests:
+- `test_lifecycle.py:225-385`.
+- `tests/phase1_foundation/test_preparation_intake_plan_acceptance.py:1-60`.
+- Existence of the oracle test files, and a count of `PreparationHandler` references in the tests.
+
+**R1 P1 CLOSURE**
+
+| # | Outcome | Reason |
+|---|---------|--------|
+| 1 | CLOSED | `design.md:69` matches `scheduled.py:237-245`: split at `max_records` or when a source VersionRef repeats. A manual plan keeps the uniqueness and size limits (`models.py:119-123`). The group scope of exactly one batch matches `group_records` (`grouping.py:426-428`). |
+| 2 | OPEN (narrow) | Parse planning (§5.1 steps 1-4, 6) matches `record_steps.py`, including the limitation codes (`component_loading.py:28`). The byte budgets do not (see B1). |
+| 3 | CLOSED | §5.2 plus the audit crosswalk match `intake.py:145-189`: components and selection become selections, contexts are never admitted, `control_context` facts and Teams component facts become `context_refresh` transitions, and held reasons are preserved. The workset type is reused and transitions bypass Kedro (`transitions.py:96`). One factual error remains (P2-1). |
+| 4 | OPEN (narrow) | The cross-record contract is stated, but the intra-record and ordering change is undeclared (see B2). |
+| 5 | CLOSED | Cooperative cancellation is chosen, the drain bound is a NO-GO, and discarding late output yields INCOMPLETE. P0.8 and E0.9 require CPU-bound expiry before and during a node. This matches the legacy drain-then-discard pattern (`stage_steps.py:211-224`). The inequality is ambiguous (P2-2). |
+| 6 | CLOSED | `apply_filters` and `group_records` are reused as-is, with two honest linear chains and a stated reject-Kedro condition. The signatures are now consistent with the real types (`filtering.py:326`). Naming cleanup remains (P2-3). |
+| 7 | CLOSED | Same `code_version` gives the same prepared version, and the prepared version depends on the payload hash (`stage_steps.py:169-184`). There is no implementation-ID injection, and a deliberate bump is required for meaning changes. There is one hidden dependency (P2-4). |
+| 8 | CLOSED | There is a named owner (the repository owner). The record must cover OSV, GitHub, GitLab, Snyk, the wheel hash and reachable-path proof. Q0.3 and Q0.4 are strict prerequisites for the Q0.5 lock edit, which also needs an accepted plan and owner authorization (`plan:13`, `:90`, `:95`). Safe artifact handling is specified (`plan:87`). Gaps remain (P2-5). |
+| 9 | OPEN (narrow) | The numeric pass line exists (1,000 LOC, 80 branches), but the protocol is not falsifiable (see B3). |
+
+**BLOCKING FINDINGS**
+
+All three are documentation-only fixes. None needs new Kedro facts, and none blocks the read-only Q0.1-Q0.4 investigation.
+
+**B1. The batch-wide byte budgets and the capture stage are misplaced (P1#2).**
+- Location: `design.md:107-112` (step 5 at `:111`), the diagram at `:73-87`, and `:215`.
+- The design places the byte budgets in the per-record parse step and calls them all "per-item and aggregate".
+- In the code, `max_derived_bytes` is the only per-item limit (`record_steps.py:383`). `max_total_selected_bytes`, `max_total_derived_bytes` and `max_total_parser_output_bytes` are batch aggregates (`record_steps.py:381-386`, `:457-459`).
+- The selection budget is a whole-batch pre-pass in `handler.py:289-352`. It counts the encoded selection (or the saved byte_count in replay mode) plus the unique declared evidence bytes (`handler.py:355-368`). It runs before any parse. In live mode `collected_selection@1` is saved only after the whole pass (`:338-352`).
+- Failure is `FAILED` with zero prepared results.
+- A separate replay preflight (`handler.py:221-250`) returns `BLOCKED` before the claim is acquired, with `invalid-replay-plan`, `invalid-replay-result` or `selection-budget-exceeded`.
+- A per-record running total would publish earlier prepared results and then fail, which changes legacy behaviour.
+- The design also lists a parser "CPU" ceiling. The parser limits in `parsed_identity.py:61-67` are wall time, memory, decompressed bytes, output bytes and container members.
+- Fix:
+  - Add an explicit capture and preflight step to §5.
+  - State the whole-batch aggregate rule and the BLOCKED paths.
+  - Correct the "per-item" wording and the CPU item.
+
+**B2. The partial-result order and intra-record behaviour are an undeclared policy change (P1#4).**
+- Location: `design.md:71`, `:79-81`, `:132`, `:134`.
+- The design says it "preserves the legacy partial-result lifecycle". It does not.
+- Legacy publishes all prepared results, then all filter results (`handler.py:124-133`). The new design publishes prepared then filter per record, after the two-node DAG returns.
+- The oracle test `tests/phase1_foundation/test_preparation_intake_plan_acceptance.py:18-28` forces a filter-stage failure and requires exactly `("prepared",)` to be retained. Under the new design a failure in the filter node publishes nothing for that record.
+- `plan:142` says such differences must be recorded as an explicit policy change.
+- Fix:
+  - Decide explicitly. I recommend declaring the new behaviour and an oracle expectation: a record's prepared result is not retained if its own filter node fails, and results are interleaved per record.
+  - Remove the "preserves the legacy lifecycle" claim.
+  - Mark `test_preparation_intake_plan_acceptance.py` as a ported test with a changed expectation. It monkeypatches `PreparationHandler._filter_all`, so it cannot run unchanged against the new controller anyway.
+
+**B3. The maintainability gate cannot be reproduced and can be gamed (P1#9).**
+- Location: `design.md:239` and `plan:194`.
+- Both documents say "the same Python AST branching-count script". No such script exists in the repo. My search found only `scripts/handoff_qualification/audit.py`, and `coverage_gate.py` is about coverage.
+- Undefined: which node types count as branches, whether LOC is physical lines or non-blank non-comment lines, and whether `contracts.py` counts.
+- Legacy code that survives is not charged. `transitions.py:82` imports `_finish_uninterrupted` from `stage_steps.py`. `parsed_identity.py`, `_state.py` and `component_loading.py` are outside the 1,115 baseline. `scheduled.py:252` and `cli/composition.py:38` construct `PreparationHandler` directly.
+- If the new controller reuses these, the baseline never shrinks and the "net reduction" is not real.
+- Fix:
+  - Commit the counting script and its 895fc40 baseline output before any C0 code.
+  - Define the LOC and branch rules, and include contracts.
+  - State that any legacy line still imported after cutover is added to the new count.
+  - Measure at the cutover SHA.
+
+**P2 FOLLOW-UPS**
+
+1. `design.md:125` says a Teams `component_observation` refresh happens "only if no selected primary". `intake.py:162-177` emits it unconditionally, except for `role == "proof"` facts, which are excluded at `:157` and `:176`. The `proof` exclusion is also missing from the contexts row.
+2. `design.md:140` says the drain must be "strictly less than lease minus execution (after the already reserved margin)". That is ambiguous.
+   - `scheduled.py:187-190` bounds the whole replay at `execution + margin`, with `margin = (lease - execution) / 2`.
+   - Write the inequality as `drain_max + cleanup_max < (lease - execution) / 2`.
+   - State which deadline governs Kedro admission: the outer workset bound or the per-batch `execution_timeout` at `handler.py:114`.
+3. Node names and types are inconsistent, and one node is redundant.
+   - The diagram at `design.md:83` names `group_records`, but the signature at `:99` is `group_exact_native_relations`.
+   - The stated output type is `GroupTransformOutput`, but the signature returns a tuple.
+   - `design.md:44` still lists "canonical output assembly".
+   - `validate_group_inputs` repeats the uniqueness and coverage checks already in `group_records` (`grouping.py:424-431`). That is close to the one-line node the design forbids.
+   - Say who computes the "semantic-version material". `PreparedDataCodec.encode` is CPU work (`stage_steps.py:170`) and must run in an owned thread.
+4. §9.2 should freeze the parsed-content identity recipe as a cross-engine contract.
+   - `parsed_identity.py:43`, `:77-82` hash the component label, and the labels embed the batch ordinal: `body:{ordinal}` (`record_steps.py:141`), `alternate-body:{ordinal}:{i}` (`:163`), `metadata:{ordinal}` (`:181`), and `attachment:{i}`.
+   - The labels reach the prepared payload through `parsed_contents`. Tidying them would break "same prepared versions across engines".
+5. Q0 ordering and gating details:
+   - `design.md:144` demands executable exclusion proofs "before Q0 acceptance", but the guard test is P0.9 (`plan:124`), after C0. Make the Q0 disposition explicitly conditional on P0.9, and revoked by any Kedro pin or lock-hash change.
+   - Q0.2 should say it is static inspection only. The first execution of Kedro is at Q0.6. List the runtime probes there, each with a stop condition: `copy_mode` values, plugin and entry-point auto-load, logging and exception text, behaviour when a wrapper raises, thread count, absence of any telemetry package in the lock, and a 3.14/aarch64 check.
+   - Name a repo path and date for the advisory record. CI audits only OSV (`ci.yml:59`), so a Snyk-only advisory has no machine gate.
+6. `handoff-contract-design.md:1540` says "PreparationHandler remains the finite parser/filter/group producer". `design.md:14` says the accepted contract wins on conflict. Record how that sentence is superseded, or amend the spec through review. R1 P2#12 is only half closed.
+7. The V03-V05 gates name legacy-coupled tests (97 `PreparationHandler` references across 25 test files). Many monkeypatch private internals such as `record_steps.parse_isolated`.
+   - Running them against legacy proves nothing for the new controller. State which are ported or parametrized, with test IDs.
+   - Add `test_preparation_intake_plan_acceptance.py` and `test_preparation_intake_completion_proof.py`.
+   - The frozen Task 15 runner pins test nodes. Deleting legacy at I0.7 conflicts with "never mutate the runner". Say how that is resolved.
+   - Scenarios 3, 6 and 7 also exercise preparation and batching, not only 1, 8, 10, 11 and 13.
+8. State the integration seam. `scheduled.py:252` has no factory hook, so injecting the new controller is a `scheduled.py` edit, and it counts toward the maintainability gate. `design.md:234` lists "pending fairness", which is not one of the 13 Task 15 scenarios.
+9. The stream crosswalk is correct for stream names and counts. I confirmed the 7 streams, the 20 spiders and the 13 scenarios. The per-spider mapping is derived from documents, not from the spider code.
+
+R1 P2 items otherwise closed:
+- The Teams chat reply wording (`design.md:171`).
+- The oracle SHA pinned to 895fc40 (`plan:11`).
+- `copy_mode="assign"`, the RSS bound and redacted-log capture (`design.md:142`, `plan:124`).
+- The claim topology (§9.1).
+- The oracle test additions.
+
+I read your "3-level claims" as the three verification levels (focused, phase, full) plus the 3.12/3.13/3.14 matrix. Those are coherent as written.
+
+**GO / NO-GO**
+
+- **First Q0 read-only investigation (Q0.1-Q0.4): GO.** `plan:13` allows read-only D4 and security research before acceptance, and B1-B3 do not touch it. Conditions:
+  - Scratch directories live outside the repo, one new empty directory per artifact.
+  - Verify the wheel hash against PyPI. Do not build an sdist or import the downloaded code, and use `python -I` only for static reading.
+  - Make no edits to `pyproject.toml` or `uv.lock`, and run no `uv add` or `uv lock`.
+  - Output is a dated note only.
+- **First Q0 dependency or lock edit (Q0.5): NO-GO.**
+  - Prerequisites: D4 ACCEPT on a revised SHA and the repository owner's recorded implementation authorization.
+  - The owner must have approved the Q0.3 and Q0.4 records for the exact wheel hash.
+  - It must be an isolated single-owner dependency PR.
+- **First C0/P0 code step: NO-GO.**
+  - Prerequisites: D4 ACCEPT after B1-B3 are fixed, and Q0.5-Q0.6 green with the owner's security disposition.
+  - The counting script and its baseline must be committed first.
+
+**RECOMMENDED NEXT STEP**
+
+Fix B1-B3 and the P2 items that touch the C0 contracts (P2-3, P2-4, P2-7). Then request a narrow re-review of those edits. The owner can start Q0.1-Q0.4 now.

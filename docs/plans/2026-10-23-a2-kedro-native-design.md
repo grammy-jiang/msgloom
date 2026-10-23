@@ -1,255 +1,236 @@
-# A2 Kedro-native preparation architecture
+# A2 Kedro-primary ETL architecture (reconciled design)
 
-**Status:** DESIGN CANDIDATE; no production-code implementation authorised by this document.
-**Date:** 2026-10-23 (Australia/Sydney).
-**Planning base:** master/origin/master at 895fc40a0ec889bd96f620df8c62491787218217.
-**A1 handoff qualification authority:** 34057c6c9f85688fd2bd1868d90302ab5a61205f; 28/28 exact-SHA automated gates and separate accepted review.
-**Owner:** msgloom Phase 1 / A2. **Implementation plan:** 2026-10-23-a2-kedro-native-implementation-plan.md.
-**Readiness evidence:** ../notes/a2-kedro-readiness-audit-20261023.md.
+**Status:** DRAFT FOR INDEPENDENT DESIGN REVIEW, NOT IMPLEMENTATION APPROVAL.
+**Date:** 2026-10-23, Australia/Sydney.
+**Source baseline:** master 895fc40a0ec889bd96f620df8c62491787218217.
+**Accepted A1 boundary:** Task 15 source 34057c6c9f85688fd2bd1868d90302ab5a61205f.
+**Governing owner decision:** [ADR-A2-20261023](../decisions/2026-10-23-a2-kedro-primary-etl.md).
+**Implementation plan:** [A2 Kedro-primary plan](2026-10-23-a2-kedro-native-implementation-plan.md).
+**Automatic release-to-ETL handoff:** [A1 Release -> Kedro A2](2026-10-23-a1-release-to-kedro-auto-handoff.md).
+**Review record:** [Readiness audit](../notes/a2-kedro-readiness-audit-20261023.md).
+**A1 output and automatic activation:** [Source-verified integration](../notes/a1-kedro-handoff-activation-20261023.md).
+**A1 post-release orchestration plan:** [Automatic wake-up, catch-up, and E2E gates](2026-10-23-a1-release-to-kedro-auto-handoff.md).
 
-## 1. Decision and precedence
+## 1. Non-negotiable architectural decision
 
-Implement a new Kedro-native A2 deterministic preparation execution path, not a line-for-line migration or a wrapper around the existing PreparationHandler. The present A2 implementation is the reference corpus for functional contracts, regression fixtures, source-level threat analysis, and rollback. Shared *capabilities* can be reused when their interfaces are sound: immutable data contracts, verified byte readers, format parsers and isolation, prepared/filter/group pure semantics, persistence and claims. Do not copy the legacy RecordSteps/StageSteps/handler sequencing into new Kedro nodes.
+**Kedro is the primary A2 ETL framework**, not a decorative subgraph attached to the existing A2 implementation. Its Pipeline/DataCatalog/Runner determine the dependency graph and dataflow from exactly pinned A1 source inputs, through content extraction, parser dispatch, normalization, zoning, evidence-aware native relationships, filtering and grouping, to versioned stage publication.
 
-The accepted A1-to-A2 contract owns upstream semantics. It outranks this design if conflict is discovered; any requested contract extension requires explicit review rather than an opportunistic A1 modification. The stable baseline includes:
+The old A2 is **deprecated architecture**. Do not inherit PreparationHandler, RecordSteps or StageSteps as the new runtime engine; do not permanently maintain a selectable legacy engine; do not require line-by-line behavioral parity with old algorithms. Existing parsers, pure domain functions, type validators, and tests are useful candidates and acceptance references, not blanket code-reuse requirements. Any reuse must be argued as a self-contained, well-owned capability; old A2 private methods do not constrain the new architecture.
 
-- A1 source catalogue and verified raw evidence; immutable acquisition facts;
-- atomic release groups and sequenced release entries;
-- ReleaseSourceReader and its exact, read-only reconstructable ReleasedInput;
-- bounded PreparationIntakeService, catalog-identity anchored cursor, immutable workset, historical-baseline API, held entries and pending rotation;
-- Phase1Persistence, stage-result codecs, claim fencing, semantic versions and replay.
+**The A1-to-A2 boundary is an exception to this deprecation.** Its accepted release ledger, reader, exact selection/workset, cursor, held/pending state, scoped transitions and historical-baseline contract were built specifically for downstream A2 and must remain authoritative and unchanged. Physical directory names are irrelevant: retained handoff code may be under preparation_pipeline without requiring preservation of legacy A2 orchestration.
 
-The September 29 local plan at program/kedro-a2-plan (commit c7dcb41, 648 lines) was explicitly a *legacy-engine migration* plan pinned to Kedro 1.6.0. Its K0–K8 migration sequence, A2_ENGINE two-engine runtime, and 25% legacy-code deletion criterion are NOT the governing new implementation plan. Retain its useful framework constraints and benchmark criteria, not its migration authority.
+Older 2026-09-29 local plan (c7dcb41) and early 2026-10-23 proposals (37f5886 and c1ac6cf) were based on narrower Kedro migration/pure-subgraph assumptions and are superseded as implementation authority. Historical reviewer REVISE findings remain archived; they are not an acceptance of this revised concept.
 
-Higher-level product intent is in docs/phase-1/design.md sections 2–3 and docs/plans/msgloom-next-implementation-program.md section 14 and P2. The latter is a 2026-09-29 execution baseline, not a reliable inventory of current code. docs/notes/preparation-pipeline-api.md and docs/notes/preparation-semantics.md describe the currently implemented **reference** semantics. docs/superpowers/specs/2026-10-03-a1-a2-handoff-contract-design.md, the Task 15 report, and msgloom/sources/release_api.md govern the accepted source boundary. This design controls the new A2 execution implementation only.
+## 2. Accepted A1 output: freeze once, process exact inputs only
 
-## 2. Explicit scope / non-goals
+A1 remains the Scrapy 2.19.0 Graph-over-Scrapy acquisition subsystem. Its Spiders and provider extensions own traversal, raw response/attachment evidence, complete/partial acquisition facts, source/provider version and scope, native relationships, checkpoint authority, and atomic release-group publication. A2 never consumes live Scrapy Requests/Responses, mutates provider checkpoints, or issues Graph reads.
 
-A2 turns an already authorized, durably frozen collection into source-mapped, limited, replayable prepared content, deterministic filter decisions, and conservative relationship groups. Inputs may be Outlook Mail, Calendar, Teams chat/channel, To Do, OneDrive or Contacts. Supporting source context must not silently enter the primary workset. No A2 semantic model or NLP guesses about conversation identity.
+The A1/handoff layer exposes (names refer to existing, accepted contracts):
 
-Not in this work: new Graph endpoints/permissions; Scrapy traversal, middleware, JOBDIR, checkpoints, or existing A1 schemas; A3 model inference; semantic cross-source topic/entity linking; A4 investigation; A5 delivery; a Kedro project, session, CLI, YAML configuration, data persistence, plugin discovery, hooks, daemon, scheduler or browser UI; live enterprise Teams tenant acceptance. The external Prefect scheduler remains deployment-owned, and no scheduler deployment is required to qualify this A2 replacement.
+- Source identity and immutable evidence; atomic committed ReleaseGroup / ReleaseEntry with ordered facts and exact hashes.
+- ReleaseSourceReader reading immutable ReleasedInput (reference, primary selection, components, contexts, scoped transitions, facts) with evidence/digest checks, not current mutable projection fallback.
+- PreparationIntakeService capturing one bounded release cutoff into exact collected_selection@1 and PreparationIntakeWorkset, preserving catalog/source/stream/consumer anchor, held entries, transitions and pending fairness. Durable cursor advancement means **selection admission**, not successful parsing.
+- Explicit historical baseline and read_supporting_context for caller-approved historical context. Context never becomes primary work merely because it exists in SQLite.
+- Manual exact replay, restart after failures, scope-aware deletion/restoration and publication after semantic completion.
 
-Keep msgloom's one async Application/CLI boundary. Installation and imports must not cause IO, network access, spontaneous service startup, or telemetry. Offline manual preparation and the finite prepare-scheduled command must both remain supported.
+**Automatic operation:** A1's committed ReleaseGroup/ReleaseEntries are the only source eligibility signal; the external Prefect orchestrator may wake one finite prepare-scheduled invocation after collection, with a configurable reconciliation trigger as a durable catch-up. Prefect job completion is never the evidence of A1 release; Ledger + fixed cursor cut are. The existing CLI still runs legacy A2 until this Kedro engine passes and is substituted. See the companion automatic-handoff plan for PIN/consumer configuration and no-work/pending/recovery semantics.
 
-## 3. Component ownership
+**Do not reopen accepted A1** to make Kedro integration convenient. A2 receives one immutable workset and exact selected versions; it must not list_versions or infer current "new" work from database timestamps. Component-only, context-only and transition-only entries must retain their semantics and cannot be coerced into fabricated message bodies. A1 Task 15 formally qualified 20 Spiders/13 scenarios on source 34057c6; that evidence does not qualify new Kedro code. Live work/school Teams acceptance and external scheduler deployment remain excluded.
 
-| Owner | Responsibility and failure boundary |
-| --- | --- |
-| A1 (message_ingest/microsoft_graph) | Capture with native Scrapy, persist provider facts/bytes, publish atomic releases. No A2 imports. |
-| msgloom.sources | Read verified, immutable ReleasedInput and saved selections by exact IDs; pinned path/integrity checks. No Kedro imports. |
-| Existing intake boundary | Durable catalog/source/stream/consumer cursor, workset, held reason, pending fairness, explicit historical baseline. Remains outside Kedro. |
-| New A2 controller | Request admission, claim/lease and budget, freeze selected inputs, call parser isolation, invoke bounded Kedro executor, publish and finish. Async and effectful. |
-| Parser boundary | Select trusted parsers, check signatures and saved byte digests, isolate native/hostile file parsing in bounded processes, drain on cancellation. No Kedro imports needed. |
-| New Kedro Core subgraph | **Pure deterministic** normalization, prepared-record assembly, filter evaluation, relationship analysis, group construction, canonical output assembly. No IO or claims. |
-| msgloom.persistence | Serial durable publication, per-result claim fencing, immutable semantic/result IDs, dependencies, completion receipts and terminal lifecycle. No arbitrary Kedro dataset I/O. |
-| A3 and A5 | Consume exact accepted A2 results; their code, prompt behaviour and delivery are unchanged. |
-| Deployment | External scheduling, process/container/resource limits and operational secret injection; does not invoke Kedro nodes directly. |
+## 3. System layers and ownership
 
-A1's releases and current A2 intake code straddle the historical "A1/A2" naming boundary. Ownership is determined by accepted business semantics, not directory names: do not replace immutable intake or release semantics under the pretext of replacing A2 orchestration.
-
-## 4. Input, intermediate and output contracts
-
-Define versioned, closed, frozen types (prefer existing validated domain types where an exact semantic match already exists). Working names below are proposals; implementation must inspect actual schemas and not duplicate them.
-
-- PreparationIntakeWorkset (existing intake_models.py): the complete immutable source/stream/consumer/cursor cut, exact entry refs, selection refs, transitions, held entries, cutoff and prior anchor. **Do not create A2SourceCut**, which would duplicate this contract.
-- A2RecordExecutionInput (new, one selected record): exact accepted CollectedSelection@1 ref and payload, immutable source/version/byte refs, already verified derived_bytes@1 dependencies and accepted isolated parser outputs, parser identity/config/limitations, FilterConfig/version, source-scope and native relationships, and trusted config/code versions. Never include live readers, sessions, DBs, claim tokens or provider credentials.
-- RecordTransformOutput (new, one record): immutable PreparedRecord, FilterResult, source spans/limitations and **semantic-version material**; no durable ResultRef or acceptance claim. PreparedRecord.filtering stays PENDING because filter_result@1 is authoritative.
-- GroupingInput (new, at most one duplicate-free plan batch): corresponding prepared records and filter outcomes plus exact source scope, canonical ordering and bounded size. No invented relationship graph data type is required.
-- GroupTransformOutput (new): tuple of validated GroupResult domain objects with Confirmed / Uncertain / None, source relationships and matched filter evidence.
-- A2ExecutionOutput is only a logical aggregate view of per-record and per-batch pure outputs already validated by the controller. **Scoped transitions do not enter Kedro**; the existing prepared_transitions@1 publisher handles workset.transitions in its own claim.
-
-These working type names must map to existing contracts before adding new schemas. An execution envelope is never a new durable checkpoint or source of truth.
-
-Never encode provider IDs, addresses, attachment names, subject text or any private payload into Kedro node names, dataset names, logging labels, metrics or error strings. IDs in authorized immutable payload objects must remain available for business identity and persistence.
-
-ReleasedInput can contain primary selection, components, contexts, transitions and facts **in one release**. A component-only release cannot manufacture a parent; a transition-only release cannot manufacture source bytes or global deletion. A1 provider profiles carry their own completeness and authority boundaries. Confirm source selection remains immutable if mutable A1 projections change during processing.
-
-## 5. Dataflow, batch granularity and partial-result publication
-
-An immutable **PreparationIntakeWorkset** is the durable admission/cursor unit, **not** a single Kedro invocation. Preserve the exact legacy splitting rule in scheduled.py: select source versions in saved order; start a new PreparationPlan whenever the active batch reaches the configured max_records or the next selection repeats a source VersionRef already present in the batch. Never silently deduplicate those repeat releases; each remains associated with its own saved selection and release entry. A manual plan has the same uniqueness and max_records constraints. Grouping scope is exactly one such batch; groups must not span batches or released worksets. Any later change to grouping scope is a separately approved semantic policy/version change.
-
-Each batch has zero or more record-transform invocations followed by **one** group-transform invocation after all eligible record/filter results are durable. This preserves the legacy partial-result lifecycle and avoids making Kedro responsible for SQLite commits.
-
-    A1 ledger -> ReleaseSourceReader -> accepted PreparationIntakeWorkset
-      -> exact saved selections (including components) -> split unique batches
-      -> for each selected record:
-           verify body/alternate/attachment evidence
-           -> controller-owned parse planning and isolated parsing
-           -> durable derived_bytes@1 artifacts
-           -> per-record Kedro pipeline:
-                assemble_prepared_record -> apply_deterministic_filters
-           -> claim-fenced prepared@1, then filter_result@1 immediately
-      -> batch Kedro pipeline:
-           validate_group_inputs -> group_records -> GroupTransformOutput
-      -> claim-fenced group_result@1 for each exact group
-      -> existing transitions path publishes prepared_transitions@1
-      -> finalize accepted workset receipt, retain pending/held as needed
-      -> A3 from existing accepted ResultRefs
-
-Proposed pure node signatures (use actual domain types, not false no-op nodes):
-
-    def assemble_prepared_record(parsed: A2RecordExecutionInput) -> PreparedRecord: ...
-    def apply_deterministic_filters(
-        record: PreparedRecord, policy: FilterConfig
-    ) -> FilterResult: ...
-    def validate_group_inputs(
-        records: tuple[PreparedRecord, ...],
-        filters: tuple[FilterResult, ...],
-    ) -> GroupingInput: ...
-    def group_exact_native_relations(groups: GroupingInput) -> tuple[GroupResult, ...]: ...
-
-The existing reviewed apply_filters() and group_records() pure algorithms are the semantic baseline and should be called by the relevant new nodes without an unapproved relationship-graph refactor. The proposed Kedro topology consists of two meaningful pure dependency chains. It is **not** one fictional six-node end-to-end DAG: effectful parser/claim/publish steps remain between the two subgraphs. If this split yields no measurable maintainability benefit, reject Kedro rather than invent extra one-line nodes.
-
-### 5.1 Controller-side parse planning: explicit contract
-
-For each captured exact selection, the controller:
-
-1. Computes a finite component plan from primary body, alternate MIME/HTML/plain bodies, structured collected metadata, saved attachments and declared parser profiles. Only trusted parser configuration chooses a format. Retain all source/byte refs, descriptions and source locations.
-2. Loads each saved byte with the already qualified no-follow/digest/byte-limit reader. It must not treat stored Graph JSON as parsed body text under the Graph envelope digest.
-3. Generates the derived canonical UTF-8 bytes for each parser input, including structured metadata JSON, saves the exact derived_bytes@1 semantic result **before** parser invocation, and binds its stable sha256/byte-count to the captured selection.
-4. Calls the existing bounded parse_isolated interface sequentially per admitted component, records parser identity/config/profile/version, canonical parsed content and source mappings, and retains missing, unsupported, encrypted or inaccessible component limitations. Existing limitation codes (including saved-content-unavailable, content-parse-failed, parser-profile-unavailable, unsupported-attachment-format) remain unchanged.
-5. Enforces **both** per-item and aggregate max_total_selected_bytes, max_derived_bytes, max_total_derived_bytes and max_total_parser_output_bytes, plus parser subprocess memory/CPU/output/time/decompression/container ceilings. Aggregate budget exceedance is fatal and cannot be transformed into a benign per-component limitation.
-6. Produces exactly one frozen A2RecordExecutionInput with the already verified outputs and ordered limitations, not a mutable list of callbacks. No parse IO is hidden in a Kedro node.
-
-These are the behaviours formerly implemented across `record_steps.py:_prepare_record`, `_parse_derived_body`, `_parse_derived_text` and `_parse`. They must be preserved as contract, not copied wholesale as old class inheritance. Byte-loss after selection is honest INCOMPLETE and never triggers reacquisition or substitution.
-
-### 5.2 ReleasedInput-to-workset-to-DAG mapping
-
-| ReleasedInput field | Accepted workset mapping | New A2 action | Published result |
+| Layer | Responsible engine | Does | Does not |
 | --- | --- | --- | --- |
-| reference + facts | Exact entry refs, anchor and evidence-verified membership; not an independent mutable input | Verify frozen identity/selected version via workset and selection refs | Lineage in prepared and transition refs |
-| selection | IntakeSelection with collected_selection@1 result when present | Read exact selection, parse authorized content | prepared@1, filter_result@1, group_result@1 in batch |
-| components | Separate IntakeSelection/collected_selection@1 refs; Teams side facts additionally produce parent refresh | Prepare **only** each exact component selection as selected; do not fabricate an absent parent | Exact prepared result if readable; scoped refresh separately |
-| contexts | Not copied into workset as primary data | Preserve only via A1 evidence; control_context facts map to context_refresh; explicit historical context uses read_supporting_context | No invented primary PreparedRecord |
-| transitions | Workset.transitions (typed IntakeTransition) | Existing prepare_transitions bypasses Kedro | prepared_transitions@1 under separate transition claim |
-| facts with component_observation | Teams chat/channel side-component context_refresh transition where applicable | Preserve exact parent/scope and no new primary message assumption | Scoped refresh only if no selected primary |
-| invalid/unmaterializable entry | Workset.held entries | Existing held disposition, allow later good entries | Held without fabricated content |
+| Acquire and publish A1 releases | Native Scrapy + A1 catalog | Saved bytes, identity, complete release groups and atomic proof | Call Kedro or interpret A2 business semantics |
+| Admit exact immutable work | Existing reader + intake + Phase1Persistence | Verify ledger, pin release cutoff, write workset/pending/cursor | Choose A2 ETL node ordering or parse content |
+| A2 ETL graph | **Kedro Pipeline + SequentialRunner** | Own ordered extract/parse/normalize/zone/relate/filter/group/result-stage dependencies | Own A1 cursor, business transaction authority, provider credentials |
+| A2 data interfaces | **Programmatic DataCatalog** with trusted datasets | Load exact A1 evidence; execute approved parser service; enforce durable stage-output dependency and side effects | Scan mutable DB, use Kedro's versioned dataset paths, invent business IDs |
+| Trusted async service layer | msgloom Application, parser isolation, persistence | Async bounded source reads, parser sandbox/cleanup, claims/leases, SQL transaction fencing, schema versioning, terminal outcome | Replace Kedro ETL graph with the old PreparationHandler loop |
+| A3/A5 downstream | Existing consumers, with explicit schema adapter if necessary | Consume accepted output identity, provenance and known limitations | Assume all prepared content is complete or from the old layout |
+| Deployment | External Prefect or finite CLI invocation | Trigger an awaited A2 operation and observe status | Schedule individual Kedro nodes, daemonize an in-package worker |
 
-Only these already defined workset paths feed the Kedro DAG. Additional A1 context read semantics require a separately approved extension, not adding a fictional workset field. A release entry may have selections **and** transitions; both must be retained.
+The new A2 may add schema versions (`prepared@2`, `zones@1` etc.) with reviewed migrations and consumer adapters; compatibility is required at *public* A3/A5 and saved-result semantics, not private old-A2 classes. Do not change `collected_selection@1`, `preparation_intake_workset@1` or A1 release business semantics as an incidental step.
 
-### 5.3 Partial failure and durable progress
+## 4. Kedro-owned A2 ETL DAG
 
-After each successful per-record DAG call, save prepared@1 then filter_result@1 immediately under the record's PREPARE claim; do not wait for the entire workset. Previously accepted per-record refs survive a later parser failure, group-stage failure, timeout or cancellation and remain inspectable/replayable. If a per-record parse has missing/nonfatal components, publish a partial PreparedRecord with explicit limitations and an INCOMPLETE status; fatal aggregate budget exhaustion publishes no invented completion but retains earlier durable refs.
+A finite A2 invocation takes one caller-authorized immutable workset. Admission and workset durable claims occur outside Kedro, then a programmatically built, bounded Kedro Pipeline processes only its exact selected records. Workset partitioning must be deterministic, bounded and source-version-aware; the old private max_records algorithm is **test data**, not automatically new policy. If scope/partition policy changes grouping outputs, version it and get explicit acceptance rather than treating old grouping as truth.
 
-Group computation begins only with the exact completed prepared/filter results for the current batch; if a later record aborts the batch, preserve the earlier refs and do **not** publish a fabricated complete group. Finish claims according to ownership and durable acceptance; the outer workset remains pending unless the same proof that the old path required is satisfied. This matches tests/preparation_pipeline/test_lifecycle.py (partial timeout) rather than making a single-shot Kedro DAG a transaction.
+    A1: committed release ledger and immutable captured evidence
+      |
+      v
+    accepted ReleaseSourceReader -> durable PreparationIntakeWorkset
+      |                         (A1/intake owned; no Kedro dependency)
+      v
+    Kedro Pipeline / DataCatalog per bounded workset partition
+      |
+      +-- exact_handoff_input          [trusted read-only dataset]
+      |    -> select_source_components [source, byte refs, contexts, transitions]
+      |    -> verify_and_extract        [trusted saved-byte dataset service]
+      |    -> parse_content             [trusted isolated parser dataset service]
+      |    -> normalize_content         [canonical characters/metadata/structure]
+      |    -> zone_content              [author/quote/forward/signature/etc. zones]
+      |    -> map_native_relations      [scope-qualified, evidence-bound]
+      |    -> apply_deterministic_rules [all matched filters and conflicts]
+      |    -> group_communication       [confirmed/uncertain/none]
+      |    -> construct_output_manifest [exact stage and limitation lineage]
+      |
+      +-- scoped_transition_lane       [presence, absence, refresh, removal]
+      |    -> scoped_result_dataset     [no fabricated content or global deletion]
+      |
+      v
+    claim_fenced_result_datasets: ordered durable semantic-stage results
+      |
+      v
+    msgloom: check valid claims / finalize accepted workset proof
+      |
+      v
+    A3 input adapter -> A3 -> A5
 
-## 6. Kedro embedded runtime policy
+**Kedro owns the graph, including parsing and stage publication ordering.** Parsing itself runs in a sandbox maintained by msgloom; durable writes themselves are performed by the existing msgloom Persistence API. That is not the same as moving these phases outside the Kedro ETL DAG: they are reached through trusted `AbstractDataset` adapters that Kedro loads/saves in the declared dependency sequence. No new independent A2 orchestration loop may reimplement this business ETL order.
 
-Use only public Kedro Core APIs: Node/node, Pipeline/pipeline, DataCatalog, MemoryDataset and SequentialRunner(is_async=False), constructed programmatically per bounded invocation. No kedro-datasets, KedroSession, Kedro server, Kedro CLI, automatic hooks, runtime config discovery, or second serialization/versioning system. No custom async runner.
+The implementation can construct bounded per-record subpipelines plus a batch group/transition subpipeline if that is demonstrably the safest way to retain stage-level durability and resource limits. Such composition still needs a **single architecturally coherent Kedro-controlled ETL graph** for each frozen work unit, with explicit public run manifest and typed inter-stage datasets. Merely invoking separate "filter" and "group" Kedro functions after controller-side parsing is prohibited.
 
-Kedro Core synchronous Node execution is **not** coroutine execution; is_async=True on SequentialRunner parallelizes dataset loads/saves with threads, not business node awaits. The entire pure execution may run in an owned bounded worker thread, isolated from the Application event loop. Cancellation of Python threads is not preemptive. This design chooses **bounded cooperative cancellation**, not a new process host or custom Kedro runner. The controller runs at most one finite Kedro call per record or group batch, checks monotonic deadline and stop-flag before admission and between nodes, and disallows new steps if remaining budget is less than an empirically qualified maximum node duration plus cleanup margin. Node entry wrappers check a thread-safe cancellation flag; pure core algorithms remain deterministic and never read mutable business state. Await/drain the already accepted bounded step before returning, discard its result if cancellation or deadline was observed, then enforce claim ownership on any allowed publication. The measured worst-case pure-node drain plus persistence/claim cleanup must be strictly less than `claim_lease_seconds` minus `execution_timeout_seconds` (after the already reserved cleanup margin). If no positive margin exists, the request is rejected before node admission. A node that cannot meet this finite drain bound on Pi is rejected from Kedro adoption, not silently replaced by an unreviewed subprocess design. No worker callback can publish to persistence or outlive the Application operation.
+## 5. DataCatalog adapters: Kedro schedules, msgloom holds authority
 
-Dataset names and node names are static, reviewed, non-sensitive constants. Construct MemoryDataset(copy_mode="assign") **only** for validated frozen Pydantic/domain objects, never mutable caller lists/dicts; validate absence of alias mutation with explicit tests. Bound materialized bytes and assert RSS under worst-size test fixtures, as default inferred copy mode can deepcopy large records. For mutable fixtures choose a reviewed explicit copy strategy and a smaller byte ceiling. The output is loaded by the controller and independently Pydantic-validated before publication; never trust a forged constructed model merely because it crossed a DAG.
+All dataset names are static or bounded ordinal labels such as `record_0003_parsed`, never provider IDs, subjects, emails or file paths. Use only programmatic catalog construction with exact known datasets; no YAML-driven class imports, `DataCatalog.from_config`, external plugin discovery, `kedro-datasets` or Kedro's path-versioning. `SequentialRunner(is_async=False)` is preferred until the security/runtime gate independently confirms the pinned API.
 
-Before importing/using Kedro in executable operations, deployment/test process sets KEDRO_DISABLE_TELEMETRY=1 or DO_NOT_TRACK. Never call versioned Kedro dataset constructors, catalog.from_config, load_obj, the Kedro CLI, hooks or catalog-from-user-config paths. The pinned runtime must prove these exclusions as executable architecture tests before Q0 acceptance, not merely rely on a scratch example. Verify no access to Kedro project/config discovery and no network/telemetry, including subprocess and help/import tests. Avoid auto-loading third-party plugins; inspect Kedro's actual version for hook and plugin behaviour.
+### 5.1 Trusted dataset interfaces (proposed contract)
 
-**Dependency candidate:** Kedro 1.7.0 (PyPI release 2026-09-28) is the current candidate, not an approved runtime pin. The 2026-09-29 plan's 1.6.0 selection is stale. A new dependency lock change must be a separate reviewed gate. Security registries disagree: Snyk's CVE-2026-3840 marks current releases affected by unsanitized versioned dataset paths, whereas GitHub/GitLab CVE-2026-35167 says the similar path-traversal flaw was fixed in 1.3.0. Require dated code-level resolution on the **exact installed 1.7.0** plus actual no-versioned-dataset/no-untrusted-catalog guards before acceptance. No unreviewed security-ignore exception; the Q0 security owner is the repository owner, who must explicitly approve a dated source/applicability record covering OSV/uv audit, GitHub, GitLab, Snyk, the exact wheel hash, and a production-reachable-path proof. An audit ignore requires a separate explicit owner authorization and documented expiry; if the dependency remains unacceptable, stop adoption and retain current production behaviour. Do not install Kedro as a side effect of this design.
-
-Official evidence:
-
-- <https://pypi.org/project/kedro/1.7.0/>
-- <https://docs.kedro.org/en/1.7.0/api/runner/kedro.runner.SequentialRunner/>
-- <https://docs.kedro.org/en/latest/build/run_a_pipeline/>
-- <https://docs.kedro.org/en/stable/about/telemetry/>
-- <https://security.snyk.io/vuln/SNYK-PYTHON-KEDRO-17752561>
-- <https://advisories.gitlab.com/pkg/pypi/kedro/CVE-2026-35167/>
-
-## 7. Evidence-preserving parsing
-
-Parser inputs are bytes already saved and verified by A1, never fetched directly from provider URLs or chosen by message content as Python paths. Preserve MIME entities and charset, HTML meaningful order/tables/links, spreadsheet cells/sheets/hidden/formula-vs-value provenance, PDF page mappings and missing layout, and Word block/table relationships; preserve original evidence even for a partially parsed result.
-
-Existing isolated parser interface, resource ceilings and supported parser packages are reusable capabilities; parser failures must have explicit limitation codes rather than empty successful text. Invalid signature, encrypted file, bad container, partial read, size limit and post-selection evidence loss are distinct. No OCR unless explicitly enabled with a supported local profile and separately qualified resources. No implicit native macros/external asset fetches.
-
-Body extraction must retain a reversible source span/location mapping. Quote *occurrence* is not automatically proof of quote *source*. Reply-parent, ancestor and quote-source are different relations. Duplicate Internet Message-ID values preserve ambiguity; abstain rather than invent disambiguation. Do not use research fixture gold in inference. Topic 01 and Topic 02 synthetic accepted research is test methodology, not production-domain accuracy or approval for semantic grouping expansion.
-
-Do not require new A1 provider fields to preserve semantic evidence if bytes and mappings already suffice. If an immutable required fact is truly absent, write a source-contract gap with concrete provider/test proof and classify the impacted A2 behaviour as held/incomplete; never silently fetch it in A2.
-
-## 8. Filtering and grouping rules
-
-Filtering evaluates all strict, versioned deterministic rules and persists every match and conflict. Address normalization is declared; subject operations are bounded string comparisons, not unchecked regexes. Time windows are timezone-aware; source-scope predicates require exact scope metadata. Exclusion preserves the captured source and remains replayable. A guidance-only match cannot overrule a conflict.
-
-Grouping uses only source-native structural evidence and exact scope/version identity. Confirmed edges require an unambiguous present native parent within the same scope. Outlook conversation ID and subject similarities are candidates only. Teams channel rooted replies may confirm. A Teams chat reply confirms a group **only** when an explicit supported teams_chat_reply_to parent is present, resolvable and in the same chat scope; Teams chat membership and time proximity alone cannot. Calendar, To Do, OneDrive and Contacts are contextual and do not create communication groups. Missing or contradictory ancestor/scope remains Uncertain; never confirm across sources or current-state joins. Save reasons and exact supporting relationship evidence. No invented global absence from a folder or Calendar window removal.
-
-Keep context-only observations, component refreshes and scoped transitions distinct from communication groups. Scoped deletion/restoration belongs in prepared_transitions@1, not as fabricated "deleted message" content. Final output must preserve all limitations through A3 and A5 input adapters.
-
-## 9. Durability, replay, claims, deadline and semantic identity
-
-A1 release sequence is admission order, not provider chronology. The intake cursor signifies **durably accepted selection**, not successful parsing. Never rewind it to retry preparation, scan mutable projections to fill gaps, or duplicate workset state inside Kedro.
-
-### 9.1 Claim topology and publication
-
-There are **three existing ownership layers**, none replaced by Kedro:
-
-1. A scheduled workset PREPARE claim from scheduled.py:_process protects the exact PreparationIntakeWorkset receipt and its pending/finalized status.
-2. Each duplicate-free PreparationPlan batch obtains its own PREPARE claim through the new controller, mirroring PreparationHandler.run's claim admission. Derived bytes, prepared and filter/group result appends each pass this exact ClaimToken to append_result_with_data.
-3. Workset.transitions are published through the separate existing prepare_transitions() claim, with its own exact reference, even when no primary record was materialized.
-
-The workset claim's final accepted_preparation_results manifest includes all completed batch results and accepted transition refs. The result publisher must derive **each ResultRef only after its referenced predecessor write succeeds**, not prefill nonexistent IDs. prepared@1 depends on exact collected_selection and derived_bytes refs; filter_result@1 depends on its exact prepared ResultRef; group_result@1 depends on exact member prepared+filter ResultRefs. The saved workset receipt cannot claim acceptance when any required result is missing or stale. Preserve already saved partial refs if a later step fails.
-
-Use the existing result ID recipe: deterministic sha256 of execution, attempt, stage kind, stable tag, configuration_version, code_version and trusted-plan fingerprint (excluding retry attempt from claim-key identity). Claim writes remain atomically fenced and replay-safe. Idempotent recovery must not double-publish a completed result or silently replace an old immutable history row.
-
-### 9.2 Semantic versions across cutover
-
-Prepared semantic identity is the existing sha256 over (source kind/identity/version identity) and the canonical PreparedDataCodec payload plus the **operator-approved configuration_version and code_version**, matching stage_steps.py:_prepared_version. Parsed-content versions remain bound to the exact selected bytes, parser profile, parser output and existing code/config versions. Filtering and grouping link the correct prepared semantic versions.
-
-**Equal source/content/policy semantics across old and new engines use the SAME code_version and yield the SAME prepared semantic versions.** Different execution/attempt IDs still produce different immutable ResultRefs. The new Kedro engine implementation ID is a nonsemantic diagnostic; do not inject it into the digest simply to force a difference. A meaning-bearing algorithm or policy change requires a deliberately bumped trusted code_version, a changelog entry and a new oracle expectation **before** cutover. This is a controlled version decision, not an automatic code-source hash; no silent semantic reinterpretation or duplicate downstream topics.
-
-### 9.3 Deadline, cancellation and terminal truth table
-
-The controller checks remaining execution budget before every per-record parse and pure Kedro step. It reserves a quantified cleanup margin **inside** the configured claim lease; do not begin if a measured worst-case bounded transformation could overrun that margin. On timeout, stop admitting new work, signal cooperative cancellation, await the already running pure step and parser cleanup and discard any result calculated after the deadline. No late publication ever occurs. No extra thread or callback survives return.
-
-| Condition | Persisted refs | Terminal disposition |
+| Dataset role | `load` / `save` behaviour | Who owns correctness |
 | --- | --- | --- |
-| All records, filters, groups and required transitions accepted | All exact refs + accepted workset proof | COMPLETE unless accepted limitations make it INCOMPLETE |
-| Missing/unsupported component with other verified content | Earlier and current partial prepared/filter refs, honest limitations | INCOMPLETE; no false parser success |
-| Fatal parse/aggregate budget/phase failure | Already accepted earlier record refs; no unfinished group | FAILED (or existing boundary's declared INCOMPLETE for a bounded timeout) |
-| Timeout before or during Kedro transform | Earlier saved refs only; no output from step completed after deadline | INCOMPLETE while still owning claim; otherwise FAILED/claim-lost |
-| External asyncio cancellation | Drain accepted finite workers and claim cleanup; earlier refs remain | CANCELLED and cancellation re-raised |
-| Claim lease expires or another owner supersedes | New write rejected atomically, earlier valid refs intact | FAILED/claim-lost, **never** COMPLETE |
-| Unmaterializable A1 release | Exact held entry, later good entries may progress | Held/pending, never fabricated content |
+| `ExactHandoffDataset` | Load only exact approved workset and selected version refs; never enumerate current A1 | Reader/Intake verified IDs, bounds and file pin |
+| `VerifiedEvidenceDataset` | Materialize only selected SavedByteReference with digest/limit/containment verification | Saved source reader, not source-controlled paths |
+| `IsolatedParseDataset` | An upstream node emits a typed, strictly bounded ParserRequest; dataset save invokes the approved parser service and records a typed result; downstream load obtains it | Parser sandbox and bounded process cleanup |
+| `MemoryDataset` | Finite immutable typed intermediate records/zone/relationship/filter results | Kedro dependency graph, memory ceiling and copy-mode test |
+| `ClaimFencedSemanticDataset` | Persist accepted stage value via exact token, schema codec, dependency refs and version; downstream `load` yields a validated committed reference + payload | msgloom Persistence transaction/ClaimToken, not Kedro's own versioning |
+| `ScopedTransitionDataset` | Publish exact scope-limited, typed transitions/refreshes under the separately owned transition claim | Existing approved transition/claim contract |
+| `ResultManifestDataset` | Resolve and check every exact durable stage ref before workset receipt | Application/Phase1Persistence acceptance proof |
 
-A deadline is a **hard limit on admission/publication**, not a promise of instant thread preemption; process completion may exceed the nominal timeout only for the independently bounded drain. Test CPU-bound worst-size nodes on Pi with deadline expiry before and during the run. Record maximum observed drain latency, required lease margin and no-late-publication evidence. If the bound is not stable, the implementation is **NO-GO** rather than changing to a process design in the same approval.
+A dataset wrapper must be invocation-scoped, typed and fully audited. It may delegate through a narrow asynchronous bridge but **must not establish a second durable database, background queue, business checkpoint, implicit retry or separate source of truth**. Value returned by a node is not considered accepted until its claim-fenced dataset save has finished and a resolvable ResultRef is stored.
 
-### 9.4 Replay
+**Kedro's public DataCatalog/AbstractDataset contract supports both loading and saving stage outputs.** Whether a specific pinned Kedro version preserves dependency order, release and partial output semantics under exceptions must be proven on actual source/tests before implementation.
 
-Replay loads exact collected_selection and derived bytes, parser and policy versions and source mappings; it never consults current provider projections. Repeated inputs retain stable semantic version, code/config changes only create the documented changed versions, and per-run result IDs remain immutable. A timeout or worker abort does not rewrite the committed intake cursor; rediscover saved pending work. Keep 13 Task 15 scenarios intact without editing the formally qualified runner's original evidence.
+### 5.2 Actual ETL stage models
 
-## 10. Portability, security and operations
+Working data shapes must be immutable and versioned; names are proposals, not demands to duplicate existing types:
 
-Supported mandatory package runtime/test matrix: CPython 3.12, 3.13, 3.14; Raspberry Pi Linux aarch64, Linux x86_64 with process/cgroup-v2 security as appropriate. Existing Windows smoke is a portability check only: secure A2 saved-source readers rely on POSIX pinning and are **not** qualified as native Windows support (issue #47). Test macOS platform-independent contracts, but do not claim full native parser security coverage until independently qualified.
+- `FrozenSourceSelection`: exact released workset reference, selected source identity/version, source scopes, references and whether the entry is supporting, context-only, component-only or primary.
+- `ExtractedComponents`: verified byte digest/size, body+alternate MIME representations, attachment refs, provider-native metadata, provenance, explicit unavailable components.
+- `ParsedParts`: parser identity/profile, checked format, document blocks with sheet/cell, page/span and paragraph/table provenance, known omissions and parser-specific limits; no fabricated empty content.
+- `NormalizedContent`: canonical textual and structural surface with reversible source-offset mapping, time/participant metadata and encoding normalization; preserved evidence bytes never overwritten.
+- `ContentZones`: origin-contribution, quote occurrences, forwarded content, signature/footer and uncertain boundaries; each zone cites exact source spans. **Quote occurrence is not proof of quote source.**
+- `NativeRelations`: reply-parent, indirect ancestry, exact source-native group candidates and quote-source hypotheses as **distinct** typed edges, with evidence and ambiguity status.
+- `FilterDisposition`: explicit included/excluded/guidance/conflict with complete matched rule IDs and replayable input.
+- `GroupingDisposition`: Confirmed/Uncertain/None based on actual in-scope native evidence. No subject-only, time-only or cross-source semantic joins.
+- `A2ResultManifest`: accepted stage result refs, schema versions, exact input lineage and limitations; no assertion of success based solely on Kedro runner exit.
 
-Do not add broad Graph permissions, data export paths, arbitrary provider/content URLs, or configuration-to-import execution. An operator misconfiguration is a bounded, redacted terminal failure. No model/telemetry/network access in a deterministic A2 test. Budget ceilings include aggregate selected bytes, derived bytes, parser output, record/group count, worker wall time, memory and number of node invocations.
+New zones and semantic provenance may require new A2 schemas and an A3 adapter; do not flatten novel information solely to make outputs equal old `PreparedRecord`. No unsupported text boxes, hidden cells, encrypted attachments or missing parent links may be silently treated as complete.
 
-Prefer one clean operation per external scheduler invocation; logging contains execution/correlation IDs and safe limitation codes, never bodies/emails/paths. Preserve existing recoverability and no-detached-work semantics.
+## 6. Fully async Application, synchronous Kedro: technical boundary
 
-## 11. Acceptance and architecture gates
+Kedro nodes and SequentialRunner are synchronous. The public `async def prepare(...)` must remain genuinely awaitable and nonblocking; do **not** run Kedro directly on the Application event loop or invent an unreviewed custom `AsyncKedroRunner`.
 
-A2 is not accepted by a green Kedro demo. Required proof is mapped in the companion implementation plan and audit. Invariants:
+**Selected architecture candidate:** one finite, owned Kedro runner worker per admitted operation (initially one thread), with a narrow, typed `AsyncServiceBridge`. Inside that worker, Kedro nodes/datasets use only synchronous service facades. For safe A1 evidence read, isolated parser process, or Phase1Persistence, the facade submits the exact requested coroutine to the still-running Application loop (e.g. `asyncio.run_coroutine_threadsafe`) and waits in the **worker** with an independent bounded deadline. The outer async caller awaits the owned worker and retains all claim/lease and cancellation authority. Never call this facade from the event-loop thread; fail fast if wrong-thread invocation or nested event loop is detected.
 
-- D1 source matrix: all 20 installed Spiders accounted for, profile explicitly produces no release; Teams fixture-only proof clearly distinguished.
-- All seven PreparedSourceType categories and component-only/context-only/transition-only release shapes recognized without invented primary bytes.
-- Parser MIME/HTML, Excel, PDF, Word, unavailable/invalid/partial evidence all tested with exact source locations and limitations.
-- Zero unreviewed deterministic filter/group differences against the accepted legacy corpus; uncertain and contradictory cases stay uncertain.
-- Repeated exact source/policy version yields stable semantic identity; changed content/parser/rules/code versions change the appropriate identity; no fall-forward on replay.
-- A1/intake Task 15 13 scenarios remain green, including crash after selection, pending fairness, held entry progression and scoped absence.
-- No new A1 import of A2/Kedro; no blocking outer event loop; cancellation, timeout, stale claim, restart and failed persistence produce correct terminal states and no late publications.
-- Full CI on supported Python matrix and Linux process-security gate, installed-wheel packaging, Ruff/Pyright/pre-commit, offline import and telemetry/no-network tests.
-- Existing A3/A5 end-to-end composition still consumes the published accepted result chain with exact lineage.
-- Independent design and source-security review recorded before behaviour switch; reviewer evidence tied to exact commit SHA.
-- **Maintainability gate:** baseline at 895fc40 is 1,115 LOC and 89 AST branching constructs in handler.py (368/36), record_steps.py (460/33) and stage_steps.py (287/20). Measure all new A2 controller, parse planner, publisher, Kedro nodes, executor, type adapters and composition-delta Python LOC together (not just "pure DAG" LOC), with the same Python AST branching-count script. Target at most 1,000 new/replacement LOC (>=10% reduction) **and** at most 80 branch constructs (>=10% reduction), without duplicating accepted intake/persistence. Record exceptions as NO-GO unless a later owner-approved design revises the measurement. If the target cannot be achieved, retain the current non-Kedro A2.
-- **Performance gate:** compare fixed CPU/RAM and identical offline fixtures; target no material regression over 10% wall time and no unbounded RSS, especially on Raspberry Pi. Record actual values before accepting, not imagined numbers.
+A prototype must independently prove this bridge rather than assuming it works:
 
-## 12. Decisions frozen and open checks
+- no deadlock when datasets load/save, wrapper exceptions, cross-thread cancellation or worker shutdown happen concurrently;
+- no producer publishes after cancellation, timeout or lease loss; all stage writes re-check claims inside their actual transaction;
+- parser child reaped on deadline, resource ceiling or repeated cancel; no unobserved detached futures or thread;
+- `execution_timeout` stops new work and writes; finite cleanup/drain fits a measured lease margin; if a CPU-bound node cannot terminate in bounded time, **do not ship** and reconsider the execution boundary in a separate design revision;
+- no event-loop blocking under CPU, saved-byte I/O or SQLite load;
+- equivalent restart/replay and no duplicate work/semantics despite failure between save and output manifest;
+- all errors are converted to bounded classifications with no private source bodies or exception text in Kedro node/dataset logs.
 
-**Frozen:** A1/Intake read-only immutable contract; Kedro Core as target pure A2 DAG; claims/persistence/cleanup external; no second scheduler/state; old A2 stays as independent oracle through development; no permanent parallel engines; no widened grouping semantics or unsupported Windows promises.
+The bridge is *transport/lifecycle plumbing*, not a second workflow engine. No custom thread-pool queue, polling scheduler, unsafe `asyncio.run` inside the Application thread, model calls, or unbounded subprocess tree.
 
-**Must be established by independent implementation preflight, not guessed now:**
+## 7. Integrity, budget, failure and replay guarantees
 
-- Security disposition of Kedro candidate version and transitive lock impact (CVE conflict).
-- Actual 1.7.0 DataCatalog/MemoryDataset lifecycle, plugin loading, output reads and memory/copy behaviour under the exact interpreter/runtime.
-- Measured bounded pure-transform, cooperative cancellation and lease-margin drain budget.
-- Which existing pure schemas/format parsers are reusable without reintroducing old sequencing.
-- A2's actual post-cutover integration extension points and exact test node inventory.
-- Benchmark baseline and any audited source/evidence field gaps discovered in D1.
+### 7.1 Admission and resource budgets
 
-Unresolved evidence blocks the affected implementation gate, not A1 closure or independent design analysis.
+Before launching a Kedro graph, validate frozen workset and exact captured selections against bounded record count, declared evidence byte sums and allowable source scopes. Reject invalid replay references **before** claim acquisition, and do not collapse repeated versions into one primary item. Compare hashes and content at load; do not copy stale values from live A1 projections.
+
+Parser resource limits include wall time, RSS, decompressed bytes, output bytes and container members; selected and derived byte totals and total parser-output budget apply to their declared batch/workset boundaries, never only independently to each record. Missing evidence is classified held/partial as appropriate; aggregate overflow must not be converted into harmless single-component limitation. Preserving the earlier design's safety rule does not imply preserving every obsolete private implementation detail.
+
+### 7.2 Claim-fenced writes and partial results
+
+Kedro controls when a prepared, zoning, filter, grouping or scoped-transition output reaches its `ClaimFencedSemanticDataset`. The save delegates to the *existing* claim-fenced Persistence transaction. Each accepted StageResult has exact source/version, upstream result refs, schema version and byte/digest evidence; saving a downstream group without its required committed prepared/filter/zone dependencies must fail closed.
+
+The business partial-progress contract is explicit: results already durably accepted at the time of a later node/parser failure remain accessible for replay and diagnostic inspection, but a failed workset is **not complete**. There is no requirement to copy the old private stage-save order: the new graph's declared durable checkpoints define which partial refs may survive. Create independent tests with injected failures before/after each claim-fenced save, after parser output, and at group finalization; do not reuse tests that monkeypatch only the old class internals as proof of Kedro behaviour.
+
+External cancellation drains accepted I/O, parser and dataset operations under finite limits and cannot change an accepted result to an overwritten result. A stale/expired claim cannot append a semantic stage. Workset finalization requires exactly the accepted required manifests and source scope, never just a green Kedro exit. Held missing/corrupt entries allow later valid release progress without falsely marking the held content as understood.
+
+### 7.3 Replay, schema evolution and downstream
+
+A1 selection/release identities, consumer anchor and cursor remain authoritative. Replay reopens exact saved sources/byte digests and A2 versioned policy/normalizer/parser configuration. It never discovers a "latest" A1 row; changes to code or rules require explicit, recorded semantic reruns.
+
+A2 internal schema may evolve to preserve richer zoning/source mapping. Choose an explicit strategy before cutover: either add versioned `prepared@2` / `zones@1` results with a typed A3 adapter, or prove `prepared@1` can fully represent required output without information loss. Do not silently reinterpret old accepted results. Existing A3/A5 must still receive unambiguous source/version/limitation evidence; report coverage and cross-stage identity must be demonstrated on the new chain.
+
+Task 15's 28-gate record is frozen and historically accepted. The **new Kedro candidate** needs new source-aware 13-scenario acceptance/targeted tests and an independent full exact-SHA review; cannot claim historical gates as new engine qualification.
+
+## 8. Parsing and semantic behavior requirements
+
+A2 parsing covers MIME/email/HTML, Excel, PDF and Word and only the formats actually selected and collected. Use stored bytes, not provider fetches. Preserve tables, links, ordered content, spreadsheet coordinates/hidden/formula state, PDF page/block limits and Word paragraph/table ordering; distinguish scanned/encrypted/unsupported/partial and record omitted coverage. OCR and other extraction profiles are opt-in and separately validated.
+
+Normalize with explicit chronology, participants, source span/cell/page mapping and reversible source provenance. Zoning can identify quote occurrences or likely signatures but must not fabricate source authorship. Duplicate Internet Message-ID and missing parent relations retain alternatives/uncertainty. Proven research Topic 01/02 synthetic validations are adversarial test design references, not automatic production correctness claims. Source-native grouping confirms only exact supported same-scope relations (including explicit supported Teams chat reply when resolvable). Calendar, To Do, OneDrive and Contacts remain contextual, never automatic message groups. Stage/limitation lineage must reach A3/A5.
+
+## 9. Runtime and security
+
+Kedro Core candidate (2026-10-23): 1.7.0, pending independent pinned-version/source/security checks. PyPI wheel hash must be checked before execution; verify exact installed `AbstractDataset`, `DataCatalog`, `MemoryDataset`, `SequentialRunner` APIs on Python 3.12/3.13/3.14 and ARM64. Q0 must reconcile Kedro CVE-2026-3840 vs CVE-2026-35167 for the exact installed wheel with dated OSV/GitHub/GitLab/Snyk review and no unapproved ignore.
+
+No Kedro CLI, server, project scaffolding, YAML-driven object import, Kedro versioned data paths, plugin auto-discovery or telemetry. Initialize KEDRO_DISABLE_TELEMETRY or DO_NOT_TRACK before import and network-deny tests. Allowlisted programmatic datasets and nodes only; LogRecorder should redact data and not blindly propagate `DatasetError` messages. Measure worst-case MemoryDataset copy cost on Pi; use explicit immutable-object copy semantics only after source-level verification. Windows portable smoke does not qualify native secure A2 reader; real Teams live work/school tenant is separate.
+
+## 10. Automatic activation after A1
+
+The new Kedro A2 starts from the **already accepted** PreparationIntakeWorkset
+and exact saved selection references, not from an active Spider or the mutable
+A1 database. The existing `prepare-scheduled` command is a finite intake
+operation whose producer dispatch currently points to the obsolete
+PreparationHandler. Integration replaces **only that dispatch/composition** with
+a qualified Kedro-primary producer and keeps the accepted
+PreparationIntakeService, consumer cursor, held/pending index, exact reader,
+scoped transitions and historical-baseline contracts unchanged.
+
+A1 must not import Kedro. External Prefect (or the authorized finite-command
+launcher) should enqueue/coalesce an A2 wake-up **after each finite A1 attempt
+terminates**, including attempts that may have committed some valid releases
+before a later failure. Such a wake-up is merely a hint; Kedro handles only
+ReleaseEntries already committed and frozen by intake. Startup plus
+configurable, low-frequency reconciliation must cover wake-ups lost after a
+commit. A single release entry is not a universal ETL batch: intake uses an
+exact bounded cutoff, processing uses its own bounded partitions, and entries
+published after the cutoff wait for the next invocation.
+
+Use one stable IntakeScope (catalog, source, stream, consumer) per target.
+Do not reset consumer_id to retry, infer accepted history from SQLite rows,
+blindly run a persistent in-process scheduler, or invoke A2 from Scrapy close
+signals. On backlog, repeat finite pending-work attempts; never loop
+unboundedly. Duplicate/concurrent wake-ups resolve through the existing
+claims and persisted cursor, not an in-memory lock.
+
+**Current operational truth:** `msgloom prepare-scheduled` and its durable
+intake path already exist, but an external Prefect A1→A2 wake-up flow is not
+deployed by Task 15. This is a new deployment work item, not a claimed
+existing feature or permission to change A1's accepted schema.
+
+See the [exact ReleaseEntry/CollectedSelection/Workset crosswalk and
+activation fault table](../notes/a1-kedro-handoff-activation-20261023.md).
+The native Mail A1→legacy A2 test passed on the current baseline, but new
+Kedro activation still needs independently reviewed tests and code.
+
+## 11. Verification and release decisions
+
+A2 replacement requires proof of all of the following, attached to one new exact source SHA:
+
+- Kedro is demonstrably responsible for **extract, parse, normalize, zone, relate, filter, group, and stage-result load/save dependencies**; graph topology and mutation tests fail if any stage is removed or bypassed.
+- Accepted A1 reader/intake/cursor/workset schema and 20 Spider/13 scenario obligations are unchanged; no A1-to-Kedro import or unfrozen current-state fallback.
+- Parser service and async bridge validate cancellation, deadlines, IO budgets, process cleanup, claim fencing, exact replay and partial durable results.
+- New semantic zoning and conservative source relationships are validated with independently authored gold and ambiguity/abstention cases; old A2 oracle fixtures contribute evidence but do not dictate the new architecture.
+- A3/A5 consume exact accepted new A2 versions via tested adapter, including limitations and changed/retracted scoped facts.
+- Python 3.12–3.14 test matrix, native Linux security gates, installed-wheel smoke, static checks, security scans and no-network/telemetry enforcement pass.
+- Simpler business architecture than a bespoke A2 ETL engine; no parallel production pipelines or permanent `A2_ENGINE`. Measure adapter/bridge LOC, graph complexity, wall-clock and RSS on constrained Pi. A Kedro DAG that only decorates a custom pipeline is automatic **NO-GO**.
+- Fresh independent architecture/security review and full candidate review return ACCEPT; no inferred approval from lint or historic 28 gates.
+
+**Open engineering proof:** The trusted synchronous Kedro dataset-to-async msgloom bridge and stage-save semantics are a feasibility gate. If that bridge cannot be implemented with bounded shutdown, exact claims and acceptable complexity, the team must **revise the Kedro-primary integration design**; it must not secretly reduce Kedro to a two-node pure helper DAG or relax the user's decision.
+
+**Implementation not started.** The companion plan enumerates architecture probes, schema decisions, parallel tasks, testing and cutover. Original R1/R2 technical reviews remain REVISE and must not be relabeled.
