@@ -1,0 +1,99 @@
+DECISION: REVISE
+REVIEWED_SHA: 9cabe9c0e8408bdd885007b79288567eb1d72af0
+
+**Method and limits.** I used Read, Grep and Glob only. I ran no shell, Git, tests or network, so I did not confirm the checkout is at that SHA. I read both prior reviews, the architecture, execution plan, handoff and DAG in full, and the manifest header plus the F0, C0-11 to C0-14, C0-17, C0-21, P1, P2, E0-10 and reviewer rows and the repeated-path rows. I read the cited code in `schema_store.py`, `intake_store.py`, `preparation_proof.py`, `triage_input/codec.py`, `ci.yml`, `pyproject.toml` and `AGENTS.md`. I did not read the D4 plan beyond V01–V16 and AUTO-01–25.
+
+Things I did check by reading and counting:
+- The manifest has 168 `"id"` lines.
+- DAG rows run from line 23 to line 190, which is 168 rows.
+- No manifest row has `timebox_minutes` above 25.
+- The wave counts (10 CR, 12 F0, 44 C0, 18 P1, 11 P2, 9 P3, 11 T0, 13 E0, 11 I0, 21 V0, 8 R0) add up when I enumerated the IDs by hand.
+- The 935-minute chain adds up along the listed 45 tasks.
+
+I did **not** prove the graph acyclic, nor that the 935-minute chain is the longest. Where I read dependencies I saw no cycle. The static-validation claims are the developer's, not mine.
+
+## R1/R2 closure
+
+| Item | Verdict | Evidence |
+|---|---|---|
+| R1-1 pending→terminal writer | Closed | arch:149-161, `finalize_a2_intake_workset_v2` and v1/v2 fence. C0-14a–e (exec:166-171). The code facts match: `intake_store.py:326` is the only terminal writer, and `:433-441` keeps terminal rows immutable. |
+| R1-2 implicit schema migration | Closed, one wording residue | arch:185-203 sets two-phase deployment, explicit operator CLI, and restore-from-backup instead of `git revert`. C0-11a–e, I0-11 and R0-04 gate it. I confirmed `store.py:99` and `schema_store.py:92-145` are the open-time migration path the plan has to avoid. V0-07 still says "v5" (see P2-4). |
+| R1-3 K0–K11 topology | Design closed. Execution only partly closed. | Per-stage persistence is in arch:245. K6, K10 and K11 now have owners P1-14, P1-15 and P1-16 (exec:213, 218-219). The K3/K4 gap is the new P1 below. |
+| R1-4 `triage_input@2` | Closed | arch:299-303, C0-17a–g (exec:174-180). `codec.py:23-29` confirms the v1 allowlist. |
+| R1-5 D4 authority drift | Closed | arch:21-34 gives precedence and a delta table. V0-15, V0-16, V0-17 and V0-18 carry D4 V13, V14, V16 and the crosswalk. `scheduled-invalid-authority` is kept at arch:315 and arch:32. |
+| R1-6 task graph | Mostly closed | Every task has dependencies, owner paths and a timebox of 25 minutes or less. The benchmark lock is exclusive. The orphan and gate defects below remain. |
+| R1-7 F0/C0 gates | Closed | exec:24-61 separates F0 review acceptance from owner-approved admission, and provisional from final C0. |
+| R2-P1-1 ownership | Closed except K3/K4 | New owners exist for F0-10, C0-13a, C0-14e, C0-17e–g, C0-21a/b, C0-22, P1-14 to P1-17 and P2-11 (JSON:2874-2889). exec:204-221 is the K-to-task table. |
+| R2-P1-2 forbidden paths and file ownership | Closed | `pyproject.toml` and `uv.lock` appear only in F0-10 (JSON:635-642). `schema_store.py` appears only in C0-11c (JSON:1030, 1037). `ci.yml` appears only in V0-11a (JSON:4425, 4430). No manifest path starts with `message_ingest/` or `microsoft_graph/`. `verify` strings are generic with no stray test paths (JSON:73-77). Reviewer rows have `read_only_review: true` and a docs-note-only `edit_paths` (JSON:316-323, 2410-2416). Repeated paths are serialized by dependencies plus `path:` locks (C0-12c and C0-14e on `async_store.py`, C0-21a and E0-10 on `composition.py`, C0-18 and I0-02 on `a2_scope_status.py`, P2-11 and P1-05 on `registry.py`). I sampled `edit_paths` equal to `delivery_files` but did not check all 168 rows. |
+
+## New P0/P1
+
+No P0.
+
+**P1-1. Gate coverage of K3/K4 and the partition policy, and the P1-13 contradiction.** This is one defect with three symptoms.
+
+1. **Orphan tasks.**
+   - P2-07 (K3 normalize) and P2-08 (K4 zones) are depended on by no task except P2-08 depending on P2-07. See DAG:113-114 and JSON:2747-2781.
+   - C0-16 (`partition_policy.py`) is depended on by nothing. See DAG:73 and exec:173. In the JSON, C0-16 appears only at its own id line (JSON:1484).
+   - E0-02 depends on P2-09 (exec:307, DAG:139). P2-09 depends only on P2-01 to P2-06 and P2-11 (exec:262), not on K3/K4.
+   - V0-04 requires "span/limitation golden" (exec:345) and depends on P2-09 and T0-11, not on K3/K4.
+   - C0-16 is the bound on the static graph shape and fan-out (arch:262, and `partition_policy_version` in the key at arch:176). `graph.py` and E0-01 therefore have no edge to it.
+2. **P1-13 contradicts its own dependencies.**
+   - exec:223 says P1-13 "必须真实执行 K0–K11 全链". JSON:2409 says "完整 Kedro graph".
+   - exec:220 says the full DAG cannot pass P1-13 "until every node is wired".
+   - Its `depends_on` (DAG:102, JSON:2388-2404) excludes P2-07, P2-08 and P3-01 to P3-08, which implement K3, K4, K5, K7 and K8.
+   - E0-01 depends on P1-13, so the gate can pass before those nodes exist.
+3. **No owner binds the real K3/K4/K5/K7/K8 node functions into the graph.**
+   - `graph.py` is owned only by P1-01 (DAG:89). P1-01 depends only on C0-20c and F0-10, so it can finish before P2-07, P2-08 or P3-* exist.
+   - E0-02 owns only `integration/full_pipeline.py` and its test (DAG:139).
+   - The plan never says whether P1-01 takes injected node functions or whether someone reopens `graph.py`. This is the same class of gap R2 raised: either the work lands in a 20-minute integration task, or a worker edits outside its allowlist.
+
+**Minimum fix:**
+- Add P2-08 to P2-09, or to E0-02 and V0-04.
+- Add C0-16 to C0-20a and make `graph.py` and E0-01 consume it.
+- Either add the K3/K4/K5/K7/K8 tasks to P1-13's dependencies, or redefine P1-13 as "real K0/K1/K2/K6/K9/K10/K11 plus declared doubles". In that case assign the real full-chain wiring to E0-02, with `graph.py` or a named binding module in its `edit_paths`.
+- State the injection versus re-edit rule.
+
+This is mechanical and about five edges. I expect ACCEPT after it. Even without the fix, the Manager would run these tasks as READY and E0-02 would fail loudly. The problem is that the final gates would not certify K3/K4, and the file ownership rule would be violated.
+
+## P2 non-blockers
+
+1. **Packaging.** `pyproject.toml:73-78` sets `namespaces = false`. No manifest task owns any `__init__.py` for `msgloom/a2_kedro/**` (a grep of the plans finds none). The new subsystem would be missing from the wheel and sdist, and only V0-12 (DAG:174) or the F0-05c wheel tests would notice. Add `__init__.py` to the first task per package.
+2. **Operator replay.**
+   - arch:158 and arch:312 depend on an "operator replay" path.
+   - Only E0-07 mentions it (DAG:145), and it owns a test file only.
+   - No task implements replay.
+   - The held outcome still works as a durable record.
+3. **Engine dispatch and R0-06.**
+   - arch:200 says the switch is a trusted composition binding with the default staying legacy.
+   - E0-10 (DAG:148) says nothing about default-legacy and has no negative test for it.
+   - R0-04 (DAG:186) is docs-only.
+   - R0-06 (DAG:188) deletes "RecordSteps/StageSteps" but its allowlist omits `composition.py`, `record_steps.py`, `stage_steps.py` and the legacy tests, and the same row says to keep the historical tests.
+4. **Stale "v5".** V0-07 hardcodes "→v5" (exec:348, DAG:168, JSON:4291), but arch:189 leaves the schema name to C0-11a.
+5. **Stale count.** exec:425 still says "151 个 task ID"; the manifest has 168.
+6. **"schema4" is ambiguous.** `schema_store.py:92-145` already migrates v2, v3 and v4-without-revision to revision 1 on open. C0-11e (DAG:60) and I0-11 (DAG:161) say "opening old schema4 must not write". Specify schema 4 at revision 1 with the exact table set.
+7. **500-line limit.**
+   - `intake_store.py` is 494 lines by Grep count. C0-14c (JSON:1359-1377) must add a fence import and call there.
+   - exec:196 says the limit is enforced by "Ruff 与行数检查". Ruff has no such rule in `pyproject.toml:61-67`, and I found no line-count test or hook. The limit is convention only.
+   - Add an explicit line-count command to `verify`.
+8. **Task dependencies.**
+   - C0-22 (budget tests) has no edge to C0-12b or C0-14a, where the caps are enforced.
+   - C0-12b has no edge to C0-21a, the registry it needs for canonical encoding.
+   - E0-01, which holds the partition and transition claim topology, comes after P1-13 even though P1-08 uses claims.
+9. **Gate name.** handoff:54 still says `gate:F0-risk-owner`, but the manifest uses `F0_PRODUCTION_ADMISSION`. `scheduled-invalid-authority` is not traced in C0-18, I0-01 or V0-17.
+10. **Fuzzy lock names.**
+    - `parser-registry-when-shared` is attached to P2-01 to P2-06, which do not edit the registry (JSON:2587).
+    - "read-only reviewer" means "writes only its review note", which should be stated once.
+    - The CR rows (JSON:62-117) edit `tests/research/*` and the C0 candidate doc. Those files exist only on the PR #70 branch, not at this SHA or master. The manifest names no CR base commit.
+11. **Carried over from earlier rounds.** The R1 note's remaining items (Chinese docs, ephemeral environment claims in handoff:25-38, the Prefect dependency decision, the async-bridge and GIL margin) are still P2.
+
+## Acceptance scope: docs only; production remains NO-GO
+
+- **Observer report (done, reading only).** The closure mapping, the manifest, DAG and plan parity by grep and line counts, the orphan and P1-13 findings, and the code citations above.
+- **Future verification (not done by me).**
+  - Mechanical acyclicity and the longest-chain computation.
+  - A parity script over all 168 `edit_paths` and `delivery_files`.
+  - All CI, Pyright, Ruff and pre-commit results.
+  - Kedro, F0, Q0 and C0 facts, and PR #68, #69 and #70 status.
+  - Every runtime, security, migration and performance claim.
+- A revision needs a new exact-SHA review. This note does not approve any code, dependency, security exception, schema migration, Kedro runtime, Task Manager start, or cutover. A1, master and production are unchanged by this review. Production remains NO-GO, and the F0 owner decision and the cutover approvals are still open.

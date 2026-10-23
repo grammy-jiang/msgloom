@@ -3,8 +3,8 @@
   "status": "DOCS_ONLY_PROPOSAL_NOT_STARTED",
   "source_of_truth": "docs/plans/2026-10-23-a2-kedro-v2-execution-plan.md",
   "master_base": "895fc40a0ec889bd96f620df8c62491787218217",
-  "task_count": 168,
-  "nominal_critical_dependency_minutes_not_eta": 935,
+  "task_count": 169,
+  "nominal_critical_dependency_minutes_not_eta": 955,
   "nominal_critical_dependency_tasks": [
     "CR-02",
     "CR-07",
@@ -25,11 +25,12 @@
     "C0-20b",
     "C0-20c",
     "P1-02",
-    "P1-03",
-    "P1-04",
-    "P1-05",
-    "P1-12a",
-    "P1-12b",
+    "P1-06",
+    "P1-07",
+    "P1-10",
+    "P1-15",
+    "P1-16",
+    "P1-18",
     "P1-13",
     "E0-01",
     "E0-02",
@@ -687,13 +688,17 @@
       "goal": "`msgloom/a2_kedro/contracts/source.py`，A1 verifier adapter / FrozenSourceSelection：entry/workset 及 approved baseline 的互斥结构、occurrence index/ordinal/role、saved SHA、scope；拒绝 forged hash/role",
       "edit_paths": [
         "msgloom/a2_kedro/contracts/source.py",
-        "tests/a2_kedro/test_c0_01.py"
+        "tests/a2_kedro/test_c0_01.py",
+        "msgloom/a2_kedro/__init__.py",
+        "msgloom/a2_kedro/contracts/__init__.py"
       ],
       "effort": "medium",
       "read_only_review": false,
       "delivery_files": [
         "msgloom/a2_kedro/contracts/source.py",
-        "tests/a2_kedro/test_c0_01.py"
+        "tests/a2_kedro/test_c0_01.py",
+        "msgloom/a2_kedro/__init__.py",
+        "msgloom/a2_kedro/contracts/__init__.py"
       ],
       "model": "Claude Code Sonnet (verify installed model and effort)",
       "owner": "contract-owner",
@@ -1783,7 +1788,8 @@
         "C0-21b",
         "C0-22",
         "C0-11e",
-        "C0-13a"
+        "C0-13a",
+        "C0-16"
       ],
       "required_gates": [],
       "goal": "Integration owner / 依冻结 schema 合并 C0 codecs/sql/facade/A3，核实一个 reviewer 没有同时改其它所有者文件；运行 focused SQL 回归",
@@ -1961,7 +1967,8 @@
       "timebox_minutes": 20,
       "depends_on": [
         "C0-20c",
-        "F0-10"
+        "F0-10",
+        "C0-16"
       ],
       "required_gates": [
         "F0_PRODUCTION_ADMISSION",
@@ -2035,13 +2042,15 @@
       "goal": "`datasets/handoff.py` / ExactHandoffDataset 只读 Workset + selection + exact A1 reread，外部 URI/path 不可接受",
       "edit_paths": [
         "msgloom/a2_kedro/datasets/handoff.py",
-        "tests/a2_kedro/test_p1_03.py"
+        "tests/a2_kedro/test_p1_03.py",
+        "msgloom/a2_kedro/datasets/__init__.py"
       ],
       "effort": "medium",
       "read_only_review": false,
       "delivery_files": [
         "msgloom/a2_kedro/datasets/handoff.py",
-        "tests/a2_kedro/test_p1_03.py"
+        "tests/a2_kedro/test_p1_03.py",
+        "msgloom/a2_kedro/datasets/__init__.py"
       ],
       "model": "Claude Code Sonnet (verify installed model and effort)",
       "owner": "kedro-runtime-owner",
@@ -2400,7 +2409,10 @@
         "P1-15",
         "P1-16",
         "P1-17",
-        "F0-10"
+        "F0-10",
+        "P1-18",
+        "P2-08",
+        "P3-09"
       ],
       "required_gates": [
         "F0_PRODUCTION_ADMISSION",
@@ -2439,13 +2451,15 @@
       "goal": "K6 prepared@2 组装节点 / 从已接受的 Parsed/Zones/Native refs 组装 verified prepared@2 和保存节点，失败/缺失仍 INCOMPLETE",
       "edit_paths": [
         "msgloom/a2_kedro/stages/prepare.py",
-        "tests/a2_kedro/test_k6_prepared_node.py"
+        "tests/a2_kedro/test_k6_prepared_node.py",
+        "msgloom/a2_kedro/stages/__init__.py"
       ],
       "effort": "medium",
       "read_only_review": false,
       "delivery_files": [
         "msgloom/a2_kedro/stages/prepare.py",
-        "tests/a2_kedro/test_k6_prepared_node.py"
+        "tests/a2_kedro/test_k6_prepared_node.py",
+        "msgloom/a2_kedro/stages/__init__.py"
       ],
       "model": "Claude Code Sonnet (verify installed model and effort)",
       "owner": "kedro-runtime-owner",
@@ -2558,6 +2572,44 @@
       "state": "PLANNED_NOT_STARTED"
     },
     {
+      "id": "P1-18",
+      "timebox_minutes": 20,
+      "depends_on": [
+        "P1-01",
+        "P1-14",
+        "P1-15",
+        "P1-16",
+        "P2-08",
+        "P2-09",
+        "P3-09",
+        "F0-10"
+      ],
+      "required_gates": [
+        "F0_PRODUCTION_ADMISSION",
+        "C0_FINAL_ACCEPTED"
+      ],
+      "goal": "K3/K4/K5/K7/K8 真实图绑定 / 在独立 graph_bindings.py 把已实现的 normalize/zones/native-relations/filter/group nodes 注入 K0–K11 的静态 Kedro graph，保存边与 accepted refs 明确、无 legacy Handler 外部执行",
+      "edit_paths": [
+        "msgloom/a2_kedro/graph_bindings.py",
+        "tests/a2_kedro/test_k3_k4_k5_k7_k8_bindings.py"
+      ],
+      "effort": "high",
+      "read_only_review": false,
+      "delivery_files": [
+        "msgloom/a2_kedro/graph_bindings.py",
+        "tests/a2_kedro/test_k3_k4_k5_k7_k8_bindings.py"
+      ],
+      "model": "Claude Code Sonnet (verify installed model and effort)",
+      "owner": "kedro-runtime-owner",
+      "verify": [
+        "Dedicated focused positive + negative case",
+        "Actual executable exit code",
+        "Ruff, Pyright when relevant, pre-commit/CI"
+      ],
+      "exclusive_resources": [],
+      "state": "PLANNED_NOT_STARTED"
+    },
+    {
       "id": "P2-01",
       "timebox_minutes": 20,
       "depends_on": [
@@ -2568,13 +2620,15 @@
       "goal": "MIME/HTML / 多 part、inline reply、编码损坏、原文位置、缺正文，原字节可追溯",
       "edit_paths": [
         "msgloom/a2_kedro/parsers/mime_html.py",
-        "tests/a2_kedro/test_p2_01.py"
+        "tests/a2_kedro/test_p2_01.py",
+        "msgloom/a2_kedro/parsers/__init__.py"
       ],
       "effort": "medium",
       "read_only_review": false,
       "delivery_files": [
         "msgloom/a2_kedro/parsers/mime_html.py",
-        "tests/a2_kedro/test_p2_01.py"
+        "tests/a2_kedro/test_p2_01.py",
+        "msgloom/a2_kedro/parsers/__init__.py"
       ],
       "model": "Claude Code Sonnet (verify installed model and effort)",
       "owner": "parser-owner",
@@ -2814,7 +2868,8 @@
         "P2-04",
         "P2-05",
         "P2-06",
-        "P2-11"
+        "P2-11",
+        "P2-08"
       ],
       "required_gates": [],
       "goal": "类型与 parser failure policy / detected MIME mismatch、unknown/partial/unsupported、闭合 reason / held",
@@ -2916,13 +2971,15 @@
       "goal": "关系恢复 / 同源确证 reply-parent/ancestor/quote-source 各自分开记录",
       "edit_paths": [
         "msgloom/a2_kedro/semantics/relations.py",
-        "tests/a2_kedro/test_p3_01.py"
+        "tests/a2_kedro/test_p3_01.py",
+        "msgloom/a2_kedro/semantics/__init__.py"
       ],
       "effort": "medium",
       "read_only_review": false,
       "delivery_files": [
         "msgloom/a2_kedro/semantics/relations.py",
-        "tests/a2_kedro/test_p3_01.py"
+        "tests/a2_kedro/test_p3_01.py",
+        "msgloom/a2_kedro/semantics/__init__.py"
       ],
       "model": "Claude Code Sonnet (verify installed model and effort)",
       "owner": "native-relations-owner",
@@ -3447,7 +3504,8 @@
       "timebox_minutes": 25,
       "depends_on": [
         "P1-13",
-        "C0-20c"
+        "C0-20c",
+        "C0-16"
       ],
       "required_gates": [
         "C0_FINAL_ACCEPTED"
@@ -3455,13 +3513,15 @@
       "goal": "Workset PREPARE + partition PREPARE + transition PREPARE 真实 claim；每个 claim owner/required_inputs 清晰",
       "edit_paths": [
         "msgloom/a2_kedro/integration/claim_topology.py",
-        "tests/a2_kedro/test_e0_01.py"
+        "tests/a2_kedro/test_e0_01.py",
+        "msgloom/a2_kedro/integration/__init__.py"
       ],
       "effort": "medium",
       "read_only_review": false,
       "delivery_files": [
         "msgloom/a2_kedro/integration/claim_topology.py",
-        "tests/a2_kedro/test_e0_01.py"
+        "tests/a2_kedro/test_e0_01.py",
+        "msgloom/a2_kedro/integration/__init__.py"
       ],
       "model": "Claude Code Sonnet (verify installed model and effort)",
       "owner": "integration-owner",
@@ -3480,7 +3540,8 @@
         "E0-01",
         "P2-09",
         "P3-09",
-        "P1-16"
+        "P1-16",
+        "P1-18"
       ],
       "required_gates": [
         "C0_FINAL_ACCEPTED"
@@ -3818,13 +3879,15 @@
       "goal": "独立纯逻辑 scheduler 状态机：pending/busy/held/BLOCKED/FAILED/CANCELLED 不混淆",
       "edit_paths": [
         "msgloom/a2_kedro/activation/status_policy.py",
-        "tests/a2_kedro/test_i0_01.py"
+        "tests/a2_kedro/test_i0_01.py",
+        "msgloom/a2_kedro/activation/__init__.py"
       ],
       "effort": "medium",
       "read_only_review": false,
       "delivery_files": [
         "msgloom/a2_kedro/activation/status_policy.py",
-        "tests/a2_kedro/test_i0_01.py"
+        "tests/a2_kedro/test_i0_01.py",
+        "msgloom/a2_kedro/activation/__init__.py"
       ],
       "model": "Claude Code Sonnet (verify installed model and effort)",
       "owner": "activation-owner",
@@ -4204,7 +4267,8 @@
       "timebox_minutes": 20,
       "depends_on": [
         "P2-09",
-        "T0-11"
+        "T0-11",
+        "P2-08"
       ],
       "required_gates": [],
       "goal": "MIME/PDF/Word/Excel/JSON/HTML 和 span/limitation golden，独立 gold reviewer",
@@ -4288,7 +4352,7 @@
         "E0-12"
       ],
       "required_gates": [],
-      "goal": "数据库迁移 v2/3/4→v5、旧结构/trigger/占用表/legacy hash 拒绝、失败原子回滚",
+      "goal": "数据库迁移 v2/3/4→经 C0-11a 决议的 schema/revision、旧结构/trigger/占用表/legacy hash 拒绝、失败原子回滚",
       "edit_paths": [
         "tests/a2_kedro/acceptance/test_v0_07.py"
       ],

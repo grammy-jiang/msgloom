@@ -259,6 +259,8 @@ def append_or_verify_a2_stage(plan, expected_claim, encoded):
 | K10 | `build_a2_result_manifest`：所有被接受的 stage refs、held 和 transition refs | `a2_result_manifest@1` accepted ref |
 | K11 | `accept_a2_receipt_and_finish`：K10 + full frozen roots + claim/attempt history | durable `a2_completion_receipt@2` + 版本化 Workset pending→terminal finalizer |
 
+**真实函数绑定规则：** P1-01 构造静态 DAG 签名和完整 datasets/nodes allowlist；P1-18 在独立 `msgloom/a2_kedro/graph_bindings.py` 注入已完成的 K3/K4/K5/K7/K8 真实函数，测试验证只对受信任的 node factory 生效。E0-02 仅接线协调与跨阶段集成，不能偷偷重写 `graph.py` 或在图外执行这些业务函数。
+
 所有 K0–K11 是 **Kedro Pipeline/DataCatalog 的真实节点和 Dataset I/O 关系**，held-only 时依然执行必需的 held/manifest/receipt 分支，而不伪造不存在的 body。对不需要的分支用静态 validated partition shape/typed abstention，而不是在图外由旧 A2 处理。K9 transition-only 也必须有完备 Graph 输出依赖。
 
 Dataset 闭合集合检验在创建/运行前执行：所有 graph input/output dataset names 均已预注册，禁止 Kedro 自行 fallback 到隐式 MemoryDataset；各节点名不含原始 provider/source identity。程序只使用 pinned `Kedro 1.7.0 SequentialRunner(is_async=False)` 的编程 API，禁止通过 Kedro CLI/YAML/session 动态创建 Dataset。

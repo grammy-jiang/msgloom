@@ -2,7 +2,7 @@
 
 > **仅供审批后的执行使用。当前状态：NOT STARTED，不代表任何 Agent 已启动。**
 > 架构：[2026-10-23-a2-kedro-v2-architecture.md](2026-10-23-a2-kedro-v2-architecture.md)。
-> 任务和质量门禁：[实施计划](2026-10-23-a2-kedro-v2-execution-plan.md) 与 [168 条任务 DAG](2026-10-23-a2-kedro-v2-task-manifest.json)。
+> 任务和质量门禁：[实施计划](2026-10-23-a2-kedro-v2-execution-plan.md) 与 [169 条任务 DAG](2026-10-23-a2-kedro-v2-task-manifest.json)。
 > 本协议必须在用户同意正式开始实施后才作为 Task Manager 的指令输入。
 
 ## 1. 用户批准前的必要信息
@@ -27,7 +27,7 @@
 3. 验证真实 Python：3.12/3.13/3.14、Scrapy 2.19.0、项目锁以及是否安装 Claude Code/Codex；只读确认 CLI 支持的 model/effort 参数，不假定 UI 名称是 CLI 参数。
 4. 验证 `tmux` 或用户允许的持久作业服务存在；必须具备可查询 process ID、实际启动时间、stdout/stderr log、exit code、heartbeat 与终止/恢复手段。`claude --print` 的一次性退出**不等于**启动了持久 Task Manager。
 5. 确定一个 integration owner、一个 dependency/SQL schema owner，锁定可编辑路径和每个 worker 的隔离 worktree。把重叠的 C0 测试编辑串行化。
-6. 从 `2026-10-23-a2-kedro-v2-task-manifest.json` 的 168 条 `id/depends_on/edit_paths/required_gates/timebox_minutes/model/effort` 计算可运行队列，检验 gate 实际证据。CR 和 F0 可并行；CR R2 后可做不依赖 Kedro 的 provisional C0，但 C0 最终验收和正式 Kedro dependency 仍须 F0 技术证据及必要的用户安全决策。CR 与 F0 可以并行研究；生产 C0 的 freeze 不得越过 CR R2 和 F0 安全 gate。
+6. 从 `2026-10-23-a2-kedro-v2-task-manifest.json` 的 169 条 `id/depends_on/edit_paths/required_gates/timebox_minutes/model/effort` 计算可运行队列，检验 gate 实际证据。CR 和 F0 可并行；CR R2 后可做不依赖 Kedro 的 provisional C0，但 C0 最终验收和正式 Kedro dependency 仍须 F0 技术证据及必要的用户安全决策。CR 与 F0 可以并行研究；生产 C0 的 freeze 不得越过 CR R2 和 F0 安全 gate。
 7. 创建第一份本地 machine-readable 状态快照（不含敏感路径原文/凭据），证明 Manager 真正存在，再开始分派。
 8. 最终向 Supervisor 报告：Manager 的 **真实 job_id/PID、host、state、branch、time started、已经分配的第一批 task IDs**。没有这些证据就必须写 `NOT STARTED` 或 `STOPPED`。
 
@@ -51,7 +51,7 @@
 
 ### 3.1 与设计审查一致的两阶段授权
 
-- F0-08 独立审查只负责 Kedro 候选风险适用性的**技术判断**；如果 Snyk 告警无法明确排除风险，`gate:F0-risk-owner` 必须由用户决定，AI 不得自动签署。
+- F0-08 独立审查只负责 Kedro 候选风险适用性的**技术判断**；如果 Snyk 告警无法明确排除风险，`F0_PRODUCTION_ADMISSION` 必须由用户决定，AI 不得自动签署。
 - C0-00 是 **provisional** 字段/版本冻结；研究性合同与临时 SQLite test 可在 F0 仍待批时进行。只有真实 v2 finalizer、受审查的 `triage_input@2` 和 C0-20c/F0 条件均成立才允许生产 C0 final freeze。
 - 本轮交付仅生成文档与一次性只读 review。未来只有启动可核查的持久 Manager 服务、取得 PID/job/heartbeat 后才会向用户报告 `RUNNING`。
 
