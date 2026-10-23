@@ -1,0 +1,86 @@
+DECISION: REVISE
+REVIEWED_SHA: 2dcd9f1384ae5269a88c1ab0c7128f5a78108f3f
+
+I used only Read, Grep and Glob. I ran no tests, CI, Git or network, so I can't confirm that the checkout is at the reviewed SHA. This review covers document quality only. It does not approve production C0, F0 or Kedro.
+
+I read the R1 note and the four plan documents in full. For the manifest I read the opening, the closing, and the sections for F0-09, P1-12b, P2-10, C0-17a and R0-07/08. I extracted `id`, `timebox_minutes`, `depends_on` and `required_gates` for all 151 tasks by grep and compared them with the Markdown DAG and the execution plan. I did not recompute the manifest's acyclicity. I could not verify any PR, CI, wheel-hash or package-count claim (Q0 "10/10", C0 "9/10", 146→166). I did check the code claims against the repo and the D4 worktree.
+
+## R1 P1 closure
+
+| R1 P1 | Verdict | Evidence |
+|---|---|---|
+| 1. Pending→terminal writer | **Cured at design level** | Architecture:149-160 specifies a v2 finalizer, a single `BEGIN IMMEDIATE` transaction, a v1/v2 mutual fence, and no change to A1 admission or cursor. Tasks C0-14a–d (exec:164-167) own `intake_store.py`/`intake_completion.py`. The code facts match: `intake_store.py:245` filters on `pending`, and `:326-455` is the only terminal writer. |
+| 2. Implicit schema v5 | **Cured at design level** | Architecture:184-202 gives a two-phase compatibility plus operator-gated migration, and says rollback is a backup restore, not `git revert`. C0-11a–d plan it. I confirmed `store.py:99` calls `initialize_schema`, and `schema_store.py:25,92-112` has an exact table-set gate and a v2/v3/v4 migration on open. That is the precedent the plan has to avoid. |
+| 3. K0–K11 | **Design cured; execution not** | Architecture:240-259 puts all stages in the graph and persists each accepted stage before the next one. Only the Application-level checks and the workset claim run before Kedro. The execution plan doesn't assign the stages to tasks (see P1-1 below). |
+| 4. `triage_input@2` | **Cured** | Architecture:294-300 makes `triage_input@2` the default, keeps v1 readable, and rejects a lossy projection. C0-17a–d split the work. `codec.py:23-29` confirms the v1 allowlist. |
+| 5. D4 R6 authority | **Cured at gate level** | Architecture:21-34 has a delta table and a precedence order. V0-15, V0-16 and V0-17 (exec:308-310) retain D4 V13, V14 and V16. D4 plan:247-250 and 25 AUTO rows confirm the sources. `scheduled-invalid-authority` is kept at architecture:312, but no task traces it (P2). |
+| 6. Task graph | **Partly cured** | All 151 IDs line up across the manifest, DAG and execution plan. The wave counts are 10, 11, 35, 14, 10, 9, 11, 13, 10, 20, 8. Every task has `depends_on`, owner files, model/effort and a timebox ≤25 minutes. The benchmark slot is exclusive (JSON:3043, 3569, 5884). The 875-minute chain at JSON:7-51 is arithmetically consistent with the listed dependencies. P1-2 and P1-3 below remain. |
+| 7. F0/C0 gates | **Cured** | Exec:59-61 separates F0 review acceptance from owner-approved production admission. Provisional C0 is Kedro-free; final C0 needs F0. Handoff:54-55 matches. The Snyk CVE exception is explicitly disallowed (architecture:332). |
+| 8. False claims | **Mostly cured** | Gate statuses are honest and the user gates exist: I0-10 and R0-04 need `OWNER_EXPLICIT_CUTOVER_APPROVAL`, and handoff:199-206 lists the escalations. The R1 note is preserved unchanged. Residuals are P2. |
+
+## Remaining P1 (documentation quality; fix before assigning tasks)
+
+**P1-1. Core Kedro nodes have no owning task, and there is no K-stage-to-task map.**
+- K-codes appear in the execution plan only at exec:188 (P1-01, topology) and exec:261 (E0-02, integration). C0-07 (exec:151) only defines the `prepared@2` and manifest contracts.
+- Nothing builds `prepared@2` from the parse, zone and relation outputs (K6), and nothing builds `a2_result_manifest@1` (K10). The K1/K2 and K11 node wrappers are ambiguous.
+- P1-01 depends only on C0-20c, so it would be written before any node function exists. E0-02 (20 minutes) would silently absorb the central assembly step.
+- Fix: add a K0–K11 → task table, with explicit tasks and dependencies for K6, K10, the K1/K2 split and K11. Make P1-01 and E0-02 depend on them.
+
+**P1-2. No task edits the dependency lock.**
+- The 151 tasks' `edit_paths`/`owner_files` contain no `pyproject.toml` or `uv.lock` (grep returns 0). Handoff:112 protects both files "unless owner".
+- F0-09 (JSON:889-929, exec:134) is described as producing a candidate dependency PR, but its only edit path is a docs note.
+- P1-01 through P1-13 import Kedro and are gated only by `F0_PRODUCTION_ADMISSION`, not downstream of any lock-changing task.
+- Fix: add a lock-owner task for `pyproject.toml`, `uv.lock` and the audit policy, depending on F0-09 plus the gate. Make P1-01/02 depend on it.
+
+**P1-3. The manifest contradicts itself on file ownership.**
+- The authority should be `edit_paths`/`owner_files`. They agree with exec and DAG.md in every task I sampled.
+- `observable_expected_delivery` and `verify` disagree with them in many tasks:
+  - JSON:586: F0-03 delivers `scripts/research/f0_catalog_guard.py` and `...catalog-security.md`. Its edit path is `...f0-dataset-security.md`.
+  - JSON:2085: C0-17a delivers the wildcards `contracts/*.py, persistence/a2_*.py`. Its edit path is `triage_input/models_v2.py`.
+  - JSON:2257: C0-18 carries the same wildcard text.
+  - JSON:2309 and JSON:2406: C0-19 and C0-20b deliver test files other than the ones they own.
+  - JSON:3142: P2-01 delivers `parsing/mime_html.py`. Its edit path is `parsers/`.
+  - JSON:3035, 3099 and 3560: P1-12b, P1-13 and P2-10 deliver files with names different from their edit paths.
+  - JSON:912: F0-09 delivers a `docs/plans/` checklist, not its docs note.
+- 93 `verify` lines say "Create/check: tests/a2_kedro/test_<id>.py". Eight tasks list such a file in their own `edit_paths`/`owner_files`; the rest do not.
+- One of those lines is on the read-only reviewer task P1-13 (JSON:3105).
+- A manager following these fields would make workers edit outside their allowlist, which handoff:88 forbids.
+- Fix: regenerate those fields from `edit_paths`, add a precedence statement to the manifest header, and either add test paths to the owned files or drop the lines.
+
+## Remaining P2 (implementation or hygiene; not blocking)
+
+- **Critical chain label.** Exec:71 says `E0-12 → I0-07 → V0-14c`. In the JSON, no V0-14a dependency includes I0-07 to I0-09, so the final go/no-go ignores staging evidence. The JSON is the authority.
+- **V-number collision.** V0-13 (security) is not D4 V13, which is V0-15. Exec:51 says "V13–V16". Add a table covering D4 V01–V16.
+- **Gate name.** Handoff:54 uses `gate:F0-risk-owner`. The manifest uses `F0_PRODUCTION_ADMISSION`.
+- **`scheduled-invalid-authority`.** It is not named in C0-18, I0-01 or V0-17.
+- **Missing edge.** C0-14a/14d need the A2-held rows but don't depend on C0-13. Two tasks write the dispositions (C0-12 and C0-13).
+- **v2 marker.** When the marker is created, and what an unmarked workset means, is undefined. The v1 finalizer in the compatibility binary must tolerate the table not existing.
+- **Migration negative test.** C0-11d and V0-07 don't state a test that opening a schema 4 DB performs no DDL and no metadata write, with v2 writes refused. V0-07 (exec:301) hardcodes "v5", while C0-11a decides that question.
+- **Merge rule.** P2 and P3 have no gate and build on provisional contracts. A rule that they stay on an integration branch until final C0 would help.
+- **Fan-out and claims.** The documents don't say how a variable number of occurrences maps onto a static Kedro graph, or where partition and transition PREPARE claims are acquired (architecture:240 versus E0-01).
+- **Prefect.** It is not in `pyproject.toml`, and I0-03 has no dependency decision. The parser libraries (`openpyxl`, `pypdfium2`, `python-docx`) are already pinned.
+- **Unowned registry.** JSON:3152-3571 names a parser-registry lock that no task owns.
+- **C0-17c scope.** A3 handler plus adapter work in 20 minutes is tight.
+- **Environment claims.** Handoff:36 (MacBook), :38 ("current machine" daemons) and :25 (MCP Pi) still assert unverified environment facts.
+- **R1 index.** The plans don't index the blueprint R1 findings and their cures.
+- **Carried over from R1:** the async-bridge details, GIL contention and the lease margin.
+
+## Acceptance boundary
+
+- REVISE applies to this SHA only. A revision needs a new exact-SHA review, and R1 and this note stay on file.
+- When P1-1 to P1-3 are fixed, I expect ACCEPT for plan and document readiness only. No further research or runtime test is needed to accept a well-scoped design.
+- Even then it would not approve any code, migration, dependency, security exception, F0 admission, C0 freeze, Kedro runtime or cutover. It would not show that any task has started or that a manager is running.
+
+## User decisions before implementation
+
+1. **Kedro CVE-2026-3840 residual risk.** Decide after the F0 evidence.
+2. **Confirm the F0 meaning.** F0 admission is the technical review plus the owner's disposition.
+3. **PR #70.** Finish the CR wave (the documents assume this, since C0-00 depends on CR-10) or supersede it.
+4. **A3.** Confirm `triage_input@2` as the default.
+5. **Migration and switch.**
+   - Approve deploying the compatibility binary. Today neither I0-10 nor R0-04 gates this step.
+   - Approve the maintenance window for the migration.
+   - Approve how the engine is switched.
+6. **x86 Linux CI.** Decide whether to add it (V0-11a).
+7. **Manager host and limits.** Pick the host (Pi only, or a second host) and the worker limits.
+8. **Rollout.** Choose the first scope or stream, and whether to enable Prefect together with its dependency.

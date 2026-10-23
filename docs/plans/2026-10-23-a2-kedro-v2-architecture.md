@@ -154,6 +154,7 @@ External Prefect/launcher -> finite prepare-scheduled and scope-status
 2. 在受限 `BEGIN IMMEDIATE` 中对持有 Workset 的 PREPARE claim、plan/source required_inputs、每个 accepted-result metadata、原始发布 claim/attempt、当前 terminal status 做再次检验；只在锁内做 bounded metadata recheck。
 3. **同一事务**更新现有 `phase1_preparation_intake_worksets` 的 `state="terminal"`、terminal_status、claim token、result_refs，并写 v2 receipt/producer-version 侧表；任何一步失败都回滚，仍是 pending。完成后现有 `select_preparation_intake_worksets` 不再返回它。
 4. 旧 v1 finalizer 遇见 v2-marked Workset 必须拒绝；v2 finalizer 遇见 v1-owned/已 terminal 行也必须拒绝。此标记由受审查 schema/计划绑定生成，不由 provider 或用户传入。**同一 Workset 不能被 v1 与 v2 两条路径共同终结。**
+   - **标记创建时间**：由新 v2 producer 首次获取 trusted workset PREPARE claim 时在同一 BEGIN IMMEDIATE 事务中写入唯一 producer-binding；绝不由 A1 admission 写入。旧 schema4 尚无新表时正常 v1 读取无条件兼容，只有显式激活并存在新绑定时才调用 v1/v2 双向检查。
 5. 旧 terminal 历史不可变；显式 operator replay 只创建新的 append-only A2 attempt/receipt 并引用原 Workset，不覆写原 terminal row。held-only -> terminal INCOMPLETE；缺 refs/失效 claim 不能伪造成功。
 6. 针对性真实 SQLite 负例必须覆盖：v1/v2 race、held-only、缺失/伪造 receipt、部分已提交、writer crash/post-COMMIT cancellation、重复终结、替代 claim、pending SELECT 与 schema migration。
 
@@ -234,6 +235,8 @@ def append_or_verify_a2_stage(plan, expected_claim, encoded):
 写事务里的 metadata recheck 必须是 bounded O(number of refs) 且不重复解码大型 payload；复杂 canonical encoding/bytes 比较在锁外，锁内只比较可信 hash/length/immutable row 与受约束的索引。旧研究方案在锁内 decode 64 MiB payload 和直接访问私有 `_store` / `asyncio.to_thread`，不允许复制到生产；请新增正式 `Phase1Persistence` async facade 并通过其 semaphore、drain/close 路径执行所有数据库操作。
 
 同一分区只能取得一个确定性 PREPARE claim；不同合法 claim 偶然尝试同 logical key 时，DB UNIQUE/BEGIN IMMEDIATE 必须阻止双 accepted。Postcommit cancel 不等于 rollback：下次先按 key 读取 StageResult/semantic metadata+data 验证，再跳过已有 stage；不得无限重试或重跑消耗性的 parser。
+
+**Parser accepted-key 快路径**：K2 parser node 在 spawn 子进程前通过专门的 Dataset.load 查到已接受 logical key → validated StageResult/payload SHA/metadata SHA → 直接返回此前 published parsed ref。未验证或冲突不进入子进程，也不伪造 COMPLETE。这个优化必须经 P1-17、E0-03b 的故障注入审查。
 
 ## 6. Kedro 主 DAG、即时阶段持久化和安全异步边界
 
@@ -319,7 +322,7 @@ Dataset 闭合集合检验在创建/运行前执行：所有 graph input/output 
 
 ### 8.3 Prefect 无业务权威
 
-Prefect 只在**有限 A1 collection attempt 之后**（不依赖 Spider close 的结果）给 `msgloom prepare-scheduled` 一个无 payload wakeup；再定期调用有限 catch-up，避免丢失唤醒。唯一合法的 eligible work 来自 committed A1 entries + existing Intake cursor/workset/pending/held。禁止让 Prefect 直读用户私有 SQLite。设计一个 `scope-status` allowlisted CLI 输出 scope hash、cursor anchor digest、pending/held counts、last accepted progress digest 和可信安全 code，不输出 source IDs/body/credentials。
+Prefect 位于外部独立 launcher/flow 部署边界，**目前不是 msgloom `pyproject.toml` 内已批准的运行依赖**；若要添加 Python SDK，须单独经 F0/依赖审查。Prefect 只在**有限 A1 collection attempt 之后**（不依赖 Spider close 的结果）给 `msgloom prepare-scheduled` 一个无 payload wakeup；再定期调用有限 catch-up，避免丢失唤醒。唯一合法的 eligible work 来自 committed A1 entries + existing Intake cursor/workset/pending/held。禁止让 Prefect 直读用户私有 SQLite。设计一个 `scope-status` allowlisted CLI 输出 scope hash、cursor anchor digest、pending/held counts、last accepted progress digest 和可信安全 code，不输出 source IDs/body/credentials。
 
 ## 9. F0 安全及依赖资格门禁
 
