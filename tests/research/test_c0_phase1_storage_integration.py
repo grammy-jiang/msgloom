@@ -341,7 +341,8 @@ def test_cancellation_after_real_sqlite_commit_requires_readback(
             allow_return = threading.Event()
 
             def delayed_after_commit(*args, **kwargs):
-                saved(*args, **kwargs)  # REAL Phase1Store transaction, COMMIT done
+                # REAL Phase1Store transaction; COMMIT is done on return.
+                saved(*args, **kwargs)
                 committed.set()
                 if not allow_return.wait(timeout=30):
                     raise RuntimeError("test acknowledgement barrier timed out")

@@ -18,8 +18,10 @@ def test_receipt_rejects_foreign_selected_roots_with_positive_control() -> None:
     """
     Foreign roots fail; the same receipt with workset roots passes.
 
-    Each case keeps the root count and every other field valid. Only the
-    selected ``IntakeSelection`` or the root list differs from the control.
+    Two cases replace the first root's ``IntakeSelection``. They keep the
+    root count and every other field valid, so only the coverage check
+    rejects them. The third case appends a root. It changes the count, so
+    the generic count check rejects it, not a foreign-root check.
     """
     workset, workset_ref = fixture_workset()
     receipt = valid_receipt(workset, workset_ref)
