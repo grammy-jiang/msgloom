@@ -9,7 +9,7 @@
 **Current master at planning:** 895fc40a0ec889bd96f620df8c62491787218217.
 **Historical review:** 37f5886 R1 REVISE, c1ac6cf R2 REVISE; neither approves this redesigned plan.
 **Actual A1 output / activation contract:** [Source trace](../notes/a1-kedro-handoff-activation-20261023.md).
-**Automatic activation execution plan:** [AUTO-01–AUTO-26](2026-10-23-a1-release-to-kedro-auto-handoff.md).
+**Automatic activation execution plan:** [AUTO-01–AUTO-25](2026-10-23-a1-release-to-kedro-auto-handoff.md).
 
 **New D4 R3 hard prerequisites:** (1) immutable role/provenance re-read matching
 against a reduced workset; (2) a deliberate new A2 scheduled outcome taxonomy
@@ -135,7 +135,7 @@ Q0.5 requires an isolated disposable test environment and deliberately injected 
 | C0.10 | 25m | Freeze workset/partition/transition claims, plan proof, deterministic accepted result identity and outward status taxonomy | No generic INCOMPLETE for trust errors; no duplicate accepted ResultRef |
 | C0.11 | 25m | New A2 v2 completion-proof/receipt and queryable held-at-A2 index while IntakeWorkset remains frozen | Every root prepared or explicit A2-held; terminal INCOMPLETE never endlessly pending |
 | C0.12 | 25m | Versioned input-derived accepted result keys with output digest verify and resumable accepted stage lookup | Conflicting parser bytes fail closed under same key; attempts recorded separately |
-| C0.13 | 20m | Typed SourceReferenceError subclasses for exact catalog/cursor anchors, preserving base interface | Trust errors BLOCKED; busy INCOMPLETE; source sequence gaps pass |
+| C0.13 | 20m | Add conservative new A2 scheduled exception mapping without changing accepted intake: catalog pin preflight, escaped SourceReferenceError, ClaimUnavailableError and StaleClaimError | Trusted source-reference failures BLOCKED; busy INCOMPLETE; claim loss FAILED; global sequence gaps pass |
 | C0.14 | 20m | Safe progress digest/read-only status for external launcher and explicit terminal replay policy | Prefect sees no-progress without reading private SQLite; terminal partial not automatically retried |
 
 No C0 code is accepted unless requirements and acceptance cases have been explicitly frozen; no user-entered provider URL/path or A1 Graph context is ever allowed as dynamic Kedro Dataset factory input.
@@ -243,7 +243,7 @@ Inputs must not contain actual user mail/provider credentials. An oracle generat
 | V13 performance | Identical A1 fixture cut measured old vs new on Pi and supported host | No material >10% wall regression unless absolute cost negligible; bounded RSS |
 | V14 architecture | No bespoke A2 ETL sequencing duplicated outside Kedro; counted bridge/adapter/controller complexity | Kedro owns true stage graph, no permanent dual engine |
 | V15 independent review | Full exact-SHA source, test mapping and original-base diff | Separate reviewer explicitly ACCEPT with no blocking issue |
-| V16 automatic A1-to-A2 | AUTO-01–AUTO-26 in automatic-handoff design including missing wakeup, overlap, pending, empty ledger and cold start | No lost work, no duplicate durable admission, no untrusted automatic bootstrap |
+| V16 automatic A1-to-A2 | AUTO-01–AUTO-25 in automatic-handoff design including missing wakeup, overlap, pending, empty ledger and cold start | No lost work, no duplicate durable admission, no untrusted automatic bootstrap |
 
 Run focused tests while implementing; run the full three-Python/platform CI matrix at integration checkpoints, not for every 20-minute task. Evidence records exact SHA, interpreter/package versions, JUnit path/counts, no skips, source fixtures, failures, digests and independent review. Do not claim the old Task 15 28/28 validates Kedro.
 
