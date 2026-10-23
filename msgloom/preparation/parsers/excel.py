@@ -38,7 +38,7 @@ from msgloom.preparation.parsers.excel_values import OutputBudget, build_cell
 
 PARSER_NAME = "msgloom.excel"
 PARSER_VERSION = "1"
-BACKEND = "python-calamine-0.8.2+openpyxl-3.1.5"
+BACKEND = "python-calamine-0.9.0+openpyxl-3.1.5"
 
 _FORMATS = {
     DocumentFormat.XLSX,

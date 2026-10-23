@@ -68,7 +68,7 @@ PRODUCTION_REGISTRY = TrustedRegistry(
             identity=ParserIdentity(
                 "msgloom.excel",
                 "1",
-                "python-calamine-0.8.2+openpyxl-3.1.5",
+                "python-calamine-0.9.0+openpyxl-3.1.5",
             ),
         ),
         RegistryEntry(

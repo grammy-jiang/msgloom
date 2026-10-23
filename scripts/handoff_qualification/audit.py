@@ -67,7 +67,7 @@ def runtime(expected: str, fastmcp: bool) -> dict:
     for name, required in (
         ("pytest-cov", "7.1.0"),
         ("pytest-xdist", "3.8.0"),
-        ("ruff", "0.17.1"),
+        ("ruff", "0.17.2"),
     ):
         if versions[name] != required:
             raise ValueError(f"{name} must remain {required}")
@@ -75,8 +75,8 @@ def runtime(expected: str, fastmcp: bool) -> dict:
         raise ValueError("pytest must remain exactly 9.1.1")
     if fastmcp:
         versions["fastmcp"] = importlib.metadata.version("fastmcp")
-        if versions["fastmcp"] != "4.1.0":
-            raise ValueError("FastMCP must remain exactly 4.1.0")
+        if versions["fastmcp"] != "4.1.3":
+            raise ValueError("FastMCP must remain exactly 4.1.3")
     return {
         "python": actual,
         "executable": sys.executable,
