@@ -61,6 +61,27 @@ def install_child_diagnostics() -> None:
     faulthandler.register(signal.SIGUSR1, all_threads=True)
 
 
+def _kill_and_reap(process: subprocess.Popen[str]) -> tuple[str, str]:
+    """
+    Kill an owned native child and bound both the output drain and reap.
+
+    A descendant may inherit stderr/stdout after the direct child dies.
+    In that case communicate must have a deadline; the context manager
+    would otherwise allow an unbounded Popen.__exit__ wait.
+    """
+    try:
+        if process.poll() is None:
+            process.kill()
+        return process.communicate(timeout=DUMP_GRACE_SECONDS)
+    finally:
+        try:
+            process.wait(timeout=DUMP_GRACE_SECONDS)
+        finally:
+            for stream in (process.stdout, process.stderr):
+                if stream is not None and not stream.closed:
+                    stream.close()
+
+
 def reap_hung_child(process: subprocess.Popen[str]) -> tuple[str, str]:
     """
     Collect a hung child's stack dump and output, then kill and reap it.
@@ -79,8 +100,7 @@ def reap_hung_child(process: subprocess.Popen[str]) -> tuple[str, str]:
             return process.communicate(timeout=DUMP_GRACE_SECONDS)
         except subprocess.TimeoutExpired:
             pass
-    process.kill()
-    return process.communicate()
+    return _kill_and_reap(process)
 
 
 def run_native_command(
@@ -99,14 +119,15 @@ def run_native_command(
     stack dump and output, and the test fails with their tails. Long
     ``-c`` runner arguments are abbreviated in the failure message.
     """
-    with subprocess.Popen(
+    process = subprocess.Popen(
         args,
         cwd=cwd,
         env=env,
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
         text=True,
-    ) as process:
+    )
+    try:
         try:
             stdout, stderr = process.communicate(timeout=timeout)
         except subprocess.TimeoutExpired:
@@ -122,4 +143,20 @@ def run_native_command(
                 f"--- stderr tail (stack dump last) ---\n"
                 f"{stderr[-_STDERR_TAIL:]}"
             )
-    return subprocess.CompletedProcess(args, process.returncode, stdout, stderr)
+        return subprocess.CompletedProcess(args, process.returncode, stdout, stderr)
+    except BaseException as original:
+        # Unlike Popen's context manager, never wait indefinitely if
+        # communicate, a test assertion, or cancellation raises.
+        if process.poll() is None:
+            try:
+                _kill_and_reap(process)
+            except (OSError, subprocess.TimeoutExpired) as cleanup_error:
+                original.add_note(
+                    "Native child cleanup failed: "
+                    f"{type(cleanup_error).__name__}: {cleanup_error}"
+                )
+        raise
+    finally:
+        for stream in (process.stdout, process.stderr):
+            if stream is not None and not stream.closed:
+                stream.close()
