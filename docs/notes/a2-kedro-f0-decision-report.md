@@ -27,9 +27,15 @@ What is established (each item has a scratch file in the evidence table):
   host. `uv pip check`, imports and Pyright exited 0. The full normal pytest
   set on 3.13.16 passed (4705 passed, exit 0).
 - The 1.7.0 wheel guards `_get_versioned_path()` against path separators and
-  dot-only version strings. OSV returns no advisory for `kedro` 1.7.0.
-- Adding Kedro adds no report to the advisory scan output (byte-identical to
-  the baseline for 3.12, 3.13 and 3.14).
+  dot-only version strings. OSV returns no advisory for `kedro` 1.7.0. This
+  is not evidence of absence: OSV does not map CVE-2026-3840 to any version
+  but 1.2.0 (see "Open risks").
+- Adding Kedro adds no report to the advisory scan output (stdout is
+  byte-identical to the baseline for 3.12, 3.13 and 3.14; stderr differs in
+  package count only). The scanner cannot see CVE-2026-3840 by construction:
+  the OSV record has only a GIT range with `versions: ["1.2.0"]`, and the
+  package query for `kedro` 1.2.0 does not return it. A clean scan says
+  nothing about this CVE.
 - Plain use of Kedro (import plus an in-memory pipeline run, no session)
   made 0 network attempts in a network-less sandbox.
 
@@ -55,7 +61,8 @@ What blocks F0-10:
    the owner before any lock change is merged.
 3. The CVE-2026-3840 difference between sources has no recorded disposition.
 4. The production lock route for `pypydispatcher` is undecided.
-5. The two full-suite runs are not finished.
+5. The 3.14.7 full run has 1 failed test and no clean sequential rerun
+   exists. The cause is unproven.
 
 ## Evidence table
 
@@ -78,11 +85,11 @@ Scratch root: `/tmp/f0-scratch-20261024/`. Note names are
 | Version guard probe of the 1.7.0 wheel (POSIX only) | cve-reachability | `json/f0_02_validator.out` (SHA-256 `d3d40bea...1d7a`), `scripts/f0_02_validator.py` |
 | Advisory scan, unignored: 11 reports on 3.12, 3.13, 3.14 (identical output) | audit-baselines | `audit-base-3.1{2,3,4}.out` |
 | Advisory scan, CI-like (two documented ignores): 9 reports (4 Brotli, 5 Twisted) | audit-baselines | `audit-base-ci-3.1{2,3,4}.out` |
-| Candidate lock gives byte-identical scan output to the baseline | audit-baselines | `audit-cand-3.1{2,3,4}.out` (MD5 `73fc5063...` same as baseline) |
+| Candidate lock gives byte-identical scan stdout to the baseline (stderr differs: 146 vs 165 packages; blind to CVE-2026-3840) | audit-baselines | `audit-cand-3.1{2,3,4}.out` (MD5 `73fc5063...` same as baseline) |
 | PYSEC-2026-4322 (`brotli` 1.2.0, fixed 1.2.1) and PYSEC-2026-4323 (`brotlicffi` 1.2.0.2, fixed 1.2.1.0) | audit-baselines | `json/osv-PYSEC-2026-4322.json`, `json/osv-PYSEC-2026-4323.json`, `json/osv-GHSA-9v8h-qqgm-4m35.json`, `json/pypi-brotli.json`, `json/pypi-brotlicffi.json` |
 | Locked versions today: brotli 1.2.0, brotlicffi 1.2.0.2, twisted 26.4.0, scrapy 2.19.0 | audit-baselines | `uv.lock` in the F0 worktree (lines 314, 352, 3169, 2908) |
 | Five Twisted reports have a fix only in the prerelease 26.10.0rc1 | audit-baselines | `audit-base-ci-3.13.out`, `json/pypi-twisted.json` |
-| Telemetry: modes A and B made 0 socket attempts; C and G made 1 DNS lookup for `heapanalytics.com`; D, F, H, I made 0 | telemetry-networks | `f0-04/<mode>/out.json` (nine modes) |
+| Telemetry: modes A and B made 0 socket attempts; C and G made 1 DNS lookup for `heapanalytics.com`; D, E, F, H, I made 0 (E sent nothing only because of an `AttributeError`, see below) | telemetry-networks | `f0-04/<mode>/out.json` (nine modes) |
 | `kedro-telemetry` is a core `Requires-Dist` of Kedro 1.7.0 | version-provenance, telemetry-networks | `wheel/x/kedro-1.7.0.dist-info/METADATA` |
 | Dataset gate prototype rejects the listed bad inputs; a failing node leaks input text into the ERROR log | dataset-security | `json/f0_03_demo.out`, `scripts/f0_03_gate_demo.py` |
 | Kedro core wheel uses `pickle` only in `shared_memory_dataset.py` (`pickle.dumps` check) and `PicklingError` handling. No `pickle.loads` in `kedro/` outside templates. `kedro_datasets` is not installed | this report (grep, see below) | `wheel/x/kedro/`, `venv-kedro/lib/python3.13/site-packages` |
@@ -98,7 +105,7 @@ All items are open. None is marked safe or accepted.
 | --- | --- | --- | --- |
 | CVE-2026-3840 (Snyk `SNYK-PYTHON-KEDRO-17752561`) | none found | OSV and NVD: affects 1.2.0 only. Snyk: all versions, no fixed version | Unresolved. It may duplicate CVE-2026-35167 or may be a residual weakness. No source decides. No formal "disputed" tag was found in the saved NVD, OSV or Snyk text. The difference between sources is the finding |
 | GHSA-6326-w46w-ppjw | CVE-2026-35167, PYSEC-2026-71 | Fixed in 1.3.0 (GitHub, OSV). Guard present in the 1.7.0 wheel | The guard was probed on POSIX with a minimal dataset. Strings such as `*` pass the guard. Entry points depend on controls that do not exist in msgloom code |
-| GHSA-9cqf-439c-j96r | CVE-2026-35171, PYSEC-2026-72 | Fixed in 1.3.0 per GitHub. The wheel comment says the `()` key is rejected | Not tested. Reach: code that imports `kedro.framework.project` and reads `KEDRO_LOGGING_CONFIG` |
+| GHSA-9cqf-439c-j96r | CVE-2026-35171, PYSEC-2026-72 | Fixed in 1.3.0 per GitHub. The wheel comment says the `()` key is rejected | Not tested. Reach: code that imports `kedro.framework.project` and reads `KEDRO_LOGGING_CONFIG`. Importing `kedro.io`, `kedro.pipeline` or `kedro.runner` already loads `kedro.framework.project` (dataset-security note; telemetry mode A), so the planned design reaches that module |
 
 ### Advisories in the current lock (not caused by Kedro)
 
@@ -134,7 +141,7 @@ Facts about the table:
 
 - `kedro-telemetry` 0.9.0 is a forced dependency and it depends on
   `requests`. Missing consent is treated as consent.
-- Opt-out facts observed: `DO_NOT_TRACK=1` (also `KEDRO_DISABLE_TELEMETRY`),
+- Opt-out facts observed: `DO_NOT_TRACK=1` (tested in modes D, E and H; `KEDRO_DISABLE_TELEMETRY` was read in source only and not run),
   a `.telemetry` file with `consent: false`, or
   `DISABLE_HOOKS_FOR_PLUGINS = ("kedro-telemetry",)` all gave 0 socket
   attempts. Default consent through a hook or a session gave one DNS lookup
@@ -189,10 +196,16 @@ All three full runs finished. 3.12.14: exit 0, 4705 passed. 3.13.16: exit 0,
 4705 passed. 3.14.7: exit 1, 1 failed, 4704 passed.
 
 The 3.14.7 failure is `test_real_local_container_timeout_is_removed_if_image_present`.
-The 3.12 and 3.14 runs overlapped. The test uses the fixed container name
-`msgloom-qual-pytest-timeout`. A collision is likely but not proven. The test
-passed alone on 3.14.7 in two runs. The security owner may want a clean
-sequential 3.14 rerun before F0-09.
+The 3.12 and 3.14 runs overlapped (both started at about 09:14 and ended at
+09:56:39 and 09:57:22). The test uses the fixed container name
+`msgloom-qual-pytest-timeout`. A collision is likely but not proven. Other
+explanations are not excluded: host load (four workers on four cores), a
+delay in Docker `--rm` removal after the client is killed, or a defect in the
+test. The 12-directory subset, which includes `tests/container_deployment`,
+passed on 3.14.7 earlier. The test passed alone on 3.14.7 in two runs (raw
+logs `pytest-solo-container-3.14-run1.out` and `-run2.out`). No clean
+sequential full 3.14 rerun exists. The security owner may want one before
+F0-09.
 
 Logs: `/tmp/f0-scratch-20261024/f05b/logs/`.
 
@@ -210,8 +223,8 @@ Each option is a choice for the owner. This work takes none of them.
 Independent of the choice, the owner decides separately:
 
 - how to handle the 9 reports in the baseline lock (separate dependency
-  change for `brotli` 1.2.1 and `brotlicffi` 1.2.1.0; prerelease or ignore
-  decisions for Twisted, each after a reachability review);
+  change for `brotli` 1.2.1 and `brotlicffi` 1.2.1.0; a prerelease decision
+  for Twisted, after a reachability review);
 - how to produce the production lock given the `pypydispatcher` sdist.
 
 ## Status of F0-09 and F0-10

@@ -14,11 +14,20 @@ The full normal pytest set finished on all three Python versions.
 
 The 3.14.7 failure is
 `tests/container_deployment/test_container_qualification.py::test_real_local_container_timeout_is_removed_if_image_present`.
-The 3.12.14 and 3.14.7 runs ran at the same time. That test uses the fixed
-Docker container name `msgloom-qual-pytest-timeout`. A name collision between
-the two runs is a likely cause. It is not proven. The same test passed alone
-on 3.14.7 in two runs (exit 0 each). This failure is an open item for the
-security owner. Logs: `/tmp/f0-scratch-20261024/f05b/logs/`
+The 3.12.14 and 3.14.7 runs ran at the same time. Both started at about
+09:14 local time. They ended at 09:56:39 and 09:57:22 (file times of the
+`.time` logs). That test uses the fixed Docker container name
+`msgloom-qual-pytest-timeout`. A name collision between the two runs is a
+likely cause. It is not proven. Other explanations are not excluded: host
+load (the two runs used `-n 2` each, so four workers on four cores), a delay
+in Docker `--rm` removal after the client process is killed, or a defect in
+the test. Supporting facts: the 12-directory subset, which includes
+`tests/container_deployment`, passed on 3.14.7 earlier (exit 0, 327 passed,
+`pytest-subset-cand-3.14.out`). The same test passed alone on 3.14.7 in two
+runs, with raw logs `pytest-solo-container-3.14-run1.out` and
+`pytest-solo-container-3.14-run2.out` (exit 0 each). A clean sequential full
+rerun on 3.14.7 was not made. This failure is an open item for the security
+owner. Logs: `/tmp/f0-scratch-20261024/f05b/logs/`
 (`pytest-normal-cand-3.12.out`, `pytest-normal-cand-3.14.out`,
 `exitcodes.txt`).
 
@@ -219,9 +228,13 @@ Lock comparison (`tomllib`, name to version):
   `six` 1.17.0, `smmap` 5.0.3, `text-unidecode` 1.3, `tzdata` 2026.5.
 - Changed versions: none (empty list).
 - Removed: `pypydispatcher` 2.1.2 (artifact, see above).
-- Audit text for 3.12, 3.13 and 3.14 is byte-identical to the baseline
+- Audit stdout for 3.12, 3.13 and 3.14 is byte-identical to the baseline
   output (`diff` exit 0; SHA-256 of the 3.13 output is the same value shown
-  above). The new Kedro stack adds no report in this tool.
+  above). Stderr differs (146 vs 165 packages). The new Kedro stack adds no
+  report in this tool. The tool is blind to CVE-2026-3840 by construction:
+  the OSV record lists a GIT range with `versions: ["1.2.0"]` only, and the
+  package query for `kedro` 1.2.0 does not return it (`json/osv3840.json`,
+  `osvq12.json`). A clean result does not speak to this CVE.
 - Candidate scratch lock SHA-256:
   `be6dbacb03873335654c32b4a3434aee944402554d1cd241eab5edf902b794c1`.
 
@@ -250,8 +263,6 @@ For the Twisted reports with a prerelease-only fix:
 
 - Keep CI red until a stable Twisted release exists.
 - Adopt the prerelease `26.10.0rc1` after a separate review.
-- Add scope-limited `--ignore-until-fixed` entries after an owner review of
-  reachability, as for the two existing entries.
 
 The owner makes each decision. This task adds no ignore and changes no lock.
 

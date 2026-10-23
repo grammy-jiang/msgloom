@@ -1,0 +1,126 @@
+F0-08 independent read-only security review R1
+Reviewed exact SHA: 38b885cf666a4bf7ca250372a32b304f75655d21
+Reviewer: read-only subagent (Read, Grep, Glob; one disclosed read-only `ls`
+via Bash). Archived by the manager without edits to the verdict. This is a
+REVISE record. It stays in the branch after the fixes.
+
+VERDICT: REVISE for exact SHA 38b885cf666a4bf7ca250372a32b304f75655d21
+
+REVISE is for two fixable text defects. Neither changes a measured number.
+The reviewer found no "safe", "accepted" or "not reachable" overclaim. This
+verdict never means risk acceptance.
+
+Claims traced to a sibling note and a scratch file (11 of 11 held)
+- Wheel SHA-256 488701a2...c2438 is in json/kedro.json, f05a/cand/uv.lock,
+  f05a/cand-runtime-hashes.txt and f05b/cand-3.13/uv.lock. yanked:false.
+- Audit counts hold: audit-base-3.13.out has brotli 2, brotlicffi 2, scrapy 1,
+  twisted 6 (11). audit-base-ci-3.12.out has 9 (4 Brotli, 5 Twisted). The
+  .err files show 11 findings in 146 packages (baseline) and 11 in 165
+  (candidate).
+- Full pytest results match the logs: 3.12 4705 passed exit 0; 3.13 4705
+  passed exit 0 (1448.86 s, 8 warnings); 3.14 1 failed 4704 passed exit 1 in
+  test_real_local_container_timeout_is_removed_if_image_present.
+- The test hard-codes the container name msgloom-qual-pytest-timeout.
+- Runtime package growth is consistent (93 vs 117 pins; colorama has an nt
+  marker; pypydispatcher a PyPy marker).
+- Telemetry modes A, B, D, E, F, H, I show empty socket_attempts; C and G show
+  one getaddrinfo('heapanalytics.com').
+- Pickle grep reproduced: hits only in shared_memory_dataset.py:3,49,
+  PicklingError handling and one log string; no pickle.loads, yaml.load, eval
+  or exec.
+- Advisory data matches: osvq12.json returns GHSA-6326, PYSEC-2026-71,
+  GHSA-9cqf and PYSEC-2026-72 for kedro 1.2.0. The CVE-2026-3840 OSV record
+  lists 1.2.0 only. Snyk shows "[0," and "no fixed". NVD shows no dispute tag.
+
+Blocker: none.
+
+Major
+1. decision-report.md:57-58 says "5. The two full-suite runs are not
+   finished." This contradicts :188, :46-47 and exitcodes.txt. Blocker item 5
+   should say the 3.14 failure has no clean sequential rerun. The same stale
+   idea survives at :206.
+2. cve-reachability.md:150 and decision-report.md:101 say the GHSA-9cqf
+   logging "()" key is reachable "only if kedro.framework.project is
+   imported". dataset-security.md:136 and telemetry mode A (:112-117) show
+   that importing kedro.io, kedro.pipeline and kedro.runner already loads
+   kedro.framework.project. The matrix should say so. GHSA-9cqf is untested.
+3. decision-report.md:30 and :81 present "OSV returns no advisory for 1.7.0"
+   and "byte-identical scan" as favourable. The CVE-2026-3840 OSV record has
+   only a GIT range with versions ["1.2.0"] (json/osv3840.json). The
+   package-version query for kedro 1.2.0 (osvq12.json) does not return it.
+   So `uv audit` cannot detect this CVE even on known-affected 1.2.0. The
+   report should say the scan is blind to CVE-2026-3840 by construction.
+4. The "likely but unproven" collision wording is preserved, which is
+   correct. But no note lists competing explanations (host load, Docker --rm
+   removal lag after a client kill, -n 2 workers). pytest-subset-cand-3.14.out
+   (327 passed, includes container_deployment) is unquoted supporting
+   evidence. No raw log exists for the two solo passes.
+
+Minor
+- decision-report.md:138 says DO_NOT_TRACK=1 (also KEDRO_DISABLE_TELEMETRY)
+  gave 0 socket attempts. Only DO_NOT_TRACK ran in modes D, E and H
+  (telemetry-networks.md:163-167). The second variable is source-read only.
+- decision-report.md:85 omits mode E from the telemetry row. It sent nothing
+  only because of an AttributeError (prose at :145).
+- decision-report.md:81 and audit-baselines.md:222-224 say "byte-identical".
+  That holds for stdout only. Stderr differs (146 vs 165 packages).
+- audit-baselines.md:253 and decision-report.md:213 list scope-limited
+  --ignore-until-fixed entries as an owner option. Better to drop it from an
+  evidence report given the no-ignores constraint.
+- The 3.13 run time reads 24 m 8 s, 9 s and 10 s in different places. The
+  warning count is 8 on 3.13 and 4 on the others (explained in
+  coinstall.md:164-166; no scratch file checked).
+- The "Full-suite results" block is copied into all 10 notes; a later fix
+  must touch all 10.
+
+Missing evidence a security owner would need
+- No telemetry payload was captured; kedro-telemetry has no recorded wheel
+  hash (telemetry-networks.md:198-201).
+- Telemetry, advisory and dataset probes ran in venv-kedro, an unlocked
+  Kedro-only install (39 packages), not in the locked environment.
+- Brotli decoder and Twisted reachability through Scrapy not assessed
+  (audit-baselines.md:167-169, :176).
+- The other 19 new packages and the 5 promoted ones (pyyaml, pluggy,
+  more-itertools, tomli-w, colorama) were not reviewed beyond the OSV scan.
+- The sdist hash and upstream provenance attestation were not checked.
+- The guard probe covered POSIX with a minimal dataset only (no glob, fsspec
+  backends or Windows).
+- Third-party loaders (omegaconf, dynaconf, cookiecutter, gitpython, fsspec)
+  were not examined.
+- exclusive_state, fastmcp_compat and linux_cgroup_v2 tests did not run with
+  Kedro installed.
+- CI uv (0.13.5) was never used; all results come from local uv 0.12.24.
+
+Ignores, lock edits and production changes: no note proposes an ignore, a
+lock edit or a production change. The pypydispatcher exclusion is labelled
+scratch-only (linux-wheel.md:188-190).
+
+Internal contradictions: only Major 1 and Major 2. Other number comparisons
+agree.
+
+Residual risk that blocks admission (owner decision needed)
+- CVE-2026-3840 has no disposition. Snyk says all versions, no fix. OSV and
+  NVD say 1.2.0 only. No source maps it to CVE-2026-35167, and the scanner
+  cannot see it.
+- The master baseline is red without Kedro: PYSEC-2026-4322 (brotli 1.2.0),
+  PYSEC-2026-4323 (brotlicffi 1.2.0.2) and Twisted findings. 11 unignored, 9
+  with the two documented ignores. The Brotli fix exists but is not in the
+  lock. The Twisted fix is only the prerelease 26.10.0rc1.
+- kedro-telemetry is forced in. Missing consent counts as consent, and the
+  real plugin tried a DNS lookup in sessions. The "no session, no hook entry
+  points" rule has no code or test behind it.
+- The F0-03 dataset gate, version rules and network-namespace test are
+  specification and a scratch prototype only. No Kedro-through-msgloom test
+  exists.
+- The production lock route for pypydispatcher is undecided.
+- Execution evidence is Linux aarch64 only. The 3.14 failure has no clean
+  sequential full rerun.
+
+Could not verify
+- The two solo reruns of the 3.14 test (asserted in notes only, no log file).
+- That the 3.12 and 3.14 runs overlapped in time (no start timestamps).
+- SHA-256 and MD5 values themselves (string matches across files only).
+- Wheel contents and script SHA-256 values.
+- Negative-control exit codes beyond what notes and exitcodes.txt record.
+- Live PyPI, OSV, NVD and Snyk state.
+- That note files at this SHA equal the working tree.
