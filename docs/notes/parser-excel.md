@@ -5,7 +5,9 @@
 The spreadsheet lane exposes the synchronous bytes-only function
 parse(request: ParserRequest, content: bytes) -> ParserOutput from
 msgloom.preparation.parsers.excel. The registered identity is msgloom.excel
-version 1 with backend python-calamine-0.8.2+openpyxl-3.1.5.
+version 1 with backend python-calamine-0.9.0+openpyxl-3.1.5. Earlier
+qualification notes below describe the original 0.8.2 evaluation; they are
+historical observations rather than claims about the current runtime.
 
 The closed format set is XLSX, XLSM, XLS, XLSB, and ODS. The function does not
 perform provider, network, database, or filesystem discovery. It is intended

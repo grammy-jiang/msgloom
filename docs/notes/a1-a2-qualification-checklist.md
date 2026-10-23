@@ -8,6 +8,14 @@ evidence paths, digests, the review record, and the retained attempt history.
 Earlier failed, blocked, and interrupted attempts keep their original
 outcomes.
 
+**Frozen evidence versus current pins:** This checklist records the actual
+28/28 qualification of source SHA 34057c6, not automatic qualification of
+subsequent dependency changes. That frozen run used Ruff 0.17.1 and FastMCP
+4.1.0, as stated below. The later reviewed Renovate batch uses Ruff 0.17.2,
+FastMCP 4.1.3, tox 4.67.1, python-calamine 0.9.0, and CI setup-uv 0.13.5.
+These are the new source's development pins; its ordinary GitHub CI does
+not substitute for a new exact-SHA Task 15 formal qualification.
+
 Authority: the complete committed handoff design and implementation plan,
 Task15 and its 13 scenarios; Task10 supplies the real Scrapy coverage matrix.
 Repository commands come from `pyproject.toml`, `AGENTS.md`,
@@ -55,11 +63,12 @@ execution has this shape; replace every placeholder with the final values:
   --precommit-cache /prepared/pre-commit-cache
 ~~~
 
-Run from the candidate repository root. Do not resolve interpreter executable
-symlinks: doing so can discard virtual-environment identity. The normal 3.13
-runtime must be Python 3.13.5; every environment must have Scrapy 2.19.0,
-pytest 9.1.1, pytest-cov 7.1.0, pytest-xdist 3.8.0, and Ruff 0.17.1.
-Compatibility environments also require FastMCP 4.1.0.
+For the frozen 34057c6 qualification only, run from the exact candidate
+repository root. Do not resolve interpreter executable symlinks: doing so
+can discard virtual-environment identity. Its normal 3.13 runtime must be
+Python 3.13.5; every environment must have Scrapy 2.19.0, pytest 9.1.1,
+pytest-cov 7.1.0, pytest-xdist 3.8.0, and Ruff 0.17.1. Its compatibility
+environments also require FastMCP 4.1.0.
 
 At the original preparation, the inspected host had Python 3.13.5 with
 Scrapy 2.19.0 at `.venv/bin/python`. Its
@@ -80,7 +89,7 @@ source and evidence.
 | A1-focused | All top-level `tests/test_*.py` plus `tests/source_reader`. |
 | Normal/default coverage | Full pytest selection on Python 3.13.5. |
 | Serial exclusive state | `exclusive_state and not fastmcp_compat`, `-n 0`. |
-| FastMCP compatibility | Opt-in file and marker, FastMCP 4.1.0, `-n 0`. |
+| FastMCP compatibility | Frozen 4.1.0; opt-in file/marker, `-n 0`. |
 | Python matrix | Normal, serial and FastMCP groups on 3.12/3.13/3.14. |
 | Ruff | `python -m ruff check .`. |
 | Format | `python -m ruff format --check .`. |

@@ -27,10 +27,11 @@ then fails visibly.
 
 ## Development and compatibility groups
 
-The dev dependency group preserves the existing requirements and adds exact
-pins for tox 4.64.4, tox-uv 1.36.0, pytest-xdist 3.8.0, and pytest-cov 7.1.0.
-The separate compat-fastmcp4 group contains only fastmcp==4.1.0 and is
-selected only by compatibility environments.
+The current dev dependency group requires exact pins for tox 4.67.1,
+tox-uv 1.37.0, Ruff 0.17.2, pytest-xdist 3.8.0, and pytest-cov 7.1.0.
+The tox bootstrap requires the same tox 4.67.1 release. The separate
+compat-fastmcp4 group contains only fastmcp==4.1.3 and is selected only
+by compatibility environments.
 
 The normal tox environments are py312, py313, and py314. The FastMCP
 compatibility environments are py312-fastmcp4, py313-fastmcp4, and
@@ -42,7 +43,7 @@ Normal source-suite runs use at most four xdist workers, then run tests marked
 exclusive_state separately with xdist disabled. Both normal commands exclude
 the fastmcp_compat marker. Compatibility tests are skipped unless the explicit
 MSGLOOM_FASTMCP_COMPAT=1 gate is present; each named compatibility environment
-sets that gate, selects only fastmcp_compat tests, and requires FastMCP 4.1.0.
+sets that gate, selects only fastmcp_compat tests, and requires FastMCP 4.1.3.
 A missing FastMCP package therefore fails an opted-in compatibility run while
 plain pytest remains valid without FastMCP. Compatibility tests do not start a
 server, service, provider call, or model call.

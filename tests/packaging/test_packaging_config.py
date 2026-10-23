@@ -41,7 +41,7 @@ def test_build_backend_and_development_pins_are_exact() -> None:
     groups = _table(project["dependency-groups"], "dependency groups")
     dev = set(cast(list[str], groups["dev"]))
     for requirement in (
-        "tox==4.65.6",
+        "tox==4.67.1",
         "tox-uv==1.37.0",
         "pytest-xdist==3.8.0",
         "pytest-cov==7.1.0",
@@ -51,7 +51,7 @@ def test_build_backend_and_development_pins_are_exact() -> None:
             pytest.fail(f"missing exact development pin: {requirement}")
     _require_equal(
         groups["compat-fastmcp4"],
-        ["fastmcp==4.1.0"],
+        ["fastmcp==4.1.3"],
         "FastMCP compatibility group",
     )
     metadata = _table(project["project"], "project metadata")
@@ -104,6 +104,11 @@ def test_tox_matrix_is_locked_wheel_mode_with_bounded_workers() -> None:
             "py314-fastmcp4",
         ],
         "tox environment list",
+    )
+    _require_equal(
+        tox["requires"],
+        ["tox==4.67.1", "tox-uv==1.37.0"],
+        "tox bootstrap requirements",
     )
     _require_equal(tox["skip_missing_interpreters"], False, "missing interpreter")
     base = _table(tox["env_run_base"], "tox run base")

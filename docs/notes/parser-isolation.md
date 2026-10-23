@@ -25,7 +25,7 @@ The production registry is closed to these reviewed identities:
 - MIME, HTML, TEXT, JSON: msgloom.mime-html@1,
   stdlib-email+selectolax-0.4.12.
 - XLSX, XLSM, XLS, XLSB, ODS: msgloom.excel@1,
-  python-calamine-0.8.2+openpyxl-3.1.5.
+  python-calamine-0.9.0+openpyxl-3.1.5.
 - PDF: msgloom.pdf@1, pypdfium2-5.13.0.
 - DOCX, DOC: msgloom.word@1, python-docx-1.2.0+lxml-6.1.3.
 
