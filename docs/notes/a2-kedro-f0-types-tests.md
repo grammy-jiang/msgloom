@@ -5,19 +5,25 @@ Task: F0-05c. Branch `research/a2-kedro-f0-20261024`, base `895fc40`.
 Candidate: `kedro` 1.7.0 (wheel SHA-256
 `488701a27c7d595b62a611cb23596953a9929fe5cc42a376c28abe26654c2438`).
 
-## Pending items in this evidence set
+## Full-suite results (final)
 
-PENDING: two cells in the co-install note (`a2-kedro-f0-coinstall.md`).
-They are the full pytest run on Python 3.12.14 (`FULL_312`, with
-`FULL_312_EXIT` and `FULL_312_RESULT`) and on Python 3.14.7 (`FULL_314`,
-with `FULL_314_EXIT` and `FULL_314_RESULT`). Both runs were still running
-when this note was committed. No value is recorded and none is guessed.
-The 3.13.16 full run is final: 4705 passed, exit 0.
+The full normal pytest set finished on all three Python versions.
 
-Rows in this note that depend on the two cells: question (b) in the Result
-table, "(b) Full pytest runs and the unexplained cells", and the part (b)
-line in "Status / Open items". Part (b) is PENDING. Parts (a) and (c) are
-final.
+| Python | Exit code | Result |
+| --- | --- | --- |
+| 3.12.14 | 0 | 4705 passed, 42 min 17 s |
+| 3.13.16 | 0 | 4705 passed, 24 min 9 s |
+| 3.14.7 | 1 | 1 failed, 4704 passed, 43 min 0 s |
+
+The 3.14.7 failure is
+`tests/container_deployment/test_container_qualification.py::test_real_local_container_timeout_is_removed_if_image_present`.
+The 3.12.14 and 3.14.7 runs ran at the same time. That test uses the fixed
+Docker container name `msgloom-qual-pytest-timeout`. A name collision between
+the two runs is a likely cause. It is not proven. The same test passed alone
+on 3.14.7 in two runs (exit 0 each). This failure is an open item for the
+security owner. Logs: `/tmp/f0-scratch-20261024/f05b/logs/`
+(`pytest-normal-cand-3.12.out`, `pytest-normal-cand-3.14.out`,
+`exitcodes.txt`).
 
 ## Result
 
@@ -30,7 +36,7 @@ STOP condition was found. This note does not approve any dependency change.
 | --- | --- |
 | (a) Does Pyright 1.1.413 pass with the repository config? | Yes. 0 errors, 0 warnings on 1064 files, with and without Kedro (Python 3.13). F0-05b: 0 errors on 3.12, 3.13 and 3.14. |
 | (a) Does the `py.typed` marker of Kedro help or break Pyright? | It helps. Kedro types resolve (`Node`, `Pipeline`, `DataCatalog`) and wrong calls produce errors. It breaks nothing today, because no msgloom file imports Kedro. Type completeness is 84.7%, so some Kedro types are partly unknown. |
-| (b) What do the `FULL_312` and `FULL_314` cells mean? | They are unfilled placeholders in the co-install note. The two full pytest runs were still running when this note was written. See "Full pytest runs". |
+| (b) What are the results of the full pytest runs on 3.12 and 3.14? | 3.12.14: exit 0, 4705 passed. 3.14.7: exit 1, 1 failed, 4704 passed. See "Full-suite results (final)" and part (b). |
 | (c) Do the wheel and sdist build reproducibly with Kedro present? | Yes. Two builds per Python 3.12, 3.13 and 3.14 gave one wheel hash and one sdist hash. |
 | (c) Do the source-boundary tests still pass? | Yes. 34 tests ran and passed; 24 `linux_cgroup_v2` tests in the same files did not run. |
 | Did installing Kedro change a locked package version? | No. 134 installed packages, 20 not in the base lock, 0 version mismatches. |
@@ -141,26 +147,25 @@ Effects for msgloom:
   result shows that the existing code type-checks with Kedro installed. It
   does not test future Kedro code beyond the probes above.
 
-## (b) Full pytest runs and the unexplained cells
+## (b) Full pytest runs
 
-The co-install note (F0-05b) has two placeholder cells in its test table
-and its summary table: `FULL_312`, `FULL_314`, `FULL_312_EXIT`,
-`FULL_312_RESULT`, `FULL_314_EXIT` and `FULL_314_RESULT`. A script
-substitution was meant to fill them. The cells hold template text. They are
-not results.
+The co-install note (F0-05b) now holds the final results. The runs used
+`pytest -q -n 2 -m "not exclusive_state and not fastmcp_compat and not
+linux_cgroup_v2" -p no:cacheprovider` with a 3300 s timeout in
+`/tmp/f0-scratch-20261024/f05b/cand-3.12` and `.../cand-3.14`. The logs are
+in `/tmp/f0-scratch-20261024/f05b/logs/`.
 
-The two runs belong to the F0-05b worker. They run in
-`/tmp/f0-scratch-20261024/f05b/cand-3.12` and `.../cand-3.14` with the
-command `pytest -q -n 2 -m "not exclusive_state and not fastmcp_compat and
-not linux_cgroup_v2" -p no:cacheprovider`, a 3300 s timeout, and start time
-09:14. This task did not start new full runs in those directories. A
-second run in the same directories would clash with the first. The logs
-are `pytest-normal-cand-3.12.out` and `pytest-normal-cand-3.14.out` in
-`/tmp/f0-scratch-20261024/f05b/logs/`.
+| Python | Exit code | Result |
+| --- | --- | --- |
+| 3.12.14 | 0 | 4705 passed |
+| 3.13.16 | 0 | 4705 passed |
+| 3.14.7 | 1 | 1 failed, 4704 passed |
 
-State when this note was committed: both runs were not finished. No exit
-code and no result for them is recorded in any F0 note. See the pending
-section at the top of this note.
+The 3.14.7 failure is
+`test_real_local_container_timeout_is_removed_if_image_present`. The test
+uses a fixed Docker container name, and the 3.12 and 3.14 runs overlapped in
+time. A collision is a likely cause but is not proven. The test passed alone
+on 3.14.7 in two runs. It does not exercise Kedro.
 
 Evidence that applies to every Python version already:
 
@@ -172,8 +177,7 @@ Evidence that applies to every Python version already:
 | Source-boundary set, this task, candidate | 3.13.16 | exit 0, 34 passed |
 | Source-boundary set, this task, base | 3.13.16 | exit 0, 33 passed |
 
-The co-install note now states its F0-05b status as PARTIAL, with the same
-two cells pending.
+The co-install note states the final results of all three full runs.
 
 Tests that did not run in any F0 run:
 
@@ -287,10 +291,9 @@ runtime requirements that start with `tox`, `pytest-cov`, `pytest-xdist`,
 
 ## Status / Open items
 
-- F0-05c: DONE for (a) and (c). Part (b) is PENDING until the 3.12 and
-  3.14 full runs finish.
+- F0-05c: DONE for (a), (b) and (c). Part (b) records one failure on 3.14.7.
 - Open: the `fastmcp_compat`, `linux_cgroup_v2` and full `exclusive_state`
   sets were not run with Kedro installed.
 - Open: strict-mode Pyright would report partly unknown Kedro types.
-- Open: the F0-05b note still shows the placeholder cells `FULL_312` and
-  `FULL_314` until the runs finish and the owner fills them.
+- Open: the 3.14.7 full run has 1 failed test. The cause is a likely but
+  unproven container-name collision.

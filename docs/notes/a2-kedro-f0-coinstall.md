@@ -3,20 +3,25 @@
 Date: 2026-10-24. Host: Raspberry Pi 5, Linux aarch64 (glibc), uv 0.12.24.
 Task: F0-05b. Branch `research/a2-kedro-f0-20261024`, base `895fc40`.
 
-## Pending items in this evidence set
+## Full-suite results (final)
 
-PENDING: two cells in the co-install note (`a2-kedro-f0-coinstall.md`).
-They are the full pytest run on Python 3.12.14 (`FULL_312`, with
-`FULL_312_EXIT` and `FULL_312_RESULT`) and on Python 3.14.7 (`FULL_314`,
-with `FULL_314_EXIT` and `FULL_314_RESULT`). Both runs were still running
-when this note was committed. No value is recorded and none is guessed.
-The 3.13.16 full run is final: 4705 passed, exit 0.
+The full normal pytest set finished on all three Python versions.
 
-Rows in this note that depend on the two cells: the "Pytest, normal marker set"
-row in the Result table (3.12 and 3.14 columns), the "Full normal set" rows
-for 3.12.14 and 3.14.7 in the Tests table, and the F0-05b line in
-"Status / Open items". Treat the F0-05b status as PARTIAL until the two
-runs finish.
+| Python | Exit code | Result |
+| --- | --- | --- |
+| 3.12.14 | 0 | 4705 passed, 42 min 17 s |
+| 3.13.16 | 0 | 4705 passed, 24 min 9 s |
+| 3.14.7 | 1 | 1 failed, 4704 passed, 43 min 0 s |
+
+The 3.14.7 failure is
+`tests/container_deployment/test_container_qualification.py::test_real_local_container_timeout_is_removed_if_image_present`.
+The 3.12.14 and 3.14.7 runs ran at the same time. That test uses the fixed
+Docker container name `msgloom-qual-pytest-timeout`. A name collision between
+the two runs is a likely cause. It is not proven. The same test passed alone
+on 3.14.7 in two runs (exit 0 each). This failure is an open item for the
+security owner. Logs: `/tmp/f0-scratch-20261024/f05b/logs/`
+(`pytest-normal-cand-3.12.out`, `pytest-normal-cand-3.14.out`,
+`exitcodes.txt`).
 
 ## Result
 
@@ -32,7 +37,7 @@ production lock. No STOP condition was found.
 | Imports (`kedro`, `message_ingest`, others) | 0 | 0 | 0 |
 | Locked versions kept (script) | 0 | 0 | 0 |
 | Pyright 1.1.413, repo config | 0 | 0 | 0 |
-| Pytest, normal marker set | FULL_312 | 0 (4705 passed) | FULL_314 |
+| Pytest, normal marker set | 0 (4705 passed) | 0 (4705 passed) | 1 (1 failed, 4704 passed) |
 | Pytest, 12-directory subset | 0 (327 passed) | not run | 0 (327 passed) |
 
 Not run on any version: the `exclusive_state` tests, the `fastmcp_compat`
@@ -148,8 +153,8 @@ The normal marker set is the one in the `[tool.tox.env_run_base]` table:
 | Run | Python | Command (abridged) | Exit code | Result |
 | --- | --- | --- | --- | --- |
 | Full normal set | 3.13.16 | `pytest -q -n 4 -m <normal>` | 0 | 4705 passed, 8 warnings, 24 min 8 s |
-| Full normal set | 3.12.14 | `pytest -q -n 2 -m <normal>` | FULL_312_EXIT | FULL_312_RESULT |
-| Full normal set | 3.14.7 | `pytest -q -n 2 -m <normal>` | FULL_314_EXIT | FULL_314_RESULT |
+| Full normal set | 3.12.14 | `pytest -q -n 2 -m <normal>` | 0 | 4705 passed, 4 warnings, 42 min 17 s |
+| Full normal set | 3.14.7 | `pytest -q -n 2 -m <normal>` | 1 | 1 failed, 4704 passed, 4 warnings, 43 min 0 s (see "Full-suite results") |
 | 12-directory subset | 3.12.14 | `pytest -q -n 4 -m <normal> tests/<dirs>` | 0 | 327 passed, 56 s |
 | 12-directory subset | 3.14.7 | same | 0 | 327 passed, 61 s |
 
@@ -190,10 +195,10 @@ benchmark.
 
 ## Status / Open items
 
-- F0-05b: PARTIAL. Install, `uv pip check`, imports, locked-version
-  compare and Pyright are DONE on 3.12, 3.13 and 3.14. The full pytest run
-  is DONE on 3.13 only. The full pytest runs on 3.12 and 3.14 are PENDING
-  (`FULL_312`, `FULL_314`).
+- F0-05b: DONE with one open failure. Install, `uv pip check`, imports,
+  locked-version compare and Pyright are DONE on 3.12, 3.13 and 3.14. The
+  full pytest run passed on 3.12 and 3.13. It had 1 failure on 3.14. See
+  "Full-suite results (final)".
 - Open: the `exclusive_state`, `fastmcp_compat` and `linux_cgroup_v2` test
   sets were not run with Kedro installed.
 - Open: Kedro import side effect on logging (see "Import checks").

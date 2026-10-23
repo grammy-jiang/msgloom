@@ -3,17 +3,25 @@
 Date: 2026-10-24. Host: Raspberry Pi 5, Linux aarch64, uv 0.12.24.
 Task: F0-05a. Branch `research/a2-kedro-f0-20261024`, base `895fc40`.
 
-## Pending items in this evidence set
+## Full-suite results (final)
 
-PENDING: two cells in the co-install note (`a2-kedro-f0-coinstall.md`).
-They are the full pytest run on Python 3.12.14 (`FULL_312`, with
-`FULL_312_EXIT` and `FULL_312_RESULT`) and on Python 3.14.7 (`FULL_314`,
-with `FULL_314_EXIT` and `FULL_314_RESULT`). Both runs were still running
-when this note was committed. No value is recorded and none is guessed.
-The 3.13.16 full run is final: 4705 passed, exit 0.
+The full normal pytest set finished on all three Python versions.
 
-No row in this note depends on those two cells. The install and test claims for
-Python 3.12, 3.13 and 3.14 live in the co-install note.
+| Python | Exit code | Result |
+| --- | --- | --- |
+| 3.12.14 | 0 | 4705 passed, 42 min 17 s |
+| 3.13.16 | 0 | 4705 passed, 24 min 9 s |
+| 3.14.7 | 1 | 1 failed, 4704 passed, 43 min 0 s |
+
+The 3.14.7 failure is
+`tests/container_deployment/test_container_qualification.py::test_real_local_container_timeout_is_removed_if_image_present`.
+The 3.12.14 and 3.14.7 runs ran at the same time. That test uses the fixed
+Docker container name `msgloom-qual-pytest-timeout`. A name collision between
+the two runs is a likely cause. It is not proven. The same test passed alone
+on 3.14.7 in two runs (exit 0 each). This failure is an open item for the
+security owner. Logs: `/tmp/f0-scratch-20261024/f05b/logs/`
+(`pytest-normal-cand-3.12.out`, `pytest-normal-cand-3.14.out`,
+`exitcodes.txt`).
 
 ## Result
 

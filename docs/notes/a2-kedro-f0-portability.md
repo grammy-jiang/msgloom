@@ -5,20 +5,25 @@ Task: F0-06. Branch `research/a2-kedro-f0-20261024`, base `895fc40`.
 Candidate: `kedro` 1.7.0 (wheel SHA-256
 `488701a27c7d595b62a611cb23596953a9929fe5cc42a376c28abe26654c2438`).
 
-## Pending items in this evidence set
+## Full-suite results (final)
 
-PENDING: two cells in the co-install note (`a2-kedro-f0-coinstall.md`).
-They are the full pytest run on Python 3.12.14 (`FULL_312`, with
-`FULL_312_EXIT` and `FULL_312_RESULT`) and on Python 3.14.7 (`FULL_314`,
-with `FULL_314_EXIT` and `FULL_314_RESULT`). Both runs were still running
-when this note was committed. No value is recorded and none is guessed.
-The 3.13.16 full run is final: 4705 passed, exit 0.
+The full normal pytest set finished on all three Python versions.
 
-Rows in this note that depend on the two cells: the "Execution with Kedro"
-cell of the Linux aarch64 row (it names pytest), the Python 3.12 and 3.14
-rows in "Python versions", and the last row of "What each platform claim
-rests on". Their import and Pyright evidence is final. Their full pytest
-evidence is PENDING.
+| Python | Exit code | Result |
+| --- | --- | --- |
+| 3.12.14 | 0 | 4705 passed, 42 min 17 s |
+| 3.13.16 | 0 | 4705 passed, 24 min 9 s |
+| 3.14.7 | 1 | 1 failed, 4704 passed, 43 min 0 s |
+
+The 3.14.7 failure is
+`tests/container_deployment/test_container_qualification.py::test_real_local_container_timeout_is_removed_if_image_present`.
+The 3.12.14 and 3.14.7 runs ran at the same time. That test uses the fixed
+Docker container name `msgloom-qual-pytest-timeout`. A name collision between
+the two runs is a likely cause. It is not proven. The same test passed alone
+on 3.14.7 in two runs (exit 0 each). This failure is an open item for the
+security owner. Logs: `/tmp/f0-scratch-20261024/f05b/logs/`
+(`pytest-normal-cand-3.12.out`, `pytest-normal-cand-3.14.out`,
+`exitcodes.txt`).
 
 ## Result
 

@@ -43,7 +43,8 @@ What is NOT established:
 - Dataset deserialization (pickle and similar) reachability has no dedicated
   test. See "Open risks".
 - Execution evidence exists for Linux aarch64 only.
-- Full pytest runs on 3.12 and 3.14 are PENDING. See "Pending items".
+- Full pytest runs: 3.12 and 3.13 passed (4705). 3.14 had 1 failure in a
+  container test. See "Full-suite results".
 
 What blocks F0-10:
 
@@ -182,24 +183,18 @@ Facts about the table:
 - Strict-mode Pyright would report partly unknown Kedro types
   (type completeness 84.7%).
 
-## Pending items
+## Full-suite results
 
-Two cells are PENDING. They are in `a2-kedro-f0-coinstall.md`. The runs were
-still running when this report was committed. No value is recorded.
+All three full runs finished. 3.12.14: exit 0, 4705 passed. 3.13.16: exit 0,
+4705 passed. 3.14.7: exit 1, 1 failed, 4704 passed.
 
-| Placeholder | Meaning | Rows that depend on it |
-| --- | --- | --- |
-| `FULL_312`, `FULL_312_EXIT`, `FULL_312_RESULT` | Full normal pytest set on Python 3.12.14 | coinstall Result table and Tests table; coinstall F0-05b status (now PARTIAL); types-tests part (b); portability 3.12 execution cells |
-| `FULL_314`, `FULL_314_EXIT`, `FULL_314_RESULT` | Full normal pytest set on Python 3.14.7 | Same rows, 3.14 side |
+The 3.14.7 failure is `test_real_local_container_timeout_is_removed_if_image_present`.
+The 3.12 and 3.14 runs overlapped. The test uses the fixed container name
+`msgloom-qual-pytest-timeout`. A collision is likely but not proven. The test
+passed alone on 3.14.7 in two runs. The security owner may want a clean
+sequential 3.14 rerun before F0-09.
 
-Logs for the owner of the runs:
-`f05b/logs/pytest-normal-cand-3.12.out` and `pytest-normal-cand-3.14.out`.
-The runs use `-n 2`. The subset runs (327 tests each) passed on both
-versions. The subset is not a substitute for the full run.
-
-Lint result: `pre-commit run --files docs/notes/a2-kedro-f0-*.md` exited 0
-(all 10 notes; markdownlint-cli2, gitleaks, whitespace and end-of-file hooks
-passed).
+Logs: `/tmp/f0-scratch-20261024/f05b/logs/`.
 
 ## Decision options for the owner
 
@@ -208,9 +203,9 @@ Each option is a choice for the owner. This work takes none of them.
 | Option | What it means | Consequences |
 | --- | --- | --- |
 | Admit | Accept `kedro==1.7.0` as a runtime dependency now | The 20 packages (25 requirement lines; 24 effective on Linux CPython) enter the runtime set. `kedro-telemetry` and `requests` are installed even if unused. CVE-2026-3840 has no disposition. The telemetry and dataset rules are unenforced. The CI advisory scan stays red from the Brotli and Twisted reports. This option leaves every open item above without a disposition |
-| Admit with mitigations | Admit only after named controls exist and the pending items close | Needs: an owner disposition or answer for CVE-2026-3840; the F0-03 gate and tests in code; a network-namespace test and a `DO_NOT_TRACK=1` or plugin-disable control for telemetry; a rule that no `version`, `load_versions`, session, CLI or `kedro_datasets` is used; a decision on the Brotli and Twisted reports; a decision on the `pypydispatcher` lock route; the 3.12 and 3.14 full runs. This delays F0-09 and F0-10 |
+| Admit with mitigations | Admit only after named controls exist and the open items close | Needs: an owner disposition or answer for CVE-2026-3840; the F0-03 gate and tests in code; a network-namespace test and a `DO_NOT_TRACK=1` or plugin-disable control for telemetry; a rule that no `version`, `load_versions`, session, CLI or `kedro_datasets` is used; a decision on the Brotli and Twisted reports; a decision on the `pypydispatcher` lock route; the 3.12 and 3.14 full runs. This delays F0-09 and F0-10 |
 | Reject | Do not add Kedro | No new packages, no new open Kedro advisory. Existing Brotli and Twisted reports remain and need their own decision. A later reconsideration needs fresh evidence because the data is live and dated 2026-10-24 |
-| Defer | Keep Kedro out of the lock and wait for events | Candidate events: Snyk or the Kedro maintainers answer on CVE-2026-3840; stable Twisted release; Brotli 1.2.1 in the lock through a separate reviewed change; the two pending runs finish. F0-09 and F0-10 stay blocked in the meantime. The evidence needs a refresh when it is used, because it is dated |
+| Defer | Keep Kedro out of the lock and wait for events | Candidate events: Snyk or the Kedro maintainers answer on CVE-2026-3840; stable Twisted release; Brotli 1.2.1 in the lock through a separate reviewed change; a clean sequential 3.14 rerun passes. F0-09 and F0-10 stay blocked in the meantime. The evidence needs a refresh when it is used, because it is dated |
 
 Independent of the choice, the owner decides separately:
 
