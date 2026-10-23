@@ -78,11 +78,12 @@ class StageIdentity(_C0Model):
     workset: ResultRef
     partition_ordinal: Annotated[int, Field(ge=0, le=1023)]
     selected: tuple[FrozenRoot, ...] = ()
-    transition: IntakeTransition | None = None
+    transitions: tuple[IntakeTransition, ...] = ()
     stage_kind: Literal[
-        "extracted",
-        "parsed",
-        "normalized",
+        "frozen_source_selection",
+        "extracted_components",
+        "parsed_parts",
+        "normalized_content",
         "zones",
         "native_relations",
         "prepared",
@@ -106,8 +107,10 @@ class StageIdentity(_C0Model):
             "1",
         ):
             raise C0ContractError("stage workset schema mismatch")
-        if bool(self.selected) == (self.transition is not None):
-            raise C0ContractError("stage needs selected roots XOR transition")
+        if bool(self.selected) == bool(self.transitions):
+            raise C0ContractError("stage needs selected roots XOR transition batch")
+        if len(set(self.transitions)) != len(self.transitions):
+            raise C0ContractError("duplicate exact transition in batch")
         if len(self.selected) != len(
             {(root.entry, root.selected, root.occurrence) for root in self.selected}
         ):
@@ -119,10 +122,25 @@ class StageIdentity(_C0Model):
             raise C0ContractError("incremental and baseline roots cannot mix")
         if len(self.upstream) != len(set(self.upstream)):
             raise C0ContractError("duplicate upstream result")
-        if self.stage_kind == "prepared_transitions" and self.transition is None:
-            raise C0ContractError("transition stage requires exact transition")
-        if self.stage_kind != "prepared_transitions" and self.transition is not None:
+        if self.stage_kind == "prepared_transitions" and not self.transitions:
+            raise C0ContractError("transition stage requires exact transition batch")
+        if self.stage_kind != "prepared_transitions" and self.transitions:
             raise C0ContractError("transition cannot become a message")
+        expected_versions = {
+            "frozen_source_selection": "1",
+            "extracted_components": "1",
+            "parsed_parts": "1",
+            "normalized_content": "1",
+            "zones": "1",
+            "native_relations": "1",
+            "prepared": "2",
+            "filter_result": "2",
+            "group_result": "2",
+            "prepared_transitions": "2",
+            "a2_input_disposition": "1",
+        }
+        if self.schema_version != expected_versions[self.stage_kind]:
+            raise C0ContractError("stage kind/version pairing is not approved")
         for version in (
             self.configuration_version,
             self.code_version,
@@ -150,7 +168,7 @@ class StageIdentity(_C0Model):
 class AcceptedPayload(_C0Model):
     """Separately verified output; execution/attempt remain external audit."""
 
-    logical_key: str
+    logical_key: Annotated[str, Field(pattern=r"^a2-accepted:[0-9a-f]{64}$")]
     output: ResultRef
     canonical_sha256: Digest
     canonical_byte_count: Annotated[int, Field(ge=1, le=64 * 1024 * 1024)]
@@ -279,6 +297,14 @@ class CompletionReceipt(_C0Model):
     transition_batch: TransitionBatch | None = None
     status: TerminalStatus
     policy_version: str
+
+    @model_validator(mode="after")
+    def validate_policy(self) -> CompletionReceipt:
+        if not self.policy_version.strip() or len(self.policy_version.encode()) > 2048:
+            raise C0ContractError("invalid frozen receipt policy")
+        if self.status not in {TerminalStatus.COMPLETE, TerminalStatus.INCOMPLETE}:
+            raise C0ContractError("receipt must be a terminal accepted outcome")
+        return self
 
     def validate_against(
         self, workset: PreparationIntakeWorkset, expected_workset_ref: ResultRef

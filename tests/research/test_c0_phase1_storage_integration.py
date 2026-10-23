@@ -20,6 +20,7 @@ from msgloom.contracts import (
     ExecutionIdentity,
     ExternalEffectState,
     ResultSchemaRegistry,
+    SemanticDataRef,
     StageResult,
     TerminalStatus,
 )
@@ -86,6 +87,14 @@ def registries(
     return schema, SemanticDataRegistry(tuple(codecs))
 
 
+def required_semantic_ref(result: StageResult) -> SemanticDataRef:
+    """A semantic persistence result must have a typed, usable reference."""
+    ref = result.semantic_data_ref
+    if ref is None:
+        pytest.fail("Expected a fully materialized semantic result reference")
+    return ref
+
+
 async def open_store(path: Path, *, prepared_v2: bool = False) -> Phase1Persistence:
     schema, semantic = registries(prepared_v2=prepared_v2)
     return await Phase1Persistence.open(
@@ -128,7 +137,7 @@ async def create_claim(
     execution: str,
     attempt: str,
     *,
-    lease: float = 3,
+    lease: float = 120,
 ):
     return await store.acquire_claim(
         key,
@@ -163,9 +172,13 @@ def test_claim_fenced_semantic_persists_after_reopen_and_different_attempt_confl
             )
             await store.append_result_with_data(first, value, claim=claim1)
             if await store.get_result(result_id) != first:
-                pytest.fail("Expected C0 test condition at line 165")
-            if await store.load_semantic_data(first.semantic_data_ref) != value:
-                pytest.fail("Expected C0 test condition at line 166")
+                pytest.fail(
+                    "first accepted StageResult was not readable after the claim-fenced append"
+                )
+            if await store.load_semantic_data(required_semantic_ref(first)) != value:
+                pytest.fail(
+                    "first semantic bytes were not readable after the claim-fenced append"
+                )
             await store.finish_claim(
                 claim1, TerminalStatus.COMPLETE, ExternalEffectState.NONE
             )
@@ -175,9 +188,13 @@ def test_claim_fenced_semantic_persists_after_reopen_and_different_attempt_confl
         store = await open_store(db)
         try:
             if await store.get_result(result_id) != first:
-                pytest.fail("Expected C0 test condition at line 175")
-            if await store.load_semantic_data(first.semantic_data_ref) != value:
-                pytest.fail("Expected C0 test condition at line 176")
+                pytest.fail(
+                    "first StageResult changed after reopening the SQLite database"
+                )
+            if await store.load_semantic_data(required_semantic_ref(first)) != value:
+                pytest.fail(
+                    "first semantic bytes changed after reopening the SQLite database"
+                )
             claim2 = await create_claim(
                 store, "c0-probe:one-input", "c0-execution-2", "c0-attempt-2"
             )
@@ -202,9 +219,13 @@ def test_claim_fenced_semantic_persists_after_reopen_and_different_attempt_confl
                 )
             # Published first result is not changed by either rollback.
             if await store.get_result(result_id) != first:
-                pytest.fail("Expected C0 test condition at line 200")
-            if await store.load_semantic_data(first.semantic_data_ref) != value:
-                pytest.fail("Expected C0 test condition at line 201")
+                pytest.fail(
+                    "first StageResult changed after a rejected equal-byte or changed-byte replay"
+                )
+            if await store.load_semantic_data(required_semantic_ref(first)) != value:
+                pytest.fail(
+                    "first semantic bytes changed after a rejected equal-byte or changed-byte replay"
+                )
             await store.finish_claim(
                 claim2, TerminalStatus.INCOMPLETE, ExternalEffectState.NONE
             )
@@ -221,7 +242,7 @@ def test_durable_claim_busy_and_expiry_fence_real_sqlite(tmp_path: Path) -> None
         store = await open_store(tmp_path / "claims.sqlite3")
         try:
             active = await create_claim(
-                store, "c0-probe:busy", "first-exec", "first-attempt", lease=2
+                store, "c0-probe:busy", "first-exec", "first-attempt"
             )
             with pytest.raises(ClaimUnavailableError):
                 await create_claim(
@@ -241,7 +262,9 @@ def test_durable_claim_busy_and_expiry_fence_real_sqlite(tmp_path: Path) -> None
             with pytest.raises(StaleClaimError):
                 await store.append_result_with_data(terminal_stage, value, claim=active)
             if not (await store.get_result("after-finish") is None):
-                pytest.fail("Expected C0 test condition at line 237")
+                pytest.fail(
+                    "result was published although its claim was already finished"
+                )
 
             expired = await create_claim(
                 store,
@@ -260,7 +283,9 @@ def test_durable_claim_busy_and_expiry_fence_real_sqlite(tmp_path: Path) -> None
             with pytest.raises(StaleClaimError):
                 await store.append_result_with_data(expired_stage, value, claim=expired)
             if not (await store.get_result("expired-result") is None):
-                pytest.fail("Expected C0 test condition at line 255")
+                pytest.fail(
+                    "result was published although its claim lease was already expired"
+                )
         finally:
             await store.close()
 
@@ -294,25 +319,33 @@ def test_cancellation_after_real_sqlite_commit_requires_readback(
             def delayed_after_commit(*args, **kwargs):
                 saved(*args, **kwargs)  # REAL Phase1Store transaction, COMMIT done
                 committed.set()
-                if not allow_return.wait(timeout=2):
+                if not allow_return.wait(timeout=30):
                     raise RuntimeError("test acknowledgement barrier timed out")
 
             store._store.append_result_with_data = delayed_after_commit
             publishing = asyncio.create_task(
                 store.append_result_with_data(result, value, claim=claim)
             )
-            if not (await asyncio.to_thread(committed.wait, 2)):
-                pytest.fail("Expected C0 test condition at line 296")
+            if not (await asyncio.to_thread(committed.wait, 30)):
+                pytest.fail(
+                    "worker never reached the post-COMMIT barrier before the timeout"
+                )
             if not (publishing.cancel()):
-                pytest.fail("Expected C0 test condition at line 297")
+                pytest.fail(
+                    "caller task was already done, so cancellation could not be tested"
+                )
             allow_return.set()
             with pytest.raises(asyncio.CancelledError):
                 await publishing
             # Successful SQLite commit is still visible, despite CANCELLED.
             if await store.get_result(result.result_id) != result:
-                pytest.fail("Expected C0 test condition at line 302")
-            if await store.load_semantic_data(result.semantic_data_ref) != value:
-                pytest.fail("Expected C0 test condition at line 303")
+                pytest.fail(
+                    "committed StageResult was not visible after the caller was cancelled"
+                )
+            if await store.load_semantic_data(required_semantic_ref(result)) != value:
+                pytest.fail(
+                    "committed semantic bytes were not visible after the caller was cancelled"
+                )
             store._store.append_result_with_data = saved
             await store.finish_claim(
                 claim, TerminalStatus.INCOMPLETE, ExternalEffectState.NONE
@@ -322,9 +355,16 @@ def test_cancellation_after_real_sqlite_commit_requires_readback(
         reopened = await open_store(db)
         try:
             if await reopened.get_result(result.result_id) != result:
-                pytest.fail("Expected C0 test condition at line 312")
-            if await reopened.load_semantic_data(result.semantic_data_ref) != value:
-                pytest.fail("Expected C0 test condition at line 313")
+                pytest.fail(
+                    "committed StageResult was not visible after reopening the database"
+                )
+            if (
+                await reopened.load_semantic_data(required_semantic_ref(result))
+                != value
+            ):
+                pytest.fail(
+                    "committed semantic bytes were not visible after reopening the database"
+                )
         finally:
             await reopened.close()
 
@@ -355,7 +395,9 @@ def test_legacy_preparation_proof_explicitly_rejects_prepared_v2(
             with pytest.raises(DependencyNotReadyError):
                 await store.append_result_with_data(prepared_v2, value, claim=claim)
             if not (await store.get_result(prepared_v2.result_id) is None):
-                pytest.fail("Expected C0 test condition at line 343")
+                pytest.fail(
+                    "prepared@2 result was stored although the legacy plan proof rejected it"
+                )
             await store.finish_claim(
                 claim, TerminalStatus.INCOMPLETE, ExternalEffectState.NONE
             )
@@ -384,7 +426,9 @@ def test_codec_integrity_failure_does_not_create_result(tmp_path: Path) -> None:
             with pytest.raises(SemanticDataReferenceError):
                 await store.append_result_with_data(stage, mismatch, claim=claim)
             if not (await store.get_result(stage.result_id) is None):
-                pytest.fail("Expected C0 test condition at line 371")
+                pytest.fail(
+                    "StageResult was stored although the semantic codec check failed"
+                )
             await store.finish_claim(
                 claim, TerminalStatus.INCOMPLETE, ExternalEffectState.NONE
             )

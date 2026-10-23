@@ -18,19 +18,35 @@ C0 investigates the actual accepted A1 release and native Phase1Persistence impl
 | msgloom/persistence/store.py | append_result_with_data uses BEGIN IMMEDIATE, canonical semantic reference and live ClaimToken publication checks in one transaction | Existing writer is useful infrastructure; its current shape is NOT a complete A2 logical-key acceptance store |
 | msgloom/contracts/models.py | StageResult includes execution and attempt, while result_id is globally immutable | Reusing a deterministic result_id with a different attempt/exec is rejected even when bytes match; attempt audit must be separate from accepted logical data |
 | msgloom/persistence/preparation_proof.py | Existing plan binding allowlists only version-1 prepared/filter/group/etc, requires PREPARE plan ownership and binds result to attempt | Simply registering prepared@2 in ResultSchemaRegistry is insufficient; a new versioned A2 acceptance/plan proof is required |
-| msgloom/persistence/intake_completion.py | Existing completion requires accepted prepared@1 output for every selected root, and has a fixed old-output bound | Held-only and A2-held cannot be finalized by this old proof; add a distinct A2-owned receipt@2 and consumer-side accepted version strategy |
+| msgloom/persistence/intake_completion.py | Existing completion requires accepted prepared@1 output for every selected root (line 252 raises only when ``selection_refs`` is non-empty) and has a fixed old-output bound. It does **not** reject a held-only workset: with no selections no plan proof exists, the aggregate status check at lines 183-195 is skipped (``if proofs``), and ``intake_store.py`` accepts any COMPLETE or INCOMPLETE status. Even with selections, the aggregate status ignores ``workset.held``. | The old proof **can** finalize a held-only workset as COMPLETE, and can accept COMPLETE for a workset with intake-held entries when every plan is COMPLETE. It cannot finalize A2-held roots, because it needs prepared@1 for every root. See the policy-change finding after this table. |
 | msgloom/persistence/async_store.py | _drain_thread drains real write tasks before exposing CancelledError | Postcommit caller cancellation must cause **read-back**, not blind retry or inference that the SQLite transaction rolled back |
+
+**Policy-change finding (legacy held-only behavior).** The statements in the
+table row above come from reading the legacy source. This worker did not
+execute a legacy held-only completion. The v2 rules in sections 7 and 8 are
+therefore a deliberate **new v2 policy change**, not a restatement of legacy
+behavior:
+
+- A workset with any intake-held entry or any A2-held root ends INCOMPLETE,
+  never COMPLETE.
+- Receipt@2 must account for ``workset.held`` itself. The legacy aggregate does
+  not force that inclusion.
+- A1 and the legacy completion code are **not** changed by C0. The owner of A1
+  and legacy completion receives the legacy behavior as a finding. Any change
+  to it needs its own reviewed task.
+- The prototype enforces the v2 rule only in
+  ``CompletionReceipt.validate_against`` (structural, no store reads).
 
 ### Real isolation tests
 
-- tests/research/test_c0_phase1_storage_integration.py: actual Phase1Persistence/SQLAlchemy/SQLite, new attempt metadata conflict, changed output conflict, lease expiry and stale claim, post-COMMIT cancellation and reopen, prepared@2 rejected by legacy plan proof, integrity check rejects inconsistent canonical bytes. Five tests.
-- tests/research/test_c0_contract_prototype.py: pure accepted-stage input identity. Checks missing, foreign and duplicate roots separately, plus multiple occurrences in noncontiguous ReleaseEntry sequence, held-only and A2-held mandatory INCOMPLETE, transition-only batch and strict frozen payloads. Eight tests.
+- tests/research/test_c0_phase1_storage_integration.py: actual Phase1Persistence/SQLAlchemy/SQLite, new attempt metadata conflict, changed output conflict, lease expiry and stale claim, post-COMMIT cancellation and reopen, prepared@2 rejected by legacy plan proof, integrity check rejects inconsistent canonical bytes. Five tests. Live claims use a 120-second lease. Expiry tests use ``lease=0`` with no sleeps. Failure messages describe the violated expectation.
+- tests/research/test_c0_contract_prototype.py: pure accepted-stage input identity. Checks missing, foreign and duplicate roots separately, plus multiple occurrences in noncontiguous ReleaseEntry sequence, held-only and A2-held mandatory INCOMPLETE, transition-only batch identity, and strict frozen payloads. Each strict-decode negative test decodes a valid JSON-mode payload (``model_validate_json``), has a positive control, and checks the exact predicate: extra field, selected-roots XOR transition batch, kind/version pairing and receipt policy version. One defensive test builds two ReleaseEntry occurrences that share one ResultRef: ``selection_refs`` deduplicates, and the receipt still needs one result per occurrence. Real A1 hashes the entry into every intake selection ID, so honest acquisition does not produce that case. Thirteen tests.
 - tests/research/test_c0_baseline_contract.py: approved historical baseline selection/source without invented ReleaseEntryRef, exact receipt coverage and A2-held. One test.
 - tests/research/test_c0_atomic_acceptance.py with scripts/research/c0_atomic_acceptance_prototype.py: **four tests of a research-only experimental SQLite acceptance table**. Actual Phase1Store BEGIN IMMEDIATE and ClaimToken validate; same input-only key across two different attempts, read-back and conflict rollback, expired claim refusal, two concurrent owners with equal output, and two concurrent owners with conflicting output. The research table is created ONLY in pytest tmp_path.
-- tests/research/test_c0_native_a1_exact_handoff.py: authentic local Scrapy Mail acquire → atomic A1 ReleaseEntry → ReleaseSourceReader → IntakeService → real saved CollectedSelection@1; recomputed intake ordinal identity, exact role and canonical semantic digest; malformed candidate rejected. One test.
+- tests/research/test_c0_native_a1_exact_handoff.py: authentic local Scrapy Mail acquire → atomic A1 ReleaseEntry → ReleaseSourceReader → IntakeService → real saved CollectedSelection@1; recomputed intake ordinal identity, exact role and canonical semantic digest. Three separate negative cases use only local in-memory copies: a candidate absent from the workset (membership guard only), a candidate that is in the frozen workset but whose ID is no ordinal identity of the exact release, and a stored selection whose content differs from the release re-read. The ambiguous-ordinal branch (two matches) cannot be built honestly because the ordinal is part of the hash, so it stays unexercised. One test.
 - Prototype model/validator implementation: scripts/research/c0_contract_prototype.py. These files are research/qualification artifacts only. No actual A2 runtime, persistence schema or registered production codec has been added.
 
-**Focused research gate:** 19/19 tests passed on the Raspberry Pi's existing msgloom Python 3.13 environment, including one native Scrapy/A1 release fixture. This number is a locally observed focused suite, not a portable CI matrix or full Kedro integration acceptance.
+**Focused research gate:** 24/24 tests (13 + 1 + 4 + 5 + 1) passed in each of three consecutive runs on the Raspberry Pi, using the existing msgloom Python 3.13 environment, including one native Scrapy/A1 release fixture. The runs used the uncommitted tree on top of 0eb8fe6. This number is a locally observed focused suite, not a portable CI matrix or full Kedro integration acceptance.
 
 The original A1 frozen Task15 acceptance (28/28, exact SHA 34057c6c9f85688fd2bd1868d90302ab5a61205f) is historical and **not** requalified by the C0 tests above.
 
@@ -112,7 +128,72 @@ Do not introduce unreviewed generic PREPARE stage saves into the existing prepar
 
 The real SQLite negative test confirms current `StageResult` uniqueness prevents both equal-byte and changed-byte replay under a new attempt. The separate **research-only** transactional experiment demonstrates a claim-fenced input-key row which returns the original validated StageResult and semantic bytes without rewriting first-attempt metadata. The isolated SQLite table exercises `BEGIN IMMEDIATE` compare/insert across retries and two concurrent owners (both equal and conflicting payloads). These are evidence of design direction, **not** a qualified production migration.
 
-**Critical boundary:** the experiment deliberately bypasses the old PREPARE plan-binding path using research-only `c0-a2:` claim keys with **empty `required_inputs`**. It therefore does NOT prove A1 input lineage, the production publishing-plan receipt, finalization of the accepted A1 Workset, postcommit crash recovery of this new index, or migration compatibility. The **production** acceptance table/API has NOT been created, migrated, registered, or exercised as a business workflow.
+**Critical boundary.** The experiment bypasses the old PREPARE plan-binding
+path because its claim keys use the ``c0-a2:`` prefix. The legacy function
+``bind_preparation_result`` returns early unless the claim key starts with
+``prepare:``. That prefix is the **cause** of the bypass. Empty
+``required_inputs`` is a **separate gap**: an empty input tuple would still
+pass the v1 reference check, so it does not explain the bypass, and the
+experiment claims carry no lineage.
+
+The experimental ``publish`` call does **not** verify these items. Each item is
+unverified:
+
+1. **Status and limitations.** ``StageResult.status``, ``acceptable`` and
+   declared limitations are not compared with the identity or the receipt. A
+   replay counts as equal on digest and byte count alone, so a replay with a
+   different status or limitations looks identical.
+2. **Upstream refs.** The ordered ``upstream`` references and ``input_refs``
+   are not checked for existence, kind, version or acceptance.
+3. **Attempt versus claim.** ``require_claim_publication`` checks the
+   execution only. The ``StageResult`` attempt is not compared with the claim
+   attempt, as the legacy binding does.
+4. **Workset scope.** The workset, the scope key and the selected roots are not
+   checked against a durable workset. ``FrozenRoot`` is caller-constructible,
+   and its fake digests are accepted.
+5. **Batch transition identity.** ``StageIdentity`` now takes an ordered
+   transition tuple, and the receipt requires one batch result. The prototype
+   binds order and rejects duplicates. The batch-level production identity
+   (what the batch claim and result bind) is still open.
+6. **Kind and version allow-table.** The prototype table checks
+   ``stage_kind`` against one fixed ``schema_version``. It is a local constant.
+   The production table must be closed, versioned and tied to upstream arity.
+7. **Synchronous facade bypass.** ``publish`` calls the private
+   ``Phase1Store`` transaction directly. It skips the async facade accounting
+   (semaphore, drain and close tracking).
+
+The experiment therefore does NOT prove A1 input lineage, the production
+publishing-plan receipt, finalization of the accepted A1 Workset, postcommit
+crash recovery of this new index, or migration compatibility. The
+**production** acceptance table/API has NOT been created, migrated, registered,
+or exercised as a business workflow.
+
+### Research-prototype limits (do not port to production)
+
+- ``ExperimentalA2AcceptanceStore`` takes ``store._store``, a **private**
+  attribute of ``Phase1Persistence``. It also uses the private
+  ``_write_transaction``. A production API must expose a reviewed method.
+- The tests call ``publish`` through ``asyncio.to_thread``. Cancellation of that
+  await is **not protected**: the worker thread keeps running and may commit
+  after the caller sees ``CancelledError``. The facade's own drain logic is
+  bypassed on this path. Recovery needs read-back, and no test proves it for
+  this path.
+- On the row-exists path, ``publish`` decodes the stored semantic payload
+  **inside the writer lock**. A 64 MiB payload would hold the lock and could
+  outlast a lease. A1 loads proof before the writer transaction on purpose.
+  Production must recheck metadata only inside the transaction.
+- ``metadata.create_all`` on the scratch table is **experiment-only**. It runs
+  in the constructor against a disposable ``tmp_path`` database. It is not a
+  migration, and the table lives outside ``initialize_schema``. Production must
+  not port it. ``byte_count`` is also a ``String(32)`` there, which production
+  must not copy.
+- The two concurrency tests use **different claim keys** for the two owners.
+  A production deterministic partition claim key is the same for both, so the
+  second owner would fail with ``ClaimUnavailableError`` before it reaches the
+  acceptance table. The tests therefore exercise the table's BEGIN IMMEDIATE
+  compare-and-insert in isolation: the claim fence cannot separate the owners,
+  so the row decides. They start both threads without a barrier, so they show
+  SQLite serialization and do not prove that the writes overlapped.
 
 ## 7. Held-only, transitions and new completion receipt (C0.11)
 
@@ -123,7 +204,7 @@ Receipt@2 must cover every ordered **workset.selections occurrence**, not only w
 
 If workset.transitions is nonempty, require exactly one accepted prepared_transitions@2 batch whose ordered transition list equals the frozen workset.transitions; no foreign entries, overlapping claims or missing transitions. Intake-held workset.held are an independent exact set without selected roots and are never rewritten by A2.
 
-**Receipt terminal status:** COMPLETE only if every selected root is prepared complete, all required scoped transitions are terminal COMPLETE, and workset.held is empty. Held-only or any incomplete/held root yields INCOMPLETE. Missing/overlapping/foreign root, stale claim, incomplete publication, unaccepted output, unknown schema, or contradictory status yields FAIL/BLOCK at finalization rather than a forged complete receipt.
+**Receipt terminal status:** COMPLETE only if every selected root is prepared complete, all required scoped transitions are terminal COMPLETE, and workset.held is empty. Held-only or any incomplete/held root yields INCOMPLETE. This is a **new v2 policy change**: the legacy completion code can finalize a held-only workset as COMPLETE (section 1). A1 and the legacy code stay unchanged. Missing/overlapping/foreign root, stale claim, incomplete publication, unaccepted output, unknown schema, or contradictory status yields FAIL/BLOCK at finalization rather than a forged complete receipt.
 
 **Accepted v2 proof:** the producer must transactionally validate each stage's publishing claim receipt, accepted logical key/output digest, exact roots and source version scopes before writing the immutable completion receipt. A normal scheduled call may mark a fully accounted but held-only workset **terminal INCOMPLETE**, not leave it pending and spin indefinitely. A later operator-approved replay writes a NEW A2 attempt/receipt targeting the same original workset without changing the previous accepted terminal proof. The v2 reader/retirement of v1 proof requires a separately reviewed migration and A3 adapter.
 

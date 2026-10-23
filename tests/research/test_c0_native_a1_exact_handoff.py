@@ -67,7 +67,7 @@ def test_c0_exact_accepted_a1_release_selection_role_and_ordinal(
                 configuration_version="c0-config",
                 code_version="c0-code",
                 limit=1,
-                lease_seconds=8,
+                lease_seconds=120,
             )
             if intake_result is None or intake_result.semantic_data_ref is None:
                 pytest.fail("accepted A1 did not create durable intake workset")
@@ -107,8 +107,52 @@ def test_c0_exact_accepted_a1_release_selection_role_and_ordinal(
                     selected.result.schema_version,
                 ),
             )
+            # Negative 1: the candidate is absent from the frozen workset, so
+            # only the membership guard fires; ordinal hashing is not reached.
             with pytest.raises(C0ContractError, match="frozen intake"):
                 verify_exact_release_root(workset, wrong, released, saved_selection)
+
+            # Negative 2: the candidate IS a frozen workset selection of the
+            # exact released entry, but its result ID is not the A1 ordinal
+            # identity of any released value. The workset below is a local
+            # in-memory copy; the saved A1 workset and release stay untouched.
+            # Two matching ordinals cannot be built honestly, because the
+            # ordinal is hashed into the ID, so that branch stays unexercised.
+            forged = IntakeSelection(
+                entry=selected.entry,
+                result=ResultRef(
+                    "intake-selection:" + "0" * 64,
+                    selected.result.kind,
+                    selected.result.schema_version,
+                ),
+            )
+            forged_workset = PreparationIntakeWorkset.model_validate(
+                {
+                    name: getattr(workset, name)
+                    for name in PreparationIntakeWorkset.model_fields
+                }
+                | {"selections": (forged,)}
+            )
+            if forged not in forged_workset.selections:
+                pytest.fail("forged candidate must be a frozen workset selection")
+            with pytest.raises(C0ContractError, match="ordinal identity"):
+                verify_exact_release_root(
+                    forged_workset, forged, released, saved_selection
+                )
+
+            # Negative 3: the ordinal identity is correct, but the stored
+            # CollectedSelection content differs from the release re-read.
+            differing = saved_selection.model_copy(
+                update={
+                    "record": saved_selection.record.model_copy(
+                        update={"subject": "c0-differing-stored-subject"}
+                    )
+                }
+            )
+            if differing == saved_selection:
+                pytest.fail("differing stored selection must change its content")
+            with pytest.raises(C0ContractError, match="differs from verified"):
+                verify_exact_release_root(workset, selected, released, differing)
             # The accepted intake was a one-cut immutable projection; role
             # recovery did not re-admit work or mutate A1's release sequence.
             if (

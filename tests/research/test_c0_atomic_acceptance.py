@@ -29,6 +29,7 @@ from tests.research.test_c0_phase1_storage_integration import (
     create_claim,
     make_stage,
     open_store,
+    required_semantic_ref,
 )
 
 
@@ -114,7 +115,7 @@ def test_atomic_acceptance_replays_same_key_across_attempts(tmp_path: Path) -> N
             saved = await reopened.get_result(accepted_key)
             if saved != first:
                 pytest.fail("C0 replay rewrote first accepted StageResult metadata")
-            if await reopened.load_semantic_data(first.semantic_data_ref) != value:
+            if await reopened.load_semantic_data(required_semantic_ref(first)) != value:
                 pytest.fail("C0 replay lost original canonical semantic bytes")
 
             changed = C0TestPayload("CONFLICTING nondeterministic parser bytes")
@@ -178,7 +179,14 @@ def test_atomic_acceptance_checks_real_expired_claim_before_lookup(
 
 
 def test_concurrent_claims_publish_single_logical_key(tmp_path: Path) -> None:
-    """BEGIN IMMEDIATE serializes independent owners of the same accepted key."""
+    """BEGIN IMMEDIATE serializes two owners of one accepted input key.
+
+    The owners hold two different claim keys. That is a research shortcut.
+    A production deterministic partition claim key would make the second
+    owner fail with ``ClaimUnavailableError`` before it could publish. The
+    test starts both threads without a barrier, so it shows SQLite
+    serialization of the compare-and-insert, not proven overlap.
+    """
 
     async def scenario() -> None:
         db = tmp_path / "a2-race.sqlite3"
@@ -234,7 +242,13 @@ def test_concurrent_claims_publish_single_logical_key(tmp_path: Path) -> None:
 def test_concurrent_conflicting_output_has_one_winner_and_no_second_commit(
     tmp_path: Path,
 ) -> None:
-    """Racing valid claim owners cannot insert two digests for one input key."""
+    """Racing owners cannot insert two digests for one input key.
+
+    The owners hold two different claim keys, so the claim fence cannot
+    separate them. Only the acceptance table decides the winner. A
+    production partition claim key would normally stop the second owner
+    earlier. There is no start barrier, so overlap is not proven.
+    """
 
     async def scenario() -> None:
         db = tmp_path / "a2-race-conflict.sqlite3"

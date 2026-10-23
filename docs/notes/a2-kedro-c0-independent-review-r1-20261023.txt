@@ -1,0 +1,135 @@
+DECISION: REVISE
+REVIEWED_SHA: 0eb8fe6d2e5d301c359b60292c1852bbe7558c6d
+
+I read everything listed using Read, Grep and Glob only. I ran no tests and did not check Git, so I can't confirm the branch matches the SHA above. The REVISE items are narrow edits to the doc and tests, with no redesign. The contract direction and the limits of the existing store look right to me. I'd accept the candidate once the P1 items below are fixed.
+
+## Verdict by scope
+- **Bounded C0 research candidate:** ACCEPT after the P1 items are fixed.
+- **C0 production freeze:** NO-GO. The v2 schemas, receipt and acceptance store are unverified prototypes.
+- **Security approval:** NO. The doc itself leaves the Snyk CVE-2026-3840 owner decision open, and I couldn't check it.
+- **New A2 dependency or implementation (including Kedro):** NO-GO until the production-blocker list is closed.
+
+## What I verified
+- **Test count:** 8 + 1 + 4 + 5 + 1 = 19, matching the doc. `__pycache__` holds cpython-313 / pytest-9.1.1 `.pyc` files for all six modules. That fits the author's claim, but it does not show the tests passed.
+- **Repo rules:**
+  - A grep for `^\s*assert\b` finds none in either research directory.
+  - The largest module is 429 lines.
+  - Tests use `tmp_path`, a loopback-only HTTP server (`tests/handoff_qualification/mail_scheduled.py:53`) and `sys.executable`. I found no production DB or credentials.
+- **A1 identity algorithm:** `verify_exact_release_root` (`c0_contract_prototype.py:389-410`) matches A1 line by line: `intake.py:180-187` (values), `205-215` (identity parts), `365-366` (hash and prefix).
+- **Storage facts:**
+  - `_write_transaction` really issues `BEGIN IMMEDIATE` and rolls back on any exception (`store.py:483-491`).
+  - The claim fence is `claim_store.py:73-87`.
+  - `StageResult` immutability including attempt: `result_store.py:26-33`.
+  - Legacy v1-only allowlist: `preparation_proof.py:81`.
+  - Old completion needs prepared@1 for every root: `intake_completion.py:262` and `331`.
+- **No deadlock found:** the engine has `pool_size=1` (`store.py:91-97`), but the prototype's in-transaction reads reuse one connection (`c0_atomic_acceptance_prototype.py:73-105`), so nothing checks out a second connection.
+
+## P1 – fix before ACCEPT
+
+**P1-1. The doc's source audit is wrong about held-only worksets.**
+- Doc line 21 says "Held-only and A2-held cannot be finalized by this old proof." That is false for intake-held-only worksets.
+  - `intake_completion.py:252` only raises when `selection_refs` is non-empty.
+  - With an empty `refs`, nothing is covered and `completion_receipts` returns no proofs. The status check at `:183-195` is skipped (`if proofs`), and `intake_store.py:348-351` accepts any COMPLETE or INCOMPLETE.
+  - So legacy can finalize a held-only workset as COMPLETE.
+- Even with selections present, the aggregate status at `:184-195` ignores `workset.held`. COMPLETE with intake-held entries is accepted if every plan is COMPLETE.
+- The prototype's rule (held means INCOMPLETE; `c0_contract_prototype.py:337-351`, doc line 126) is therefore a deliberate policy change from legacy, not a restatement.
+- Fix: correct the table row, state the policy change, and record the legacy behaviour as a finding for the A1/legacy owner. Do not edit A1.
+- Doc §8 "no automatic spin" depends on this.
+
+**P1-2. Three negative tests likely pass for the wrong reason.** I can't run them, so this is high-likelihood, not confirmed.
+- Affected: `test_c0_contract_prototype.py:204-211`, `:380-383` and `:400-403`.
+- `ResultRef` and `VersionRef` are stdlib frozen dataclasses (`contracts/models.py:55-66`). The models are `strict=True` (`c0_contract_prototype.py:34`). Python-mode `model_dump()` turns the dataclasses into dicts, and strict validation likely rejects those dicts whatever the other fields hold.
+- At `:380-383`, `model_copy(update=...)` doesn't validate, and `model_validate` runs on the original dump. The XOR rule (`c0_contract_prototype.py:109`) and the transition-stage rule (`:122-125`) are not actually exercised.
+- At `:400-403`, `CompletionReceipt` has no construction-time check for an empty `policy_version`. That check lives only in `validate_against` (`:352`), so a ValidationError there can only come from the strictness artifact.
+- This undercuts the doc's "strict frozen payloads" claim (line 27).
+- Fix: use `mode="json"` with `model_validate_json`, or pass instances, and test each invariant separately.
+
+**P1-3. The "occurrence vs `selection_refs` dedup" claim is not exercised.**
+- The fixture gives every occurrence a distinct ref (`test_c0_contract_prototype.py:69-77`, `i*3+j`).
+- The only `selection_refs` check is that it is non-empty (`:271`).
+- The workset validator does allow an equal `ResultRef` at different entries (`intake_models.py:227-237`).
+- A1's selection identity embeds the entry JSON (`intake.py:205-215`), so A1 can't produce that case. The doc should say so.
+- Fix: add a test with an equal `ResultRef` at two entries.
+
+**P1-4. The doc's "Critical boundary" paragraph (§6, line 115) is incomplete.**
+- **Bypass mechanism:** it says the experiment bypasses plan binding with empty `required_inputs`. The actual mechanism is the `c0-a2:` key prefix, because `bind_preparation_result` returns early unless the key starts with `prepare:` (`preparation_proof.py:114-117`). Empty inputs would pass `_references(())` for v1 anyway.
+- **Unbound inputs:** `publish` doesn't bind or check the following (`c0_atomic_acceptance_prototype.py:56-63`, `:82-91`):
+  - upstream refs, the workset, or the roots
+  - `StageResult.status`, `input_refs`, or configuration/code versions against the identity
+  - attempt against claim (`require_claim_publication` checks execution only, `claim_store.py:86`)
+- **Replay:** a replay is "equal" on digest and size alone, so a replay with a different status or limitations is treated as identical.
+- **Batch vs single transition (design inconsistency):** `StageIdentity` takes exactly one transition (`:83-92`, `:122-123`). The receipt requires exactly one batch result for the whole ordered set (`:253-271`). The batch-level identity is unspecified. List it as open.
+- **Naming drift:** `stage_kind` values (`extracted`, `parsed`, `normalized`, `c0_contract_prototype.py:82-93`) differ from the doc §2 kinds (`extracted_components`, `parsed_parts`, `normalized_content`). `publish` requires `result.kind == stage_kind` (`c0_atomic_acceptance_prototype.py:58`). Any kind/version pairing is accepted, including `prepared@1`.
+
+**P1-5. Overclaim in doc line 30.** "Malformed candidate rejected" is not what the native test shows.
+- The test's `wrong` selection (`test_c0_native_a1_exact_handoff.py:102-111`) is rejected by the "not in workset.selections" guard (`c0_contract_prototype.py:383`).
+- The ordinal-mismatch, ambiguity and saved-selection-mismatch branches (`:411-415`) are never run.
+- Fix: reword the claim, or add a case where the selection is in the workset but the ordinal hash is wrong.
+
+## Your six questions
+
+1. **Receipt@2: structural only, not verified against durable payloads.**
+   - `validate_against` takes a caller-supplied workset and ref, with no store reads. It does not check that result refs exist, are acceptable or claim-bound, or that the declared status matches the stored `StageResult` (`:283-353`).
+   - A forged receipt with fabricated refs, claiming COMPLETE for a workset with no held entries, passes. The doc admits this (line 130).
+   - COMPLETE with `workset.held` non-empty is rejected by the prototype, and the tests cover it (`:318-320`, `:347-348`). Legacy does not enforce that (P1-1).
+   - Held-only worksets need INCOMPLETE and no roots. The transition batch must match the frozen order exactly. Baseline roots use `baseline_sources` and `baseline_selections`, with no fake `ReleaseEntryRef` (`FrozenRoot` validator `:49-71`).
+   - `receipt_digest` (`:356`) digests an unvalidated receipt. The receipt doesn't bind the held set.
+
+2. **StageIdentity: the key is input-only and deterministic.**
+   - It uses a domain tag plus canonical JSON, with frozen versions, ordered upstream, and duplicate checks (`:102-147`). Extra fields are forbidden.
+   - Invalid or forged keys are still acceptable in four ways:
+     - `FrozenRoot` is caller-constructible. The tests use fake digests (`test_c0_contract_prototype.py:152-159`), nothing requires `selected.result_id == "intake-selection:" + proof`, and role and ordinal are not cross-checked.
+     - Upstream refs and the workset are not checked for durability or kind.
+     - `scope_key` is an arbitrary digest.
+     - The `AcceptedPayload` logical key is only length-checked, not hex-checked (`:161-164`).
+   - "Occurrence" means two things: the ordinal within an entry (`:41`) and the workset index (`:222`).
+
+3. **Research SQLite table: it does what the doc says, within the limits above.**
+   - It does BEGIN IMMEDIATE, fences on the claim before and after, keeps first-writer `StageResult` and semantic bytes immutable, and rolls back on conflict.
+   - The concurrency tests give no real evidence of overlap, because there is no start barrier (`test_c0_atomic_acceptance.py:212-215`, `:269-273`). Serialization is SQLite's property, not something the test shows.
+   - The two owners use different claim keys. In production, a deterministic partition key would make the second owner fail with `ClaimUnavailableError` (`store.py:267-268`).
+   - The row-exists path decodes the payload inside the write lock (`c0_atomic_acceptance_prototype.py:94-105`). A1 deliberately avoids this (`intake_records.py:92-94`; proof is loaded before the writer transaction in `intake_store.py:359-407`). With a 64 MiB cap (`c0_contract_prototype.py:156`) that risks lock hold and lease expiry. Record it as a pattern not to productionize.
+   - `asyncio.to_thread` on `store._store` bypasses the facade's semaphore, drain and close accounting (`async_store.py:376-393`, `421-442`). Cancellation safety on this path is unproven.
+   - The doc does not overclaim production A1 lineage. Lines 113-115 are explicit, apart from the gaps in P1-4.
+
+4. **Legacy proofs: confirmed.**
+   - prepared@2 is rejected by the v1-only allowlist (`preparation_proof.py:81`). The test reaches that rejection, not an earlier one.
+   - Old completion needs prepared@1 and `PreparedRecord` for every selected root (`intake_completion.py:262`, `:331`).
+   - The held-only statement is the exception (P1-1).
+
+5. **Native A1 test: one primary entry only.**
+   - It covers real local Scrapy Mail, `ReleaseSourceReader`, `PreparationIntakeService`, then the saved selection's ordinal, digest and role.
+   - Components, transitions, contexts, historical baseline and a duplicate or noncontiguous release are unproven. The doc says so (line 76).
+   - `read_baseline_selection` falls back to the manual reader for other source kinds (`release_reader.py:32-33`). The future baseline verifier must pin the allowed kinds.
+   - The test touches A1 only through public APIs, on a `tmp_path` database. I can't confirm from here that no A1 source file changed.
+
+6. **Repo rules, misleading text, risks.** The hard rules pass, as listed above. Remaining P2 items:
+   - Failure messages read "Expected C0 test condition at line N" with wrong or stale line numbers (`test_c0_contract_prototype.py:178-202`, `test_c0_phase1_storage_integration.py:166-213`). They carry no diagnostic value.
+   - The default `create_claim` lease is 3 s (`test_c0_phase1_storage_integration.py:131`), a possible flake on a loaded Pi. Expiry itself uses `lease=0` with no sleeps, which is good.
+   - `extend-exclude = ["research"]` (`pyproject.toml:63`) likely excludes `scripts/research` and `tests/research` from CI ruff lint and format checks, per ruff's single-name glob semantics. I haven't run it.
+   - The table's `byte_count` is a `String(32)`, and it lives in a separate `MetaData` outside `initialize_schema` (`c0_atomic_acceptance_prototype.py:33-42`).
+   - The verifier duplicates A1's private identity algorithm. It needs a version-pinned golden fixture and a public verifier, as the doc already says.
+   - I can't verify the PR #68 / #69 ACCEPT SHAs, the Pi test run, or the CVE status.
+
+## Exact next actions
+1. Revise the doc:
+   - P1-1: correct the legacy held-only claim and the aggregate-status behaviour, and flag the policy change.
+   - P1-4: widen the "Critical boundary" paragraph with the items listed there.
+   - P1-5: reword the "malformed candidate rejected" claim.
+   - Add the P2 items about decode under lock and the facade bypass.
+2. Fix the three vacuous tests (P1-2).
+3. Add the equal-`ResultRef` test (P1-3).
+4. Add the ordinal-mismatch case, or soften the P1-5 claim.
+5. Replace the placeholder failure messages with real ones.
+6. Optionally add a start barrier to the concurrency tests.
+7. The author should run `git diff --stat 895fc40..0eb8fe6` to show no A1 source changed, and re-run the 19 tests after the fixes. I can't do either from this read-only session.
+
+## Production-blocker list (for the future NO-GO)
+- A durable verified `FrozenRoot` chain, plus an atomic A2 acceptance API with full lineage and `required_inputs`.
+- A closed `(kind, version)` and upstream-arity table.
+- The batch transition identity.
+- A receipt verified against stored payloads, claims and statuses, with an explicit decision on legacy held-only finalization.
+- Metadata-only rechecks inside the writer transaction.
+- Facade-safe cancellation and crash recovery.
+- A baseline verifier, a golden-fixture A1 verifier, and component, transition and Teams fixtures.
+- An A3 adapter, a migration, and the CVE decision.
