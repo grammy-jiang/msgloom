@@ -1,0 +1,89 @@
+DECISION: ACCEPT
+REVIEWED_SHA: 5f1050a4939f1ec44e3326df10d83fc686f72721
+
+ACCEPT covers isolated synthetic Q0 only. Production A2 and security are NO-GO. This was a read-only review. I executed nothing and recomputed no hashes. I did not open the GHSA, GitLab, Snyk or OSV pages, and no network was used. I did not run git, so I could not confirm that the working tree matches the SHA. I did not read `kedro/io/{data_catalog,memory_dataset}.py` or the telemetry hook paths beyond the two functions named below.
+
+## R1 P1 closure
+
+- **P1-1 (logs): closed for synthetic.**
+  - Kedro's `Node.run` logs `str(exc)` at ERROR through `kedro.pipeline.node` (`kedro/pipeline/node.py:555-562`). The probe's unsafe-node case raises the canary there and requires it in the capture (`probe:573-575`). That is a real positive control.
+  - The safe case goes through the same path and requires `node-transform-failed` in the logs (`probe:576-578`). The parser case is the negative case on the dataset path (`probe:580-581`).
+  - Every capture must be non-empty (`probe:570`). The recorded sizes are 1226, 1213 and 565 chars in all six records.
+  - The 1226 vs 1213 char gap is consistent with the log carrying only the message. I did not verify that.
+  - Stderr is empty in all six runs, which would catch a leak that escaped the capture. Handlers are restored in `finally`.
+  - Residual: import-time output is discarded into a `StringIO` and never inspected (see New issues).
+
+- **P1-2 (heartbeat): closed.**
+  - The probe measures real gaps between `sleep(0.012)` ticks while a 0.23 s CPU node runs in the worker thread (`probe:495-517`). It requires `max_gap < 0.08` and at least 5 ticks while the task is not done.
+  - If the runner executed in the loop thread, the spin would produce a gap of about 0.23 s and fail.
+  - Observed maxima are 0.01717–0.01733 s, with 8 ticks overlapping in every run. The md ranges match the matrix JSON.
+  - Residual: the spin loop is pure Python. A native call that holds the GIL is not covered, and the md says so (`md:16`).
+
+- **P1-3 (async bridge): closed for synthetic.**
+  - `CancelledError` is raised after `await asyncio.shield(worker)` drains the worker and `require(worker.done())` passes (`probe:339-347`). Each cancel scenario then requires `CancelledError`, not a manifest.
+  - The deadline path cancels the service future and requires `settled.wait(0.5)` (`probe:191-194`). The test checks `parse_done` (`probe:439`).
+  - Pre-commit cancel (`probe:443-459`), mid-flight claim revocation (`probe:461-474`) and post-commit cancel with idempotent recovery (`probe:476-493`) are all tested.
+  - After a post-commit cancel, the stage is accepted (1 publish), `CancelledError` is visible, and the recovery run returns the same manifest with no second commit.
+  - I found no hang or unbounded wait: `wait_for` is 0.6 s, `settled.wait` is 0.5 s, and the matrix has a 20 s timeout. Between the stopped, claim and commit checks in `publish` (`probe:136-156`) there is no `await`. The commit is therefore atomic on the single event loop.
+  - That atomicity is a property of the fake dict store, not of SQL. The md states the limit (`md:17`), and I agree it applies.
+  - A cancel does not preempt the in-flight service call. Drain time is about 0.14 s (`md:41`).
+
+- **P1-4 (telemetry/network): closed within its stated scope.**
+  - The probe calls the installed `kedro_telemetry.plugin._check_for_telemetry_consent(None)`. In `plugin.py:436-448` it returns `False` when `DO_NOT_TRACK` or `KEDRO_DISABLE_TELEMETRY` is set. The probe requires `is False`, and also requires `send_telemetry_event(...)` to be falsy (`probe:588-591`).
+  - `api.py:54-56` returns `False` on `consent is False`.
+  - The probe sets those env vars itself (`probe:29-30`), so this shows the package honors them. It does not show an unsetting-safe default.
+  - The socket control intercepts `socket.create_connection` and asserts exactly one interception (`probe:596-603`). The runtime counter is 0 across all scenarios and the telemetry call. Real attempts would have raised through the patched functions.
+  - The md says it is not an OS sandbox (`md:18`).
+
+- **P1-5 (metrics): closed.**
+  - There is no `assert` in the probe. `require()` raises `ProbeCheckError`, so it survives `-O`.
+  - Every `cases.append` follows its `require` checks.
+  - The matrix JSON has six records. Each has `returncode` 0, `stderr` "", and 20 `scenarios`, all with the same names and unique within each record.
+  - The runner rejects non-zero exit, any stderr, non-JSON stdout, a scenario count other than 20, non-unique names, and the heartbeat, socket, claim and log thresholds (`matrix:93-108`). It stores stderr and the stdout hash.
+  - The md's counts (6 runs, 120 checks) and heartbeat ranges match the JSON.
+  - Hash: the matrix records `probe_sha256` 0fb779d9…81d4. I cannot confirm it matches the committed probe, and the md never cites it. `/tmp/.../q0-r2-matrix.json` carries the same hash, but that is only a comparison of two stored strings.
+
+- **Typed API, catalog, version path: closed.**
+  - The datasets subclass `AbstractDataset[In, Out]` and the pipeline runs on a Kedro 1.7 `DataCatalog` (`probe:201-306`, `probe:300-308`).
+  - The missing-catalog negative exercises the probe's own guard (`probe:402-410`).
+  - The version-path check calls the real `AbstractVersionedDataset._get_versioned_path` with 8 unsafe and 3 safe values (`probe:605-628`). That function delegates to `_is_unsafe_version` (`kedro/io/core.py:950-957`, `kedro/utils.py:346-352`).
+  - The md does not claim production compatibility from this.
+
+- **Supply chain: the distinctions are accurate.**
+  - The md keeps Snyk CVE-2026-3840 unresolved, with no waiver and no suppression (`md:47`). The evidence JSON agrees (`evidence:14`).
+  - Neither `pyproject.toml` nor `uv.lock` mentions kedro. This agrees with the "unchanged" claim; I did not check git status.
+  - The lock delta is 146 → 166 (20 new, 0 upgraded, 0 removed), consistent with the 20 names in the evidence JSON.
+  - Both audit baselines list the same two IDs, PYSEC-2017-83 and GHSA-8pqf-f4m5-798g. The md correctly calls "zero new" a delta, not clearance (`md:49`).
+  - The upstream GHSA 1.3.0 fix and the OSV narrower-range statements are unverified by me.
+
+## New issues
+
+No P0 or P1.
+
+- **P2 `probe:344-346`:** `suppress(Exception)` does not catch `CancelledError`. A second cancel during the drain would skip the `require(worker.done())` check. The worker is shielded and would still finish. C0 should use a loop or `asyncio.timeout`.
+- **P2 `probe:184-198`:** `fut.cancel()` before the coroutine is scheduled would leave `settled` unset. That would surface as a `ProbeCheckError` after 0.5 s. It is bounded, and the un-awaited-coroutine warning case is untested.
+- **P2 `probe:49-54`:** Kedro import output goes to a `StringIO` that is discarded and never inspected. The md's "validates clean output" (`md:50`) really means clean final stdout and stderr.
+- **P2 `probe:580-582`:**
+  - The dataset-failure path has no positive control. Only the node path does.
+  - The stage and stale-claim cases check exception text but capture no logs.
+- **P2 `probe:41-45`, `596-603`:** The control exercises only `create_connection`. The patches on `connect`, `connect_ex`, `sendto` and `getaddrinfo` are never shown to fire.
+- **P2 `probe:584-593`:** The Kedro runner uses a null plugin manager. The telemetry hook entry-point path (`before_pipeline_run` etc.) is not exercised, as noted in R1.
+- **P2 `probe:6`:** The docstring says "no filesystem writes … or network". These are intent only. The probe enforces nothing beyond the socket patches and the matrix `-I` mode. The matrix `cwd` is the repo root (`matrix:70`).
+- **P2 `matrix:53-108`:** The matrix does not prove `-O` took effect. The command and `sys.flags.optimize` are not recorded, and the `runtime_checks_survive_python_optimized` check does not test `__debug__`. The matrix also does not check `kedro_version == "1.7.0"` or the exact scenario names, only count and uniqueness.
+- **P2 `matrix:123`:** The probe hash is taken after the runs, not before.
+- **P2 `md:49`:** The "exit 1" for the preview audit on both locks is not machine-recorded. `uv-audit.err` and `uv-audit-baseline.err` contain only the two preview warnings, and the committed evidence JSON has no exit field.
+- **P2 `md:57`:** "Conditional GO … engineering preparation" should read more clearly as "no production GO". `md:3` and `md:63` already say so.
+
+## Gate scope
+
+- **ACCEPT, synthetic only.** A Kedro 1.7.0 `SequentialRunner` and typed `DataCatalog` can drive an async-backed DAG on the Raspberry Pi (Linux aarch64). That holds across Python 3.12.14, 3.13.16 and 3.14.7, in normal and `-O` modes. The evidence is 6 runs × 20 checks, all exit 0, all with empty stderr.
+- **Production A2/security NO-GO.** Still open:
+  - Owner disposition on Snyk CVE-2026-3840.
+  - Real `Phase1Persistence`/ClaimToken/SQLite transaction semantics (the fake dict proves none).
+  - Native parser workers that hold the GIL, plus bounded worker and cgroup tests.
+  - Co-installation of msgloom and Kedro.
+  - Telemetry hook and plugin discovery, and import-time logging side effects.
+  - CI on 3.12–3.14.
+  - Prefect wakeup.
+  - A dependency change, which stays blocked.
+  - Preview `uv audit` exits non-zero on both baselines, and the two existing advisories are unfixed.
