@@ -1,4 +1,5 @@
-"""C0 exact A1 release/intake research gate on a local native Mail fixture.
+"""
+C0 exact A1 release and intake research gate on a local native Mail fixture.
 
 Scrapy acquisition is invoked through the existing real Task15 fixture.
 No A1 implementation is modified and no production provider is contacted.

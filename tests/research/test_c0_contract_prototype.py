@@ -45,10 +45,10 @@ def expect(condition: bool, message: str) -> None:
 
 
 def decode_errors(model: type[BaseModel], payload: object) -> list[str]:
-    """Decode JSON-mode ``payload`` strictly; return ``loc: message`` errors.
+    """
+    Decode JSON-mode ``payload`` strictly; return ``loc: message`` errors.
 
-    JSON decoding avoids a strict dataclass-versus-dict mismatch that would
-    mask the predicate under test. An empty list means it was accepted.
+    JSON decoding avoids a strict dict mismatch. An empty list means accepted.
     """
     try:
         model.model_validate_json(json.dumps(payload), strict=True)
@@ -273,7 +273,7 @@ def test_stage_identity_selected_roots_xor_transition_batch() -> None:
     workset, workset_ref = fixture_workset(include_transition=True)
     message_json = stage_identity(workset, workset_ref).model_dump(mode="json")
     batch_json = transition_identity(workset, workset_ref).model_dump(mode="json")
-    for valid in (message_json, batch_json):  # Positive controls decode unchanged.
+    for valid in (message_json, batch_json):  # Positive controls.
         errors = decode_errors(StageIdentity, valid)
         expect(errors == [], f"valid {valid['stage_kind']} identity rejected: {errors}")
     roots = message_json["selected"]
@@ -299,9 +299,7 @@ def test_stage_identity_kind_and_schema_version_pairing_is_closed() -> None:
     expect_one_error(StageIdentity, blank, "empty frozen stage version")
 
 
-def test_accepted_output_digest_is_not_identity_and_conflicting_bytes_fail_closed() -> (
-    None
-):
+def test_output_digest_is_not_identity_and_conflicting_bytes_fail_closed() -> None:
     workset, workset_ref = fixture_workset()
     identity = stage_identity(workset, workset_ref)
     accepted = AcceptedPayload(
@@ -357,13 +355,14 @@ def test_completion_receipt_exact_multiple_release_occurrences() -> None:
 
 
 def test_duplicate_saved_selection_ref_never_collapses_intake_occurrences() -> None:
-    """Two entries sharing one ``ResultRef`` still need two terminal results.
+    """
+    Two entries sharing one ``ResultRef`` still need two terminal results.
 
-    This is a purely defensive case. Real A1 hashes the exact
-    ``ReleaseEntryRef`` into every ``intake-selection:`` result ID, so honest
-    acquisition cannot produce one ``ResultRef`` at two entries. The Workset
-    validator only rejects a repeated ``(entry, result)`` pair, and the
-    receipt must not rely on the deduplicated ``selection_refs`` for coverage.
+    This is a defensive case. Real A1 hashes the exact ``ReleaseEntryRef``
+    into every ``intake-selection:`` result ID, so honest acquisition cannot
+    produce one ``ResultRef`` at two entries. The Workset validator rejects
+    only a repeated ``(entry, result)`` pair. The receipt must not rely on
+    the deduplicated ``selection_refs`` for coverage.
     """
     original, workset_ref = fixture_workset()
     first, second = original.selections
@@ -387,7 +386,7 @@ def test_duplicate_saved_selection_ref_never_collapses_intake_occurrences() -> N
         "receipt must carry two distinct results, one per occurrence",
     )
     receipt.validate_against(workset, workset_ref)
-    for kept in (receipt.roots[:1], receipt.roots[1:]):  # Either result missing.
+    for kept in (receipt.roots[:1], receipt.roots[1:]):  # One result gone.
         with pytest.raises(C0ContractError, match="missing/overlapping"):
             receipt.model_copy(update={"roots": kept}).validate_against(
                 workset, workset_ref

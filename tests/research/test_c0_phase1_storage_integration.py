@@ -1,4 +1,5 @@
-"""C0: actual Phase1Persistence / SQLite storage facts, no production mutations.
+"""
+C0: real Phase1Persistence and SQLite storage facts, no production changes.
 
 Each test uses an isolated pytest tmp_path SQLite DB. These are behavioral
 qualification tests for existing APIs, NOT the new A2 acceptance store.
@@ -69,6 +70,11 @@ class C0TestCodec:
         return C0TestPayload(content=data["content"])
 
 
+class C0PreparedV1TestCodec(C0TestCodec):
+    kind = "prepared"
+    schema_version = "1"
+
+
 class C0PreparedV2TestCodec(C0TestCodec):
     kind = "prepared"
     schema_version = "2"
@@ -83,7 +89,7 @@ def registries(
     codecs = [C0TestCodec()]
     if prepared_v2:
         schema = schema.with_schema("prepared", "2", semantic_data_required=True)
-        codecs.append(C0PreparedV2TestCodec())
+        codecs.extend((C0PreparedV1TestCodec(), C0PreparedV2TestCodec()))
     return schema, SemanticDataRegistry(tuple(codecs))
 
 
@@ -171,6 +177,22 @@ def test_claim_fenced_semantic_persists_after_reopen_and_different_attempt_confl
                 store, "c0-probe:one-input", "c0-execution-1", "c0-attempt-1"
             )
             await store.append_result_with_data(first, value, claim=claim1)
+            # Control: an equal replay with identical metadata is accepted.
+            await store.append_result_with_data(first, value, claim=claim1)
+            # Only the semantic bytes differ from the control above. The same
+            # execution and attempt make the output the sole difference.
+            altered = C0TestPayload("synthetic A2 body ALTERED")
+            altered_stage = make_stage(
+                store,
+                result_id=result_id,
+                execution="c0-execution-1",
+                attempt="c0-attempt-1",
+                value=altered,
+            )
+            with pytest.raises(ImmutableRecordError, match="semantic data"):
+                await store.append_result_with_data(
+                    altered_stage, altered, claim=claim1
+                )
             if await store.get_result(result_id) != first:
                 pytest.fail(
                     "first accepted StageResult was not readable after the claim-fenced append"
@@ -205,6 +227,8 @@ def test_claim_fenced_semantic_persists_after_reopen_and_different_attempt_confl
             )
             with pytest.raises(ImmutableRecordError):
                 await store.append_result_with_data(replay, value, claim=claim2)
+            # This case changes bytes and attempt metadata together. The
+            # output-only difference is checked above under claim 1.
             changed = C0TestPayload("synthetic A2 body CHANGED")
             changed_stage = make_stage(
                 store,
@@ -295,7 +319,7 @@ def test_durable_claim_busy_and_expiry_fence_real_sqlite(tmp_path: Path) -> None
 def test_cancellation_after_real_sqlite_commit_requires_readback(
     tmp_path: Path,
 ) -> None:
-    """Delay acknowledgement *after* a real SQLite COMMIT, then cancel caller."""
+    """Delay the acknowledgement after a real SQLite COMMIT, then cancel."""
 
     async def scenario() -> None:
         db = tmp_path / "postcommit.sqlite3"
@@ -397,6 +421,22 @@ def test_legacy_preparation_proof_explicitly_rejects_prepared_v2(
             if not (await store.get_result(prepared_v2.result_id) is None):
                 pytest.fail(
                     "prepared@2 result was stored although the legacy plan proof rejected it"
+                )
+            # Positive control: the same claim shape accepts prepared@1, so
+            # the version alone explains the rejection above.
+            prepared_v1 = make_stage(
+                store,
+                result_id="control-prepared-v1",
+                kind="prepared",
+                schema="1",
+                execution="v2-exec",
+                attempt="v2-attempt",
+                value=value,
+            )
+            await store.append_result_with_data(prepared_v1, value, claim=claim)
+            if await store.get_result(prepared_v1.result_id) != prepared_v1:
+                pytest.fail(
+                    "prepared@1 control was not stored by the legacy plan proof"
                 )
             await store.finish_claim(
                 claim, TerminalStatus.INCOMPLETE, ExternalEffectState.NONE

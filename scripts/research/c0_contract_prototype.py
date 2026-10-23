@@ -1,9 +1,10 @@
-"""C0 contract prototype only; not installed or wired into production A2.
+"""
+C0 contract prototype only; not installed or wired into production A2.
 
-This module prototypes deterministic acceptance keys, explicit A2-held and
-the A2 completion receipt; the real transaction authority remains an open
-implementation gate. It intentionally imports only accepted frozen A1/Intake
-model types and the stdlib/Pydantic installed in msgloom.
+This module prototypes deterministic acceptance keys, explicit A2-held
+records and the A2 completion receipt. The real transaction authority
+remains an open implementation gate. It imports only accepted frozen
+A1/Intake model types and the stdlib/Pydantic installed in msgloom.
 """
 
 from __future__ import annotations
@@ -35,7 +36,7 @@ class _C0Model(BaseModel):
 
 
 class FrozenRoot(_C0Model):
-    """One selected occurrence, including explicitly approved baseline input."""
+    """One selected occurrence, including approved baseline input."""
 
     selected: ResultRef
     occurrence: Annotated[int, Field(ge=0, le=1023)]
@@ -186,7 +187,14 @@ class AcceptedPayload(_C0Model):
 def append_or_verify(
     known: AcceptedPayload | None, proposed: AcceptedPayload
 ) -> AcceptedPayload:
-    """Pure acceptance decision; DB MUST make compare+insert atomic."""
+    """
+    Pure acceptance decision; the DB MUST make compare and insert atomic.
+
+    A replay is equal only when the whole ``AcceptedPayload`` matches: the
+    logical key, the ``ResultRef``, the canonical digest and the byte count.
+    A different digest, byte count or substituted ``ResultRef`` under the
+    same key raises :exc:`C0ContractError`.
+    """
     if known is None:
         return proposed
     if known != proposed:
@@ -203,7 +211,7 @@ class HeldReason(StrEnum):
 
 
 class InputDisposition(_C0Model):
-    """A2-owned held record for exact incremental OR approved baseline input."""
+    """A2-owned held record for exact incremental or baseline input."""
 
     selected: ResultRef
     entry: ReleaseEntryRef | None = None
@@ -232,7 +240,7 @@ class InputDisposition(_C0Model):
 
 
 class TerminalRoot(_C0Model):
-    """One exact v2 prepared outcome OR A2-held, for one selected occurrence."""
+    """One exact v2 prepared or A2-held outcome for one selected occurrence."""
 
     selection: IntakeSelection | None = None
     baseline_selection: ResultRef | None = None
@@ -290,7 +298,7 @@ class TransitionBatch(_C0Model):
 
 
 class CompletionReceipt(_C0Model):
-    """A2-only receipt: proof must cover every selected occurrence and transition."""
+    """A2-only receipt: covers every selected occurrence and transition."""
 
     workset: ResultRef
     roots: tuple[TerminalRoot, ...] = ()
@@ -380,7 +388,7 @@ class CompletionReceipt(_C0Model):
 
 
 def receipt_digest(receipt: CompletionReceipt) -> str:
-    """Canonical receipt digest for the future separately accepted semantic data."""
+    """Return the canonical receipt digest for future semantic data."""
     return hashlib.sha256(
         json.dumps(
             receipt.model_dump(mode="json"),
@@ -397,11 +405,13 @@ def verify_exact_release_root(
     released: ReleasedInput,
     saved_selection: CollectedSelection,
 ) -> FrozenRoot:
-    """Prototype only: verify full A1 intake ordinal hash against exact Reader.
+    """
+    Prototype only: verify the full A1 intake ordinal hash against the Reader.
 
-    This research helper mirrors A1's documented input-only identity; production
-    C0 must qualify a public read-only ordinal verifier before cutover. Neither
-    role nor content can be inferred from a provider-current projection.
+    This research helper mirrors A1's documented input-only identity.
+    Production C0 must qualify a public read-only ordinal verifier before
+    cutover. Neither role nor content can be inferred from a
+    provider-current projection.
     """
     if workset.baseline_approval is not None:
         raise C0ContractError("baseline cannot impersonate a release entry")

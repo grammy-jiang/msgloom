@@ -1,12 +1,33 @@
 # A2 Kedro C0 R2 qualification
 
-Result: tasks CR-01 to CR-08 are done in the working tree. All local gates
-pass. This note does not claim CR-10 ACCEPT. CR-10 needs an independent
-read-only review of an exact commit SHA.
+Result: tasks CR-01 to CR-08 are done. The independent review R2 accepted
+commit `ee2c8e125f9d7f65a26f0d56ab7e07c492342472` (archived in
+`docs/notes/a2-kedro-c0-independent-review-r2.txt`). This note does not claim
+production readiness.
 
-Base: branch `research/a2-kedro-c0-20261023`, HEAD
-`0eb8fe6d2e5d301c359b60292c1852bbe7558c6d`. All changes are uncommitted.
-The R1 review file is untracked and unchanged (SHA-256 `128b0308...9f67a`).
+Tested SHA: `ee2c8e1` (`ee2c8e125f9d7f65a26f0d56ab7e07c492342472`), on top of
+`0eb8fe6`. The earlier claim of an "uncommitted tree" run is replaced by this
+SHA. The R1 review file is archived and unchanged.
+
+## R2 minor-finding fixes (after ee2c8e1)
+
+The fix commit SHA is set by the manager. Review R2 findings 2 to 7 are fixed.
+Findings 1 and 8 are unchanged.
+
+| Finding | Status |
+| --- | --- |
+| 1 Ruff E741 | Unchanged. `ruff check scripts tests` exits 0, so E741 is not selected. |
+| 2 Stale run claims | Fixed. The doc and this note name `ee2c8e1` as the tested SHA. |
+| 3 Foreign roots | Fixed. New `test_c0_receipt_foreign_roots.py` has a positive control and three foreign-root cases. |
+| 4 Replay wording | Fixed in the doc section 6 and the `append_or_verify` docstring. The whole payload including `ResultRef` is compared. |
+| 5 Style | Fixed. Two long comments are shortened. Multiline docstrings in the touched files start with the quotes on their own line. |
+| 6 prepared@2 control | Fixed. The same claim shape stores prepared@1. |
+| 7 Changed output | Fixed. An equal replay with identical metadata passes. A replay that differs only in the semantic bytes raises `ImmutableRecordError`. |
+| 8 Semantic digest | Unchanged. It stays a production requirement. |
+
+Not changed: `scripts/research/c0_atomic_acceptance_prototype.py` is outside
+the allowed edit scope. Its module docstring still puts text on the opening
+quote line.
 
 ## Status per task
 
@@ -23,23 +44,35 @@ The R1 review file is untracked and unchanged (SHA-256 `128b0308...9f67a`).
 
 ## Commands and exit codes
 
-Run in the C0 worktree after `uv sync --locked --group dev` (rc 0).
+### At ee2c8e1 (clean `git archive` export, run once)
 
 | Command | rc |
 | --- | --- |
-| `uv run --no-sync python -m pytest -q -n 0 tests/research/test_c0_*.py` (3 runs) | 0, 0, 0 (24 passed each) |
-| `ruff check` on the 5 touched Python files | 0 |
-| `ruff format --check` on the 5 touched Python files | 0 |
-| `ruff check scripts tests` and `ruff format --check microsoft_graph message_ingest msgloom scripts tests` (CI scope) | 0, 0 |
-| `npx --yes --package pyright@1.1.413 pyright --pythonpath .venv/bin/python microsoft_graph message_ingest msgloom tests` (CI command) | 0 (0 errors) |
-| same pyright on `scripts/research tests/research` | 0 (0 errors) |
-| `grep -n -E '^\s*assert '` on touched and sibling research files | 1 (no match) |
-| `uv tool run --from pre-commit==4.7.0 pre-commit run --files <6 touched files>` | 0 (gitleaks, markdownlint, ruff passed) |
+| `python -m pytest -q -n 0 -p no:cacheprovider tests/research/test_c0_*.py` | 0 (24 passed) |
 
-Test count: 13 + 1 + 4 + 5 + 1 = 24. Line counts: `c0_contract_prototype.py`
-454, `test_c0_contract_prototype.py` 499, `test_c0_phase1_storage_integration.py`
-438, `test_c0_atomic_acceptance.py` 309, `test_c0_native_a1_exact_handoff.py`
-167. All are below 500.
+Earlier gates for this tree (Ruff, Pyright, pre-commit) were recorded by the
+original CR worker and are not re-run here.
+
+### After the R2 minor fixes (working tree on top of f0eace0)
+
+Run in the C0 worktree.
+
+| Command | rc |
+| --- | --- |
+| `uv run --no-sync python -m pytest -q -n 0 tests/research/test_c0_*.py` (3 runs) | 0, 0, 0 (25 passed each) |
+| `uv run --no-sync ruff check` on the 7 touched Python files | 0 |
+| `uv run --no-sync ruff format --check` on the 7 touched Python files | 0 (7 formatted) |
+| `uv run --no-sync ruff check scripts tests` | 0 |
+| `npx --yes --package pyright@1.1.413 pyright --pythonpath .venv/bin/python scripts/research tests/research` | 0 (0 errors) |
+| `grep` for `assert` statements, `type: ignore`, `noqa`, `pyright: ignore`, `skip`, `xfail` in the 7 files | 1 (no match) |
+| `uv tool run --from pre-commit==4.7.0 pre-commit run --files <8 touched files>` | 0 (gitleaks, markdownlint, ruff passed) |
+
+Test count: 13 + 1 + 1 + 4 + 5 + 1 = 25. Line counts:
+`c0_contract_prototype.py` 464, `test_c0_contract_prototype.py` 498,
+`test_c0_phase1_storage_integration.py` 478, `test_c0_atomic_acceptance.py`
+313, `test_c0_native_a1_exact_handoff.py` 168,
+`test_c0_baseline_contract.py` 121, `test_c0_receipt_foreign_roots.py` 52.
+All are below 500.
 
 ## Remaining known gaps
 
@@ -67,7 +100,10 @@ Test count: 13 + 1 + 4 + 5 + 1 = 24. Line counts: `c0_contract_prototype.py`
 - `tests/research/test_c0_contract_prototype.py`
 - `tests/research/test_c0_native_a1_exact_handoff.py`
 - `tests/research/test_c0_phase1_storage_integration.py`
-- `docs/notes/a2-kedro-c0-r2-qualification.md` (this note, new)
+- `tests/research/test_c0_receipt_foreign_roots.py` (new, R2 fix)
+- `docs/notes/a2-kedro-c0-r2-qualification.md` (this note)
 
+The list above is the original CR set. The R2 fix changed only the doc, this
+note, `c0_contract_prototype.py` and the test files named in the fix table.
 No file under `msgloom/`, `message_ingest/`, `microsoft_graph/`,
 `pyproject.toml` or `uv.lock` changed. `.venv` is git-ignored.

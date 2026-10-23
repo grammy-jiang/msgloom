@@ -1,6 +1,8 @@
-"""C0: experimental acceptance table + actual Phase1 claim/SQLite transactions.
+"""
+C0: experimental acceptance table with real Phase1 claim and SQLite writes.
 
-Never touches production schema: the new table exists only under pytest tmp_path.
+Never touches production schema. The new table exists only under pytest
+``tmp_path``.
 """
 
 from __future__ import annotations
@@ -60,7 +62,7 @@ def input_identity() -> StageIdentity:
 
 
 def test_atomic_acceptance_replays_same_key_across_attempts(tmp_path: Path) -> None:
-    """Legacy StageResult metadata cannot be replaced; index returns old ref."""
+    """Legacy StageResult metadata stays; the index returns the old ref."""
 
     async def scenario() -> None:
         db = tmp_path / "a2-acceptance.sqlite3"
@@ -179,7 +181,8 @@ def test_atomic_acceptance_checks_real_expired_claim_before_lookup(
 
 
 def test_concurrent_claims_publish_single_logical_key(tmp_path: Path) -> None:
-    """BEGIN IMMEDIATE serializes two owners of one accepted input key.
+    """
+    BEGIN IMMEDIATE serializes two owners of one accepted input key.
 
     The owners hold two different claim keys. That is a research shortcut.
     A production deterministic partition claim key would make the second
@@ -242,7 +245,8 @@ def test_concurrent_claims_publish_single_logical_key(tmp_path: Path) -> None:
 def test_concurrent_conflicting_output_has_one_winner_and_no_second_commit(
     tmp_path: Path,
 ) -> None:
-    """Racing owners cannot insert two digests for one input key.
+    """
+    Racing owners cannot insert two digests for one input key.
 
     The owners hold two different claim keys, so the claim fence cannot
     separate them. Only the acceptance table decides the winner. A
