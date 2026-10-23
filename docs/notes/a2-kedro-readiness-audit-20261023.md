@@ -1,7 +1,7 @@
 # A2 Kedro-primary ETL readiness and historical-decision audit
 
 **Date:** 2026-10-23 Australia/Sydney.
-**Status:** D0 historic decision RECONCILED; D1 accepted handoff audited; D2/D3 design + plan rewritten; D4 R5 returned REVISE; two documentation contradictions have been corrected, pending a new exact-SHA independent review.
+**Status:** D0-D3 documented; D4 independent DESIGN ACCEPTED on exact source SHA 878121fa9ab7ca35754b36d824440a77e92f5f4d. Q0 Kedro/security/async/runtime NOT RUN; no production code or dependency changes.
 **Current production master at audit:** 895fc40a0ec889bd96f620df8c62491787218217.
 **A1 qualification:** 34057c6c9f85688fd2bd1868d90302ab5a61205f, exact-SHA Task 15 28/28 automatic gates and separate accepted independent review; not new A2 certification.
 **Authority:** [Historical user decision ADR](../decisions/2026-10-23-a2-kedro-primary-etl.md), [architecture](../plans/2026-10-23-a2-kedro-native-design.md), [implementation plan](../plans/2026-10-23-a2-kedro-native-implementation-plan.md).
@@ -20,6 +20,7 @@ Earlier 2026-10-23 documents at commits 37f5886 and c1ac6cf **incorrectly limite
 - [D4 independent review R3](a2-kedro-independent-review-r3-20261023.txt), SHA 3c0903b, DECISION: REVISE, 3 source-contract blockers; source-level role/outcome/claim remediation draft at [A1 Kedro R3 corrections](a1-kedro-handoff-r3-corrections-20261023.md).
 - [D4 independent review R4](a2-kedro-independent-review-r4-20261023.txt), SHA 467ca23, DECISION: REVISE; four narrow field/identity/outcome/held/gate findings. All source-level proposals are preserved in the expanded [R3/R4 correction](a1-kedro-handoff-r3-corrections-20261023.md), with no A1 schema changes.
 - [D4 independent review R5](a2-kedro-independent-review-r5-20261023.txt), SHA d2f02fe, DECISION: REVISE; two remaining issues were the conflicting SourceReferenceError instructions and stale AUTO-26 references. The new corrected document maps intake/preflight exceptions conservatively without changing A1, while post-intake dataset errors get A2-held dispositions; the acceptance gate is AUTO-01–25.
+- [D4 independent review R6](a2-kedro-independent-review-r6-20261023.txt), SHA 878121fa9ab7ca35754b36d824440a77e92f5f4d, DECISION: **ACCEPT** for architecture/specification, with no P1 blockers and three minor P2 wording/raise-site clarifications deferred to C0. This review did NOT test installed Kedro, external Prefect, Q0 CVEs or the async bridge.
 - Local 2026-09-29 branch program/kedro-a2-plan, c7dcb41, 648-line migration-only plan pinned Kedro 1.6.0; useful background but not an authoritative implementation specification for this fresh A2.
 
 **New direction:** Kedro controls exact-A1-to-persisted-A2 **ETL** dependencies, including source extraction interfaces, parser invocation via trusted datasets, normalization, source-aware zones, relations, filter/group policies and ordered semantic-result saves. msgloom remains authoritative for A1, async I/O, parser sandbox, SQL transaction and claim fences. The new design is more ambitious than the superseded narrow-pure-DAG design; the dataset/async bridge is an explicit feasibility hard gate, not an assumed solved problem.
@@ -119,11 +120,18 @@ The [source-to-workset trace](a1-kedro-handoff-activation-20261023.md) records t
 | D1 A1 output/handoff source coverage | Recovered from accepted code/qualification; 20-Spider/7-stream/13-case matrix |
 | D2 new architecture | Rewritten with full ETL DAG and owned dataset/async bridge; pending independent review |
 | D3 detailed implementation plan | Rewritten with Q0/C0/P1/P2/P3/E0/T0/V0 DAG and parallel ownership; pending review |
-| D4 independent review of Kedro-primary/A1 automatic design | **REVISE on d2f02fe** — R5 contradictions repaired in proposal; a fresh independent exact-SHA review is still required |
+| D4 independent review of Kedro-primary/A1 automatic design | **ACCEPT on 878121f exact SHA**; read-only R6 found no P1 design blockers; R6 P2 nonblocking clarifications documented for C0 |
+| D4 acceptance scope | Design only; R6 does not qualify new code/lock/runtime, and records after 878121f are documentation-only review bookkeeping |
 | Q0 external Kedro security/runtime | **NOT RUN**; exact pinned source/code security and bridge PoC must pass before production |
 | Implementation / dependency lock | **NOT STARTED**; master runtime unchanged |
 
-New planning is an explicit response to the user's historical instruction, not a request to reopen A1. Scope remains design only. Static checks and new independent review are required before claiming design acceptance.
+This plan has an **ACCEPTED design baseline at 878121f**; A1 remains closed.
+Implementation Q0 is still an independent NO-GO. R6 P2 suggestions for
+future C0 are: distinguish SourceReferenceError invariant from non-source
+storage failures in status documentation, use "exception-class catch" rather
+than "new typed subclass", and label intake raised/caught reference errors
+as examples rather than a purported exhaustive list. None changes the
+already-reviewed architecture.
 
 ## 7. Read-only actions and references
 
