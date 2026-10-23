@@ -1,0 +1,88 @@
+C0 independent read-only review R3 (task CR-10)
+Reviewed exact SHA: 46fe277041de4a4d831f59e3633e5269b36ae3c3
+Reviewer: read-only subagent (Read, Grep, Glob only). Archived by the manager
+without edits to the verdict. Minor findings are not fixed at this SHA.
+
+VERDICT: ACCEPT for exact SHA 46fe277041de4a4d831f59e3633e5269b36ae3c3
+
+This accepts only the bounded C0 research candidate. It does not accept
+production C0. The reviewer found no Blocker or Major finding. The reviewer
+ran no code and had no git access.
+
+Findings 2-7 (from R2)
+
+- 2 Stale "uncommitted tree" claims: Closed, with residual Minor N3. Doc line
+  50 and note lines 8-10 name ee2c8e1. The note's only "uncommitted tree" text
+  (line 9) quotes the old claim and says it is replaced.
+- 3 Foreign roots: Closed. test_c0_receipt_foreign_roots.py:17-52.
+- 4 Replay-equality wording: Closed. c0_contract_prototype.py:190-201 and doc
+  line 124.
+- 5 Style slips: Closed for the items named in R2, with residual Minor N1.
+- 6 prepared@2 positive control: Closed.
+  test_c0_phase1_storage_integration.py:398-447.
+- 7 Changed-output discrimination: Closed.
+  test_c0_phase1_storage_integration.py:180-195.
+
+Finding 3: negative cases are non-vacuous and rejected for the expected reason.
+- test_c0_receipt_foreign_roots.py:26 is a positive control that passes.
+- Two count-preserving foreign cases: an unknown release entry, and a known
+  entry with an unknown saved selection. model_copy skips validation, so only
+  `selection` differs. Both pass the workset-equality and count checks and fail
+  only at `actual_roots != expected_roots` (c0_contract_prototype.py:359-360)
+  with "coverage differs". Without that guard the result-uniqueness, transition
+  and status checks would all pass, so the test would fail.
+- The appended-root case fails at the count check (:332-333).
+
+Finding 4: tests would catch a narrowed comparison. `known != proposed` at :200
+compares the whole payload. test_c0_contract_prototype.py:313-318 mutates the
+digest and, separately, the ResultRef. Each must raise "integrity-conflict".
+
+Finding 6: the prepared@2 rejection comes from preparation_proof.py:151, which
+calls `_references((ref,))`; :80 requires schema_version == "1". The prepared@1
+control was traced statically (plausible; not confirmed at runtime).
+
+Finding 7: same execution, attempt and claim as an accepted equal replay; only
+the semantic bytes differ. pytest.raises(match="semantic data") pins the
+failure to semantic_store.py:37, which runs before the stage-result comparison.
+
+Other checks
+(b) Overclaims: none. Doc lines 3 and 253 and note line 88 still say "not a
+    production freeze". CVE-2026-3840 decision stays open. Test count 25
+    (4+13+5+1+1+1) matches.
+(c) AGENTS.md: no assert, type: ignore, noqa, pyright: ignore, skip, xfail or
+    importorskip in C0 files. All modules below 500 lines (largest 498 and
+    464; thin margin).
+(d) Regression vs ee2c8e1: none found by reading (inference; no diff access).
+
+New findings (all Minor)
+- N1. test_c0_phase1_storage_integration.py:344 has an inline # comment at 83
+  columns (AGENTS.md cap is 79).
+- N2. test_c0_receipt_foreign_roots.py:20-21 says each case keeps the root
+  count. The appended-root case (:43-52) changes the count and is rejected by
+  the generic count check, not because the root is foreign. Note line 21
+  "three foreign-root cases" is slightly loose.
+- N3. The note binds the 25-test run, Ruff, Pyright and pre-commit to a
+  "working tree on top of f0eace0" (line 56) and says "The fix commit SHA is
+  set by the manager" (line 14) without filling it in. Nothing ties those
+  results to 46fe277.
+- N4. scripts/research/c0_atomic_acceptance_prototype.py:1 still puts text on
+  the opening-quote line (disclosed in the note). Finding 1 (E741 on `l`/`r`,
+  test_c0_atomic_acceptance.py:201-202, 265-266) and finding 8 (verifier
+  semantic digest) are unchanged, as declared.
+- N5. append_or_verify is not tested for a byte-count-only or key-only
+  difference. The "duplicate roots" test covers duplicate results, not a
+  duplicate selected occurrence. StageIdentity checks for duplicate selected
+  occurrence and cross-catalog roots are unexercised.
+
+Could not verify (reviewer cannot run code)
+All test results (25 passes, repeat runs, 24 at ee2c8e1); Ruff, ruff format,
+Pyright and pre-commit exit codes; markdownlint; git diff scope; runtime
+behavior of the prepared@1 control; Pydantic strict-JSON error counts; the
+configured line length (assumed 88); the size of
+c0_atomic_acceptance_prototype.py; PR #68/#69 SHAs and CVE-2026-3840 status.
+
+Production blockers (open, unchanged): durable FrozenRoot chain, atomic A2
+acceptance API with lineage, closed kind/version table, batch transition
+identity, receipt verified against stored payloads, metadata-only rechecks
+inside the writer lock, facade-safe cancellation, baseline verifier and A1
+golden fixtures, A3 adapter and migration, and the CVE decision.
