@@ -1,0 +1,70 @@
+C0 independent read-only review R2 (task CR-10)
+Reviewed exact SHA: ee2c8e125f9d7f65a26f0d56ab7e07c492342472
+Reviewer: read-only subagent (Read, Grep, Glob only). Archived by the manager
+without edits to the verdict. Minor findings are not fixed at this SHA.
+
+VERDICT: ACCEPT for exact SHA ee2c8e125f9d7f65a26f0d56ab7e07c492342472
+
+This accepts only the bounded C0 research candidate. Production C0 is not
+ready, and neither the doc nor the note claims it is. The reviewer used Read,
+Grep and Glob only. The reviewer ran nothing and did not use git.
+
+R1 findings (status from code reading)
+
+- P1-1 Legacy held-only claim wrong: FIXED. Doc lines 21 and 24-38. Legacy
+  intake_completion.py:252, :183-195, :181 re-read and match.
+- P1-2 Three vacuous negative tests: FIXED (static).
+  test_c0_contract_prototype.py:47-74 uses model_validate_json(strict=True)
+  with positive controls and exactly one expected error per case.
+- P1-3 Equal ResultRef not exercised: FIXED.
+  test_c0_contract_prototype.py:359-394.
+- P1-4 "Critical boundary" incomplete: FIXED. Doc lines 131-169. Bypass cause
+  is the c0-a2: prefix. Empty required_inputs is a separate gap.
+- P1-5 "Malformed candidate rejected" overclaim: FIXED.
+  test_c0_native_a1_exact_handoff.py:102-155. Ambiguous branch stays
+  unexercised and the doc says so.
+- P2 placeholder messages: FIXED.
+- P2 3 s lease flake: FIXED (120 s leases, lease=0 for expiry).
+- P2 decode under lock, facade bypass, create_all, String(32), distinct claim
+  keys, no barrier: FIXED (documented). Code unchanged. No-barrier limit is
+  documented in test docstrings, not fixed.
+- P2 key not hex-checked: FIXED (c0_contract_prototype.py:171).
+- P2 extend-exclude = ["research"]: NOT FIXED (acknowledged; pyproject.toml:63
+  is outside the C0 edit scope).
+- P2 "occurrence" used with two meanings: NOT FIXED (cosmetic).
+
+Mechanical checks: no Python assert; no type: ignore, noqa, pyright: ignore,
+skip, skipif, xfail or importorskip; largest module 499 lines (no margin);
+24 tests counted (13+1+4+5+1); no production-ready claim.
+
+New findings
+- Blocker: none.
+- Major: none.
+- Minor:
+  1. Possible Ruff E741 on `l` and `r` at test_c0_atomic_acceptance.py:198-199
+     and :261-262. (Manager note: `ruff check scripts/research tests/research`
+     exited 0 at ee2c8e1, so E741 is not selected in this repo.)
+  2. Stale run claims: doc line 49 and the R2 note say "uncommitted tree".
+     The note gives no final SHA.
+  3. Doc line 43 claims "missing, foreign and duplicate roots" are tested.
+     No test uses a root that is not in the workset.
+  4. Replay equality wording is too narrow: append_or_verify also compares
+     the ResultRef (c0_contract_prototype.py:192).
+  5. Style slips: two # comments exceed 79 columns
+     (test_c0_contract_prototype.py:276, :390). Some multiline docstrings put
+     text on the opening-quote line.
+  6. No positive control for the prepared@2 legacy rejection.
+  7. Weak discrimination in the "changed output" case
+     (test_c0_phase1_storage_integration.py:208-219).
+  8. Verifier does not check the saved selection semantic digest against
+     semantic_data_ref.sha256 (carried over from R1; documented as a
+     production requirement).
+
+Could not verify (reviewer cannot run code): test pass counts, Ruff, Pyright
+and pre-commit exit codes, git diff scope, Pydantic strict JSON behavior.
+
+Production-blocker list (open, unchanged): durable FrozenRoot chain, atomic A2
+acceptance API with lineage, closed kind/version table, batch transition
+identity, receipt verified against stored payloads, metadata-only rechecks
+inside the writer lock, facade-safe cancellation, baseline verifier and A1
+golden fixtures, A3 adapter and migration, and the CVE decision.
