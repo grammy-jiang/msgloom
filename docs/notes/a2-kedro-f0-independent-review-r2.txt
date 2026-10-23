@@ -1,0 +1,85 @@
+F0-08 independent read-only security review R2
+Reviewed exact SHA: 9fbc191c0007703b024d400a9664a156931632af
+Reviewer: read-only subagent (Read, Grep, Glob; also read-only Bash for ls,
+tail, cat, grep, nproc, sed and git log -1, disclosed by the reviewer, nothing
+written). Archived by the manager without edits to the verdict. Minor
+findings are not fixed at this SHA.
+
+VERDICT: ACCEPT for exact SHA 9fbc191c0007703b024d400a9664a156931632af
+
+ACCEPT means R1's four Majors are closed and no new overclaim was found. It
+is not risk acceptance. It does not admit Kedro as a dependency.
+
+R1 closure
+- Major 1 (stale "runs not finished"): closed. decision-report.md:64-65 and
+  :195-196; same block in all 10 notes.
+- Major 2 (GHSA-9cqf reach): closed in the matrix and report
+  (decision-report.md:108, cve-reachability.md:159, :234). Leftover in one
+  prose paragraph: new Minor 1.
+- Major 3 (scanner blind to CVE-2026-3840): closed. decision-report.md:31-38
+  and :88; audit-baselines.md:231-238 and :245-249.
+- Major 4 (competing explanations, raw logs): closed. decision-report.md:
+  198-208 and the shared block (coinstall.md:16-33).
+- Minors: second opt-out variable, mode E, "byte-identical", and the ignore
+  option are closed. The 3.13 run time reads 24 min 8 s or 9 s in different
+  notes (both correct against logs). The block is still copied into 10 notes
+  (R1 did not require a change).
+
+Scratch spot-checks
+- Solo runs run1/run2: "1 passed, 16 deselected", exit=0, timestamped
+  23:05:18Z and 23:05:20Z, after both full runs ended.
+- Overlap: .time file times 09:56:39.99 (3.12) and 09:57:22.84 (3.14); minus
+  wall times gives starts of about 09:14:21 and 09:14:20. The 3.13 run ended
+  at 09:11:40 and did not overlap.
+- 3.14 subset: 327 passed, exit 0, before the full runs.
+  tests/container_deployment is in f05b/scripts/rest2.sh:11.
+- Failure shape ("timed-out invocation-owned container remained running",
+  test line 498) fits both a name collision and slow --rm removal. The notes
+  do not claim to separate the two.
+
+New findings
+- Blocker: none. Major: none.
+- Minor 1: cve-reachability.md:88-89 still says "Reach: only code that
+  imports kedro.framework.project and reads that environment variable". The
+  word "only" understates reach. Drop it or point to the matrix.
+- Minor 2: the solo logs hold only a timestamp, the pytest summary and the
+  exit code. They record no command, interpreter or working directory.
+- Minor 3: coinstall.md:164 says the 3.13 run used -n 4. full.sh and rest*.sh
+  show only -n 2 for full runs and -n 4 for the subset.
+- Minor 4: types-tests.md:177 says the container test "does not exercise
+  Kedro". No log or probe backs it.
+- Minor 5: the 3.13 time is written in three forms across notes.
+
+No note proposes an ignore, a lock edit or a production change, or declares
+anything safe or accepted. F0-09 and F0-10 stay BLOCKED (decision-report.md:
+230-235).
+
+Residual risk that blocks admission (owner decision needed)
+- CVE-2026-3840 has no disposition. Snyk: all versions, no fix. OSV and NVD:
+  1.2.0 only. uv audit cannot see it by construction.
+- The master lock is already red without Kedro: 11 unignored findings, 9 with
+  the two documented ignores (PYSEC-2026-4322 brotli 1.2.0, PYSEC-2026-4323
+  brotlicffi 1.2.0.2, Twisted). The Brotli fix exists but is not in the lock.
+  The Twisted fix is only the prerelease 26.10.0rc1.
+- kedro-telemetry is forced in; missing consent counts as consent; the real
+  plugin attempted a DNS lookup to heapanalytics.com in sessions. The "no
+  session, no hook entry points" rule has no code or test behind it.
+- The F0-03 gate and the network-namespace test exist only as a
+  specification and a scratch prototype.
+- GHSA-9cqf is untested, and the planned design reaches
+  kedro.framework.project.
+- Pickle and third-party loader reachability, and Brotli and Twisted
+  reachability, were not assessed.
+- The production lock route for pypydispatcher is undecided.
+- The 3.14.7 failure has no clean sequential full rerun.
+- Execution evidence is Linux aarch64 only; CI uv 0.13.5 was never used.
+
+Could not verify
+- That the interpreter in the solo runs was 3.14.7 (not in the logs).
+- Exact start times of the full runs (inferred from end times minus wall
+  times).
+- Which command and -n value produced the 3.13 full run.
+- Wheel and script hashes; live PyPI, OSV, NVD and Snyk state.
+- Telemetry out.json contents and per-mode socket counts (relied on note
+  text and R1's earlier trace).
+- The uv.lock line numbers in decision-report.md:90.
