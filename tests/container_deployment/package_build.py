@@ -24,9 +24,9 @@ def build_wheel(source: Path, directory: Path) -> Path:
     uv = shutil.which("uv")
     if uv is None:
         pytest.fail("uv is required for package qualification tests")
-    name = "setuptools-84.0.0-py3-none-any.whl"
+    name = "setuptools-84.2.1-py3-none-any.whl"
     backend = files("virtualenv.seed.wheels.embed").joinpath(name).read_bytes()
-    digest = "51a52592b3b99e102b609654876bd65f19f999935166d1352678931132b0c670"
+    digest = "ca140b45d5325a9478f880e351484f62fef15f336462e449ca0c03c873d589c2"
     if hashlib.sha256(backend).hexdigest() != digest:
         pytest.fail("bundled setuptools wheel differs from the pinned artifact")
     wheelhouse = directory / "build-dependencies"

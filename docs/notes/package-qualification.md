@@ -3,7 +3,7 @@
 ## Scope
 
 The repository builds the msgloom distribution with setuptools.build_meta.
-The build requirement is exactly setuptools==84.0.0. Package discovery is
+The build requirement is exactly setuptools==84.2.1. Package discovery is
 limited to the tested flat runtime roots msgloom, message_ingest, and
 microsoft_graph. Tests, research, notes, worker state, credentials,
 development archives, and repository-only configuration are not wheel

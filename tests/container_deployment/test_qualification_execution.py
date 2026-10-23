@@ -60,7 +60,7 @@ def test_real_sdist_built_wheel_installs_by_valid_filename(tmp_path: Path) -> No
     template.write_text("synthetic", encoding="utf-8")
     (source / "pyproject.toml").write_text(
         "[build-system]\n"
-        'requires=["setuptools==84.0.0"]\n'
+        'requires=["setuptools==84.2.1"]\n'
         'build-backend="setuptools.build_meta"\n'
         "[project]\n"
         'name="msgloom"\n'
