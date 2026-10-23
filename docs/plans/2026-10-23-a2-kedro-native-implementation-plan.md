@@ -9,7 +9,7 @@
 **Current master at planning:** 895fc40a0ec889bd96f620df8c62491787218217.
 **Historical review:** 37f5886 R1 REVISE, c1ac6cf R2 REVISE; neither approves this redesigned plan.
 **Actual A1 output / activation contract:** [Source trace](../notes/a1-kedro-handoff-activation-20261023.md).
-**Automatic activation execution plan:** [AUTO-01–AUTO-14](2026-10-23-a1-release-to-kedro-auto-handoff.md).
+**Automatic activation execution plan:** [AUTO-01–AUTO-26](2026-10-23-a1-release-to-kedro-auto-handoff.md).
 
 **New D4 R3 hard prerequisites:** (1) immutable role/provenance re-read matching
 against a reduced workset; (2) a deliberate new A2 scheduled outcome taxonomy
@@ -133,6 +133,10 @@ Q0.5 requires an isolated disposable test environment and deliberately injected 
 | C0.8 | 20m | Decide bounded partition and grouping context (not copied blindly from old A2) with versioned policy | No accidental merging across worksets/scopes |
 | C0.9 | 25m | Re-read exact ReleaseEntry by saved ref for roles, contexts and full transitions without altering IntakeSelection | Missing/ambiguous equality-match held; global sequence gaps accepted |
 | C0.10 | 25m | Freeze workset/partition/transition claims, plan proof, deterministic accepted result identity and outward status taxonomy | No generic INCOMPLETE for trust errors; no duplicate accepted ResultRef |
+| C0.11 | 25m | New A2 v2 completion-proof/receipt and queryable held-at-A2 index while IntakeWorkset remains frozen | Every root prepared or explicit A2-held; terminal INCOMPLETE never endlessly pending |
+| C0.12 | 25m | Versioned input-derived accepted result keys with output digest verify and resumable accepted stage lookup | Conflicting parser bytes fail closed under same key; attempts recorded separately |
+| C0.13 | 20m | Typed SourceReferenceError subclasses for exact catalog/cursor anchors, preserving base interface | Trust errors BLOCKED; busy INCOMPLETE; source sequence gaps pass |
+| C0.14 | 20m | Safe progress digest/read-only status for external launcher and explicit terminal replay policy | Prefect sees no-progress without reading private SQLite; terminal partial not automatically retried |
 
 No C0 code is accepted unless requirements and acceptance cases have been explicitly frozen; no user-entered provider URL/path or A1 Graph context is ever allowed as dynamic Kedro Dataset factory input.
 
@@ -186,7 +190,7 @@ Old A2 tests are regression *evidence*. Reuse tests that assert requirements; de
 
 | ID | Active edit target | Deliverable | Tests |
 | --- | --- | --- | --- |
-| E0.1 | 25m | Claim/reference mapping from accepted workset to Kedro datasets | Workset, per-attempt and scoped transition claims unambiguous |
+| E0.1 | 25m | Map intake, workset, per-partition and scoped transition claims into Kedro datasets | No borrowed intake token or ambiguous save authority |
 | E0.2 | 25m | Source/parsed/zone/prepared/filter/group versioned staged outputs | Every later result depends on committed earlier refs |
 | E0.3 | 25m | Terminal completeness / pending workset proof with partial refs | Failed/INCOMPLETE/CANCELLED never become COMPLETE |
 | E0.4 | 25m | Restart and replay after crash at each dataset save boundary | No lost pending, no second authoritative checkpoint |
@@ -195,10 +199,10 @@ Old A2 tests are regression *evidence*. Reuse tests that assert requirements; de
 | E0.7 | 25m | `prepare-scheduled` using accepted intake with new Kedro A2 | Only released/selected inputs, cursor/pending as before |
 | E0.8 | 25m | Full cross-stage E2E A1→Kedro A2→A3→A5 | No missing important source, stale output or inappropriate delivery |
 | E0.9 | 20m | Architecture ownership and deprecation audit | No direct A1 import of new Kedro and no old A2 engine dispatch |
-| E0.10 | 20m | Deployment-owned Prefect one-shot wakeup after A1 job and configurable reconciliation sweep | Same prepare-scheduled API with fresh invocation; no A1 mutation, no internal scheduler |
+| E0.10 | 20m | Define no-payload external Prefect wakeup flow contract and safe invocation envelopes | Exact configured consumer/cursor; no A1 mutation or internal scheduler |
 | E0.11 | 20m | Safely handle no-work, INCOMPLETE, BLOCKED and FAILED command outcomes | No blind retry, stable consumer_id and catalog pin, preserved pending |
 | E0.12 | 20m | Cold-start eligibility inventory and explicit historical baseline only when approved | Unreleased raw evidence is not automatically promoted into A2 |
-| E0.13 | 25m | External Prefect/launcher wrapper wakes `prepare-scheduled` after each finite A1 collection attempt and coalesces by stable consumer scope | Wake-up after committed A1 release starts Kedro; no Spider signal dependency |
+| E0.13 | 25m | Implement and integrate external Prefect/launcher wrapper that wakes `prepare-scheduled` after each finite A1 collection attempt and coalesces by stable consumer scope | Wake-up after committed A1 release starts Kedro; no Spider signal dependency |
 | E0.14 | 25m | Crash-safe startup/periodic bounded catch-up, including A1 partial exits and lost wake-ups | Missed hint recovers from durable cursor; unchanged source is no-op |
 | E0.15 | 25m | Pending-page backpressure, overlapping wake-ups and source/cutoff concurrency integration | No unbounded drain, no duplicate accepted result, later release processed on next invocation |
 
@@ -239,7 +243,7 @@ Inputs must not contain actual user mail/provider credentials. An oracle generat
 | V13 performance | Identical A1 fixture cut measured old vs new on Pi and supported host | No material >10% wall regression unless absolute cost negligible; bounded RSS |
 | V14 architecture | No bespoke A2 ETL sequencing duplicated outside Kedro; counted bridge/adapter/controller complexity | Kedro owns true stage graph, no permanent dual engine |
 | V15 independent review | Full exact-SHA source, test mapping and original-base diff | Separate reviewer explicitly ACCEPT with no blocking issue |
-| V16 automatic A1-to-A2 | AUTO-01–AUTO-14 in automatic-handoff design including missing wakeup, overlap, pending, empty ledger and cold start | No lost work, no duplicate durable admission, no untrusted automatic bootstrap |
+| V16 automatic A1-to-A2 | AUTO-01–AUTO-26 in automatic-handoff design including missing wakeup, overlap, pending, empty ledger and cold start | No lost work, no duplicate durable admission, no untrusted automatic bootstrap |
 
 Run focused tests while implementing; run the full three-Python/platform CI matrix at integration checkpoints, not for every 20-minute task. Evidence records exact SHA, interpreter/package versions, JUnit path/counts, no skips, source fixtures, failures, digests and independent review. Do not claim the old Task 15 28/28 validates Kedro.
 

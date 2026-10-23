@@ -8,19 +8,16 @@
 **Decision ADR:** ../decisions/2026-10-23-a2-kedro-primary-etl.md.
 **Scope:** design/execution wiring, not A1 source modifications, Kedro implementation, or external scheduler deployment.
 
-**D4 R3 source-level correction (superseding earlier assumptions):** The
-accepted PreparationIntakeWorkset is not lossless: IntakeSelection lacks
-primary/component role, contexts are not saved as primary selections, and
-IntakeTransition omits full transition reasons, parent and evidence details.
-Kedro may re-read **only the same immutable ReleaseEntryRef** and match it
-against the saved selection to recover such metadata. If ambiguous or missing,
-mark the affected record held/incomplete; never use mutable A1 current state.
-The existing scheduled handler masks some trust errors as generic INCOMPLETE,
-so a distinct new A2 outcome mapper is required before Prefect deployment.
-Claims, bounded cancellation and deterministic accepted result identity are
-specified in the
-[R3 corrective contract](../notes/a1-kedro-handoff-r3-corrections-20261023.md).
-R3 review remains REVISE; no runtime implementation has begun.
+**D4 R4 correction:** The immutable A1 workset is a **reduced**
+admission record. The new Kedro Dataset must verify saved identities and
+recover roles/provenance only from the same exact ReleaseEntryRef; the
+original cursor/workset schema cannot be rewritten. The outgoing A2
+scheduled status translator must conservatively classify trust errors as
+BLOCKED without interpreting exception messages. New A2-owned held
+dispositions and completion receipts are mandatory to avoid infinite
+automatic retries. See the [current exact handoff contract](../notes/a1-kedro-handoff-r3-corrections-20261023.md).
+The R4 review of 467ca23 returned REVISE and is preserved as evidence.
+This design has not been independently accepted or implemented.
 
 ## 1. Direct conclusion: the handoff is already a committed event ledger
 
@@ -101,19 +98,29 @@ The existing scheduled.py currently processes multiple configured targets *seque
 - **Killed before workset commit:** no cursor advancement, next run replays/reuses any durably saved exact selections.
 - **Killed after workset commit:** pending workset survives and is processed on next run, no need to rescan A1 current state.
 - **One bad evidence component or malformed input:** explicit held/limited path; do not forge content, block other good releases, or auto-recollect.
-- **Claim lost or catalog restored/mismatched:** The new Kedro wrapper must
-stop and classify by typed code (trust mismatch BLOCKED, claim contention
-BUSY, expired claim FAILED); the current legacy handler instead returns
-generic INCOMPLETE in several paths. Never reset consumer or accept a
-different catalog silently.
-- **A2 ETL failure:** retain partial durable refs and pending proof; allow later finite retry with exact captured inputs.
+- **Claim lost or catalog restored/mismatched:** The new Kedro wrapper
+classifies trusted catalog pin mismatch as BLOCKED/catalog-mismatch, any
+escaped SourceReferenceError (including restored anchor/ledger rollback) as
+BLOCKED/source-reference-invalid, consumer ClaimUnavailableError as
+INCOMPLETE/consumer-busy, and StaleClaimError as FAILED/claim-lost.
+Never inspect exception text, reset consumer, or accept a replacement catalog.
+The current legacy handler returns generic INCOMPLETE for several of these
+cases; these classifications are **future new A2 behavior**.
+- **A2 ETL failure:** retain accepted stage refs. A pending workset can
+resume missing stages from exact captured inputs. An accepted terminal
+INCOMPLETE workset is *not* picked by normal pending selection; operator
+replay/repair creates new append-only history, not automatic reprocessing.
+New A2-held selection dispositions must be durable before such a workset
+can terminally close, with a new versioned A2 completion receipt.
 - **Exit codes of current CLI:** 0 COMPLETE; 2 invalid input/config; 3 BLOCKED; 4 INCOMPLETE and other not-complete states. Do not treat all exit 4 as fatal provider errors. The external wrapper must inspect saved terminal status and limitation codes; it should never blindly overwrite/recreate a cursor or resend an external A3/A5 effect.
 
-The current legacy ResultRef identifiers include execution/attempt and can
-produce multiple physical StageResults across retries. New Kedro accepted
-semantic ResultRefs and transition identities must be deterministic across
-identical inputs/configuration, with independent attempt audit and atomic
-append-or-verify. Details are in the R3 corrective contract.
+The legacy ResultRef identifiers include execution/attempt and can
+produce multiple physical StageResults across retries. The new A2 logical
+acceptance key is **input-only**; the output digest is verified separately.
+A same-key conflicting digest is rejected; validated saved stage results are
+reused on restart rather than recomputing all earlier stages. Accepted
+results and attempt audit remain distinct. See the [R4-revised contract](../notes/a1-kedro-handoff-r3-corrections-20261023.md).
+All new acceptance/storage behavior requires C0 migration and testing.
 
 The existing workset-level locks and per-stage claim fencing remain the source of idempotence. There is no exact-once promise for arbitrary side effects; ingestion is at-least-once *attempted* with atomic durable admission, and accepted stage effects are deduplicated/fenced by their documented identities.
 
@@ -129,29 +136,33 @@ No private catalog identity, source ID, body, path or credential belongs in chec
 
 | Gate | Execution test | Pass condition |
 | --- | --- | --- |
-| AUTO-01 | Real native A1 fixture emits one completed release, external wrapper wakes A2 | Exactly one immutable A2 workset and one set of accepted Kedro stage results |
-| AUTO-02 | Spider exits without release (failed/paused/deferred) | No false Kedro work |
-| AUTO-03 | Two A1 releases arrive during one A2 processing cycle | Prior fixed cutoff processed; later one remains for next run |
-| AUTO-04 | Trigger delivered twice / overlapping reconciler | Same catalog/source/stream/consumer produces no duplicate workset or accepted stage |
-| AUTO-05 | Crash after saved selection, before cursor/workset transaction | Safe retry without orphaned accepted cursor |
-| AUTO-06 | Crash after workset commit, before Kedro done | Pending workset reruns exact selected evidence, no cursor rewind |
-| AUTO-07 | Missing/corrupt evidence followed by good release | Held is explicit; later release proceeds |
-| AUTO-08 | Two source streams incl Teams + contextual entity | Separate pinned cursors and correct scope/grouping rules |
-| AUTO-09 | Historical initialisation in empty-release catalog | No automatic historical inference; explicit approved exact-version baseline only |
-| AUTO-10 | Config identity mismatch/replaced catalog | New Kedro A2 wrapper must yield distinct BLOCKED trust code; existing legacy wrapper maps these to generic INCOMPLETE |
-| AUTO-11 | Refused parser, timeout, cancellation and stale claims | No late claim-fenced publications; stage results persist honestly |
-| AUTO-12 | Prefect invoker handles COMPLETE, INCOMPLETE, BLOCKED, FAILED | Limited next run for pending; alert for trust issues; no blind A3/A5 side-effect retry |
-| AUTO-13 | A1 continues publishing while Kedro processes saved input | A1 does not wait; no mutable-projection reads in A2 |
-| AUTO-14 | Full exact source→workset→Kedro→A3 E2E | Explicit lineage, output limitations and schema versions survive restart |
-
-| AUTO-15 | Lost post-commit wake-up; periodic/startup reconciliation | Same cursor recovers once without A1 callback |
-| AUTO-16 | A1 exits failed after earlier valid release commit | Only committed subset is admitted |
-| AUTO-17 | Restored catalog, cursor anchor mismatch, global sequence gaps and busy consumer | Distinct codes, no reset or duplicate acceptance |
-| AUTO-18 | Backlog exceeds one page and pending workset budget | Finite invocations drain fairly |
-| AUTO-19 | Component-only Teams release and same source version across entry refs | Exact role matched from immutable release, no inferred parent |
-| AUTO-20 | Context/transition-only and held-only worksets | Exact scope, explicit held, no false prepared content |
-| AUTO-21 | Deadline/cancel/claim loss mid-dataset save with retry | Earlier accepted refs intact, no late or duplicate accepted effect |
-| AUTO-22 | COMPLETE/PENDING/HELD/BUSY/BLOCKED/FAILED mapping | Wrapper distinguishes no-progress and trust violation |
+| Gate | Execution test | Pass condition |
+| --- | --- | --- |
+| AUTO-01 | Native A1 fixture commits a valid release, external wrapper wakes Kedro | One immutable A2 workset and accepted stage results |
+| AUTO-02 | Spider exits without any committed release | No false Kedro preparation |
+| AUTO-03 | New A1 release arrives after fixed A2 cutoff | Later entry waits for next finite invocation |
+| AUTO-04 | Duplicate/overlapping wake-up | One workset admission and no duplicate accepted stage |
+| AUTO-05 | Crash after selection write, before workset/cursor commit | Safe retry without cursor skip |
+| AUTO-06 | Crash after workset commit, before Kedro completes | Pending workset resumed from exact refs |
+| AUTO-07 | Missing/corrupt A1 evidence followed by valid release | Durable held classification and later progress |
+| AUTO-08 | Two streams including Teams and contextual source | Separate cursors and scoped semantics |
+| AUTO-09 | Historical data in zero-release catalog | No implicit backfill; explicit baseline required |
+| AUTO-10 | Mismatched trusted catalog and escaping SourceReferenceError | New A2 returns distinct BLOCKED trust code, not generic pending |
+| AUTO-11 | Parser timeout, cancellation and expired claim | Bounded drain and no late publication |
+| AUTO-12 | Prefect maps COMPLETE, INCOMPLETE, BLOCKED, FAILED | Capped retries, safe alerts, no accidental A3/A5 resend |
+| AUTO-13 | A1 publishes while Kedro processes a cut | A1 does not block and A2 never reads mutable projections |
+| AUTO-14 | Exact A1→Workset→Kedro→A3 E2E | Accepted lineage/limits survive restart |
+| AUTO-15 | Lost wake-up after A1 commit; startup/periodic catch-up | Recovers from saved cursor exactly once |
+| AUTO-16 | A1 exits failed after an earlier valid release | Only committed subset is processed |
+| AUTO-17 | Catalog restore, anchor mismatch and consumer busy | Typed trust-vs-busy code; global sequence gaps pass normally |
+| AUTO-18 | More than max_entries/max_pending_worksets backlog | Fair bounded multi-invocation drain |
+| AUTO-19 | Teams component-only, duplicate equal selections, same source across release entries | Role verified with exact released entry/ordinal digest; ambiguity A2-held |
+| AUTO-20 | Context-only, transition-only, intake-held-only or A2-held-only cut | Scoped result, terminal INCOMPLETE/held where needed, no invented primary |
+| AUTO-21 | Cancellation/claim loss mid-dataset save and restart | No late write; validated prior stage reused |
+| AUTO-22 | Scoped status reports no-progress, held and blocked | External wrapper sees safe progress digest; no busy loop |
+| AUTO-23 | Same input-only key produces different canonical parser digests | Second result rejected, first accepted result immutable |
+| AUTO-24 | Unverifiable A2 role after frozen intake | Durable a2_input_disposition@1 and a2_completion_receipt@2; explicit repair only |
+| AUTO-25 | Pending workset retains old code_version at Kedro cutover | Drain or explicitly migrate A2 receipt with same A1 cursor/selection |
 
 These tests are on the **new Kedro candidate** and a deployment-owned orchestration harness. The old `tests/test_a1_handoff_scheduled_e2e.py`, `tests/preparation_pipeline/test_scheduled_recovery.py`, and `tests/application_cli/test_scheduled_prepare.py` are source-level oracles, not substitutes for new Kedro tests. Keep A1's original Task 15 28-gate evidence frozen.
 

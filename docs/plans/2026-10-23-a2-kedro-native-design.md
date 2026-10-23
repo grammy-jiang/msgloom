@@ -9,7 +9,6 @@
 **Automatic release-to-ETL handoff:** [A1 Release -> Kedro A2](2026-10-23-a1-release-to-kedro-auto-handoff.md).
 **Review record:** [Readiness audit](../notes/a2-kedro-readiness-audit-20261023.md).
 **A1 output and automatic activation:** [Source-verified integration](../notes/a1-kedro-handoff-activation-20261023.md).
-**A1 post-release orchestration plan:** [Automatic wake-up, catch-up, and E2E gates](2026-10-23-a1-release-to-kedro-auto-handoff.md).
 
 **D4 R3 source-level correction (superseding earlier assumptions):** The
 accepted PreparationIntakeWorkset is not lossless: IntakeSelection lacks
