@@ -40,6 +40,7 @@ flowchart TD
 | [A2 Kedro-native Architecture Design](plans/2026-10-23-a2-kedro-native-design.md) | Planned A2 replacement | Proposed Kedro-native pure dataflow and preserved A1/Intake/persistence boundaries; independent review required. |
 | [A2 Kedro-native Implementation Plan](plans/2026-10-23-a2-kedro-native-implementation-plan.md) | Planned A2 replacement | Dependency-gated task DAG, microsteps, parallel ownership, tests, rollback and stop/go gates. |
 | [A2 Kedro Readiness Audit](notes/a2-kedro-readiness-audit-20261023.md) | A2 preparation assessment | Historical plan reconciliation, exact A1 source inventory and independent D4 review record. |
+| [A2 Kedro First Independent Review](notes/a2-kedro-independent-review-r1-20261023.txt) | A2 planning review history | Original read-only REVISION verdict on 37f5886; retained without changing the result. |
 | [Operator Configuration](notes/operator-configuration.md#scheduled-preparation) | Finite A2 operation | Stable scheduled intake targets, invocation format, explicit historical baseline service, pending-work retry, and recovery. |
 | [Microsoft Graph Change Notifications](microsoft-change-notifications.md) | Deployment integration | Webhook validation/renewal boundary and privacy-safe sync-trigger contract. |
 

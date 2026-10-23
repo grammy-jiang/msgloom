@@ -16,7 +16,7 @@ D0–D3 are documented in:
 - docs/plans/2026-10-23-a2-kedro-native-design.md
 - docs/plans/2026-10-23-a2-kedro-native-implementation-plan.md
 
-D4 requires separate design/security review of these exact changes before any code task may begin. This planning audit does not assert that Kedro runtime is installed, that an official Kedro security advisory is resolved, or that a new A2 has already passed production tests.
+D4 independent review R1 of exact 37f588676404a92b5d4e521a25d513070df42efc by official Claude Code Sonnet (read-only) returned **DECISION: REVISE**, with nine P1 blocking design defects and eight P2 improvements. The complete original finding report is retained at docs/notes/a2-kedro-independent-review-r1-20261023.txt; it must not be retrospectively relabeled. This plan has been revised to address those findings. A separate independent R2 review of the new exact SHA remains required before any code task may begin. This planning audit does not assert that Kedro runtime is installed, that an official Kedro security advisory is resolved, or that a new A2 has already passed production tests.
 
 ## D0. Decision reconciliation / authority
 
@@ -61,6 +61,24 @@ The following 20-Spider set is the exact reviewed Task 15 scope; it is not a sta
 | microsoft_teams_notification_reconcile | Readback and scoped state changes | No separate A2 intake stream; reconcile Teams chat/channel |
 
 A1 reader returns ReleasedInput with exact reference, optional selection, components, contexts, transitions and facts. None may be dropped. There are *seven* current PreparedSourceType categories: Outlook email, Outlook calendar, Teams channel message, Teams chat message, To Do, OneDrive and Contact. Input category counts must not be conflated with the 20-Spider count or release stream count.
+
+### Seven A1 release streams mapped into A2
+
+This crosswalk is based on AcquisitionStream (message_ingest/acquisition/handoff.py), ReleaseInput fields, the actual intake.py extraction rule and the existing seven PreparedSourceType members; it is **not** a second persisted schema.
+
+| A1 stream | Spider sources | ReleasedInput possibilities | Accepted workset | A2 disposition |
+| --- | --- | --- | --- | --- |
+| outlook_mail | outlook_discover, outlook_folder_delta, outlook_delta, outlook_full | Mail primary/Full profile components, inventory context, scoped folder membership | selection_refs (primary + components), transitions/held | outlook_email prepared/filter/group within one exact plan batch; folder transitions bypass Kedro |
+| outlook_calendar | outlook_calendar_discover, outlook_calendar_window, outlook_calendar_delta, outlook_calendar_full | Window/event versions, inventory, scoped window authority | selection_refs, context_refresh/transitions/held | outlook_calendar contextual one-member None; window removals scoped |
+| todo | microsoft_todo_discover, microsoft_todo_sync | Resource snapshot, control inventory, task presence | selection_refs, transitions/held | todo contextual one-member None |
+| contacts | microsoft_contacts_discover, microsoft_contacts_sync, microsoft_contacts_delta | Person/folder inventory, generation, membership observation | selection_refs, transitions/held | contact contextual one-member None |
+| onedrive | microsoft_onedrive_discover, microsoft_onedrive_delta, microsoft_onedrive_content | Metadata primary, exact version-linked content component, 410/control context | selection_refs, transitions/held | onedrive contextual one-member None, exact metadata/content provenance |
+| teams_chat | microsoft_teams_chat_discover; microsoft_teams_notification_reconcile contributes scoped effects | Chat message primary, component-only observation, side context, presence | selection_refs when materialized; parent context_refresh transitions when component-only | teams_chat_message; explicit same-scope chat reply may confirm, membership alone cannot |
+| teams_channel | microsoft_teams_channel_discover; microsoft_teams_notification_reconcile contributes scoped effects | Channel message root/reply primary, component-only observation, scoped state | selection_refs when materialized; parent context_refresh transitions when component-only | teams_channel_message; exact same-channel root/reply may confirm |
+
+microsoft_profile has no release and therefore belongs to **no** A2 stream.
+
+The actual intake maps released.selection and released.components to exact collected_selection@1 refs; it does **not** admit released.contexts as a source selection. Only control_context facts become context_refresh transitions; Teams component-only facts can also produce parent context_refresh. All released.transitions are preserved in workset.transitions. Invalid evidence becomes workset.held. The new Kedro pure DAG receives **only** already captured selected records from a duplicate-free PreparationPlan, never the raw entire ReleasedInput or workset.transitions. No extra A2SourceCut model is authorised.
 
 Release facts alone do not prove released completion. Cursor advancement is after durable workset admission, not parsing success. Supporting context is explicitly non-primary. Component-only entries may have immutable components without a readable parent, and transition-only releases have scoped authority facts without bytes; both must have defined new A2 handling, not be discarded or converted to fake records. The accepted scheduled intake has restored-catalog anchoring, pending-work rotation and held dispositions.
 
@@ -157,7 +175,9 @@ The independent reviewer must independently inspect actual repo paths, this desi
 9. Is the outcome measurable against old A2 and A3/A5, and is the rollback non-destructive?
 10. Are unsupported live Teams and Windows claims excluded?
 
-**Planning QA status at draft creation:** author static review pending; independent D4 review pending; no adoption GO until reviewer report records exact source commit and ACCEPT. A review finding must be fixed in documents and independently rechecked before changing status. Do not say "independent accepted" merely because a test or linter passed.
+**D4 R1:** REVISE; reviewer found 9 P1 and 8 P2 at 37f5886. Source evidence was read-only, with **no tests run**. A1 original Task 15 acceptance is unaffected. Remediation mapped as follows: batching and grouping scope (new design §5); parser planning (§5.1); input/workset mapping (§5.2 plus above matrix); partial publication (§5.3); bounded cooperative cancellation (§6/§9); pure node topology (§5); semantic versioning (§9.2); security Q0 authorization (§6 and implementation §4); numeric maintainability baseline (§11). P2 corrections include explicit Teams supported reply, fixed legacy oracle SHA 895fc40, MemoryDataset copy_mode assign, redacted failure logs, additional tests and unchanged Task 15 runner.
+
+**D4 status for revised candidate:** awaiting independent R2 verdict. No adoption GO until reviewer report records the **new** exact source commit and ACCEPT. A review finding must be fixed in documents and independently rechecked before changing status. Do not say "independent accepted" merely because a test or linter passed.
 
 ## Record of actions
 
@@ -165,5 +185,6 @@ The independent reviewer must independently inspect actual repo paths, this desi
 - Read the historical Kedro plan from **local-only** program/kedro-a2-plan commit c7dcb41; it was absent from remote master/branches.
 - Read actual A2 Python classes, package versions and tests from baseline master.
 - Checked public Kedro 1.7 and the conflicting security records.
-- Created only documentation in isolated docs/a2-kedro-native-design-20261023 worktree.
+- Created only documentation in isolated docs/a2-kedro-native-design-20261023 worktree; source base 895fc40, initial planning commit 37f5886.
+- The first reviewer identified concrete design defects, so revised both the design and implementation plan, retained the original reviewer output, and added the stream crosswalk. The revision still needs a new exact-SHA review.
 - No A2 Python/package/lock/scheduler changes, no source worktree cleanup and no runtime agent deployment in this audit.

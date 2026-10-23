@@ -8,9 +8,9 @@
 
 ## 0. Scope control / definition of ready
 
-This plan implements a **new** Kedro-native deterministic A2 execution path. It does not mechanically migrate legacy A2 control flow, add a second production orchestration system, change accepted A1 release/intake semantics, or start A3/A5 refactors. Reuse existing pure parsers/contracts and intake/persistence interfaces only where their independently audited behaviour matches the new design. The old A2 remains an offline oracle and rollback source until an independently accepted cutover.
+This plan implements a **new** Kedro-native deterministic A2 execution path. It does not mechanically migrate legacy A2 control flow, add a second production orchestration system, change accepted A1 release/intake semantics, or start A3/A5 refactors. Reuse existing pure parsers/contracts and intake/persistence interfaces only where their independently audited behaviour matches the new design. The old A2 remains an offline oracle and rollback source until an independently accepted cutover. Pin that reference oracle to **895fc40a0ec889bd96f620df8c62491787218217**, including dependency lock and current fixture corpus. Do not compare against an unrecorded moving master.
 
-**Before any production-code patch:** D0–D4 documentation must be accepted; owner has authorised implementation; latest GitHub master is captured; worktrees/active jobs are inventoried; Kedro dependency security and supported runtime gate is green. An unsuccessful gate ends the adoption path without changing the production default.
+**Before any production-code patch:** D0–D4 documentation must be accepted; owner has authorised implementation; latest GitHub master is captured; worktrees/active jobs are inventoried; Kedro dependency security and supported runtime gate is green. An unsuccessful gate ends the adoption path without changing the production default. D4 read-only design/security research may continue independently, but **any** manifest/lock/code edit (including Q0.5) requires an accepted revised plan and explicit owner implementation authorization. The first-round independent D4 review returned REVISE; see the readiness audit and the retained r1 report. No permission to implement is inferred from this plan.
 
 Success is not "Kedro imports and one DAG runs". It is correct A2 lineage and all mandatory release/replay, security, lifecycle, performance, maintainability and downstream integration evidence.
 
@@ -18,9 +18,9 @@ Success is not "Kedro imports and one DAG runs". It is correct A2 lineage and al
 
 - A1 owner: message_ingest/, microsoft_graph/, immutable release and approved catalogue state. Do not edit in this plan without a separately reviewed, evidenced and owner-approved exception.
 - Reused frozen boundaries: msgloom/sources/release_reader.py and reader contracts, preparation_pipeline/intake.py, historical_baseline.py, intake_models.py, the 13 Task 15 scenarios, claim-fenced msgloom/persistence and cross-stage result contracts. Preserve public behaviour.
-- New A2 owner: an isolated namespace such as msgloom/preparation_kedro/ containing contracts.py, pipeline.py, nodes.py, executor.py, bridge.py and publication.py; the final implementation should have fewer files if simpler and each Python file must be below AGENTS.md's 500-line cap.
+- New A2 owner: an isolated namespace such as msgloom/preparation_kedro/ containing contracts.py, pipeline.py, nodes.py, executor.py, bridge.py and publication.py. It must implement one **controller-side parse planner** and two pure Kedro subgraphs (per-record prepare/filter; per-batch grouping), not another workset/cursor model. Every file must be below AGENTS.md's 500-line cap and total new/replacement orchestration must meet V13.
 - Shared parser / pure domain owners: msgloom/preparation/isolation/, parsers/, records.py, filtering.py, grouping.py, grouping_graph.py, codecs. Only edit with a focused test and explicit ownership declaration; prefer adapters over duplicated logic.
-- A2 composition: msgloom/cli/composition.py and scheduled wrapper integration only during final gated cutover, with no new public CLI or user-facing configuration required for the initial alpha.
+- A2 composition: msgloom/cli/composition.py and scheduled wrapper integration only during final gated cutover; reuse existing PREPARE, prepare-scheduled and accepted preparation_intake_workset@1 contracts. There are three legacy claims to preserve: workset claim, per-PreparationPlan claim and separate prepared_transitions claim. No new public CLI or user-facing engine knob for initial alpha.
 - A3/A5: unchanged business semantics and no new model/network processing. Their existing composition/e2e tests are mandatory downstream smoke.
 - Old sequencing reference: preparation_pipeline/handler.py, record_steps.py, stage_steps.py, state module (_state.py). Retain unchanged through oracle tests and pre-cutover review; after cutover, remove only provably redundant orchestration in a separate reviewed PR.
 - One manager owns pyproject.toml and uv.lock changes; no parallel worker rebases/rewrites the lock.
@@ -84,13 +84,15 @@ D0–D4 do **not** add Kedro to the package or alter user-facing behaviour.
 | ID | Time target | Work | Mandatory proof |
 | --- | --- | --- | --- |
 | Q0.1 | 20m | Freeze installed runtime, Scrapy version, 3.12/3.13/3.14 interpreters, Pi ARM64, CI baseline | Versions and commit match manifest; no unsupported "works on Windows" claim |
-| Q0.2 | 25m | Inspect Kedro 1.7.0 wheel/sdist, dependencies and exact public API vs 1.6.0 plan | No undocumented async assumptions; DataCatalog/MemoryDataset output read is tested |
-| Q0.3 | 25m | Investigate CVE-2026-3840 and CVE-2026-35167 overlap against **exact** 1.7.0 source and active usage | Written applicability, root cause, reproducer or proved inapplicability; no automatic ignore |
-| Q0.4 | 20m | Prove telemetry opt-out, hooks/config/plugin surface and no untrusted versioned datasets | Network disabled; explicit static catalog, no project discovery; tests |
-| Q0.5 | 25m | Single-owner tentative lockfile integration on separate dependency PR | No downgrade/unintended transitive pin changes; Python 3.12/3.13/3.14 audits |
-| Q0.6 | 25m | Installed-wheel and ARM64/offline smoke | Clean Python import, no service starts, 1.7.0 programmatic runner works |
+| Q0.2 | 25m active review | Download wheel into isolated scratch directory; verify PyPI SHA-256 and wheel metadata without executing sdist build scripts; inspect extracted source with isolated Python; compare 1.7.0 public APIs against 1.6 plan | No untrusted sdist code executed; Python -I used for source inspect; catalog/copy mode/out read validated |
+| Q0.3 | 25m investigation slice | Reconcile CVE-2026-3840 and CVE-2026-35167 against exact version; record OSV, GitHub, GitLab and Snyk advisory status with date | Reviewer-checked source-level reachability and written owner risk disposition; no automatic ignore |
+| Q0.4 | 20m review/test design | Specify production guard against versioned datasets, DataCatalog.from_config, Kedro load_obj, dynamic hooks, plugins, untrusted catalog and CLI | Architecture-test cases defined; telemetry/network/logging/redaction requirements, no dynamic classes |
+| Q0.5 | 25m active change | **Only after Q0.3 + Q0.4 ACCEPT and owner authorization:** one owner edits pyproject/uv.lock in isolated dependency PR; list every added transitive package and hash | 3.12/3.13/3.14 OSV audits and separate CVE applicability record; no silent vulnerability-ignore |
+| Q0.6 | 25m active qualification setup | Only after Q0.5: independently install locked wheels into clean isolated environments, verify ARM64 and 3.14 wheel availability | Offline installed-wheel/metadata/telemetry/sandbox check; matrix runs may exceed the 25m active-change target |
 
 Version decision: 1.7.0 is a **candidate**, not pre-approved. The older plan fixed 1.6.0 before 1.7.0 existed. Snyk currently flags all Kedro versions for CVE-2026-3840, while GitLab/GitHub link a very similar issue to an upstream fix in 1.3.0 under CVE-2026-35167. If overlap cannot be resolved conclusively, leave production unchanged and request an explicit security acceptance decision; do not silently add an audit ignore. No kedro-datasets required.
+
+The Q0 security authority is the repository owner. Require source-level documented applicability, OSV/GitHub/GitLab/Snyk status and explicit approval tied to candidate SHA. If an advisory remains unresolved, no implicit CI green override; exceptions require separately approved policy plus expiry, not an agent-created ignore. Q0.3 and Q0.4 security/read-only conditions are strict prerequisites for Q0.5. Check the installed 1.7.0 build's true DataCatalog/MemoryDataset copy semantics and all new transitive libraries.
 
 If Q0 fails, close this as a **rejected adoption** with documented evidence. Do not substitute custom runners or a vendored Kedro fork without a newly approved design.
 
@@ -98,12 +100,12 @@ If Q0 fails, close this as a **rejected adoption** with documented evidence. Do 
 
 | ID | Time target | Change | Focused tests |
 | --- | --- | --- | --- |
-| C0.1 | 20m | Define strict, frozen A2ExecutionInput / source cut with exact committed selections | Unknown fields/forged versions fail; no live resources |
-| C0.2 | 20m | Define normalized PreparedBatch/FilteredBatch/RelationshipGraph/GroupedBatch/A2ExecutionOutput | Source/limits/lineage preserved; deterministic schema |
-| C0.3 | 25m | Build read-only adapter from ReleaseSourceReader/collected_selection to input envelope | All ReleasedInput shapes and 7 source categories |
-| C0.4 | 20m | Preserve immutable planned/saved derived bytes and exact parser output binding | No content-derived module/path dispatch |
-| C0.5 | 20m | Define transition/context-only output path separate from grouped communication | No fabricated parent, body, or global absence |
-| C0.6 | 20m | Prove A3/A5 existing public input contract accepts equivalent semantic results | Contracts unaffected; old A2 remains runnable |
+| C0.1 | 20m | Define strict immutable per-record A2RecordExecutionInput and reuse PreparationIntakeWorkset for exact source cut | Unknown fields/forged versions fail; no live resources |
+| C0.2 | 20m | Define RecordTransformOutput and GroupingInput/GroupTransformOutput; no extra RelationshipGraph schema | Source/limits/lineage preserved; deterministic schema |
+| C0.3 | 25m | Map existing workset.selection_refs and recorded source versions to per-record input envelope | All ReleasedInput shapes and 7 source categories |
+| C0.4 | 20m | Specify parse planning for primary/alternate bodies, derived metadata JSON, attachment byte references and exact parser binding | No content-derived module/path dispatch |
+| C0.5 | 20m | Define pass-through transition/context-only mapping outside Kedro; reuse existing prepare_transitions claim | No fabricated parent, body, or global absence |
+| C0.6 | 20m | Prove A3/A5 input accepts equivalent prepared semantic versions; define no duplicate downstream change on engine-only cutover | Identical content/policy uses same config/code version and accepted semantic IDs |
 
 C0 is a freeze barrier: parallel pure-DAG and oracle workers consume the same contracts. Do not permit a worker to rename shared schemas unilaterally.
 
@@ -111,15 +113,15 @@ C0 is a freeze barrier: parallel pure-DAG and oracle workers consume the same co
 
 | ID | Time target | Change | Focused tests |
 | --- | --- | --- | --- |
-| P0.1 | 20m | Define static pipeline nodes and programmatic catalog in new package | Graph has expected input/output edges, no duplicate/orphan datasets |
-| P0.2 | 20m | Implement pure source canonicalization/PreparedBatch construction | Deterministic order, exact source spans, metadata/limits |
-| P0.3 | 20m | Implement pure deterministic filter node from reviewed semantics | All matches, rule conflicts, excluded replay unchanged |
-| P0.4 | 20m | Implement native relation analysis node | Exact scope and parent validation, ambiguity closure |
-| P0.5 | 20m | Implement grouped output node, contextual items isolated | Candidate-only Outlook conversation, Teams chat/channel policy |
-| P0.6 | 20m | Assemble typed and validated A2ExecutionOutput with ordered publication recipe | No fake acceptance state or live ClaimToken |
-| P0.7 | 25m | Implement SequentialRunner(is_async=False) execution off Application loop | Bounded, no nested loop, no hooks/plugins/telemetry |
-| P0.8 | 25m | Verify controlled interruption returns no late result/publish callback | Worker drain and cancellation hard gate |
-| P0.9 | 20m | Node topology/introspection and config-injection protections | Bad node/dataset metadata and untrusted params rejected |
+| P0.1 | 20m | Define **two** programmatic Kedro pure DAGs: per-record assemble->filter, per-unique-batch validate->group | Meaningful dependency edges, no extra graph schema or duplicate/orphan datasets |
+| P0.2 | 20m | Implement pure assemble_prepared_record on already parsed exact input | Deterministic prepared@1 candidate with source spans and limitations |
+| P0.3 | 20m | Reuse proven pure apply_filters in Kedro node with explicit FilterConfig input | All matches, conflicts, guidance, excluded replay unchanged |
+| P0.4 | 20m | Implement scope/duplication validation of GroupingInput (only one planned batch) | Missing/cross-scope parents uncertain; repeat selected sources split into new batch |
+| P0.5 | 20m | Reuse reviewed group_records pure algorithm in batch Kedro node | Candidate Outlook only; supported Teams chat reply may confirm; contextual separate |
+| P0.6 | 20m | Validate RecordTransformOutput + GroupTransformOutput; transitions excluded from DAG | No fake durable refs, ClaimToken or duplicate versioned dataset |
+| P0.7 | 25m | Implement SequentialRunner(is_async=False), static programmatic catalog, MemoryDataset(copy_mode="assign") for frozen-only objects | No event-loop block, mutable alias leak, deep copy blowup, hooks/plugins/telemetry |
+| P0.8 | 25m | Implement bounded cooperative stop checks before/between nodes, monotonic budget preflight and measured node drain margin | CPU-bound timeout before/during node; never late publish; no unbounded thread |
+| P0.9 | 20m | Enforce node/catalog allowlist at runtime; reject versioned/from_config/load_obj paths; capture failure logs with private payload fixtures | CI executable guard, no leaked content/exceptions, no Kedro CLI |
 
 Each node operates only on captured immutable inputs and returns pure values. Do not invoke parser subprocess or write SQLite from nodes. Keep node granularity coarse; multiple microtasks need not mean multiple framework nodes.
 
@@ -130,11 +132,11 @@ Each node operates only on captured immutable inputs and returns pure values. Do
 | F0.1 | 20m | Fixture registry and exact selected input snapshots | Golden snapshots independent of new pipeline output |
 | F0.2 | 25m | Outlook Mail including duplicates, moves and old-version replay | Exact source mapping and ambiguous Message-ID |
 | F0.3 | 20m | Calendar/To Do/OneDrive/Contacts contextual and scoped facts | No automatic communication group or global removal |
-| F0.4 | 25m | Teams channel rooted replies vs Teams chat independent messages | Same-scope confirmation only, fixture-only acceptance |
+| F0.4 | 25m | Teams channel rooted replies and independent Teams chats **with explicit supported reply links** | Same-scope confirmed only for resolvable native links; fixture-only acceptance |
 | F0.5 | 25m | MIME/HTML and alternative body, quoted/inline text spans | Preserve order, reference/source distinction, no false quote source |
 | F0.6 | 25m | Excel, PDF and Word including partial/malformed/unavailable files | Retain cells, pages, tables, blocks, omissions |
 | F0.7 | 20m | Filters and group ambiguity/fairness | Conflicts held, candidate-only relations remain uncertain |
-| F0.8 | 20m | Canonical oracle comparison utility | Compare domain values; allow explained execution-scoped ResultRef changes |
+| F0.8 | 20m | Canonical oracle comparison utility pinned to 895fc40 | Same meaning-bearing values and prepared semantic versions when code/config equal; ResultRefs may differ |
 | F0.9 | 20m | Replay, changed policy, unstable/duplicate source identities | Semantic version equality/inequality by meaning-bearing change |
 
 Use existing tests/preparation_pipeline/, tests/preparation_semantics/, tests/test_native_parser_integration.py, tests/phase1_e2e/ and Task 15 13-scenario fixtures as sources of truth. Do not "fix" an old test to make Kedro green. When exact bytes differ, the reviewer must decide whether the legacy result was incorrect under the governing design; record that as an explicit policy change, never hide it in the comparison.
@@ -146,14 +148,14 @@ F0 can be distributed across independent agents/worktrees, each owning only new 
 | ID | Time target | Change | Proof |
 | --- | --- | --- | --- |
 | E0.1 | 25m | Trusted operation admission, finite plan, exact dependency preflight | Unknown caller values fail closed |
-| E0.2 | 25m | Existing claim token/lease admission and source selection capture | Duplicate work blocked; evidence saved before parse |
-| E0.3 | 25m | Parser subprocess service and resource lifecycle | Bounded bytes/time/memory and cancellation drain |
-| E0.4 | 25m | Pure DAG invocation with explicit deadline and versioned implementation | No blocking event loop; no late output accepted |
-| E0.5 | 25m | Revalidate DAG output and publish prepared@1 | Per-write claim fencing and exact source/derived deps |
-| E0.6 | 25m | Publish filter_result@1 and group_result@1 dependencies | Exact ordered prepared/filter ResultRefs, group evidence |
-| E0.7 | 25m | Publish prepared_transitions@1/limitations with exact source scope | No fabricated deletion body; no widening absence |
+| E0.2 | 25m | Preserve scheduled workset claim and separate per-plan claim (split at max_records/repeated VersionRef) | Duplicate versions never co-group; exact selection saved before parsing |
+| E0.3 | 25m | Controller parse planner with body/alternates/metadata-derived JSON/attachments; parser child lifecycle | Per/aggregate byte/output budgets, distinct limitations, cleanup and source mapping |
+| E0.4 | 25m | Per-record pure Kedro invoke with finite drain bound, then one per-batch group invoke | Deadline preflight, no late publication, exact groups only within batch |
+| E0.5 | 25m | Immediately revalidate and publish each prepared@1 after that record's DAG returns | Exact collected_selection/derived deps, per-write claim fencing; earlier refs survive later failure |
+| E0.6 | 25m | Immediately publish per-record filter_result@1; after batch completion publish group_result@1 | Exact ordered member prepared/filter refs; no unfinished group on timeout |
+| E0.7 | 25m | Retain separate existing prepared_transitions@1 claim and prepare_transitions publisher | Workset transition refs retained; no fabricated deletion body/primary |
 | E0.8 | 25m | Complete operation workset receipt and terminal status | Only all accepted refs allow COMPLETE; incomplete remains visible |
-| E0.9 | 25m | Fault injection at claim loss, persistence write, worker cancellation | No stale owner publication; no contradictory terminal result |
+| E0.9 | 25m | Fault injection: claim loss, post-parse failure, per-record timeout, group exception, cancellation during CPU-bound node | Earlier saved refs retained; no stale or late result; no false COMPLETE |
 | E0.10 | 20m | Closed-loop replay and restart without A1 current projections | Exact saved selection; delayed retries supported |
 
 Mutating the stored workset/cursor or durable schema is **not** needed by default. A proposed exception requires separate migration proof, old/new reader compatibility and a dedicated independent review. The outer controller may be new; the existing intake semantics are not.
@@ -164,7 +166,7 @@ Mutating the stored workset/cursor or durable schema is **not** needed by defaul
 | --- | --- | --- | --- |
 | I0.1 | 20m | Integrate new controller behind internal development-only composition seam | Default production old behaviour, no public A2_ENGINE contract |
 | I0.2 | 25m | Manual prepare complete/incomplete/replay through Application/CLI | Same exposed outputs, return codes and no model calls |
-| I0.3 | 25m | prepare-scheduled pending/new/transition paths use accepted new producer | Task 15 workset fairness and 13 scenarios |
+| I0.3 | 25m | Integrate new per-plan controller under unchanged prepare-scheduled intake/transition flow | Task 15 13 scenarios rerun without editing frozen runner, plus new-producer 1/8/10/11/13 cases |
 | I0.4 | 25m | A3 Triage / A5 Reporting acceptance smoke with saved A2 results | Same source lineage, no report omissions |
 | I0.5 | 20m | Confirm no unrelated consumer import or hidden legacy dispatch | Composition/architecture import guard tests |
 | I0.6 | 25m | Independently approve cutover, flip default once | Exact SHA, no unchecked runtime fallback, rollback known |
@@ -179,17 +181,17 @@ Do not implement a permanent A2_ENGINE CLI/operator knob merely because the old 
 | --- | --- | --- |
 | V01 pure DAG | Focused new tests under tests/preparation_kedro/ | Node topology and deterministic canonical output pass |
 | V02 parser | tests/test_native_parser_integration.py and tests/preparation_pipeline/test_documents.py | MIME/HTML, Excel, PDF, Word and limitations retain mappings |
-| V03 semantic | tests/preparation_semantics/ and new oracle comparisons | Versioned filter, group, scope and ambiguity parity |
-| V04 replay/id | tests/preparation_pipeline/test_stable_identity.py and test_evidence_loss.py | Semantic/replay identity, loss honesty, claim-lost state |
-| V05 scheduled | tests/preparation_pipeline/test_scheduled_recovery.py, test_scheduled_transitions.py, test_scheduled_fairness.py | No lost pending work, exact transition, fair progression |
-| V06 intake | scripts/qualify_a1_a2_handoff.py and Task 15 13 scenarios, adapted to new candidate | Preserve A1 20-spider scope, release/cut/recovery semantics |
+| V03 semantic | tests/preparation_semantics/, tests/preparation_pipeline/test_contracts.py, test_r2_regressions.py and new oracle comparisons | Exact policy, group scope, ambiguity, semantic identity parity |
+| V04 replay/id | tests/preparation_pipeline/test_stable_identity.py, test_evidence_loss.py, test_lifecycle.py, test_timeout_boundary_controls.py and test_completion_bounds.py | Stable identity, partial timeout refs, bounded CPU drain/claim-lost |
+| V05 scheduled | tests/preparation_pipeline/test_scheduled_recovery.py, test_scheduled_transitions.py, test_scheduled_fairness.py, test_historical_baseline_calendar.py and test_teams_historical_baseline_scope.py | No lost pending, exact transition/context, fair progression |
+| V06 intake | Run the accepted Task 15 28-gate **runner unchanged** as separate regression evidence when required; new A2-specific tests rerun affected scenarios 1/8/10/11/13 | Preserve 20-Spider scope and all 13 scenarios; never mutate formal evidence/runner |
 | V07 cross-stage | tests/phase1_e2e/, tests/application_cli/ | A2 result chain accepted by A3/A5 and finite CLI |
 | V08 native security | Existing Linux delegated cgroup-v2 gate plus parser isolation tests | No weakened process isolation or late worker effects |
 | V09 compatibility | tox Python 3.12, 3.13, 3.14 and opted FastMCP4 compatibility | No skips/unavailable interpreter accepted; Windows *smoke only* |
 | V10 package/static | uv lock and audit, installed wheel/sdist/offline, Ruff, Pyright, pre-commit | 0 unresolved errors, published wheel imports and CLI safe |
-| V11 telemetry/security | Network-deny import, code-level CVE review, exact pinned dependency audit | No telemetry, untrusted version path or concealed high severity |
+| V11 telemetry/security | Network-deny import, exact-pinned Kedro source/CVE review, OSV/GitHub/GitLab/Snyk status record, architecture guards, failure-log redaction | No telemetry, untrusted version path, PII log leak or concealed high severity |
 | V12 empirical | Identical offline source cut on Pi aarch64 and Linux x86_64 | No meaningful >10% wall regression or unbounded RSS |
-| V13 complexity | Before/after counted LOC and role boundaries | Demonstrable net reduction; no custom async Kedro runner |
+| V13 complexity | At base SHA 895fc40: 1,115 old LOC and 89 AST branch nodes; count every new/replaced controller/parse/publish/DAG/bridge/type file and changed integration line | At most 1,000 LOC and 80 branches; no duplicate intake or custom runner; otherwise NO-GO |
 | V14 independent | Reviewer reads exact SHA and all test evidence and source diff | ACCEPT, no unresolved blocking findings |
 
 These are **future** acceptance requirements, not gates already passed for the new Kedro implementation. The formally accepted Task 15 SHA (34057c6) is baseline/oracle evidence; do not relabel that acceptance onto a future candidate or silently weaken its 28-gate runner. The latest maintenance CI on 895fc40 does not by itself qualify Kedro, which is currently absent.
@@ -208,7 +210,7 @@ Recommended bounded workstreams after security gate:
 - **Controller / durability lane:** E0 starts only after P0 and F0; one writer owns controller and publication.
 - **Independent QA lane:** review updated design, exact code diff/fixtures, lifecycle, CVE and measured complexity; no code author reviews their own work as independent.
 
-Prefer small changes with focused tests completed within approximately 30 minutes of active implementation; resource-heavy qualification runs may take longer, must have isolated runner/evidence and explicit progress. Each worker should be given exact file ownership and prohibition on changing other branches or the shared lock. Rebase a task branch only on the manager's accepted integration head. Merge once per reviewed wave to avoid one full CI matrix per tiny task; keep any failing wave unmerged.
+Prefer small **authoring/review changes** targeted at <=30 minutes of active editing. Matrix tests, dependency resolution, security audits, wheels and independent reviews can take longer; these are separate asynchronous-safe, resumable operations with isolated logs and recorded results. Never weaken a test to meet a nominal time budget. Use focused tests first; full matrix at gate boundaries. Each worker should be given exact file ownership and prohibition on changing other branches or the shared lock. Rebase a task branch only on the manager's accepted integration head. Merge once per reviewed wave to avoid one full CI matrix per tiny task; keep any failing wave unmerged.
 
 No anonymous subagents may modify source without the owner's explicit workflow selection. Record when a local Claude Code/Codex agent is assigned, model/effort, task branch, exact repository, assigned tests and stopping conditions in the handoff note. Do not hardcode outdated CLI model IDs.
 
