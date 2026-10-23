@@ -16,7 +16,7 @@ by the configuration/admission boundary before a factory can be selected.
 
 ## Settings sources and precedence
 
-The loader uses the pinned pydantic-settings 2.16.0 custom-source API.
+The loader uses the pinned pydantic-settings 2.16.1 custom-source API.
 OperatorSettings.settings_customise_sources defines this exact precedence,
 highest first:
 
