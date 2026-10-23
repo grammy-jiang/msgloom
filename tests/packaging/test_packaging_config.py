@@ -33,7 +33,7 @@ def test_build_backend_and_development_pins_are_exact() -> None:
     _require_equal(
         project["build-system"],
         {
-            "requires": ["setuptools==84.0.0"],
+            "requires": ["setuptools==84.2.1"],
             "build-backend": "setuptools.build_meta",
         },
         "build backend",

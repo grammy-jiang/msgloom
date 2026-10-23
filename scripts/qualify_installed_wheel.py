@@ -21,7 +21,7 @@ from pathlib import Path, PurePosixPath
 
 RUNTIME_ROOTS = ("msgloom", "message_ingest", "microsoft_graph")
 BUILD_BACKEND = "setuptools.build_meta"
-BUILD_REQUIREMENTS = ["setuptools==84.0.0"]
+BUILD_REQUIREMENTS = ["setuptools==84.2.1"]
 FORBIDDEN_RUNTIME = ("fastmcp", "prefect")
 COMMAND_TIMEOUT_SECONDS = 120
 
