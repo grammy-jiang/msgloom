@@ -18,7 +18,22 @@
 
 以上三项 PR 目前都是 **draft、未合并**。C0 工作区存在 R1 之后未提交的改动，不能将其视为 PR #70 已通过整改。旧 A2 在正式切换前仍是生产路径；旧实现只作为 **行为核查、负面测试和回归基线**，不是新架构的运行方式。
 
-### 1.1 不可改变的前提
+### 1.1 设计权威优先级和 D4 差异
+
+**权威顺序：** 用户 Kedro-primary 决策 > 已接受 A1 入口/证据 > D4 R6 的架构和 AUTO-01–25 > 本轮补充候选。本三文件在单独 docs-only 分支，原 [PR #68](https://github.com/grammy-jiang/msgloom/pull/68) D4 及 A1 automatic-handoff 内容不会因本分支未复制而失效。与 D4 冲突的行为必须列入独立审查，而不是静默覆盖。
+
+| 增量细化 | D4 差异处理 |
+| --- | --- |
+| v2 transition 批次接收 | 整个有序列表进入 input-only batch key，**逐条包含并验证 D4 要求的原始 fact ID、scope、kind 与 authority** |
+| 新 A2 v2 finalizer | 新增原子 pending→terminal 与 v1/v2 互斥围栏；只影响 A2 downstream completion，不改 A1 admission |
+| A3 输入 | 建议新 `triage_input@2` 绑定 `prepared@2`、`filter_result@2`、`group_result@2`；历史 v1 必须仍可读 |
+| 部署/安全 | 正式数据库迁移只能由操作者显式执行，不得因启动新二进制而自动发生 |
+| 验收 | 完整保留 D4 V01–V16、V13 相同输入性能不得无理由退化超过 10%、V14 DAG/bridge 复杂度、V16 AUTO-01–25 |
+| 例外映射 | 保留 `scheduled-invalid-authority`；intake/preflight 原始可信 SourceReferenceError → BLOCKED，post-intake 已选证据丢失 → A2-held |
+
+若 C0/F0 尚未获准，则此处只表示架构提案；D4 既有验收独立有效。
+
+### 1.2 不可改变的前提
 
 1. A1 只负责 provider 采集、原始证据、权威事实、原子 ReleaseGroup/Entry 与 checkpoint；A2 不再抓取 Graph、枚举 mutable 表或重做 intake。
 2. 保留原有 `ReleaseSourceReader`、`PreparationIntakeService`、`PreparationIntakeWorkset@1`、消费者 cursor、pending/held、公认的历史 baseline 和 source-scoped transition 语义。**不能因为代码目前放在 preparation_pipeline/ 就误判它属于可淘汰的旧 A2。**
@@ -31,43 +46,30 @@
 ## 2. 架构及责任边界
 
 ```text
-Scrapy / native A1 authority and fact ledger
-        |
-        | committed ReleaseEntryRef + exact saved evidence (immutable)
-        v
-ReleaseSourceReader + existing IntakeService  [A1→A2 accepted boundary]
-        |          |                 |
-        | saved CollectedSelection@1 / Workset@1 / cursor / held
-        v
-Application.prepare / prepare-scheduled   [async, trusted identity]
-        |
-        v
-Workset + exact-reader verifier [verified occurrence, role, bytes, scopes]
-        |
-        v
-Kedro SequentialRunner (off asyncio event loop; closed DataCatalog)
-        |
-        +--> extract -> parse -> normalize -> zones ------------------+
-        |                                                           |
-        +--> native relations -> filter -> group -> scoped transition+
-        |                                                           |
-        +--> trusted ClaimFencedSemanticDataset.save() <------------+
-        |        |
-        |        +--> Phase1Persistence v2 append-or-verify / exact result receipt
-        v
-A2ResultManifest + A2CompletionReceipt@2 + A2-held index
-        |
-        +--> A3 versioned reader: prepared@1 historical / prepared@2 new
-        +--> A5 existing typed downstream outputs (no A5 rewrite)
-        |
-External Prefect wakeup/catch-up -> finite prepare-scheduled / scope-status
-        (hint only; A1 release ledger and durable A2 state are authoritative)
+A1 native Scrapy acquisition -> committed immutable ReleaseEntry/evidence
+  -> existing ReleaseSourceReader + IntakeService
+  -> frozen Workset@1 / CollectedSelection@1 / cursor / held
+  -> async Application verifies authority and saved workset shape ONLY
+  -> Kedro SequentialRunner off-event-loop, closed DataCatalog
+       K0 exact ReleaseReader/selection/role verifier inside Kedro graph
+       K1..K9 extract/parse/normalize/zones/native/filter/group
+         every stage output -> ClaimFencedSemanticDataset.save()
+         immediate accepted ref -> downstream stage input/key
+       scoped transitions -> one separately fenced accepted batch
+       K10 manifest from already-accepted stage refs
+       K11 v2 receipt -> atomic A2 v2 workset finalizer
+  -> existing pending Workset becomes terminal COMPLETE or INCOMPLETE
+  -> A3 triage_input@2; historical prepared@1/triage_input@1 still readable
+  -> A5 through verified A3 outputs
+
+External Prefect/launcher -> finite prepare-scheduled and scope-status
+               (hint only: not release authority or alternate checkpoint)
 ```
 
 | 子系统 | 唯一所有者 | 禁止的跨界行为 |
 | --- | --- | --- |
 | A1 Spider、HTTP 与 Release、raw evidence | 原生 A1/Scrapy 2.19.0 | Kedro 节点不能处理 Spider 信号或自行 publish A1 |
-| A1→A2 admission / cursor / held | 现有 ReleaseSourceReader + IntakeService | 不能用 A2 完成进度倒退/推进 intake cursor |
+| A1→A2 admission / cursor / held | 现有 ReleaseSourceReader + IntakeService | A2 不能回退或推进 intake cursor；另有独立 v2 finalizer 结束 Workset pending |
 | DAG 节点依赖、拓扑和内存节点值 | Kedro 1.7.0 | Kedro Dataset 不能绕过 msgloom 交易、claim、内存/文件防护 |
 | 语义模型、canonical codec、接受索引、ClaimToken | 新 A2 domain + `Phase1Persistence` 新受审查 API | 不能用外部 get-then-insert 冒充原子接受 |
 | parser 子进程、CPU/RSS/timeout/cgroup 限制 | msgloom trusted isolation | 不能依赖无法终止的 CPU 线程实现强制资源隔离 |
@@ -88,7 +90,7 @@ External Prefect wakeup/catch-up -> finite prepare-scheduled / scope-status
 3. 对每一候选 ordinal，重建 A1 已验收的有版本身份输入：scope claim key + entry 的 JSON 模型 + 有序 fact/role 对 + 原始 config/code + ordinal。比对保存的 `intake-selection:<sha256>` ID，匹配数必须恰好等于 1。
 4. 使用 `CollectedSelectionCodec` 比对 canonical bytes / 已保存 SHA（不能只按 source ID、subject 或 Python equality 猜角色）。匹配的第 0 个值是 primary（前提是 released.selection 存在），其余是 component。
 5. 上下文、scoped transition 及 component_observation 触发的 context_refresh 要按同一 ReleaseEntry 的 fact/scope 保留；不能合成 parent body，也不能凭 role 之外的启发式扩大权威。
-6. 证据缺失、ordinal 不匹配、关联歧义或不可验证字节：在 A2 新建 **持久化 A2-held disposition**，而不是修改 IntakeWorkset 或凭空生成 prepared。
+6. 证据缺失、ordinal 不匹配、关联歧义或不可验证字节：经 Kedro K0 的可信 Dataset.save() 新建 **持久化 A2-held disposition**，而不是修改 IntakeWorkset 或凭空生成 prepared。
 
 生产实现必须从既有 A1 codec/identity 的**版本锁定公开只读 verifier** 获得结果。当前 C0 研究中复制的私有哈希算法，只能证明单条 Mail primary 合成夹具符合既有编码，不能当作长期 API。
 
@@ -119,28 +121,43 @@ External Prefect wakeup/catch-up -> finite prepare-scheduled / scope-status
 | `a2_result_manifest@1` | 已接受 stage refs/digests、roots 与 transitions 覆盖、code/config/policy、限制和 provenance |
 | `a2_completion_receipt@2` | 固定 workset Ref、所有 occurrence 的唯一 terminal disposition、transition batch、intake-held 强制不完整、接受索引与 claim 证明 |
 | `a2_attempt_audit@1` | 执行/尝试/claim token、状态、时间戳和安全失败码；独立于逻辑接受身份 |
+| `triage_input@2` | A3 typed prepared/filter/group@2 和 snapshot binding hash 的独立 v2 codec，历史 triage_input@1 不变 |
 
 ### 4.1 必须由模型级别和存储级别双重确保
 
 - 所有导出对象严格 frozen、`extra="forbid"`、明确 max count/bytes、schema-version allowlist、canonical encode/decode 验证。测试不得利用 `model_copy(update=...)` 未重新验证而形成假阳性。
 - 不允许动态 user-provided `kind`、module path、Kedro Dataset 类型或任意远程路径。
-- 所有 acceptable stage 的 output SHA 和 byte count 是**独立输出证明**，不参与 logical input key。
+- 所有 acceptable stage 的 output SHA 和 byte count 是**独立输出证明**，不参与 logical input key。还必须保存 canonical StageResult metadata SHA（包括 status、limitations、input_refs、source_versions、config/code/policy）；重试时逐项校验，不仅是 payload SHA 一样。
 - 明确以 `(kind, version)` 组成 allowlist：例如 `prepared@2` 才是新版准备完成；`prepared@1` 是历史读取格式。不能让任意 stage_kind 任意选 1/2。
 - 用户可控制的 source metadata、邮箱地址、subject 和完整字节都不应进入 log、Kedro node name、DataCatalog dataset name 或 safe failure reason。
 - 过去按 v1 保存的 `StageResult`、Codec 和 A3 结果不迁移覆盖、不重编码。
 
-### 4.2 Held 与 completion 的强制语义
+### 4.2 Held、baseline 和 v2 completion 业务规则
 
-每一个 **冻结的 workset.selections occurrence** 必须恰好有一个受持久化验证的 terminal：
-`prepared@2`（COMPLETE 或限制明确的 INCOMPLETE），**或** `a2_input_disposition@1`（INCOMPLETE、不可自动重试）。同一 occurrence 不能同时拥有两种结果。
+对增量 Workset，**每个按顺序冻结的 workset.selections occurrence** 必须恰好有一个实际持久化接受的 terminal：`prepared@2`（COMPLETE 或限制明确的 INCOMPLETE），或 `a2_input_disposition@1`（INCOMPLETE，operator_repair）。不可只使用去重后的 `selection_refs`。
 
-`workset.transitions` 非空时，还须有 **一个** `prepared_transitions@2`，以原样有序转换列表覆盖整个 batch；transition-only/context-only Workset 不必制造 prepared body。`workset.held` 是 intake 阶段已有的不可变集合，没有 selection root，也不可在 A2 追加。
+**历史 baseline 例外**：此时 `workset.selections` 为空，roots 是按原批准顺序逐项对应的 `baseline_sources` 与 `baseline_selections`；必须验证批准的 exact VersionRef，不可伪造 ReleaseEntryRef。baseline/增量不能混合暗中转换。
 
-**COMPLETE 的必要且充分业务条件**：所有 roots 完整且已被持久化接受、所有 transitions 完整且已被持久化接受、`workset.held` 为空，并且 v2 receipt 的事务与 claim 验证成功。任何 intake-held、A2-held 或 accepted partial 必须 **terminal INCOMPLETE**（不是无限 pending）。
+`workset.transitions` 非空时必须完整保留有序 fact ID、scope、kind 与 authority，且恰好有一个已接受 `prepared_transitions@2` batch。context-only/transition-only 不需要制造 prepared body。`workset.held` 是冻结 intake-held，不可被新 A2 写回。
 
-> 与旧版差别：独立 C0 R1 审查证实，旧 `intake_completion.py` 在 held-only 时可无 refs 终结，且旧状态聚合可能忽略 `workset.held`。因此上述强制 INCOMPLETE 是**有意修正旧 A2 行为**，不能描述成旧代码已经保证；仅允许通过新 A2 v2 proof 实现，不编辑历史 Workset。
+**COMPLETE** 只在：所有增量或 baseline roots 已真正 SQL 接受且完整、所有 transitions 完整、没有 intake-held 或 A2-held、v2 receipt 与 claims/历史执行凭证验证成功。任一 held 或 partial → **terminal INCOMPLETE**，不能成为无界 pending。
 
-Receipt 的 **结构验证** 只是 preflight；在事务内必须验证每一个 referenced StageResult、semantic bytes SHA、accepted-key row、原始 ClaimToken、required_inputs 和 terminal status。直接把伪造的 `ResultRef` 放进结构上完整的 receipt，绝不能构成完整业务证明。
+> **有意改变旧行为：** `intake_completion.py` 允许 held-only 且空 refs 的旧 Workset 被标成 COMPLETE；有 selected output 时也可能忽略 `workset.held`。新 v2 的强制 INCOMPLETE 不是旧版已实现的功能。不得修改历史 Workset@1 或 A1 admission。
+
+结构完整的 Receipt 不代表结果已保存。v2 finalizer 要从数据库验证每一个保存的 StageResult、canonical SHA、input-only accepted key、stage metadata hash、status/limitations、published claim/plan 和 attempt 历史。跨执行/attempt 的已接受前缀可以被新 attempt 重用，但每项必须带原始可验证的 durable publication proof，**不能沿用旧 v1 所有 stage 必须同一 attempt 的限制**。
+
+### 4.3 唯一 pending → terminal Writer（新增硬门禁）
+
+现有唯一的 Workset terminal writer 是 `msgloom/persistence/intake_store.py:finalize_preparation_intake_workset`，其完成证明依赖 v1-only `intake_completion.py`。**新建明确版本化的 `finalize_a2_intake_workset_v2` 公共 async facade / 同步 SQL writer，并且设计必要的 v1/v2 双向围栏**；这属于 A2 下游处理，**不改现有 A1 IntakeService、Workset@1 字节、Release/consumer cursor**。
+
+1. 在 writer lock 外读取确切 Workset@1 与 v2 receipt，验证数量、大小、source scope、每个 root/transition/held 和所有引用 payload 的 canonical 编码、历史 publisher receipts；不能仅用 caller-provided 结构。
+2. 在受限 `BEGIN IMMEDIATE` 中对持有 Workset 的 PREPARE claim、plan/source required_inputs、每个 accepted-result metadata、原始发布 claim/attempt、当前 terminal status 做再次检验；只在锁内做 bounded metadata recheck。
+3. **同一事务**更新现有 `phase1_preparation_intake_worksets` 的 `state="terminal"`、terminal_status、claim token、result_refs，并写 v2 receipt/producer-version 侧表；任何一步失败都回滚，仍是 pending。完成后现有 `select_preparation_intake_worksets` 不再返回它。
+4. 旧 v1 finalizer 遇见 v2-marked Workset 必须拒绝；v2 finalizer 遇见 v1-owned/已 terminal 行也必须拒绝。此标记由受审查 schema/计划绑定生成，不由 provider 或用户传入。**同一 Workset 不能被 v1 与 v2 两条路径共同终结。**
+5. 旧 terminal 历史不可变；显式 operator replay 只创建新的 append-only A2 attempt/receipt 并引用原 Workset，不覆写原 terminal row。held-only -> terminal INCOMPLETE；缺 refs/失效 claim 不能伪造成功。
+6. 针对性真实 SQLite 负例必须覆盖：v1/v2 race、held-only、缺失/伪造 receipt、部分已提交、writer crash/post-COMMIT cancellation、重复终结、替代 claim、pending SELECT 与 schema migration。
+
+生产 C0 契约未通过这条真实 finalizer/claim/receipt 的端到端测试前不能冻结或开始 E0。
 
 ## 5. 可重放的确定性接受键与 SQL 事务
 
@@ -160,78 +177,104 @@ logical_key = "a2-accepted:" + SHA256(
 )
 ```
 
-允许基于同一 key 多个 execution/attempt/worker 重试；**不要**将 output digest、时间戳、执行尝试或 Kedro node name 纳入。transition key 必须绑定 **整个有序 batch** 及 workset scope，不能只把单条 fact hash 成一个 batch receipt。
+允许基于同一 key 多个 execution/attempt/worker 重试；**不要**将 output digest、时间戳、执行尝试或 Kedro node name 纳入。transition key 必须绑定 **整个有序 batch** 及 workset scope，并逐项绑定 D4 要求的每一个确切 fact ID/scope/kind/authority；batch 身份并不替代单项事实完整性证明。
 
-Accepted record 独立保存 `(logical_key, result_ref, canonical_output_sha256, canonical_byte_count, semantic_data_ref, original_writer_claim_proof, frozen_lineage_digest)`。重放按 key 找到的输出必须同时验证保存的 StageResult 和 semantic data；相同输入不同字节（包括状态/限制元数据冲突）应 **fail closed**，原始记录不变。
+Accepted record 独立保存 `(logical_key, result_ref, canonical_output_sha256, canonical_byte_count, semantic_data_ref, canonical_stage_metadata_sha256, original_writer_claim_proof, frozen_lineage_digest)`；stage metadata SHA 覆盖 status、limitations、input_refs、版本及 lineage，不允许同数据但不同安全分类被视作等价。重放按 key 找到的输出必须同时验证保存的 StageResult 和 semantic data；相同输入不同字节（包括状态/限制元数据冲突）应 **fail closed**，原始记录不变。
 
-### 5.2 现有 SQLite 限制与建议迁移
+### 5.2 现有 SQLite 限制、迁移门禁与唯一引擎路由
 
-已验证：`Phase1Store.append_result_with_data()` 在 `BEGIN IMMEDIATE` 内校验 live claim 和 canonical data，但 `StageResult` 把 execution 与 attempt 锁在 immutable result metadata。跨尝试重新 append 同一个 ID 即使字节相同也可能报 `ImmutableRecordError`；原来的 `preparation_proof.py` 还将 `prepare:` claim 专门绑定到 v1 kind。**不能只在 Registry 添加 `prepared@2` 就宣称支持新 A2**。
+已验证：`Phase1Store.append_result_with_data()` 在 `BEGIN IMMEDIATE` 内校验 live claim 和 canonical data，但 `StageResult` 把 execution 与 attempt 锁在不可变元数据里。跨尝试重新 append 同一个 ID 即使字节相同也可能报 `ImmutableRecordError`；旧 `preparation_proof.py` 的 `prepare:` namespace 只支持 v1。不能只在 Registry 里添加 `prepared@2`。
 
-推荐数据库 schema 从现有版本 **4** 演进到经审查的 **v5 候选**（最终命名和迁移方式以独立评审为准）：
+**建议新增 A2-owned sidecar/schema v5 候选，最终是否使用元数据 revision 轴或 schema 主版本 5 要由 DB owner 独立决定**（现有 `schema_store.py` 的 legacy digest 和 `preparation_proof_revision` 是不可跳过的先例）：
 
-- `phase1_a2_accepted_stages`：唯一 logical key、结果 ref/sha/length、输入身份 SHA、接受 claim/plan snapshot。
-- `phase1_a2_stage_attempts`：每次重试/失败/冲突独立审计；不篡改旧 accepted result。
-- `phase1_a2_input_dispositions`：受 bounded scope 索引的 held-at-A2，精确 workset/result/ref。
-- `phase1_a2_completion_receipts`：原 workset + 新 A2 receipt 关联、attempt/version、状态及 accepted digest；允许明确授权的 append-only replay，而不是第二次完成原 workset 的旧终结行。
+- `phase1_a2_accepted_stages`：唯一 logical key、ResultRef、canonical bytes SHA/长度、StageResult metadata SHA、冻结 input/plan。
+- `phase1_a2_stage_attempts`：尝试、错误/冲突、claim 与安全审计，独立于首个接受结果的 execution/attempt。
+- `phase1_a2_input_dispositions`：索引 Workset/selection occurrence/baseline、held reason、修复策略。
+- `phase1_a2_completion_receipts`：Workset+producer version 的真实完成凭证、claim/attempt 和 terminal digest，与旧 Workset terminal 更新在**同一事务**。
+- `phase1_a2_producer_bindings`（可与 receipts 合并）：为每个 workset 标明可信 v1/v2 处理权，v1/v2 finalizer 必须互相拒绝重叠的写入权。
 
-必须在 `schema_store.initialize_schema` 的现有严格 owned-table / legacy digest 机制内**显式**升级：历史 schema V2/V3/V4 无损迁移、占用表/触发器拒绝、DDL 崩溃回滚、审计完整性、大小写名称安全、只读旧结果。绝不能像研究原型那样在生产构造对象时独立 `MetaData.create_all()` 偷建新表。
+**绝对不能隐式迁移：** 当前 `Phase1Store.__init__` 会调用 `initialize_schema()`，如果把新 DDL 塞进该路径，**部署含新代码就可能自动升级生产数据库**；旧二进制会因为陌生的 owned table set 而拒绝读取。必须两阶段部署：
 
-### 5.3 最小事务协议（伪代码，非可运行源）
+1. **Compatibility stage**：先提供能读取旧 schema4、也能识别未来 v2 schema 的新 binary；默认生产 dispatch 仍执行旧 A2。`initialize_schema` 在普通打开时不得创建新 A2 表或修改 schema marker；没有显式迁移就将新 v2 写功能拒绝。部署前检查 old pending、已终结但 held-only 被误标 COMPLETE 的历史、备份/恢复演练。
+2. **Operator-gated maintenance**：经安全/C0/V0 审查与用户授权，停止接受新 A2 写入，拍摄并校验可恢复数据库快照，使用**专门的 migration CLI/受限操作** 显式执行结构、唯一索引与 schema/producer revision 迁移。验证只读旧结果、老 schema 迁移、失败回滚和 v1/v2 finalizer 互斥。再通过**受信任的单一 composition/backend binding** 切换 dispatch 至 Kedro v2。这个开关只是阶段性部署配置，切换成功后移除旧路径；不得长期保留公共 `A2_ENGINE` 和自动 fallback。
+3. **Rollback**：还没迁移时可回滚兼容 binary；迁移后旧 binary 无法直接打开新 schema，故不能只靠 `git revert`。仅能按预先演练的 **数据库备份恢复 + 原 schema4 binary** 或经过审核的 forward-fix 恢复，须考虑迁移后的新写入和窗口状态；不承诺无损自动降级。
+
+生产迁移要验证历史 schema V2/V3/V4 的精确 pin、表名碰撞/触发器拒绝、DDL 错误无半提交、大小写与只读老 ResultRef。禁止研究原型的 `MetaData.create_all()` 在生产对象初始化时偷偷创建新表。
+
+### 5.3 原子接受/复用事务（伪代码）
 
 ```python
-def accept_a2_stage(plan, expected_claim, canonical_encoded):
-    # 1. Untrusted bytes canonicalized and measured OUTSIDE writer lock
-    # 2. Validated workset/roots/upstream metadata proof assembled in advance
-    with phase1_writer.BEGIN_IMMEDIATE() as tx:
-        tx.require_current_unexpired_claim(expected_claim)
-        tx.require_exact_plan_and_input_refs(plan)
-        tx.require_expected_stage_schema_version_and_status(plan)
-        current = tx.lookup_accepted_logical_key(plan.logical_key)
-        if current:
-            tx.verify_accepted_metadata_and_durable_ref(current, canonical_encoded)
-            # Metadata-only comparisons while holding writer lock.
-            # Large payload read-back/decoding is outside lock, before use.
-            return current.accepted_ref
-        tx.insert_canonical_semantic_bytes_and_new_stage_result(...)
-        tx.insert_a2_unique_accepted_key_and_claim_receipt(...)
-        tx.require_current_unexpired_claim(expected_claim)
-    return accepted_ref
+# preflight OUTSIDE SQLite write lock:
+# - read accepted A1 Workset + verified source/role/ordered occurrences
+# - canonicalize output and StageResult metadata, bound decoded bytes
+# - resolve required upstream refs/plan and stage kind/version
+# - ensure no unjoined worker from the last invocation
+def append_or_verify_a2_stage(plan, expected_claim, encoded):
+    with writer.begin_immediate() as tx:
+        tx.require_live_claim(exact_token=expected_claim)
+        tx.require_claim_attempt_and_frozen_required_inputs(plan)
+        tx.require_schema_status_lineage_and_stage_kind(plan)
+        accepted = tx.find_accepted_key(plan.input_only_logical_key)
+        if accepted:
+            tx.verify_metadata_sha_and_payload_digest(
+                accepted, encoded.stage_metadata_sha, encoded.payload_sha
+            )
+            tx.verify_saved_immutable_result_and_claim_receipt(accepted)
+            tx.append_idempotent_attempt_audit(...)
+            return accepted.existing_result_ref
+        tx.insert_canonical_bytes_and_stage(...)
+        tx.insert_unique_accepted_key_and_original_claim_proof(...)
+        tx.append_attempt_audit(...)
+        tx.require_live_claim(exact_token=expected_claim)
+    return new_accepted_result_ref
 ```
 
-- 不可在事务外做非原子 get-then-insert；不可在 writer lock 内对几十 MiB bytes 做不受控 decode；事务内只做 bounded metadata 验证。
-- 不可直接通过 `asyncio.to_thread(store._store...)` 绕过 `Phase1Persistence._call` 的 semaphore、取消 drain、close 保护。新增公开 async facade，内部有同步 txn owner。
-- 如果两个并发任务提交 **同一 partition claim key**，第二个应该先在 claim acquisition 遇到 `ClaimUnavailableError`；如果不同资源的合法 claim 偶然遇到同一 logical key，SQLite UNIQUE/BEGIN IMMEDIATE 仍保护接受结果。
-- worker 在 COMMIT 之后、返回之前被 cancel：调用方可能得到 `CancelledError`，而 DB 已接受。下一次必须按输入 key read-back、验证 SHA/lineage 后 resume；不能简单宣称 rollback 或重复 parse。
-- result/status/limitations/claim attempt 与 v2 receipt 必须保持单一可信关联；不能因为 digest 一样却状态不同就认为 replay 等价。
-- 底层 SQL schema 和 callback/claim 证明由独立 reviewer 在带有真实 A1 选入根、不同 claim/过期 claim、崩溃和并发的测试中验收。
+新 A2 每个 publish 在同一个事务内验证 required_inputs、原始发布 claim 归属、status/limitations/版本和 metadata hash。已接受前缀可能由不同历史 attempts 写入，需在 **v2 计划证明** 下保留各自的接受 history，而不能用旧 v1 的同 attempt 检查误杀合法重放。
 
-## 6. Kedro 主 DAG 设计和 Dataset 边界
+写事务里的 metadata recheck 必须是 bounded O(number of refs) 且不重复解码大型 payload；复杂 canonical encoding/bytes 比较在锁外，锁内只比较可信 hash/length/immutable row 与受约束的索引。旧研究方案在锁内 decode 64 MiB payload 和直接访问私有 `_store` / `asyncio.to_thread`，不允许复制到生产；请新增正式 `Phase1Persistence` async facade 并通过其 semaphore、drain/close 路径执行所有数据库操作。
 
-程序化构造单一、静态允许的 DAG；每个有限 workset 按已验证 occurrence 形成 deterministic partition，不跨 workset 恣意合并；每个节点有明确的 input/output Dataset：
+同一分区只能取得一个确定性 PREPARE claim；不同合法 claim 偶然尝试同 logical key 时，DB UNIQUE/BEGIN IMMEDIATE 必须阻止双 accepted。Postcommit cancel 不等于 rollback：下次先按 key 读取 StageResult/semantic metadata+data 验证，再跳过已有 stage；不得无限重试或重跑消耗性的 parser。
 
-| 顺序 | Kedro node / edge | Dataset I/O / 输出形状 |
+## 6. Kedro 主 DAG、即时阶段持久化和安全异步边界
+
+**Graph 外只允许：** 受信任 CLI/Application authority preflight、保存 Workset@1 的只读元数据与图规模上限、唯一 workset claim/lease 的取得、静态闭合 DataCatalog 构造。不允许在图外完成 source role 还原、解析、过滤、分组、发布 A2-held/semantic StageResult。角色判定是在 **K0 dataset/node** 内通过 frozen Reader 验证而来。
+
+**接受键要求所有 upstream 已接受 ResultRef，因此每条需要持久化的 stage 边必须立即保存，不存在末端统一 K10 之后才 publish 的设计。** 每个 stage 输出一个 typed `(semantic_value, accepted_ref, metadata_digest)`，其保存由该 stage 对应 `ClaimFencedSemanticDataset.save` 通过正式 facade 完成；下游节点从 `Dataset.load` 得到已验证的 accepted Ref 才能形成自己的 logical key。重跑时 dataset 首先查 durable accepted ref，验证 lineage 后复用并跳过受控解析。
+
+| 阶段 | 真正 Kedro stage 与依赖 | 需要持久化的边/输出 |
 | --- | --- | --- |
-| K0 | `load_frozen_workset` | 闭源 `ExactHandoffDataset.load` → FrozenRoot/workset plan |
-| K1 | `verify_evidence` | `VerifiedEvidenceDataset` → ExtractedComponents |
-| K2 | `dispatch_isolated_parsers` | `IsolatedParseDataset.save/load` → ParsedParts |
-| K3 | `normalize_content` | Frozen parsed → NormalizedContent + verified span map |
-| K4 | `assign_content_zones` | NormalizedContent → ContentZones |
-| K5 | `extract_native_relations` | Frozen A1 facts + zones → NativeRelations |
-| K6 | `make_prepared_v2` | Parsed + zones + relations → Prepared@2 payload |
-| K7 | `evaluate_filter_rules` | Prepared + frozen policy → FilterResult@2 |
-| K8 | `group_bounded_records` | Prepared + native relations + filter → GroupResult@2 |
-| K9 | `process_scoped_transitions` | Frozen ordered transitions → PreparedTransitions@2（独立 claim） |
-| K10 | `publish_accepted_stages` | `ClaimFencedSemanticDataset.save/load` 逐阶段 durable refs |
-| K11 | `build_manifest_and_receipt` | 明确依赖已接受 refs；完成 v2 receipt 持久化证明 |
+| K0 | `resolve_exact_frozen_roots`：从冻结 Workset + exact Reader 还原 role/ordinal/context 或安全 A2-held | `frozen_source_selection@1` **或** `a2_input_disposition@1` 的已接受 ref |
+| K1 | `extract_saved_surfaces`：仅 K0 已验证的 source bytes、primary/alternate/attachment | `extracted_components@1` accepted ref |
+| K2 | `parse_with_trusted_children`：K1 verified source refs -> child parser (sandbox/cgroup) | `parsed_parts@1` accepted ref |
+| K3 | `normalize_with_span_map`：K2 parsed block refs | `normalized_content@1` accepted ref |
+| K4 | `assign_content_zones`：K3 accepted ref, exact location/scope | `zones@1` accepted ref |
+| K5 | `decode_native_relations`：K0 immutable facts + K4 zone refs | `native_relations@1` accepted ref |
+| K6 | `make_prepared_v2`：K2/K3/K4/K5 已接受 refs | `prepared@2` accepted ref |
+| K7 | `evaluate_all_filters`：K6 accepted prepared ref + frozen policy | `filter_result@2` accepted ref |
+| K8 | `group_with_native_scope`：K5/K6/K7 accepted refs, bounded Workset context | `group_result@2` accepted ref |
+| K9 | `persist_scoped_transition_batch`：Workset exact ordered transition facts + own claim | `prepared_transitions@2` batch accepted ref |
+| K10 | `build_a2_result_manifest`：所有被接受的 stage refs、held 和 transition refs | `a2_result_manifest@1` accepted ref |
+| K11 | `accept_a2_receipt_and_finish`：K10 + full frozen roots + claim/attempt history | durable `a2_completion_receipt@2` + 版本化 Workset pending→terminal finalizer |
 
-约束：K0–K11 的顺序由 **Kedro 输入输出拓扑** 决定，不允许在外部旧 `PreparationHandler` 悄悄跑完 K1–K10。阶段存储可按必需 stage boundary 拆成更多 Dataset，以便 crash/restart；必须有静态 dataset key 闭合集合检查，缺失任何注册项直接拒绝，不能容许自动 fallback 到隐式 `MemoryDataset`。
+所有 K0–K11 是 **Kedro Pipeline/DataCatalog 的真实节点和 Dataset I/O 关系**，held-only 时依然执行必需的 held/manifest/receipt 分支，而不伪造不存在的 body。对不需要的分支用静态 validated partition shape/typed abstention，而不是在图外由旧 A2 处理。K9 transition-only 也必须有完备 Graph 输出依赖。
 
-Kedro 1.7.0 `SequentialRunner(is_async=False)` 是同步 API；必须放在受限 runner worker 中。`Dataset.save` 可以阻塞 **worker 线程**，通过 `run_coroutine_threadsafe` 调用 Application loop 上受控 async service；不能在 loop 线程做同步 `runner.run` 或 `asyncio.run` 嵌套。
+Dataset 闭合集合检验在创建/运行前执行：所有 graph input/output dataset names 均已预注册，禁止 Kedro 自行 fallback 到隐式 MemoryDataset；各节点名不含原始 provider/source identity。程序只使用 pinned `Kedro 1.7.0 SequentialRunner(is_async=False)` 的编程 API，禁止通过 Kedro CLI/YAML/session 动态创建 Dataset。
 
-解析 CPU 饥饿、被取消的 Python 线程和原生库占用 GIL 的行为未被 Q0 合成测试证明：需使用 isolated child process（必要时 Linux cgroup-v2）和 kill+wait 真实 cleanup，测 Pi 的时间与 RSS；只有具备可证明 timeout/lease 余量才能启动真实 stage。
+### 6.1 同步 Runner 到异步 Application 的有限桥接协议
 
-配置：不调用 Kedro CLI/Session、不动态导入模块、不使用来自源数据的 Dataset 构造参数或 `load_versions`、不使用 versioned filesystem dataset；显示禁用 telemetry 并测试插件发现、import-time Rich stdout/日志、network attempt。Kedro 可以用 frozen MemoryDataset，但只在复制/不可变语义经过测试时用 `copy_mode="assign"`。
+- 每个有界 Workset 只能有 **一个被记录的 owner runner worker**；在上一个 worker join/cleanup 未确认完成时拒绝新一次该 scope 的 runner admission。Runner 使用受限线程槽，不在 asyncio event loop 执行同步 DAG。
+- 自定义 Dataset.save/load 在 worker 线程中执行，通过受控 `run_coroutine_threadsafe` 向 Application loop 提交可信 service coroutine；桥接在 loop owner 线程被调用时直接拒绝；所有 future、worker 和 parser child 受到统一 cancellation/deadline。
+- 取消时先设置 **bridge-closed/cooperative stop flag**，拒绝后续节点与新的保存，再 drain in-flight service、终止或 join bounded child、join runner。Kedro runner 本身没有安全可中断线程 API；不能因调用方 CancelledError 就把正在运行的线程丢到后台。
+- 真实依赖使用当前 `E = configured execution_timeout`、`L = claim lease`，已验收旧约束 **L > E + 1 秒，且没有自动续租**；必须在独立实验中测量 `parser wall + native CPU/GIL + event-loop jitter + thread join + DB close + claim finalization` 的上界，并预留安全 margin。剩余 margin 不足就拒绝 admission，不能延长无人监管的 writer。
+- 原生 CPU/GIL 被持续持有时，简单 pure Python threaded spin 的 Q0 heartbeat 不是证明。复杂解析必须在受限 child 进程中做；对于 K3–K9 CPU-bound node，也须在真实性能实验中确认其不会阻塞 Application loop/使受控线程停不下来；必要时拆分受限独立 executor。
+- 如果 worker 失联、无法在 lease 窗口内 join、出现 detached child、重复 cancellation 导致 cleanup 失败：**P1 NO-GO**，保存安全停机和观察状态，不允许继续计算出假 receipt。
+
+### 6.2 资源和锁保护
+
+- A2 stage 的每个 canonical payload 与同 Workset 已接受 aggregate 都必须有 C0 证明的 bytes/count cap、已审查 retention 及查询索引，不允许把所有解析中间件无界写进单 writer SQLite。
+- 大型 parser 数据在 writer lock 外 encode/verify；SQLite 事务内只核对 bounded metadata。读回 accepted semantic payload 可在退出锁后另起 read transaction 校验 SHA。
+- Pi 性能基准使用 **独占 benchmark slot**，与其他 P1/P2 CPU worker 不并发运行；否则 RSS/时间/lease margin 测量可能被污染。任何性能阈值是验收数据，不是本次文档中的固定魔法值。
+- 禁止未验证的 versioned filesystem datasets、网络、Kedro telemetry 及危险 logging；所有 node/dataset names 经过静态 allowlist，用户内容不会进入名字/异常文本。
 
 ## 7. 解析、语义与资源策略
 
@@ -248,9 +291,13 @@ Kedro 1.7.0 `SequentialRunner(is_async=False)` 是同步 API；必须放在受�
 
 ## 8. A3/A5 向后兼容、状态与自动触发
 
-### 8.1 A3 adapter 必须同时识别旧/新结果
+### 8.1 A3 新快照必须版本化，而不是只适配一个 PreparedRecord
 
-现有 `msgloom/triage_input/codec.py` 明确使用 `("prepared", "1")`，`msgloom/triage_pipeline/handler.py` 按 `PreparedRecord` 装载准备结果。生产切换必须提供 typed `prepared@2` reader/adapter，保留历史 `prepared@1` reader；新增 zones/limitations/relations 被 A3 真实消费或明确投影为安全限制，**不能只替换 schema 号**。A5 不读非原生的 A2 字节，沿已有 A3 evidence/limitations 传播完成度。
+现有 `msgloom/triage_input/codec.py` 的 `TRIAGE_INPUT_SCHEMA_VERSION="1"` 对 `prepared@1`、`filter_result@1`、`group_result@1` 做了**严格 refs allowlist**，并将该约束纳入 selection_binding_hash 与 snapshot_hash。`triage_pipeline/handler.py` 也使用具体 `PreparedRecord`。
+
+本轮建议冻结 **`triage_input@2`**：新的 typed snapshot/codec/selection binding 和必要的 part state/version adapter，匹配 `prepared@2`、`filter_result@2`、`group_result@2`，必须重新定义并独立测试所有 binding digest、完整性、limitation、source version、selective held 与 A3 契约；保留原 `triage_input@1` + 历史 `PreparedRecord` 的原样只读能力。不得把 @2 refs 塞进 v1 codec，更不能以“忽略新增 zones/relations/limitations”的有损投影假冒兼容。
+
+工作分成：A3 contract decision/fixture → triage_input@2 codec+digest golden → A3 pipeline typed reader/runner → A3/A5 historical/new cross-stage regression。假如独立研究证明可以安全使用已有形状，必须单列证据和 exact SHA review；**默认不选择 lossy projection**，所以不得把本边界看作单个 25 分钟任务。
 
 ### 8.2 公开 scheduled Outcome 策略
 
@@ -262,6 +309,7 @@ Kedro 1.7.0 `SequentialRunner(is_async=False)` 是同步 API；必须放在受�
 | 已终结 intake-held 或 A2-held | INCOMPLETE / `scheduled-work-held` | 保留 durable disposition，人工 repair/replay，不自动无限重试 |
 | trusted catalog pin 不符 | BLOCKED / `scheduled-catalog-mismatch` | 停止当前 scope |
 | intake/preflight `SourceReferenceError` | BLOCKED / `scheduled-source-reference-invalid` | 不解析异常字符串，不擅自重置 cursor |
+| 未授权/未受信任的 secure host 或 authority | BLOCKED / `scheduled-invalid-authority` | 停止，不读写 source 或重新绑定权限 |
 | post-intake exact dataset 证据缺失 | INCOMPLETE held / `scheduled-work-held` | 写 A2-owned disposition；不修改 intake |
 | live claim 丢失/失效 | FAILED / `scheduled-claim-lost` | 阻止新 save，read-back 调和 |
 | 相同 logical key 的不同 canonical output | FAILED / `scheduled-acceptance-conflict` | 停止自动重试并保留原结果 |
@@ -277,9 +325,11 @@ Prefect 只在**有限 A1 collection attempt 之后**（不依赖 Spider close �
 
 当前 Q0 候选是 **Kedro 1.7.0**（PyPI wheel SHA-256 `488701a27c7d595b62a611cb23596953a9929fe5cc42a376c28abe26654c2438`）。隔离项目 lock 试算从 146 个包增长至 166 个，新增 20、旧版本没有变化；**未修改实际 `pyproject.toml` / `uv.lock`**。这些只证明依赖求解和合成运行，不是完整项目共装测试。
 
-官方 [GHSA-6326-w46w-ppjw](https://github.com/kedro-org/kedro/security/advisories/GHSA-6326-w46w-ppjw) / [GitLab CVE-2026-35167](https://advisories.gitlab.com/pkg/pypi/kedro/CVE-2026-35167/) 将 traversal 修复指向 Kedro 1.3.0，精确 1.7 wheel 确有 `_is_unsafe_version` guard；[Snyk CVE-2026-3840](https://security.snyk.io/vuln/SNYK-PYTHON-KEDRO-17752561) 仍标记 1.7.0 无修复版本。**不是“已安全”**。先由独立安全 reviewer 建立可重复的 exact-wheel reachability 证据、OSV/Snyk 报告日期及版本归属；若残余安全问题不能解决，则 production NO-GO，必须请 repo owner 明确处置（不自动添加 waiver/ignore）。
+官方 [GHSA-6326-w46w-ppjw](https://github.com/kedro-org/kedro/security/advisories/GHSA-6326-w46w-ppjw) / [GitLab CVE-2026-35167](https://advisories.gitlab.com/pkg/pypi/kedro/CVE-2026-35167/) 将 traversal 修复指向 Kedro 1.3.0，精确 1.7 wheel 确有 `_is_unsafe_version` guard；[Snyk CVE-2026-3840](https://security.snyk.io/vuln/SNYK-PYTHON-KEDRO-17752561) 仍标记 1.7.0 无修复版本。**不是“已安全”**。两组报告描述的可疑行为高度重叠：`_get_versioned_path()` 对外部提供的 version string 构造路径，尤其可由 Kedro CLI `--load-versions` 以及 DataCatalog 中的 `load_versions` 到达；可能导致目录跳转后的越权读取和内容污染。D4 Q0 在 **1.7.0 精确 wheel** 上验证了路径版本 guard，并限制生产只能走程序化显式 catalog、不用 CLI/动态加载版本，因此当前最重要的是证明 Snyk 对 **所有版本** 的持续标记是否仍适用于这份精确 wheel。两者属于**重叠的 attack surface**，但尚未有上游明确证据可以宣称这两个 CVE 是完全相同记录、也不能仅靠 OSV 扫描没有新项就宣布修复。
 
-当前项目 CI 对 `PYSEC-2017-83`（Scrapy）、`GHSA-8pqf-f4m5-798g`（Twisted）已有单独审查的 `--ignore-until-fixed` 例外（见 `.github/workflows/ci.yml` / 既有 policy）。它们是**历史已接受例外**，绝不能移作 Kedro 新漏洞的豁免。完整安装、Python 3.12–3.14、Pi Linux aarch64、Linux x86、Mac/Windows smoke、telemetry/no-network、cgroup 组合测试及 owner security disposition 通过前，不提交正式依赖 PR。
+官方固定源及核验日期（以最终 F0 重新读取为准）：[GitLab CVE-2026-35167](https://advisories.gitlab.com/pkg/pypi/kedro/CVE-2026-35167/) 写明 <1.3.0、1.3.0 已修复；[Snyk CVE-2026-3840](https://security.snyk.io/vuln/SNYK-PYTHON-KEDRO-17752561) 写明 `[0,)` 全部受影响且无 fixed version；[PyPI Kedro 1.7.0](https://pypi.org/project/kedro/1.7.0/) wheel 哈希是本方案记录的精确值。先由独立安全 reviewer 建立可重复的 exact-wheel reachability 证据、OSV/Snyk 报告日期及版本归属；若残余安全问题不能解决，则 production NO-GO，必须请 repo owner 明确处置（不自动添加 waiver/ignore）。
+
+当前项目 CI 对 `PYSEC-2017-83`（Scrapy）、`GHSA-8pqf-f4m5-798g`（Twisted）已有单独审查的 `--ignore-until-fixed` 例外（见 `.github/workflows/ci.yml` / 既有 policy）。它们是**历史已接受例外**，绝不能移作 Kedro 新漏洞的豁免。如果 owner 最终批准新增安全例外，也必须用明确的 advisory ID、适用代码路径、期限/到期重审、额外运行时缓解及 `docs/dependency-vulnerability-policy.md` 中可审计的独立决策记录；不能只在 CI 中静默添加忽略。完整安装、Python 3.12–3.14、Pi Linux aarch64、Linux x86、Mac/Windows smoke、telemetry/no-network、cgroup 组合测试及 owner security disposition 通过前，不提交正式依赖 PR。
 
 ## 10. 切换、失败回滚与剩余决策
 
@@ -287,7 +337,7 @@ Prefect 只在**有限 A1 collection attempt 之后**（不依赖 Spider close �
 
 - 旧版 pending Workset 必须清零且经人工确认；否则阻止切换，不能把同一 Workset 在旧新生产引擎里暗中重演。
 - C0 完整 schema/codec、v2 acceptance/receipt + A3 adapter、C0 对真实 A1 全 stream fixture、F0 security/dependencies、P1/P2/P3、T0、E0/I0 及 V0 全部有具体 commit/CI/独立审查证明。
-- 预留系统备份与原始数据库 schema 4 快照；迁移升级前保持老生产路径。数据库迁移通常不是自动回滚成旧 schema：**如已升级，恢复策略可能是停机从迁移前备份恢复或经审核的兼容旧 reader**，不可宣称直接 `git revert` 能退 DB。
+- 预留系统备份与原始数据库 schema 4 快照；迁移升级前保持老生产路径。数据库迁移不能在新 binary 首次打开库时自动发生，必须先部署兼容期 binary、保持旧 A2、在受控维护窗口显式迁移。旧 binary 默认拒绝新表：**迁移后回退只可走演练过的备份恢复/经审核的前向修复，不是 git revert**，不可宣称直接 `git revert` 能退 DB。
 - Prefect flow 先 disabled/staging 验证；启动后仅 finite bounded calls，对 duplicate/missed hints 和 partial A1 failure 做安全补偿。
 - 历史数据和已发布旧结果必须只读可查询；删除旧运行代码也要在 final cutover 验收后进行，保留 Git/QA 历史。
 
@@ -296,7 +346,7 @@ Prefect 只在**有限 A1 collection attempt 之后**（不依赖 Spider close �
 1. **安全**：Snyk/CVE-2026-3840 与上游 patch 证据矛盾；若无法核实不存在相关可达风险，生产是否暂停/是否正式接受 residual risk，由 owner 决定，不由 Agent 自动豁免。
 2. **Migration**：最终 schema 名称、物理约束、接受索引中的 lineage/receipt proof 格式必须先通过 C0 transaction review。
 3. **Worker 实际资源**：Pi 的 parser child 预算、timeout/lease 安全 margin、最大并发由测量定标，不以“合成 CPU 0.23 秒流畅”推定生产可用。
-4. **A3 投影**：哪些准备产物以结构化新字段进入 A3，哪些以 limitation 映射，以及历史 prepared@1 reader 保留期限，需在 C0/W0 schema review 决定并附独立 fixture。
+4. **A3 typed 版本**：默认设计是 triage_input@2 + 新 binding digest、保留 triage_input@1 原样历史读取；如果需跨版本投影，先做独立不丢重要来源的证明并复审。新 A3 限制及 metadata 必须写入黄金测试。
 5. **生产首次启用**：选哪个 source/stream/consumer 范围灰度、何时安排 migration 和是否启用 Prefect；安全和切换的最终决定由用户确认。
 
 本文件的所有新增接口与 SQL DDL 都是 **设计候选**。其下一步不是直接启动全量 P1/P2/P3，而是先解决 C0 R1/CI 缺陷并取得独立验收，同时完成 F0，随后对生产级 C0 做第二阶段完整验收；顺序见实施计划。

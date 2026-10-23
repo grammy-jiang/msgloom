@@ -19,41 +19,56 @@
 | E0 / I0 / V0 / R0 | **尚未正式启动** | 全链路/交易与 A3、Prefect 触发、全矩阵验证、旧 A2 退役 |
 | 本地任务状态 | **无专用持续运行的 C0 Task Manager** | 不能将远程常驻 Claude/Codex 服务视为 C0 子 Agent 正在工作 |
 
-**唯一推荐路线：** 先把 F0 和 C0-R1 研究整改作为两条可并行的非生产工作流；两边各自通过独立 gate 后，串行冻结生产 C0；然后才允许 P1/P2/P3/T0 大规模并行。不要把现有 Q0 合成 ACCEPT 当作生产安全签字。
+**唯一推荐路线：** F0 与 C0-R1（CR）非生产研究并行。CR R2 通过后可以继续 **Kedro-free C0 合同/SQL 候选**，甚至无 Kedro 依赖的纯 P2/P3 fixtures；但不得称其生产冻结，也不得合并、运行生产 Kedro，直至安全 F0 gate 与新持久化/receipt gate 均成立。F0 缺乏修复结论不应阻塞离线纯逻辑研究，但绝不代表隐含安全豁免。
 
-### 0.1 Gate 有向无环图
+### 0.1 Gate 有向无环图及 F0 准入定义
 
 ```text
-[Existing A1 ACCEPT] -> [D4 ACCEPT] -> [Q0 synthetic ACCEPT]
-                                         |
-                  +----------------------+--------------------+
-                  |                                           |
-          F0 Security/dependency                        CR C0-R1 fix
-          full co-install qualification                 + Pyright + R2 review
-                  |                                           |
-                  +----------------------+--------------------+
-                                         v
-                         C0 production schema/codec/SQL
-                            exact root + receipt freeze
-                                         |
-                    +--------------------+--------------------+
-                    |                    |                    |
-              P1 Kedro DAG        P2 Parse/Zone       T0 independent fixtures
-                    |                    |                    |
-                    +----------- P3 relations/rules/group -----+
-                                         |
-                                   E0 integration
-                                         |
-                               I0 manual/scheduled + A3
-                                         |
-                         I0 Prefect hint + recovery gate
-                                         |
-                       V0 full tests/security/portability
-                                         |
-                       R0 controlled cutover / old A2 retire
+A1 ACCEPT -> D4 R6 ACCEPT -> Q0 synthetic ACCEPT
+                          |
+               +----------+-----------+
+               |                      |
+          CR R1 fixes/R2      F0: independent security/co-install
+               |                      |
+               v                      | [F0-08 peer review; owner risk
+        C0 schemas + SQL             |  disposition still required]
+        design/prototype              |
+        (Kedro-free)                  |
+               |                      |
+               +----------+-----------+
+                          v
+      C0 v2 proof + migration design exact SHA / provisional freeze
+               |                 |
+               |                 +--> P2/P3 pure fixtures / T0 independent gold
+               |                         (can begin earlier, not ship)
+               v
+      F0 OWNER-APPROVED PRODUCTION ADMISSION
+      + C0 FINAL code/contracts/migration acceptance
+               |
+        P1 actual Kedro main DAG + P2/P3/T0 production integration
+               |
+               v
+        E0 -> I0 staging -> V0 all checks including V13–V16
+               |
+      explicit user cutover/migration authorization
+               |
+               v
+        R0 controlled schema migration/dispatch, then retire old A2
 ```
 
-生产依赖 PR 的可合并门禁包括 F0 owner safety disposition，不应为了等锁文件而停止独立的 C0 测试和 schema 设计研究；**但生产 C0 接受签字不能越过 F0**。
+**F0 review acceptance** = F0-01..08 完整证据、独立 reviewer 对 exact wheel/可达性/共装 tests 的判定；若剩余 Snyk 风险，不能仅用技术 reviewer `ACCEPT` 替代 owner 的安全决定。**F0 production admission** = 上述技术门禁通过、可接受的依赖/CI 方案，以及用户对无法排除的安全残余风险作出的明确决定。F0-09 只能在此之后把正式依赖 PR 提交合并审核，不预授权合并。
+
+**C0 provisional freeze** = 可以用不依赖 Kedro 的纯 A2 契约、数据模型和 SQLite 临时测试稳定字段名；**C0 final freeze** = F0 生产准入 + 对真实 A1 Workset/Claims 的 v2 receipt/finalizer、正式迁移方案、A3 triage_input@2 兼容、独立 exact-SHA review 全部通过。允许在实测 parser/DAG 反馈后通过明确版本增量修订 *provisional* 协议；已发布结果的 wire version 不能静默改写。
+
+资源预算是一项**任务拆分约束而非完成时间承诺**：全计划一百余项细分任务，确切数量和关键路径随 R1 回归及安全决策变化；预计 serial risk chain 为 `CR→C0 DB+finalizer→Kedro E0→V0→owner cutover`，F0 安全在前半段并行但其 owner decision 可使全线暂停。Manager 不得依据表内 20m 累加后向用户承诺交付时刻。
+
+### 0.2 直接可执行的任务依赖 DAG
+
+另附 [151 项人类可读任务 DAG](2026-10-23-a2-kedro-v2-task-dag.md) 与 [机器可读任务清单](2026-10-23-a2-kedro-v2-task-manifest.json)：151 条独立 task，每项含 `id`、`depends_on`、`edit_paths`、`required_gates`、`timebox_minutes`、model/effort、预计拆分窗口及需要验证的明确产出。清单所有内部依赖已经完成无环检验；`gate:...` 是需经授权或 CI 验收的**外部门禁**，不是可以自动划成完成的普通任务。
+
+每项以 ≤25 分钟**拆分目标**估计，而非用户可依赖的完成时间承诺。一个所有者拥有一组精确文件；多个 task 对同一路径、目录通配符或 central schema 的写入必须序列化。新包名/路径只是建议实施位置，不能声称已存在。Manager 把 task 映射成单人 owner 的绝对路径、branch 和 SHA 后才可调度。
+
+临界路径包含：`CR-10 → C0-00 → C0-11a–d / C0-12a–d / C0-14a–d → C0-20c → P1-13 → E0-12 → I0-07 → V0-14c → user cutover`。F0 可与 CR/C0 provisional 研究并行，但任何 unresolved owner security gate 可延缓后续正式 Kedro dependency/cutover。测量任务 `P1-12b`、`P2-10`、`V0-15` 必须取得 Pi 独占性能测量锁。
 
 ## 1. Task Manager 的必需运行方式
 
@@ -61,7 +76,7 @@
 
 | 角色 | 推荐选择 | 理由与限制 |
 | --- | --- | --- |
-| Supervisor（本 ChatGPT 会话） | 当前 GPT-6；只读核查并给出决策建议 | 审阅任务 DAG、失败、预算、PR/CI 证据；不虚称后台运行 |
+| Supervisor（当前聊天/监督者） | 以当前会话实际可用模型为准；审查和质量验收 | 审阅任务 DAG、失败、预算、PR/CI 证据；不虚称后台运行 |
 | 本地 Task Manager | Claude Code **Sonnet / High**（如实际 CLI 支持该 effort） | 任务分解、依赖调度、冲突仲裁、及时自动恢复、验收门禁归档；不亲自持有所有文件 |
 | 通用 coding worker | Claude Code **Sonnet / Medium** | 一个封闭任务/一份文件所有权/一个针对性测试；不滥用 High |
 | SQL/security/async 关键 worker | Claude Code Sonnet / High | migration、CVE、claim/commit/cancel、A3 version boundary |
@@ -87,206 +102,231 @@
 
 独立 R1 原文保存在 C0 Pi 工作区 `docs/notes/a2-kedro-c0-independent-review-r1-20261023.txt`；受审查 SHA `0eb8fe6` 不得改名为 ACCEPT。保留已在 C0 工作区完成但**尚未提交**的局部类型修复，不得 `git reset --hard`、`git clean -fd`。
 
-| ID / 估时 | 依赖和文件所有权 | 具体改动 / **必须通过的测试** | 模型 |
-| --- | --- | --- | --- |
-| CR-01 / 15m | R1 文档审阅；`docs/plans/2026-10-23-a2-kedro-c0-contract-candidate.md` | 正确陈述旧 `intake_completion.py` 对 held-only **可能 COMPLETE** 且 aggregate 未强制纳入 `workset.held`；写清是新 v2 policy change，不能改 A1 | Sonnet High |
-| CR-02 / 20m | C0 prototype tests | 修正三项由于 `model_dump()` + strict dataclass dict 导致的假阳性；用有效 instance/`model_validate_json`，逐个验证 extra field、stage XOR、policy version 等实际被测 predicate | Sonnet Medium |
-| CR-03 / 20m | C0 fixture/test | 生成两个不同 ReleaseEntry occurrence 但指向相同 ResultRef 的结构合法 Workset，验证 `selection_refs` 去重、receipt 仍要求两个结果；注明真实 A1 hash 含 entry，正常不会生成该冲突，纯防御案例 | Sonnet Medium |
-| CR-04 / 20m | C0 docs/security | 明确研究索引绕过旧 plan 的真因是 claim key **不以 `prepare:` 开头**；空 `required_inputs` 是另一个缺口。逐项列出未验证的 status/limitations、upstream refs、attempt vs claim、workset scope、batch transition identity、kind/version 允许表、同步 facade 绕过 | Sonnet High |
-| CR-05 / 15m | Native A1 test + doc | 目前错误 candidate 只触发 `not in workset`。增加“Workset 内已选 root 但 ordinal/key 不一致”、“已保存 selection 内容不同”的真实负例，或明确降级宣称；不篡改真实 A1 | Sonnet Medium |
-| CR-06 / 15m | Pyright | 逐个修复 CI 9 项 可空 `SemanticDataRef` / 可选 selection/batch 访问，显式 guard + `pytest.fail`，**不能加 ignore/type: ignore 规避** | Sonnet Medium |
-| CR-07 / 20m | Python tests & docs | 把 “Expected C0 test condition at line N” 换为真实断言说明；避免过短 3 秒 lease 在高负载 Pi 形成 flake；准备重复测试 x3 | Sonnet Low/Medium |
-| CR-08 / 20m | Research prototype + docs | 在文档明确 `_store` private + `asyncio.to_thread` 取消不受保护、large semantic decode 在 writer lock 内、临时 SQL `create_all` 仅供实验，不允许移植至生产；强化不相同 claim-key 的并发测试描述 | Sonnet High |
-| CR-09 / 20m | 单人集成 owner | 针对性 pytest、Ruff/format、Pyright（实际 CI 同命令）、pre-commit/gitleaks。只归入与 CR 相关文件；保留审查报告与变更 SHA | Sonnet Medium |
-| CR-10 / 20m | Reviewer | 独立只读 R2 exact SHA → `ACCEPT` 才关闭研究门禁；有 REVISE 则新 CR-N 任务，不自动称 production C0 ready | Sonnet High |
+| ID / 估时 | Depends on | 依赖和文件所有权 | 具体改动 / **必须通过的测试** | 模型 | Owner files / worker |
+| --- | --- | --- | --- | --- | --- |
+| CR-01 / 15m | 无 | R1 文档审阅；`docs/plans/2026-10-23-a2-kedro-c0-contract-candidate.md` | 正确陈述旧 `intake_completion.py` 对 held-only **可能 COMPLETE** 且 aggregate 未强制纳入 `workset.held`；写清是新 v2 policy change，不能改 A1 | Sonnet High | docs/plans/2026-10-23-a2-kedro-c0-contract-candidate.md; Sonnet / high |
+| CR-02 / 20m | 无 | C0 prototype tests | 修正三项由于 `model_dump()` + strict dataclass dict 导致的假阳性；用有效 instance/`model_validate_json`，逐个验证 extra field、stage XOR、policy version 等实际被测 predicate | Sonnet Medium | tests/research/test_c0_contract_prototype.py; Sonnet / medium |
+| CR-03 / 20m | 无 | C0 fixture/test | 生成两个不同 ReleaseEntry occurrence 但指向相同 ResultRef 的结构合法 Workset，验证 `selection_refs` 去重、receipt 仍要求两个结果；注明真实 A1 hash 含 entry，正常不会生成该冲突，纯防御案例 | Sonnet Medium | tests/research/test_c0_contract_prototype.py; Sonnet / medium |
+| CR-04 / 20m | 无 | C0 docs/security | 明确研究索引绕过旧 plan 的真因是 claim key **不以 `prepare:` 开头**；空 `required_inputs` 是另一个缺口。逐项列出未验证的 status/limitations、upstream refs、attempt vs claim、workset scope、batch transition identity、kind/version 允许表、同步 facade 绕过 | Sonnet High | docs/plans/2026-10-23-a2-kedro-c0-contract-candidate.md; Sonnet / high |
+| CR-05 / 15m | 无 | Native A1 test + doc | 目前错误 candidate 只触发 `not in workset`。增加“Workset 内已选 root 但 ordinal/key 不一致”、“已保存 selection 内容不同”的真实负例，或明确降级宣称；不篡改真实 A1 | Sonnet Medium | tests/research/test_c0_native_a1_exact_handoff.py; Sonnet / medium |
+| CR-06 / 15m | 无 | Pyright | 逐个修复 CI 9 项 可空 `SemanticDataRef` / 可选 selection/batch 访问，显式 guard + `pytest.fail`，**不能加 ignore/type: ignore 规避** | Sonnet Medium | tests/research/test_c0_atomic_acceptance.py, tests/research/test_c0_phase1_storage_integration.py, tests/research/test_c0_contract_prototype.py; Sonnet / medium |
+| CR-07 / 20m | CR-02, CR-03, CR-05 | Python tests & docs | 把 “Expected C0 test condition at line N” 换为真实断言说明；避免过短 3 秒 lease 在高负载 Pi 形成 flake；准备重复测试 x3 | Sonnet Low/Medium | tests/research/test_c0_contract_prototype.py, tests/research/test_c0_phase1_storage_integration.py; Sonnet / medium |
+| CR-08 / 20m | 无 | Research prototype + docs | 在文档明确 `_store` private + `asyncio.to_thread` 取消不受保护、large semantic decode 在 writer lock 内、临时 SQL `create_all` 仅供实验，不允许移植至生产；强化不相同 claim-key 的并发测试描述 | Sonnet High | docs/plans/2026-10-23-a2-kedro-c0-contract-candidate.md; Sonnet / high |
+| CR-09 / 20m | CR-01, CR-02, CR-03, CR-04, CR-05, CR-06, CR-07, CR-08 | 单人集成 owner | 针对性 pytest、Ruff/format、Pyright（实际 CI 同命令）、pre-commit/gitleaks。只归入与 CR 相关文件；保留审查报告与变更 SHA | Sonnet Medium | docs/notes/a2-kedro-c0-r2-qualification.md; Sonnet / medium |
+| CR-10 / 20m | CR-09 | Reviewer | 独立只读 R2 exact SHA → `ACCEPT` 才关闭研究门禁；有 REVISE 则新 CR-N 任务，不自动称 production C0 ready | Sonnet High | docs/notes/a2-kedro-c0-independent-review-r2.txt; Sonnet / high |
 
 **先决验收：** GitHub PR #70 当前 9/10，其中唯一失败是 Pyright；修复后必须重新触发 PR 的完整质量矩阵，**所有 required checks 通过**。本地 19/19 不替代 GitHub Pyright。CR-01/04/08 同属文档文件，必须串行合并或由一个文档 owner 一次完成；CR-02/03/05/06 的测试文件也必须以 worktree ownership 避免写冲突。
 
 ## 3. Wave F0 — Kedro 1.7 安全与依赖资格（与 CR 同步）
 
-| ID / 估时 | 输入、操作和目标证据 | 验收与 Stop 条件 | 模型 |
-| --- | --- | --- | --- |
-| F0-01 / 15m | 再核对 PyPI Kedro 1.7 wheel（SHA `488701a27c7d595b62a611cb23596953a9929fe5cc42a376c28abe26654c2438`）、源码版本、当前 Pi py312/313/314 环境和 Q0 矩阵 | 来源日期、可重跑 wheel hash；不能无核验更换候选版本 | Sonnet Medium |
-| F0-02 / 25m | 独立看 GHSA-6326、CVE-2026-35167、CVE-2026-3840、Snyk + 当前 source `_get_versioned_path/_is_unsafe_version`，建立 method/API reachability matrix | 明确“上游报告已修复”和“Snyk 仍报告受影响”的**未决差异**；不推出无依据的安全结论 | Sonnet High |
-| F0-03 / 20m | 静态 Dataset allowlist：禁用 Kedro CLI、`DataCatalog.from_config`、`load_versions`、versioned FS datasets、动态插件；环境和代码测试 | malicious `../` / absolute、unknown dataset、untrusted import/PII 不落日志；生产代码门禁可实现 | Sonnet High |
-| F0-04 / 20m | telemetry：`kedro-telemetry` 强制依赖，真实 plugin consent 与 programmatic hooks，stderr/stdout import、socket/real network deny 控制 | 不只是 null plugin 假测试；任何未预期网络/标识上传则 STOP | Sonnet High |
-| F0-05 / 25m | **仅隔离 worktree/scratch lock** 完整 `msgloom + kedro` wheel/co-install；Linux Pi aarch64、Python 3.12/13/14，核对所有原依赖版本 | `uv pip check`、new vs old lock 变更表、wheel/source hash、pytest smoke；不触碰实际 `uv.lock` | Sonnet Medium |
-| F0-06 / 20m | Linux x86_64 和 Mac/Windows portability smoke（通过 CI matrix/配置，不要求物理 GUI） | 有真实 runner 或明确 NOT TESTED；不把 Pi 验证冒充全部平台 | Sonnet Medium |
-| F0-07 / 15m | Audit 策略：记录原有 `PYSEC-2017-83`、`GHSA-8pqf-f4m5-798g` 的受审查 CI policy；新 Kedro CVE 不添加隐性 ignore | baseline 与 candidate 的新增漏洞 delta 可复现；保留 non-green 的原始无忽略审计证据 | Sonnet High |
-| F0-08 / 20m | 安全 reviewer 独立 R1/R2，冻结精确 SHA、真实风险适用性与操作决策候选 | reviewer ACCEPT 对象仅限可复现评估；如仍不能排除 residual risk → 用户安全决定/STOP | Sonnet High |
-| F0-09 / 20m | lock 单人 owner 制定候选生产依赖 PR（先草稿，不改 master）与门禁说明 | owner security signoff、共装跨版本 CI 和回滚计划齐备才申请合并；默认保留 Draft | Sonnet Medium |
+| ID / 估时 | Depends on | 输入、操作和目标证据 | 验收与 Stop 条件 | 模型 | Owner files / worker |
+| --- | --- | --- | --- | --- | --- |
+| F0-01 / 15m | 无 | 再核对 PyPI Kedro 1.7 wheel（SHA `488701a27c7d595b62a611cb23596953a9929fe5cc42a376c28abe26654c2438`）、源码版本、当前 Pi py312/313/314 环境和 Q0 矩阵 | 来源日期、可重跑 wheel hash；不能无核验更换候选版本 | Sonnet Medium | docs/notes/a2-kedro-f0-version-provenance.md; Sonnet / medium |
+| F0-02 / 25m | F0-01 | 独立看 GHSA-6326、CVE-2026-35167、CVE-2026-3840、Snyk + 当前 source `_get_versioned_path/_is_unsafe_version`，建立 method/API reachability matrix | 明确“上游报告已修复”和“Snyk 仍报告受影响”的**未决差异**；不推出无依据的安全结论 | Sonnet High | docs/notes/a2-kedro-f0-cve-reachability.md; Sonnet / high |
+| F0-03 / 20m | F0-01 | 静态 Dataset allowlist：禁用 Kedro CLI、`DataCatalog.from_config`、`load_versions`、versioned FS datasets、动态插件；环境和代码测试 | malicious `../` / absolute、unknown dataset、untrusted import/PII 不落日志；生产代码门禁可实现 | Sonnet High | docs/notes/a2-kedro-f0-dataset-security.md; Sonnet / high |
+| F0-04 / 20m | F0-01 | telemetry：`kedro-telemetry` 强制依赖，真实 plugin consent 与 programmatic hooks，stderr/stdout import、socket/real network deny 控制 | 不只是 null plugin 假测试；任何未预期网络/标识上传则 STOP | Sonnet High | docs/notes/a2-kedro-f0-telemetry-networks.md; Sonnet / high |
+| F0-05a / 20m | F0-01 | 仅 scratch lock 包，共装完整 `msgloom+Kedro` wheel（不改生产锁） | 依赖树精确 delta、wheel SHA、版本保持；不得运行 sdists build 作为研究探测 | Sonnet Medium | docs/notes/a2-kedro-f0-linux-wheel.md; Sonnet / medium |
+| F0-05b / 20m | F0-05a | Pi aarch64 Python 3.12/3.13/3.14 scratch install | 各自 `uv pip check`、Kedro+msgloom imports、Pyright/target tests；保留原始退出码 | Sonnet Medium | docs/notes/a2-kedro-f0-coinstall.md; Sonnet / medium |
+| F0-05c / 20m | F0-05b | 真实项目 wheel/sdist 和 source-boundary tests | 依赖、wheel、tests 可复现；若安装引入已有包升级停止并写风险报告 | Sonnet High | docs/notes/a2-kedro-f0-types-tests.md; Sonnet / medium |
+| F0-06 / 20m | F0-05b | Linux x86_64 和 Mac/Windows portability smoke（通过 CI matrix/配置，不要求物理 GUI） | 有真实 runner 或明确 NOT TESTED；不把 Pi 验证冒充全部平台 | Sonnet Medium | docs/notes/a2-kedro-f0-portability.md; Sonnet / medium |
+| F0-07 / 15m | F0-02, F0-05b | Audit 策略：记录原有 `PYSEC-2017-83`、`GHSA-8pqf-f4m5-798g` 的受审查 CI policy；新 Kedro CVE 不添加隐性 ignore | baseline 与 candidate 的新增漏洞 delta 可复现；保留 non-green 的原始无忽略审计证据 | Sonnet High | docs/notes/a2-kedro-f0-audit-baselines.md; Sonnet / high |
+| F0-08 / 20m | F0-02, F0-03, F0-04, F0-05c, F0-06, F0-07 | 安全 reviewer 独立 R1/R2，冻结精确 SHA、真实风险适用性与操作决策候选 | reviewer ACCEPT 对象仅限可复现评估；如仍不能排除 residual risk → 用户安全决定/STOP | Sonnet High | docs/notes/a2-kedro-f0-independent-review.md; Sonnet / high |
+| F0-09 / 20m | F0-08; gates: F0_PRODUCTION_ADMISSION | lock 单人 owner 制定候选生产依赖 PR（先草稿，不改 master）与门禁说明 | owner security signoff、共装跨版本 CI 和回滚计划齐备才申请合并；默认保留 Draft | Sonnet Medium | docs/notes/a2-kedro-f0-dependency-admission.md; Sonnet / medium |
 
 安全残余风险是明确的人为审批点。Agent 不能替用户签署安全豁免。即便 F0 风险被接受，也不能绕开 C0 事务/receipt 证明。F0-05 可以在 scratch 环境与 CR 任务并行，F0-09 不会未经同意提交运行时依赖。
 
 ## 4. Wave C0 — 生产契约、持久化与 A3 adapter 设计冻结
 
-CR 研究 R2 ACCEPT 与 F0 准入后的工作；**先冻结 schema/header/golden 再大规模分配 P1/P2/P3**。下面是精细任务，单项不跨 30 分钟。
+CR 研究 R2 ACCEPT 后，可启动 **Kedro-free C0 候选实现**；F0 安全风险未解决时仍可做纯合同/临时 DB 研究，但不能合并正式 Kedro 依赖或宣称生产 C0 通过。先执行 C0-00 字段/版本 provisional freeze，最后通过 F0 production admission + C0-20c 才能 final freeze。任务表的估时是单个产出设计限额；若某项确实需要更长，则先拆为子 task 再开工，不能一次让 Agent 实施多日范围。
 
-| ID / 估时 | 拥有文件/接口 | 具体落地和验收 |
-| --- | --- | --- |
-| C0-01 / 20m | `msgloom/a2_kedro/contracts/source.py`，A1 verifier adapter | FrozenSourceSelection：entry/workset 及 approved baseline 的互斥结构、occurrence index/ordinal/role、saved SHA、scope；拒绝 forged hash/role |
-| C0-02 / 20m | `msgloom/a2_kedro/source_resolution.py` | 使用精确 ReleaseReader 重新验证 ordinal/byte equality；component/context/transition-only + global sequence gaps；源读取错误 typed A2-held |
-| C0-03 / 20m | `msgloom/a2_kedro/contracts/extract.py` | ExtractedComponents：primary/alternate/attachment/embedded 保存引用、digest、missing/partial/unsupported，有限 metadata codec |
-| C0-04 / 20m | `msgloom/a2_kedro/contracts/parse.py` | ParsedParts：part/page/sheet/cell 和 parser worker receipt，断言 actual-format 和 byte source link |
-| C0-05 / 20m | `msgloom/a2_kedro/contracts/zones.py` | NormalizedContent / ContentZones，原始 span 精确映射及 quote-occurrence vs quote-author；不可逆限制 |
-| C0-06 / 20m | `msgloom/a2_kedro/contracts/relations.py` | NativeRelations：回复/祖先/引用假设的 typed scope；unknown/cycle/duplicate 负例 |
-| C0-07 / 20m | `msgloom/a2_kedro/contracts/results.py` | prepared@2、filter_result@2、group_result@2 和 manifest；all-matched-rules，分组无跨作用域静默连接 |
-| C0-08 / 20m | `msgloom/a2_kedro/contracts/transition.py` | scoped transition **batch identity** 定义在 Workset Ref + 有序 fact/scope + code/policy，单项与 batch 不混淆 |
-| C0-09 / 20m | `msgloom/a2_kedro/contracts/held.py` | a2_input_disposition@1 和显式 repair_class；held-only、context-only、approved baseline 并不强制做 body |
-| C0-10 / 20m | `msgloom/a2_kedro/contracts/receipt.py` | a2_completion_receipt@2 **结构完整性**；同一 frozen occurrence 恰好一份结果，intake-held 强制 INCOMPLETE |
-| C0-11 / 25m | `msgloom/persistence/a2_schema.py` + `schema_store.py`（DB owner） | 从 schema 4 迁移到 reviewed v5 候选；精确 DDL/index/constraint、历史 v2–v4 可升级、错误 schema/占用 name/trigger 不修改、断电回滚 |
-| C0-12 / 25m | `msgloom/persistence/a2_store.py` + facade | 原子 logical key append-or-verify、ClaimToken/required_inputs/plan、canonical SHA、metadata-only recheck、并发和 postcommit cancel；**从零建立安全公开 async 方法** |
-| C0-13 / 20m | `msgloom/persistence/a2_held_store.py` | 可查询 bounded A2-held index，workset-scoped，幂等冲突拒绝，用户隐私 safe status |
-| C0-14 / 25m | `msgloom/persistence/a2_receipt_store.py` | 新 v2 completion 与准确 claim/attempt history 验证；prepared@2 / held + transition batch；不存在“结构通过但数据库未接受” |
-| C0-15 / 20m | `msgloom/a2_kedro/application_contract.py` | 公开 `async def prepare(...)`，前置输入/authority pin 检查，CancelledError/timeout/status 分类，不创建 loop |
-| C0-16 / 20m | `msgloom/a2_kedro/partition_policy.py` | 有版本、有限 partition/workset scope，避免跨 Workset 不合理 merge；资源上限由 P1/P2 profiling 修正 |
-| C0-17 / 25m | `msgloom/triage_input/` / `msgloom/triage_pipeline/` 单 owner | A3 读取 prepared@1（历史）和 prepared@2（新），zone/limitation/relational provenance 正确流入 A3；无旧 API 假兼容 |
-| C0-18 / 20m | `msgloom/cli/` 只读 status 类型定义 | trusted scoped progress + typed exceptions：BLOCKED source/reference/cat、busy INCOMPLETE、claim loss FAILED、held terminal |
-| C0-19 / 20m | dedicated golden fixture/tests | 确保 wire field name、codec canonical bytes、SHA/ID、扩展缺失、max bytes、未知版本拒绝、历史解码不变 |
-| C0-20 / 25m | integration owner/reviewer | 合并 C0 所有接口、真实 A1 root/Claim/SQLite E2E、typed A3 回归，独立审查接受精确 SHA 才宣告 C0 FROZEN |
+| ID / 估时 | Depends on | 拥有文件/接口 | 具体落地和验收 | Owner files / worker |
+| --- | --- | --- | --- | --- |
+| C0-00 / 15m | CR-10 | `docs/decisions/a2-v2-schema-ids.md` + minimal golden (contract owner) | 冻结 provisional kind/version/field-name/size/role/transition batch/triage_input@2 header；其后 worker 不可自由自定义不兼容 wire 格式 | docs/decisions/a2-v2-schema-ids.md; Sonnet / medium |
+| C0-01 / 20m | C0-00 | `msgloom/a2_kedro/contracts/source.py`，A1 verifier adapter | FrozenSourceSelection：entry/workset 及 approved baseline 的互斥结构、occurrence index/ordinal/role、saved SHA、scope；拒绝 forged hash/role | msgloom/a2_kedro/contracts/source.py; Sonnet / medium |
+| C0-02 / 20m | C0-01 | `msgloom/a2_kedro/source_resolution.py` | 使用精确 ReleaseReader 重新验证 ordinal/byte equality；component/context/transition-only + global sequence gaps；源读取错误 typed A2-held | msgloom/a2_kedro/source_resolution.py; Sonnet / medium |
+| C0-03 / 20m | C0-00 | `msgloom/a2_kedro/contracts/extract.py` | ExtractedComponents：primary/alternate/attachment/embedded 保存引用、digest、missing/partial/unsupported，有限 metadata codec | msgloom/a2_kedro/contracts/extract.py; Sonnet / medium |
+| C0-04 / 20m | C0-03 | `msgloom/a2_kedro/contracts/parse.py` | ParsedParts：part/page/sheet/cell 和 parser worker receipt，断言 actual-format 和 byte source link | msgloom/a2_kedro/contracts/parse.py; Sonnet / medium |
+| C0-05 / 20m | C0-04 | `msgloom/a2_kedro/contracts/zones.py` | NormalizedContent / ContentZones，原始 span 精确映射及 quote-occurrence vs quote-author；不可逆限制 | msgloom/a2_kedro/contracts/zones.py; Sonnet / medium |
+| C0-06 / 20m | C0-00 | `msgloom/a2_kedro/contracts/relations.py` | NativeRelations：回复/祖先/引用假设的 typed scope；unknown/cycle/duplicate 负例 | msgloom/a2_kedro/contracts/relations.py; Sonnet / medium |
+| C0-07 / 20m | C0-05, C0-06 | `msgloom/a2_kedro/contracts/results.py` | prepared@2、filter_result@2、group_result@2 和 manifest；all-matched-rules，分组无跨作用域静默连接 | msgloom/a2_kedro/contracts/results.py; Sonnet / medium |
+| C0-08 / 20m | C0-00 | `msgloom/a2_kedro/contracts/transition.py` | scoped transition batch identity 绑定 Workset Ref + **每条 exact fact ID/scope/kind/authority** 的完整有序列表及 code/policy；单项事实证明和批次身份均不可丢 | msgloom/a2_kedro/contracts/transition.py; Sonnet / medium |
+| C0-09 / 20m | C0-01 | `msgloom/a2_kedro/contracts/held.py` | a2_input_disposition@1 和显式 repair_class；held-only、context-only、approved baseline 并不强制做 body | msgloom/a2_kedro/contracts/held.py; Sonnet / medium |
+| C0-10 / 20m | C0-07, C0-08, C0-09 | `msgloom/a2_kedro/contracts/receipt.py` | a2_completion_receipt@2 **结构完整性**；同一 frozen occurrence 恰好一份结果，intake-held 强制 INCOMPLETE | msgloom/a2_kedro/contracts/receipt.py; Sonnet / medium |
+| C0-11a / 20m | C0-00 | `msgloom/persistence/schema_store.py` / new schema model (DB owner) | 原 schema4 digest/revision/legacy DDL 先做 pinned 迁移方案，比较 schema-main-version vs metadata revision；显式 operator gate，不准 open 自动建表 | docs/decisions/a2-v2-schema-migration.md; Sonnet / high |
+| C0-11b / 20m | C0-11a | `msgloom/persistence/a2_schema.py` (DB owner) | 精确 A2 受约束 DDL、FK/index/unique/size bounds 与 versioned producer marker；依赖 C0-11a 审阅 | msgloom/persistence/a2_schema.py; Sonnet / high |
+| C0-11c / 20m | C0-11b | `msgloom/persistence/schema_store.py` + migration CLI (DB owner) | 普通 Phase1Store.open 同时兼容旧/新但绝不自动升级；显式 maintenance CLI + schema version activation，回滚预案 | msgloom/persistence/schema_store.py, msgloom/cli/a2_schema_migration.py; Sonnet / high |
+| C0-11d / 20m | C0-11c | `tests/persistence/test_a2_schema_migrations.py` | v2/v3/v4→新 revision、错误表名/索引/触发器、DDL 失败回滚、旧 binary 拒新结构时备份恢复 | tests/persistence/test_a2_schema_migrations.py; Sonnet / medium |
+| C0-12a / 20m | C0-00 | `msgloom/persistence/a2_acceptance_models.py` | closed kind/version allowlist + input-only logical key / StageResult metadata SHA / payload sha 长度、旧 prepared@1 拒绝 | msgloom/persistence/a2_acceptance_models.py; Sonnet / high |
+| C0-12b / 20m | C0-11b, C0-12a | `msgloom/persistence/a2_store.py` (DB owner) | `BEGIN IMMEDIATE` 内 live claim+required_inputs+plan 验证，原始 publisher receipt 绑定，单条唯一键 insert | msgloom/persistence/a2_store.py; Sonnet / high |
+| C0-12c / 20m | C0-12b | `msgloom/persistence/async_store.py` (DB owner) | 公开受控 async facade：写入通过现有 semaphore、cancel drain、close 机制，禁止研究版私有 _store/to_thread 直连 | msgloom/persistence/async_store.py; Sonnet / high |
+| C0-12d / 20m | C0-12c | `tests/persistence/test_a2_acceptance.py` | 同 key 跨 attempts 重放、不同 status/limitations/metadata sha 冲突、两个合法 claim 并发、post-commit cancel/read-back，无重复 accepted | tests/persistence/test_a2_acceptance.py; Sonnet / medium |
+| C0-13 / 20m | C0-11b, C0-09 | `msgloom/persistence/a2_held_store.py` | 可查询 bounded A2-held index，workset-scoped，幂等冲突拒绝，用户隐私 safe status | msgloom/persistence/a2_held_store.py; Sonnet / medium |
+| C0-14a / 20m | C0-10, C0-12d | `msgloom/persistence/a2_receipt_store.py` (DB owner) | SQL 外 bounded receipt/source payload proof；root/基线/transition 逐项覆盖 + publisher 原始 claim history | msgloom/persistence/a2_receipt_store.py; Sonnet / high |
+| C0-14b / 20m | C0-14a, C0-11c | `msgloom/persistence/intake_store.py` / `intake_completion.py` (DB owner) | **新版本 v2 finalize**：从真实 pending Workset 在单事务里写新 receipt + 更新旧 intake_worksets terminal/status/refs，metadata-only recheck | msgloom/persistence/intake_store.py, msgloom/persistence/intake_completion.py; Sonnet / high |
+| C0-14c / 20m | C0-14b | `msgloom/persistence/a2_producer_binding.py` (DB owner) | v1/v2 双向 writer fence；一个 Workset 不得由 legacy+Kedro 两边同时终结；混合 attempts 的 accepted-stage history 允许，但受 v2 proof 限制 | msgloom/persistence/a2_producer_binding.py; Sonnet / high |
+| C0-14d / 25m | C0-14c | `tests/persistence/test_a2_v2_finalization.py` | held-only→terminal INCOMPLETE、pending queue 消失、v1/v2 竞争、缺 root/伪造 refs、claim 丢失与 crash between update/receipt 原子回滚 | tests/persistence/test_a2_v2_finalization.py; Sonnet / medium |
+| C0-15 / 20m | C0-00 | `msgloom/a2_kedro/application_contract.py` | 公开 `async def prepare(...)`，前置输入/authority pin 检查，CancelledError/timeout/status 分类，不创建 loop | msgloom/a2_kedro/application_contract.py; Sonnet / high |
+| C0-16 / 20m | C0-00 | `msgloom/a2_kedro/partition_policy.py` | 有版本、有限 partition/workset scope，避免跨 Workset 不合理 merge；资源上限由 P1/P2 profiling 修正 | msgloom/a2_kedro/partition_policy.py; Sonnet / medium |
+| C0-17a / 20m | C0-07 | `msgloom/triage_input/` models/codec (A3 owner) | **明确新 `triage_input@2`**，v1 不能读 @2 refs；设计新 selected roles、binding/snapshot digest/part state；A3 fixture 原样历史保留 | msgloom/triage_input/models_v2.py; Sonnet / high |
+| C0-17b / 20m | C0-17a | `msgloom/triage_input/codec_v2.py` (A3 owner) | 规范化编码、新 binding hash 和 prepared/filter/group@2 kind/version 白名单；strict canonical round-trip；未知版本拒绝 | msgloom/triage_input/codec_v2.py; Sonnet / medium |
+| C0-17c / 20m | C0-17b | `msgloom/triage_pipeline/handler.py` + v2 adapter (A3 owner) | A3 runner 能处理 verified triage_input@2 和 prepared@2/limitations；旧 triage_input@1/PreparedRecord 仍可读，任何 lossy projection 不默许 | msgloom/triage_pipeline/handler.py, msgloom/triage_input/adapter_v2.py; Sonnet / high |
+| C0-17d / 20m | C0-17c | `tests/triage_input/test_a2_v2_compat.py` | v1/v2 digest/parts/selected roles、A3/A5 历史与新版本 golden、partial/held 不丢失 | tests/triage_input/test_a2_v2_compat.py; Sonnet / medium |
+| C0-18 / 20m | C0-15, C0-13 | `msgloom/cli/` 只读 status 类型定义 | trusted scoped progress + typed exceptions：BLOCKED source/reference/cat、busy INCOMPLETE、claim loss FAILED、held terminal | msgloom/cli/a2_scope_status.py; Sonnet / medium |
+| C0-19 / 20m | C0-00, C0-07, C0-08, C0-10, C0-17b | dedicated golden fixture/tests | 确保 wire field name、codec canonical bytes、SHA/ID、扩展缺失、max bytes、未知版本拒绝、历史解码不变 | tests/a2_kedro/test_c0_schema_goldens.py; Sonnet / medium |
+| C0-20a / 20m | C0-11d, C0-12d, C0-13, C0-14d, C0-17d, C0-18, C0-19 | Integration owner | 依冻结 schema 合并 C0 codecs/sql/facade/A3，核实一个 reviewer 没有同时改其它所有者文件；运行 focused SQL 回归 | docs/notes/a2-v2-c0-integration-audit.md; Sonnet / medium |
+| C0-20b / 20m | C0-20a, C0-02 | Integration owner | 真实 A1 frozen Workset→v2 accepted-stage→terminal receipt finalizer→A3 triage_input@2 的端到端 SQLite fixture；不借用研究空 required_inputs claim | tests/a2_kedro/integration/test_a1_workset_v2_receipt_a3.py; Sonnet / high |
+| C0-20c / 20m | C0-20b, F0-08; gates: F0_PRODUCTION_ADMISSION | Independent reviewer | exact SHA C0 v2 full production contract review + required CI；此前 R2 的 research ACCEPT 不代表 final C0 ACCEPT | docs/notes/a2-v2-c0-independent-acceptance.md; Sonnet / high |
 
 **特别重要的失败类别：** 当前 C0 研究索引用 `c0-a2:` claim key，绕开旧 `prepare:` plan binding；`required_inputs=()` 另使其无真实 A1 lineage。这两个缺口必须同时关闭，不能只是把研究表接进 `schema_store`。生产版本必须只接受从可信 Workset/Reader 生成、已证明 upstream stage 的计划。
 
-C0-11/12/14 的 SQL 及迁移有唯一所有者，顺序串行。C0-01–10 可分并行包，但只在字段/版本 header 冻结后互相对接；C0-17 可先研究/fixture，再按确定 schema 适配。C0-20 是串行集成门禁，不能跳过。
+C0-11a–d、12a–d、14a–d 的 SQL 及迁移必须由一个 DB owner 受控串行整合；C0-01–10 可按独立 schema 文件并行，但必须在 C0-00 provisional header 后对接。C0-17a–d 是独立 A3 owner 的串行小步，而非单个“大改”。C0-20a–c 是唯一 final gate，不得用纯模型自证代替真实 SQLite 端到端。
 
 ## 5. Wave P1 — Kedro Core/Dataset/async 主链
 
-| ID / 估时 | 源文件边界 | 必须交付 / 针对性证明 |
-| --- | --- | --- |
-| P1-01 / 20m | `msgloom/a2_kedro/graph.py` | 完整 K0–K11 拓扑，Kedro 是全 DAG authority；不存在外部旧 Handler 绕行 |
-| P1-02 / 20m | `catalog.py` | 编程方式 DataCatalog 明确封闭 dataset allowlist；拒绝未知 dataset 和动态 YAML 配置 |
-| P1-03 / 20m | `datasets/handoff.py` | ExactHandoffDataset 只读 Workset + selection + exact A1 reread，外部 URI/path 不可接受 |
-| P1-04 / 20m | `datasets/evidence.py` | VerifiedEvidenceDataset 访问已签名 saved refs，SHA、边界、missing evidence 处理 |
-| P1-05 / 25m | `datasets/parser.py` | Parser request save/load 走隔离 child service，真实超时、worker termination、partial 的限制 |
-| P1-06 / 20m | `bridge.py` | 同步 worker 到 async loop 的 bounded `run_coroutine_threadsafe`：拒绝 wrong-thread/无限待 |
-| P1-07 / 20m | `runner.py` | 受控 `SequentialRunner(is_async=False)`，每个正在执行的线程和 coroutine 有 owner；repeated cancel drain |
-| P1-08 / 20m | `datasets/semantic.py` | ClaimFencedSemanticDataset，发布前后均查 live token、返回 durable ref，而非原地假结果 |
-| P1-09 / 20m | `datasets/transitions.py` | 单独 scoped transition claim，context refresh 不成为 message |
-| P1-10 / 25m | `resume.py` | 保存每个已接受 stage/progress；重启 read-back、跳过已验证 parse/save；冲突停机 |
-| P1-11 / 20m | `security.py` / test | 无 Kedro CLI/telemetry/network、隐私安全 logging、静态 node/dataset 名 |
-| P1-12 / 25m | Pi test fixtures | 原生 parser cgroup-v2 和 native GIL 占用实验；RSS、CPU、deadline、lease + cleanup margin、孤儿子进程数 |
-| P1-13 / 25m | reviewer | 真实冻结 A1 selection → 完整 Kedro graph → durable v2 results，独立审查并要求 CI |
+| ID / 估时 | Depends on | 源文件边界 | 必须交付 / 针对性证明 | Owner files / worker |
+| --- | --- | --- | --- | --- |
+| P1-01 / 20m | C0-20c; gates: F0_PRODUCTION_ADMISSION, C0_FINAL_ACCEPTED | `msgloom/a2_kedro/graph.py` | 完整 K0–K11 拓扑，Kedro 是全 DAG authority；不存在外部旧 Handler 绕行 | msgloom/a2_kedro/graph.py; Sonnet / medium |
+| P1-02 / 20m | C0-20c; gates: F0_PRODUCTION_ADMISSION, C0_FINAL_ACCEPTED | `catalog.py` | 编程方式 DataCatalog 明确封闭 dataset allowlist；拒绝未知 dataset 和动态 YAML 配置 | msgloom/a2_kedro/catalog.py; Sonnet / medium |
+| P1-03 / 20m | P1-02, C0-02; gates: F0_PRODUCTION_ADMISSION, C0_FINAL_ACCEPTED | `datasets/handoff.py` | ExactHandoffDataset 只读 Workset + selection + exact A1 reread，外部 URI/path 不可接受 | msgloom/a2_kedro/datasets/handoff.py; Sonnet / medium |
+| P1-04 / 20m | P1-03; gates: F0_PRODUCTION_ADMISSION, C0_FINAL_ACCEPTED | `datasets/evidence.py` | VerifiedEvidenceDataset 访问已签名 saved refs，SHA、边界、missing evidence 处理 | msgloom/a2_kedro/datasets/evidence.py; Sonnet / medium |
+| P1-05 / 25m | P1-04; gates: F0_PRODUCTION_ADMISSION, C0_FINAL_ACCEPTED | `datasets/parser.py` | Parser request save/load 走隔离 child service，真实超时、worker termination、partial 的限制 | msgloom/a2_kedro/datasets/parser.py; Sonnet / medium |
+| P1-06 / 20m | P1-02; gates: F0_PRODUCTION_ADMISSION, C0_FINAL_ACCEPTED | `bridge.py` | 同步 worker 到 async loop 的 bounded `run_coroutine_threadsafe`：拒绝 wrong-thread/无限待 | msgloom/a2_kedro/bridge.py; Sonnet / high |
+| P1-07 / 20m | P1-01, P1-06; gates: F0_PRODUCTION_ADMISSION, C0_FINAL_ACCEPTED | `runner.py` | 受控 `SequentialRunner(is_async=False)`，每个正在执行的线程和 coroutine 有 owner；repeated cancel drain | msgloom/a2_kedro/runner.py; Sonnet / high |
+| P1-08 / 20m | P1-06, C0-12c; gates: F0_PRODUCTION_ADMISSION, C0_FINAL_ACCEPTED | `datasets/semantic.py` | ClaimFencedSemanticDataset，发布前后均查 live token、返回 durable ref，而非原地假结果 | msgloom/a2_kedro/datasets/semantic.py; Sonnet / high |
+| P1-09 / 20m | P1-08, C0-08; gates: F0_PRODUCTION_ADMISSION, C0_FINAL_ACCEPTED | `datasets/transitions.py` | 单独 scoped transition claim，context refresh 不成为 message | msgloom/a2_kedro/datasets/transitions.py; Sonnet / medium |
+| P1-10 / 25m | P1-07, P1-08; gates: F0_PRODUCTION_ADMISSION, C0_FINAL_ACCEPTED | `resume.py` | 保存每个已接受 stage/progress；重启 read-back、跳过已验证 parse/save；冲突停机 | msgloom/a2_kedro/resume.py; Sonnet / medium |
+| P1-11 / 20m | P1-02; gates: F0_PRODUCTION_ADMISSION, C0_FINAL_ACCEPTED | `security.py` / test | 无 Kedro CLI/telemetry/network、隐私安全 logging、静态 node/dataset 名 | msgloom/a2_kedro/security.py; Sonnet / medium |
+| P1-12a / 20m | P1-05, P1-07; gates: F0_PRODUCTION_ADMISSION, C0_FINAL_ACCEPTED | Pi Linux delegated cgroup-v2 实验 | 原生 parser children 超时 kill/wait、CPU/GIL、无孤儿进程；不是 Q0 synthetic spin | tests/a2_kedro/test_native_child_cgroup.py; Sonnet / medium |
+| P1-12b / 20m | P1-12a, P2-10; gates: F0_PRODUCTION_ADMISSION, C0_FINAL_ACCEPTED | 独占 benchmark slot | 记录真实 RSS/timing/jitter/lease E/L 与 cleanup margin，禁止并发负载污染实测 | docs/notes/a2-v2-p1-exclusive-benchmark.md; Sonnet / high |
+| P1-13 / 25m | P1-01, P1-03, P1-04, P1-05, P1-07, P1-08, P1-09, P1-10, P1-11, P1-12b; gates: F0_PRODUCTION_ADMISSION, C0_FINAL_ACCEPTED | reviewer | 真实冻结 A1 selection → 完整 Kedro graph → durable v2 results，独立审查并要求 CI | docs/notes/a2-v2-p1-independent-review.md; Sonnet / high |
 
 每一个任务先在其独立 worktree 用合成可信小输入验证，再做真实 tmp SQLite 接入。P1-12 可以与 P2 真实 parser profile 并行，但最终资源阈值只有实测方可确认。
 
 ## 6. Wave P2 — 提取、格式解析、标准化和 Zoning
 
-| ID / 估时 | 可并行工作域 | 最小独立验收 |
-| --- | --- | --- |
-| P2-01 / 20m | MIME/HTML | 多 part、inline reply、编码损坏、原文位置、缺正文，原字节可追溯 |
-| P2-02 / 20m | JSON/plain | 字段/纯文本位置信息、NULL/空、exact saved body 与部分响应 |
-| P2-03 / 20m | PDF | page/text/layout、扫描/encrypted/限额，不能把空读取误判 COMPLETE |
-| P2-04 / 20m | DOCX | 段落/表格顺序、unsupported embedding、source block ID |
-| P2-05 / 20m | XLSX/XLSM/XLSB/ODS | sheet/cell/公式 vs cached 值、hidden、实际 parser 支持边界 |
-| P2-06 / 20m | 额外附件/保存字节 | 附件缺失、parent/role、嵌套 MIME，不能默默丢附件 |
-| P2-07 / 20m | NormalizedContent | 严格 offset map、重复片段、不可逆 transform 标记限制 |
-| P2-08 / 25m | ContentZones | 自述/引用/转发/签名/未知，重复引用与 attribution 独立测试 |
-| P2-09 / 20m | 类型与 parser failure policy | detected MIME mismatch、unknown/partial/unsupported、闭合 reason / held |
-| P2-10 / 25m | profiling | 真实 Pi child RSS/timeout/进程数，资源上限写入受审查配置而非硬编码 |
+| ID / 估时 | Depends on | 可并行工作域 | 最小独立验收 | Owner files / worker |
+| --- | --- | --- | --- | --- |
+| P2-01 / 20m | C0-03, C0-04 | MIME/HTML | 多 part、inline reply、编码损坏、原文位置、缺正文，原字节可追溯 | msgloom/a2_kedro/parsers/mime_html.py; Sonnet / medium |
+| P2-02 / 20m | C0-03, C0-04 | JSON/plain | 字段/纯文本位置信息、NULL/空、exact saved body 与部分响应 | msgloom/a2_kedro/parsers/plain_json.py; Sonnet / medium |
+| P2-03 / 20m | C0-03, C0-04 | PDF | page/text/layout、扫描/encrypted/限额，不能把空读取误判 COMPLETE | msgloom/a2_kedro/parsers/pdf.py; Sonnet / medium |
+| P2-04 / 20m | C0-03, C0-04 | DOCX | 段落/表格顺序、unsupported embedding、source block ID | msgloom/a2_kedro/parsers/docx.py; Sonnet / medium |
+| P2-05 / 20m | C0-03, C0-04 | XLSX/XLSM/XLSB/ODS | sheet/cell/公式 vs cached 值、hidden、实际 parser 支持边界 | msgloom/a2_kedro/parsers/spreadsheets.py; Sonnet / medium |
+| P2-06 / 20m | C0-03, C0-04 | 额外附件/保存字节 | 附件缺失、parent/role、嵌套 MIME，不能默默丢附件 | msgloom/a2_kedro/parsers/attachments.py; Sonnet / medium |
+| P2-07 / 20m | C0-05, P2-02 | NormalizedContent | 严格 offset map、重复片段、不可逆 transform 标记限制 | msgloom/a2_kedro/normalize.py; Sonnet / medium |
+| P2-08 / 25m | P2-07 | ContentZones | 自述/引用/转发/签名/未知，重复引用与 attribution 独立测试 | msgloom/a2_kedro/zones.py; Sonnet / medium |
+| P2-09 / 20m | P2-01, P2-02, P2-03, P2-04, P2-05, P2-06 | 类型与 parser failure policy | detected MIME mismatch、unknown/partial/unsupported、闭合 reason / held | msgloom/a2_kedro/parsers/failure_policy.py; Sonnet / medium |
+| P2-10 / 25m | P2-09 | profiling | 真实 Pi child RSS/timeout/进程数，资源上限写入受审查配置而非硬编码 | docs/notes/a2-v2-p2-extraction-benchmarks.md; Sonnet / medium |
 
 P2 不得自动引入云端 OCR、LLM 纠错、主观文本改写或外部网络补全。任何丢失来源证据的中间结果只能 INCOMPLETE/held。
 
 ## 7. Wave P3 — 保守原生关系、过滤与分组
 
-| ID / 估时 | 工作域 | 最小独立验收 |
-| --- | --- | --- |
-| P3-01 / 20m | 关系恢复 | 同源确证 reply-parent/ancestor/quote-source 各自分开记录 |
-| P3-02 / 20m | 关系审查 | cycle、missing parent、重复 Message-ID、跨 scope 不自动确认 |
-| P3-03 / 20m | 规则过滤 | all-matching rule IDs、有版本评估、include/exclude/conflict/unknown |
-| P3-04 / 20m | Outlook native grouping | conversation only candidate，subject similarity 不直接合并 |
-| P3-05 / 20m | Teams grouping | Teams chat reply vs channel scope，component-only refresh 不造 body |
-| P3-06 / 20m | 非通信来源 | Calendar / To Do / OneDrive / Contacts 的上下文按类型/范围发布 |
-| P3-07 / 20m | replay-policy | configuration/policy/code 变更形成明确新 key；同输入稳定 idempotency |
-| P3-08 / 20m | scoped transitions | presence/absence/membership deletion/content refresh 保持正确 authority |
-| P3-09 / 25m | reviewer | 未解释链接保留 unknown；无跨 Workset 假关联，完整限制传播 |
+| ID / 估时 | Depends on | 工作域 | 最小独立验收 | Owner files / worker |
+| --- | --- | --- | --- | --- |
+| P3-01 / 20m | C0-06 | 关系恢复 | 同源确证 reply-parent/ancestor/quote-source 各自分开记录 | msgloom/a2_kedro/semantics/relations.py; Sonnet / medium |
+| P3-02 / 20m | P3-01 | 关系审查 | cycle、missing parent、重复 Message-ID、跨 scope 不自动确认 | msgloom/a2_kedro/semantics/relation_safety.py; Sonnet / medium |
+| P3-03 / 20m | C0-07 | 规则过滤 | all-matching rule IDs、有版本评估、include/exclude/conflict/unknown | msgloom/a2_kedro/semantics/filters.py; Sonnet / medium |
+| P3-04 / 20m | P3-02 | Outlook native grouping | conversation only candidate，subject similarity 不直接合并 | msgloom/a2_kedro/semantics/outlook_grouping.py; Sonnet / medium |
+| P3-05 / 20m | P3-02 | Teams grouping | Teams chat reply vs channel scope，component-only refresh 不造 body | msgloom/a2_kedro/semantics/teams_grouping.py; Sonnet / medium |
+| P3-06 / 20m | C0-07 | 非通信来源 | Calendar / To Do / OneDrive / Contacts 的上下文按类型/范围发布 | msgloom/a2_kedro/semantics/context_types.py; Sonnet / medium |
+| P3-07 / 20m | C0-12a | replay-policy | configuration/policy/code 变更形成明确新 key；同输入稳定 idempotency | msgloom/a2_kedro/semantics/replay_policy.py; Sonnet / medium |
+| P3-08 / 20m | C0-08 | scoped transitions | presence/absence/membership deletion/content refresh 保持正确 authority | msgloom/a2_kedro/semantics/transitions.py; Sonnet / medium |
+| P3-09 / 25m | P3-02, P3-03, P3-04, P3-05, P3-06, P3-07, P3-08 | reviewer | 未解释链接保留 unknown；无跨 Workset 假关联，完整限制传播 | docs/notes/a2-v2-p3-independent-review.md; Sonnet / medium |
 
 P3 纯函数可与 P1/P2 并行，但必须依赖冻结的 C0 `NativeRelations`、`FilterDisposition`、`GroupingDisposition`。新 topic AI classification 不在本阶段。
 
 ## 8. Wave T0 — 独立黄金测试（与 P1/P2/P3 并行）
 
-| ID / 估时 | Gold fixture 主题 | 防止的自证循环 |
-| --- | --- | --- |
-| T0-01 / 20m | A1 20 spider / 7 streams / 原 Task15 固定行为 | 不由新 Kedro 作者重写 A1 接受规则 |
-| T0-02 / 20m | Mail 多 MIME/inline quote/duplicate Message-ID | 另人独立标注贡献/引用/祖先和缺失 |
-| T0-03 / 20m | Teams chat/channel/component-only/scope refresh | 不能凭同 thread ID 猜亲属关系 |
-| T0-04 / 20m | Calendar、To Do、OneDrive、Contacts | contextual 不强行进入通信 grouping |
-| T0-05 / 20m | PDF、Word、Excel + malformed/large/partial | 解析错误不得伪装完整内容 |
-| T0-06 / 20m | A2-held/intake-held/transition-only | 要么有已接受 prepared@2，要么有 held，不能 missing/overlap |
-| T0-07 / 20m | crash/restart/late writes/cancel | accepted prefix 保存，未完成必须可重放 |
-| T0-08 / 20m | policy upgrade / A3 historical reader | 旧 prepared@1 可读、新 prepared@2 正确映射 |
-| T0-09 / 20m | Prefect lost/duplicate hint/partial A1 finish | 唯一 authority 是 committed release/cursor |
-| T0-10 / 20m | security/path/privacy/network | Node.run logger、PII canary、telemetry、非法 Dataset path |
-| T0-11 / 25m | independent gold author/reviewer | Oracle 数据由未写算法的人审核，不允许从算法输出自动生成 expected |
+| ID / 估时 | Depends on | Gold fixture 主题 | 防止的自证循环 | Owner files / worker |
+| --- | --- | --- | --- | --- |
+| T0-01 / 20m | 无 | A1 20 spider / 7 streams / 原 Task15 固定行为 | 不由新 Kedro 作者重写 A1 接受规则 | tests/a2_kedro/gold/t0_01.json; Sonnet / medium |
+| T0-02 / 20m | 无 | Mail 多 MIME/inline quote/duplicate Message-ID | 另人独立标注贡献/引用/祖先和缺失 | tests/a2_kedro/gold/t0_02.json; Sonnet / medium |
+| T0-03 / 20m | 无 | Teams chat/channel/component-only/scope refresh | 不能凭同 thread ID 猜亲属关系 | tests/a2_kedro/gold/t0_03.json; Sonnet / medium |
+| T0-04 / 20m | 无 | Calendar、To Do、OneDrive、Contacts | contextual 不强行进入通信 grouping | tests/a2_kedro/gold/t0_04.json; Sonnet / medium |
+| T0-05 / 20m | 无 | PDF、Word、Excel + malformed/large/partial | 解析错误不得伪装完整内容 | tests/a2_kedro/gold/t0_05.json; Sonnet / medium |
+| T0-06 / 20m | C0-09, C0-10 | A2-held/intake-held/transition-only | 要么有已接受 prepared@2，要么有 held，不能 missing/overlap | tests/a2_kedro/gold/t0_06.json; Sonnet / medium |
+| T0-07 / 20m | C0-12b | crash/restart/late writes/cancel | accepted prefix 保存，未完成必须可重放 | tests/a2_kedro/gold/t0_07.json; Sonnet / medium |
+| T0-08 / 20m | C0-17a | policy upgrade / A3 historical reader | 旧 prepared@1 可读、新 prepared@2 正确映射 | tests/a2_kedro/gold/t0_08.json; Sonnet / medium |
+| T0-09 / 20m | 无 | Prefect lost/duplicate hint/partial A1 finish | 唯一 authority 是 committed release/cursor | tests/a2_kedro/gold/t0_09.json; Sonnet / medium |
+| T0-10 / 20m | 无 | security/path/privacy/network | Node.run logger、PII canary、telemetry、非法 Dataset path | tests/a2_kedro/gold/t0_10.json; Sonnet / medium |
+| T0-11 / 25m | T0-01, T0-02, T0-03, T0-04, T0-05, T0-06, T0-07, T0-08, T0-09, T0-10 | independent gold author/reviewer | Oracle 数据由未写算法的人审核，不允许从算法输出自动生成 expected | docs/notes/a2-v2-t0-independent-gold-review.md; Sonnet / medium |
 
 T0 默认合成输入和本地 Graph fixture，不上传任何用户邮件/真实 provider 对话到 Agent 或第三方。
 
 ## 9. Wave E0 — 真正的 A2 跨阶段集成与 durable receipts
 
-| ID / 估时 | 交付内容与针对性门禁 |
-| --- | --- |
-| E0-01 / 25m | Workset PREPARE + partition PREPARE + transition PREPARE 真实 claim；每个 claim owner/required_inputs 清晰 |
-| E0-02 / 20m | Full Kedro DAG K0–K11 从 Workset@1 端到 v2 receipt；不走 legacy A2 控制环 |
-| E0-03 / 25m | 每个 Dataset 保存点故障注入；前面已提交的接受记录不丢、后续阶段不出现 |
-| E0-04 / 25m | 两合法 claim 键碰撞、过期/替换、并发前后 start barrier；数据库只有一个 logical output |
-| E0-05 / 20m | Postcommit cancellation：返回 CancelledError 而数据已存，下一轮 query/reconcile 不重复 parser |
-| E0-06 / 25m | Workset-aggregate v2 receipt：一个选中 occurrence 一个 outcome + transition batch + intake-held |
-| E0-07 / 20m | Held-only 被标记 terminal INCOMPLETE；pending index 无永续 spin；operator replay append-only |
-| E0-08 / 20m | Wrong role/ambiguous release re-read → A2-held，A1 原结果/cursor 字节不变 |
-| E0-09 / 20m | A3 所有 typed prepared@2 +历史 prepared@1 与 limitation，A5 仍读取恰当 triage output |
-| E0-10 / 20m | 按现有 Application async invocation 和 CLI `prepare-scheduled` 做一条真正 release→prepare 流 |
-| E0-11 / 25m | 格式 × 来源 × scope 集成，断流后重放、无已提交 entry 时 no-op、跨源全局序列 gap |
-| E0-12 / 25m | 失效清单、可追溯完整引用和清理边界；独立 reviewer 只读 exact SHA |
+| ID / 估时 | Depends on | 交付内容与针对性门禁 | Owner files / worker |
+| --- | --- | --- | --- |
+| E0-01 / 25m | P1-13, C0-20c; gates: C0_FINAL_ACCEPTED | Workset PREPARE + partition PREPARE + transition PREPARE 真实 claim；每个 claim owner/required_inputs 清晰 | msgloom/a2_kedro/integration/claim_topology.py; Sonnet / medium |
+| E0-02 / 20m | E0-01, P2-09, P3-09; gates: C0_FINAL_ACCEPTED | Full Kedro DAG K0–K11 从 Workset@1 端到 v2 receipt；不走 legacy A2 控制环 | msgloom/a2_kedro/integration/full_pipeline.py; Sonnet / medium |
+| E0-03a / 20m | E0-02 | `tests/a2_kedro/test_save_faults.py` 预置每个 Dataset save 注入点；完成/失败/部分结果和摘要准确 | tests/a2_kedro/test_save_faults.py; Sonnet / medium |
+| E0-03b / 20m | E0-03a | `tests/a2_kedro/test_crash_recovery.py` 真实 restart/read-back；首段 accepted prefix 不丢、没有重复 | tests/a2_kedro/test_crash_recovery.py; Sonnet / medium |
+| E0-04 / 25m | E0-01 | 两合法 claim 键碰撞、过期/替换、并发前后 start barrier；数据库只有一个 logical output | tests/a2_kedro/integration/test_claim_concurrency.py; Sonnet / high |
+| E0-05 / 20m | E0-03b | Postcommit cancellation：返回 CancelledError 而数据已存，下一轮 query/reconcile 不重复 parser | tests/a2_kedro/integration/test_postcommit_cancel.py; Sonnet / high |
+| E0-06 / 25m | E0-02 | Workset-aggregate v2 receipt：一个选中 occurrence 一个 outcome + transition batch + intake-held | msgloom/a2_kedro/integration/workset_completion.py; Sonnet / medium |
+| E0-07 / 20m | E0-06 | Held-only 被标记 terminal INCOMPLETE；pending index 无永续 spin；operator replay append-only | tests/a2_kedro/integration/test_held_pending.py; Sonnet / medium |
+| E0-08 / 20m | E0-02 | Wrong role/ambiguous release re-read → A2-held，A1 原结果/cursor 字节不变 | tests/a2_kedro/integration/test_unverifiable_role.py; Sonnet / medium |
+| E0-09 / 20m | E0-06, C0-17d | A3 所有 typed prepared@2 +历史 prepared@1 与 limitation，A5 仍读取恰当 triage output | tests/a2_kedro/integration/test_a3_v2_lineage.py; Sonnet / medium |
+| E0-10 / 20m | E0-02; gates: C0_FINAL_ACCEPTED | 按现有 Application async invocation 和 CLI `prepare-scheduled` 做一条真正 release→prepare 流 | msgloom/cli/composition.py; Sonnet / medium |
+| E0-11 / 25m | E0-09, E0-10, T0-11 | 格式 × 来源 × scope 集成，断流后重放、无已提交 entry 时 no-op、跨源全局序列 gap | tests/a2_kedro/integration/test_multi_stream_e2e.py; Sonnet / medium |
+| E0-12 / 25m | E0-03b, E0-04, E0-05, E0-07, E0-08, E0-11 | 失效清单、可追溯完整引用和清理边界；独立 reviewer 只读 exact SHA | docs/notes/a2-v2-e0-independent-review.md; Sonnet / high |
 
 ## 10. Wave I0 — 外部 wakeup、CLI 与受控切换
 
-| ID / 估时 | 具体交付与验收 |
-| --- | --- |
-| I0-01 / 20m | 独立纯逻辑 scheduler 状态机：pending/busy/held/BLOCKED/FAILED/CANCELLED 不混淆 |
-| I0-02 / 20m | `scope-status` allowlisted CLI，scope hash / cursor digest / pending/held counts / last receipt，不含 PII |
-| I0-03 / 20m | Prefect（或外部启动器）无 payload finite wakeup 定义，只发提示不修改 A1 |
-| I0-04 / 20m | real command wrapper 调用既有 `prepare-scheduled`，锁定稳定 consumer/catalog pin，不读私有 SQL |
-| I0-05 / 20m | A1 完成/部分失败/重复通知/失联提醒后，依照 committed release 和 durable cursor 恢复 |
-| I0-06 / 20m | 同 scope 重叠 invocation coalesce、claim-busy 退避、no-progress 上限，无无限循环 |
-| I0-07 / 25m | Disabled/staging 部署验证及一条真实 A1→Kedro A2 流，先不放大并发 |
-| I0-08 / 25m | 旧 pending workset 清零核查、旧 engine 过渡与稳定回滚 anchor、历史 A3 读路径 |
-| I0-09 / 20m | 生产启动 runbook、停止/恢复/报警分支、消除双引擎自动 fallback |
-| I0-10 / 20m | 用户明确确认后才可启用生产 Prefect、执行 DB schema migration 或正式 switch |
+| ID / 估时 | Depends on | 具体交付与验收 | Owner files / worker |
+| --- | --- | --- | --- |
+| I0-01 / 20m | C0-18 | 独立纯逻辑 scheduler 状态机：pending/busy/held/BLOCKED/FAILED/CANCELLED 不混淆 | msgloom/a2_kedro/activation/status_policy.py; Sonnet / medium |
+| I0-02 / 20m | C0-18 | `scope-status` allowlisted CLI，scope hash / cursor digest / pending/held counts / last receipt，不含 PII | msgloom/cli/a2_scope_status.py; Sonnet / medium |
+| I0-03 / 20m | I0-01 | Prefect（或外部启动器）无 payload finite wakeup 定义，只发提示不修改 A1 | msgloom/a2_kedro/activation/prefect_flow.py; Sonnet / medium |
+| I0-04 / 20m | I0-02, I0-03 | real command wrapper 调用既有 `prepare-scheduled`，锁定稳定 consumer/catalog pin，不读私有 SQL | msgloom/a2_kedro/activation/launcher.py; Sonnet / medium |
+| I0-05 / 20m | I0-04 | A1 完成/部分失败/重复通知/失联提醒后，依照 committed release 和 durable cursor 恢复 | msgloom/a2_kedro/activation/catchup.py; Sonnet / medium |
+| I0-06 / 20m | I0-05 | 同 scope 重叠 invocation coalesce、claim-busy 退避、no-progress 上限，无无限循环 | msgloom/a2_kedro/activation/coalesce.py; Sonnet / medium |
+| I0-07 / 25m | E0-12, I0-06; gates: F0_PRODUCTION_ADMISSION | Disabled/staging 部署验证及一条真实 A1→Kedro A2 流，先不放大并发 | tests/a2_kedro/activation/test_staging_autowakeup.py; Sonnet / high |
+| I0-08 / 25m | I0-07 | 旧 pending workset 清零核查、旧 engine 过渡与稳定回滚 anchor、历史 A3 读路径 | docs/notes/a2-v2-i0-cutover-audit.md; Sonnet / medium |
+| I0-09 / 20m | I0-08 | 生产启动 runbook、停止/恢复/报警分支、消除双引擎自动 fallback | docs/runbooks/a2-v2-activation.md; Sonnet / medium |
+| I0-10 / 20m | I0-09, V0-14c; gates: OWNER_EXPLICIT_CUTOVER_APPROVAL | 用户明确确认后才可启用生产 Prefect、执行 DB schema migration 或正式 switch | docs/notes/a2-v2-i0-owner-approval.md; Sonnet / high |
 
 I0-10 是不允许 Agent 自行做出的生产授权；即使用户先前同意开发，也不能当成对真实生产数据迁移与安全例外的自动批准。
 
 ## 11. Wave V0 — 完整质量矩阵与独立验收
 
-| ID / 估时 | 完成的客观证据 |
-| --- | --- |
-| V0-01 / 20m | DAG Graph 测试：验证 extract/parse/normalize/zone/native/filter/group/semantic save 全由 Kedro 依赖连接 |
-| V0-02 / 20m | 原 A1 20 Spider/13 Task15 scenarios/28 gates 的源代码不动，单独跑只读兼容检查 |
-| V0-03 / 20m | A1 release/selection/ordinal/role/byte digest：七 stream、历史 baseline 和多 occurrence |
-| V0-04 / 20m | MIME/PDF/Word/Excel/JSON/HTML 和 span/limitation golden，独立 gold reviewer |
-| V0-05 / 20m | 关系/规则/分组异常：无法归属、跨 scope、重复 ID、source-native context |
-| V0-06 / 20m | async cancel、CPU/GIL、parser cgroup、child cleanup、max RSS、无 orphan、无 writer after claim expiry |
-| V0-07 / 25m | 数据库迁移 v2/3/4→v5、旧结构/trigger/占用表/legacy hash 拒绝、失败原子回滚 |
-| V0-08 / 20m | 完整 v2 acceptance/receipt/held-index、conflicting SHA/attempt、并发和 late crash 恢复 |
-| V0-09 / 20m | A3/A5 老数据加载、新输入 typed 适配、限制贯穿，历史不重写 |
-| V0-10 / 20m | Prefect hint 丢失/重复/partial failure、cursor 不漂移、pending backpressure |
-| V0-11 / 20m | Python 3.12/3.13/3.14、Pi aarch64 和 x86/Linux、Mac/Windows smoke；不能把 `-O` synthetic 冒充全量 |
-| V0-12 / 20m | GitHub 全部必需 checks：`ruff check` / `ruff format --check` / Pyright / pre-commit / gitleaks / pytest / cgroup-v2 / wheel install |
-| V0-13 / 20m | 无新增 CVE ignore/telemetry、未授权网络、隐私 canary；完整锁及版本 hash 审计 |
-| V0-14 / 25m | 生产前独立 exact SHA R1/R2 逐项审查；保存 rejected 历史；真正 ACCEPT 才允许 R0 |
+| ID / 估时 | Depends on | 完成的客观证据 | Owner files / worker |
+| --- | --- | --- | --- |
+| V0-01 / 20m | E0-02 | DAG Graph 测试：验证 extract/parse/normalize/zone/native/filter/group/semantic save 全由 Kedro 依赖连接 | tests/a2_kedro/acceptance/test_v0_01.py; Sonnet / medium |
+| V0-02 / 20m | C0-00 | 原 A1 20 Spider/13 Task15 scenarios/28 gates 的源代码不动，单独跑只读兼容检查 | tests/a2_kedro/acceptance/test_v0_02.py; Sonnet / medium |
+| V0-03 / 20m | E0-11 | A1 release/selection/ordinal/role/byte digest：七 stream、历史 baseline 和多 occurrence | tests/a2_kedro/acceptance/test_v0_03.py; Sonnet / medium |
+| V0-04 / 20m | P2-09, T0-11 | MIME/PDF/Word/Excel/JSON/HTML 和 span/limitation golden，独立 gold reviewer | tests/a2_kedro/acceptance/test_v0_04.py; Sonnet / medium |
+| V0-05 / 20m | P3-09, T0-11 | 关系/规则/分组异常：无法归属、跨 scope、重复 ID、source-native context | tests/a2_kedro/acceptance/test_v0_05.py; Sonnet / medium |
+| V0-06 / 20m | P1-12b, E0-05 | async cancel、CPU/GIL、parser cgroup、child cleanup、max RSS、无 orphan、无 writer after claim expiry | tests/a2_kedro/acceptance/test_v0_06.py; Sonnet / medium |
+| V0-07 / 25m | C0-11d, E0-12 | 数据库迁移 v2/3/4→v5、旧结构/trigger/占用表/legacy hash 拒绝、失败原子回滚 | tests/a2_kedro/acceptance/test_v0_07.py; Sonnet / medium |
+| V0-08 / 20m | C0-20c, E0-12 | 完整 v2 acceptance/receipt/held-index、conflicting SHA/attempt、并发和 late crash 恢复 | tests/a2_kedro/acceptance/test_v0_08.py; Sonnet / medium |
+| V0-09 / 20m | E0-09 | A3/A5 老数据加载、新输入 typed 适配、限制贯穿，历史不重写 | tests/a2_kedro/acceptance/test_v0_09.py; Sonnet / medium |
+| V0-10 / 20m | I0-06 | Prefect hint 丢失/重复/partial failure、cursor 不漂移、pending backpressure | tests/a2_kedro/acceptance/test_v0_10.py; Sonnet / medium |
+| V0-11 / 20m | V0-11a, E0-12 | Python 3.12/3.13/3.14、Pi aarch64 和 x86/Linux、Mac/Windows smoke；不能把 `-O` synthetic 冒充全量 | tests/a2_kedro/acceptance/test_v0_11.py; Sonnet / medium |
+| V0-11a / 20m | C0-00 | `.github/workflows/ci.yml` 中增加/确认 Linux x86_64 真实 runner + wheel/pytest targeted gate；原 CI 仅 ARM Linux + Mac/Windows smoke | .github/workflows/ci.yml; Sonnet / medium |
+| V0-12 / 20m | E0-12, F0-09; gates: F0_PRODUCTION_ADMISSION | GitHub 全部必需 checks：`ruff check` / `ruff format --check` / Pyright / pre-commit / gitleaks / pytest / cgroup-v2 / wheel install | tests/a2_kedro/acceptance/test_v0_12.py; Sonnet / medium |
+| V0-15 / 20m | E0-12, P1-12b | **保留 D4 V13**：完全相同 A1 frozen Workset 在相同 Pi / supported host 下测 old vs new 的 wall/RSS，超过 10% 的实质回归需查明并复审（绝对量可忽略情形记录证据） | tests/a2_kedro/acceptance/test_v0_15.py; Sonnet / medium |
+| V0-16 / 20m | E0-12, P1-13 | **保留 D4 V14**：计数 Kedro 图依赖、bridge/adapter、图外控制器分支/LOC，禁止重建第二套自制 A2 ETL 调度器 | tests/a2_kedro/acceptance/test_v0_16.py; Sonnet / medium |
+| V0-17 / 20m | I0-06, E0-12 | **保留 D4 V16**：按原 D4 [AUTO-01–AUTO-25] 全部单独执行，尤其 missing wakeup、held-only、postcommit、CVE 和 history cutover | tests/a2_kedro/acceptance/test_v0_17.py; Sonnet / medium |
+| V0-13 / 20m | F0-08, P1-11 | 无新增 CVE ignore/telemetry、未授权网络、隐私 canary；完整锁及版本 hash 审计 | tests/a2_kedro/acceptance/test_v0_13.py; Sonnet / medium |
+| V0-14a / 20m | V0-01, V0-02, V0-03, V0-04, V0-05, V0-06, V0-07, V0-08, V0-09, V0-10, V0-11, V0-11a, V0-12, V0-13, V0-15, V0-16, V0-17 | 独立 reviewer 对生产代码和边界的 exact-SHA 一轮只读验证；保留初始 REVISE 原文 | docs/notes/a2-v2-independent-review-r1.md; Sonnet / high |
+| V0-14b / 20m | V0-14a | 独立 reviewer 对可复现 test/CI/安全/性能/自动触发矩阵核验，分工与作者独立 | docs/notes/a2-v2-independent-review-r2.md; Sonnet / high |
+| V0-14c / 20m | V0-14b | 汇总两个只读 reviewer + 必须通过的 CI/owner decisions，在确切 SHA 归档正式 GO/NO-GO，而非每阶段本人签字 | docs/notes/a2-v2-final-go-no-go.md; Sonnet / high |
 
 **测试执行效率策略**：子任务先跑相关 1–3 个测试文件 → 每个集成 PR 跑 impacted boundary / Pyright → 每阶段一次必要矩阵/CI → V0 才跑完全量，避免每修一个小问题就重复跑全部耗时测试。不允许用 skipped/insecure mock 替代硬 gate。
 
 ## 12. Wave R0 — 旧 A2 正式退役、发布与恢复
 
-| ID / 估时 | 动作与界限 |
-| --- | --- |
-| R0-01 / 20m | 归档旧 A2 Git SHA、历史 schema/compat fixtures、错误行为负面测试，确认新 pipeline 已接受 |
-| R0-02 / 20m | 最后一次 audit：有旧 pending Workset 则阻止切换；不能原地重诠释 frozen code/config |
-| R0-03 / 20m | 清点 obsolete Handler/RecordSteps/StageSteps、旧 CLI dispatch、重复 dependencies；只删除明确可替代代码 |
-| R0-04 / 20m | A1/A3/A5 逆向依赖扫描、旧功能负面测试和安全回归通过 |
-| R0-05 / 20m | 生产备份、迁移与 activation 详细证据日志，保证停止时可恢复旧快照；不虚称数据库 git rollback |
-| R0-06 / 20m | 用户签署 cutover 决策后，小范围 scope 验证、read-only 指标确认，再配置下一个 scope |
-| R0-07 / 20m | GitHub 合并/工作树和远程分支清理，仅删除已经合并且不再使用的分支；保留审查证据 |
-| R0-08 / 20m | Final acceptance index：版本、commit/PR、CI、风险声明和操作 runbook，明确不再长期双引擎 |
+| ID / 估时 | Depends on | 动作与界限 | Owner files / worker |
+| --- | --- | --- | --- |
+| R0-01 / 20m | V0-14c | 归档旧 A2 Git SHA、历史 schema/compat fixture、行为负面测试并检查最新 A3 reader，确定临时双读范围 | docs/notes/a2_v2_r0_01.md; Sonnet / medium |
+| R0-02 / 20m | R0-01 | 只读 audit 旧 pending Workset 必须清零，另审计旧 held-only 曾被标为 COMPLETE 的历史，不得将其当成新正确 receipt | docs/notes/a2_v2_r0_02.md; Sonnet / medium |
+| R0-03 / 20m | R0-02, I0-09 | **切换前**校验 DB 备份/恢复演练、旧 schema4 binary 与新兼容 binary 的开关、迁移 runbook；不能仅靠 git revert | docs/notes/a2_v2_r0_03.md; Sonnet / medium |
+| R0-04 / 20m | R0-03, I0-10; gates: OWNER_EXPLICIT_CUTOVER_APPROVAL, STAGED_DB_BACKUP_AND_OLD_PENDING_ZERO | 收到用户明确迁移/安全/cutover 授权后在维护窗口执行显式 schema/producer binding 操作，保持单一 A2 dispatch | docs/notes/a2-v2-r0-schema-activation-receipt.md; Sonnet / high |
+| R0-05 / 20m | R0-04 | 小范围 source/stream/consumer 验证 read-only status、结果/A3 限制、无失败回退再决定扩展；无产出证明不放大 | docs/notes/a2_v2_r0_05.md; Sonnet / medium |
+| R0-06 / 20m | R0-05 | 确认 v2 成功且旧 Handler 不再生产后，按依赖扫描删除 legacy RecordSteps/StageSteps/旧 dispatch 冗余实现，保留原历史测试/数据 | msgloom/preparation_pipeline/handler.py, msgloom/preparation_pipeline/scheduled.py; Sonnet / high |
+| R0-07 / 20m | R0-06 | GitHub required checks / 历史 A3/A5 regression 后单 owner 合并与只清理已合并、无将来用途 worktrees/远程分支 | docs/notes/a2-v2-r0-merge-cleanup-audit.md; Sonnet / medium |
+| R0-08 / 20m | R0-07 | Final acceptance index：代码/迁移/CI/安全决定/回滚演练/自动 Prefect 状态，确认不再长期双引擎或后台假作业 | docs/notes/a2_v2_r0_08.md; Sonnet / medium |
 
 ## 13. 具体 PR / 分支 / 资源与集成顺序
 
@@ -332,8 +372,15 @@ CI 工作流自带三 Python versions、FastMCP 兼容矩阵、Linux delegated c
 - 本地 manager/worker 真实进程/任务 job_id、RUNNING/STOPPED 等状态；本地后台进程和远程常驻控制台不混为一谈。
 - 假设与残余风险、是否需要用户决定；若还没签署 F0 风险和真实部署，不得写 production accepted。
 
-### 15.1 本轮文档交付的退出条件
+### 15.1 任务 DAG 质量与文件独占门禁
 
-本轮结束前只要求：三份 Markdown 文档、现状核查、格式/链接/表格检查、单独 docs-only Git commit/草稿 PR（如连接正常），以及对文档本身的独立只读复审或清晰说明审查尚未完成。
+- Markdown 的 151 个 task ID 必须和机器 JSON task IDs 一一对应，且每一个内部依赖存在、无循环；外部门禁需要真实证据与审批主体。
+- 每个任务的 `owner_files` 在 worktree 具体展开，冲突文件分给单个写入者；具有相同文件所有权的任务必须串行，不能同时运行。
+- 每个任务的时间窗口 ≤25 分钟是细分要求，复杂 SQL/迁移/review 已拆为多项；预算并非服务等级承诺或阶段 ETA。
+- 复审 CR-10 / F0-08 / C0-20c / P1-13 / E0-12 / V0-14a–c 对每个精确 SHA 单独归档；不允许作者自签 ACCEPT。
+
+### 15.2 本轮文档交付的退出条件
+
+本轮结束前只要求：三份主体 Markdown 文档、完整 task DAG/JSON、现状核查、格式/链接/表格检查、单独 docs-only Git commit/草稿 PR（如连接正常），以及对文档本身的独立只读复审或清晰说明审查尚未完成。
 
 **本轮不执行 CR、F0、C0、P1、P2、P3 代码实现，也不启动持续性本地 AI Task Manager。** 用户阅读三份文档并讨论执行顺序、并发、资源/安全批准后，再正式授权执行。这样“现在不用人工接触设备”也不再被误解为“Agent 已经在后台工作”。

@@ -2,7 +2,7 @@
 
 > **仅供审批后的执行使用。当前状态：NOT STARTED，不代表任何 Agent 已启动。**
 > 架构：[2026-10-23-a2-kedro-v2-architecture.md](2026-10-23-a2-kedro-v2-architecture.md)。
-> 任务和质量门禁：[2026-10-23-a2-kedro-v2-execution-plan.md](2026-10-23-a2-kedro-v2-execution-plan.md)。
+> 任务和质量门禁：[实施计划](2026-10-23-a2-kedro-v2-execution-plan.md) 与 [151 条任务 DAG](2026-10-23-a2-kedro-v2-task-manifest.json)。
 > 本协议必须在用户同意正式开始实施后才作为 Task Manager 的指令输入。
 
 ## 1. 用户批准前的必要信息
@@ -27,7 +27,7 @@
 3. 验证真实 Python：3.12/3.13/3.14、Scrapy 2.19.0、项目锁以及是否安装 Claude Code/Codex；只读确认 CLI 支持的 model/effort 参数，不假定 UI 名称是 CLI 参数。
 4. 验证 `tmux` 或用户允许的持久作业服务存在；必须具备可查询 process ID、实际启动时间、stdout/stderr log、exit code、heartbeat 与终止/恢复手段。`claude --print` 的一次性退出**不等于**启动了持久 Task Manager。
 5. 确定一个 integration owner、一个 dependency/SQL schema owner，锁定可编辑路径和每个 worker 的隔离 worktree。把重叠的 C0 测试编辑串行化。
-6. 对照 CR/F0/C0/P1/P2/P3/T0/E0/I0/V0/R0 任务 DAG，生成初始队列。CR 与 F0 可以并行研究；生产 C0 的 freeze 不得越过 CR R2 和 F0 安全 gate。
+6. 从 `2026-10-23-a2-kedro-v2-task-manifest.json` 的 151 条 `id/depends_on/edit_paths/required_gates/timebox_minutes/model/effort` 计算可运行队列，检验 gate 实际证据。CR 和 F0 可并行；CR R2 后可做不依赖 Kedro 的 provisional C0，但 C0 最终验收和正式 Kedro dependency 仍须 F0 技术证据及必要的用户安全决策。CR 与 F0 可以并行研究；生产 C0 的 freeze 不得越过 CR R2 和 F0 安全 gate。
 7. 创建第一份本地 machine-readable 状态快照（不含敏感路径原文/凭据），证明 Manager 真正存在，再开始分派。
 8. 最终向 Supervisor 报告：Manager 的 **真实 job_id/PID、host、state、branch、time started、已经分配的第一批 task IDs**。没有这些证据就必须写 `NOT STARTED` 或 `STOPPED`。
 
@@ -41,13 +41,19 @@
 
 **必须：**
 
-- 本目录架构、实施计划和本交接协议三份文档。
+- 本目录架构、实施计划和本交接协议三份主体文档加机器任务 DAG 和 JSON。
 - 根 `AGENTS.md`（<500 行模块、测试无 `assert`、任务范围限制）。
 - [PR #68](https://github.com/grammy-jiang/msgloom/pull/68) 的已验收源架构，以及关联 ADR/handoff doc（若还未进入 master，从对应 worktree 或精确 SHA 读取）。
 - [PR #69](https://github.com/grammy-jiang/msgloom/pull/69) 的 Q0 exact SHA/独立 R2 ACCEPT/6×20 raw matrix。
 - [PR #70](https://github.com/grammy-jiang/msgloom/pull/70) 的 C0 R1 REVISE 和未提交整改状态。必须保留 reviewer transcript 和现有已修复内容。
 
 **只由对应 worker 局部阅读：** CR 读 C0 prototype/tests/`intake_completion.py`；F0 读 exact wheel/source/security policy/`pyproject.toml`/`uv.lock`；C0 SQL owner 读 `schema_store.py`/`store.py`/`async_store.py`/`preparation_proof.py`；A3 owner 读 `triage_input/codec.py`/`triage_pipeline/handler.py`。不要让每个小 Agent 对整个 repo 再做一遍开放式“调查”。
+
+### 3.1 与设计审查一致的两阶段授权
+
+- F0-08 独立审查只负责 Kedro 候选风险适用性的**技术判断**；如果 Snyk 告警无法明确排除风险，`gate:F0-risk-owner` 必须由用户决定，AI 不得自动签署。
+- C0-00 是 **provisional** 字段/版本冻结；研究性合同与临时 SQLite test 可在 F0 仍待批时进行。只有真实 v2 finalizer、受审查的 `triage_input@2` 和 C0-20c/F0 条件均成立才允许生产 C0 final freeze。
+- 本轮交付仅生成文档与一次性只读 review。未来只有启动可核查的持久 Manager 服务、取得 PID/job/heartbeat 后才会向用户报告 `RUNNING`。
 
 ## 4. Task Manager 实际调度算法
 
@@ -77,12 +83,23 @@ STOPPED  -- process exited/no running worker; no invisible progress
 9. 运行状态被 Supervisor 查询时立即刷新 process/job/PR/CI，不引用上一次缓存状态冒充“实时”。
 10. 所有 workstreams 真正完成之后，经理产出最终 evidence index / branch cleanup proposal，等待用户批准生产切换。
 
+### 4.1 排他文件 ownership 和独占基准资源
+
+所有 `edit_paths` 要展开成实际受控路径，并由单个 writer owner 排他持有；共享 schema/async_store/intake_store/A3 codec 的冲突必须串行集成。一个子代理不能编辑其分配外的路径或污染另一个 worktree。独立 reviewer 只读且不能自审自己提交的 SHA。
+
+Pi 上 P1/P2/V0 真实 RSS、native child、event-loop jitter、claim-lease 性能测试需要单独的 `exclusive-benchmark` 锁：暂停其它 CPU-heavy workers，保留运行平台、负载和上下界。否则这些测量不能用于配置生产租期。
+
+### 4.2 持久任务是否真的在执行
+
+Manager 必须由用户批准后建立真实的可恢复 OS process/service 和持久 queue，记录真实 PID、开始时刻、事件和 worker exit code；每次消息结束时如果没有活着的 task manager，就报告 STOPPED。常驻 `claude remote-control` 或 `codex app-server` 本身不能证明 C0 开发任务仍在运行。
+
 ## 5. 给每个本地 Coding Worker 的完整模板
 
 下述占位符必须在分派前填入，不能直接把尖括号文本发给子 Agent。
 
 ```text
 TASK_ID: <phase-task-id>
+DEPENDS_ON: <evidence-for-every-required-task-or-gate>
 PARENT: <manager-batch-id>
 BASE_SHA: <pinned-integration-sha>
 OWN_WORKTREE: <explicit-existing-or-allocated-path>

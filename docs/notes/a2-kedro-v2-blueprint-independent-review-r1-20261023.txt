@@ -1,0 +1,127 @@
+DECISION: REVISE
+REVIEWED_SHA: 691f45b6aa51daa91f20d3d8db5dfe59e655e10f
+
+I used only Read, Grep and Glob. I ran no tests and no Git or web commands, so I can't confirm the checked-out SHA or any PR or CI state. I read all three new docs in full. I also read the D4 design, D4 implementation plan, r3-corrections and R6 review (design worktree), and the C0 candidate doc and R1 review (C0 worktree). I did not open the A1 auto-handoff doc beyond counting its AUTO rows (25, so AUTO-01–25), and I did not open the ADR or readiness audit. I could not verify Q0 R2 ACCEPT or "CI 10/10", the C0 "CI 9/10" or its uncommitted Pi changes, the Kedro wheel hash, the 146→166 package counts, or the CVE details. The cited gate verdicts match the files I could read (D4 R6 ACCEPT at 878121f, C0 R1 REVISE at 0eb8fe6).
+
+The gate status is honest throughout. The docs say F0 is open, C0 is not frozen, production code has not started, and no manager is running. The two existing audit exceptions (PYSEC-2017-83 and GHSA-8pqf-f4m5-798g) are not inherited by Kedro (architecture:282). That matches `docs/dependency-vulnerability-policy.md:45-89` and `ci.yml:61-62`.
+
+## P0/P1 blockers
+
+There are no P0s. Paths below: A = architecture, E = execution-plan, H = agent-handoff (all under `docs/plans/2026-10-23-a2-kedro-v2-*.md`).
+
+**P1-1. Nothing owns the pending→terminal transition for the intake workset.**
+- A:134-141, A:176, A:266 and E:235 (E0-07) promise "terminal INCOMPLETE, no pending spin."
+- The only writer of terminal state is `intake_store.py:326-452`. It validates through the v1-only `intake_completion.py:252-337` and `:262`.
+- Pending selection filters on `state == "pending"` (`intake_store.py:245`), and terminal rows are immutable (`:433-441`, `:455-480`).
+- A:176 says the new receipt is not "a second completion of the old terminal row," but never says how the workset leaves pending.
+- No C0 task (E:127-146) owns `intake_store.py` or `intake_completion.py`. D4 corrections:229-235 said this path "must be versioned."
+- The legacy finalize path stays callable on the same workset, so the legacy and v2 finalizers can disagree.
+- Needed: a task and design for a versioned finalizer, plus a fence against the legacy one.
+
+**P1-2. The v5 migration runs automatically on deploy, which breaks the "old A2 stays production until cutover" claim.**
+- `Phase1Store.__init__` calls `initialize_schema` (`store.py:99`). Any process running merged C0 code would migrate the live DB.
+- Old code rejects an unknown table set (`schema_store.py:92-93`), so rolling back the binary is impossible.
+- A:290 offers a "reviewed compatible old reader" as recovery. That can't exist for an already-deployed binary.
+- E:306 (I0-10) gates only the act of migrating, not deployment of code that migrates implicitly.
+- The existing "proof revision" axis (`schema_store.py:88`, `:104-112`) is a precedent for additive change without a version bump. The "v5" naming is therefore undecided.
+- Needed: an explicit operator-gated migration, or a forward-compatible release first. Also specify how the Kedro engine is switched (A:28 bans a permanent `A2_ENGINE`; E0-10, I0-07 and I0-09 don't say how).
+
+**P1-3. The K0–K11 topology contradicts the accepted-key formula and "Kedro owns the DAG."**
+- The logical key includes `ordered_accepted_upstream_result_refs` (A:149-161). Those refs exist only after each stage is published, so publication must happen on every edge.
+- A:224-226 makes K10 `publish_accepted_stages` a late node. A:228 only hedges ("may split into more Datasets").
+- A:211 builds per-occurrence nodes from the verified workset. A:86-92 (§3.2) verifies and writes A2-held before that. That conflicts with K0 `load_frozen_workset` and K1 `verify_evidence` being nodes inside the DAG.
+- E:156 (P1-01) and E:261 (V0-01) key their tests to this table.
+- Needed: state what runs pre-graph versus in-graph, and replace K10 with per-edge claim-fenced saves.
+
+**P1-4. The A3 impact is understated.**
+- `triage_input@1` hard-allows only prepared@1, filter_result@1 and group_result@1 (`codec.py:26-30`, `:167-176`). Its binding and snapshot hashes (`:151-160`, `:182-185`) are tied to that.
+- Carrying @2 refs needs a `triage_input@2` or a lossy projection. A:299 lists that as an open decision, yet C0-17 (E:143, 25m) and E0-09 treat it as a routine task.
+- Needed: a decision step before C0 and a split of C0-17.
+
+**P1-5. The new set drifts silently from the D4-accepted set and drops gates.**
+- A:6 and H:42-50 link only to the new docs and PRs, with no precedence clause. The D4 docs aren't on this branch (`Glob` finds only the three new files).
+- Transition identity: A:163 uses the whole ordered batch. D4 corrections:161-162 says "binds its exact fact ID." This is probably right, but the change is unmarked.
+- A:260-271 omits `scheduled-invalid-authority` (corrections:67, C0 doc:143).
+- E:257-276 (V0) drops D4's V13 (old-vs-new performance within 10%), V14 (bridge/adapter complexity measured) and V16 (AUTO-01–25). "AUTO" appears nowhere in the new docs.
+- V14 is what checks the user's "simpler than a bespoke engine" rationale.
+- Needed: a delta table against D4 R6, a precedence clause, and either restored gates or an explicit removal.
+
+**P1-6. The task graph can't drive a Sonnet manager, and several critical-path tasks break the ≤30 min rule.**
+- No table has a `depends_on` column. Only C0 and P1 name owned files.
+- P2, P3, T0, E0, I0, V0 and R0 (E:174-289) have no paths or dependencies, though E:76 and H:67-78 need both.
+- Examples of oversized tasks:
+  - C0-11, C0-12 ("from scratch" async facade, concurrency, post-commit cancel) and C0-14.
+  - C0-20 (merge, E2E and independent review in 25m).
+  - P1-12, F0-05 and E0-03.
+  - Whole-product reviews (CR-10, P1-13, E0-12, V0-14).
+- E:80 and H:17 ("split after 30m") push the problem to runtime.
+- There are 126 tasks and no critical path or serial-chain estimate.
+- P2-01..06 likely share a parser registry with P1-05, which would conflict.
+
+**P1-7. The F0 and C0 gate semantics contradict each other.**
+- E:56 says C0 tests and schema design continue and only C0 acceptance is gated by F0.
+- E:123 says Wave C0 starts after F0 admission.
+- E:22 and H:75 say the freeze must not cross F0.
+- "F0 admission" is undefined: is it F0-08 reviewer ACCEPT, or the owner's security disposition (E:119)?
+- My assessment: the Kedro-free contracts and persistence (C0-01..16, 19) don't depend on the Kedro verdict and could proceed as candidates. Only P1 and the dependency PR need F0. As written, P2 and P3 (pure Python) wait on a possibly unresolvable Snyk decision.
+- The freeze is also placed before any real Kedro or real-parser feedback, so a provisional-freeze and amendment rule is missing.
+
+## P2 refinements
+
+- **Mixed-attempt lineage (A:165, A:205, E:140).** Legacy completion rejects outputs whose parent has a different execution or attempt (`intake_completion.py:324-330`). A resumed run must span attempts, so C0-14 must state the relaxed rule.
+- **Baseline worksets (A:134-139, E:136, E:226).** Roots there are `baseline_selections`. `selections` is empty, and held and transitions must be empty (`intake_models.py:178-195`, `:241-245`). The "every `workset.selections` occurrence" wording misses this.
+- **Accepted-record fields (A:165, A:206).** There is no digest over StageResult metadata (status, limitations, input_refs, versions). C0 R1 P1-4 raised this.
+- **Async bridge (A:230-232, E:161-167).** It is thinner than D4 §6. Missing pieces:
+  - A one-owned-worker invariant, and refusing admission while a prior worker is unjoined.
+  - A leaked-thread policy.
+  - A cooperative-cancel mechanism (for example a bridge-closed flag), since the runner has no cancel API.
+  - GIL contention from CPU-bound in-thread nodes K3–K9.
+  - The lease rule, `L > E+1s` with no renewal (corrections:140-150).
+  - The NO-GO is stated only at E:321.
+- **Measurement contamination (E:170, E:75).** Parallel P1-12 and P2 profiling on a 2+1-worker Pi invalidate the RSS and timing numbers that set lease margins. Add an exclusive benchmark slot.
+- **F0 evidence (A:280, A:296, H:184).** The docs never say what CVE-2026-3840 alleges or whether it duplicates CVE-2026-35167, so the user decision is uninformed. `uv audit` is OSV-based (policy:3-6) and a Snyk-only item may not appear, so green CI isn't clearance (F0-07, E:115). A Kedro exception would also need a policy-doc update with an exact ID and expiry.
+- **CI and tooling (E:114, E:271, E:309).**
+  - CI has ARM Linux plus macOS/Windows smoke only (`ci.yml:20`, `:126`, `:245`, `:316-321`). V0-11 needs a workflow-change task for x86.
+  - Pyright runs in "standard" mode over `msgloom` and `tests` (`pyproject.toml:55-59`). F0-05 should include Pyright with Kedro installed.
+- **R0 ordering (E:284-288, A:292, H:189).** R0-03 (delete legacy code) and R0-07 (delete branches) are listed before the user-signed cutover. This contradicts A:292 and H:189.
+- **Held-only drain (A:288).** Pending worksets are drained under the old engine, which has the held-only bug I confirmed (`intake_completion.py:252`, `:131-196`). Drained worksets could be finalized COMPLETE wrongly, so the cutover audit needs a check for this. A:141 says "可能"; the code behaviour is definite.
+- **Storage budgets (A:107-120).** Per-artifact and per-workset byte ceilings and retention aren't set for persisting every intermediate stage in single-writer SQLite on a Pi. C0's 16 occurrences / 16 MiB isn't carried over.
+- **Pseudocode (A:183-199).** The replay path writes no `stage_attempts` audit row, although A:174 requires one.
+- **PR #70 / CR wave (E:86-103).** CR spends ten tasks polishing a prototype that E:99 says must not be ported. The C0 file I read still has the R1-flagged text at lines 21, 30 and 115.
+- **Repo conventions.**
+  - The docs are Chinese, while AGENTS.md and the D4 docs are English.
+  - Ephemeral environment claims are committed:
+    - the "ChatGPT/GPT-6" supervisor (E:64);
+    - "MacBook" (H:36);
+    - "resident remote-control/app-server processes" (H:38);
+    - "Sextant" and "MCP Pi" (E:4, H:25).
+  - These belong in a status snapshot.
+- **Smaller wording:**
+  - `ci.yml` skips the audit for docs-only diffs, so this PR has no audit evidence.
+  - D4 R6's P2 raise-site list (intake.py:189, :412) isn't carried over.
+
+## Scope of acceptance
+
+- This is a docs-only review of design, plan and doc quality at the stated SHA. It is not approval of any production code, migration, dependency, security exception or cutover.
+- It does not validate Kedro, Q0, C0, F0 or any PR. Any ACCEPT would bind only to this exact SHA, and a revision needs a new review.
+- Sound and verified against code:
+  - The reduced Workset and the role-reconstruction method.
+  - Global sequence gaps.
+  - `selection_refs` dedup versus occurrences.
+  - The StageResult attempt immutability and the v1-only plan binding.
+  - The `prepare:` prefix bypass.
+  - The held-only and `workset.held` bug as a deliberate v2 policy change.
+  - Schema 4 and its strict migration.
+  - The bridge sketch, and the Prefect-as-hint boundary.
+- The status and stop-rule honesty is adequate: it requires a PID or job ID and says STOPPED otherwise.
+
+## Remaining explicit user decisions
+
+1. The Kedro CVE-2026-3840 residual-risk disposition, after evidence.
+2. Whether to start Kedro-free C0 contracts and persistence before the F0 verdict, and what "F0 admission" means.
+3. Whether to finish PR #70 (CR) or supersede it with production C0.
+4. How to handle A3: a `triage_input@2` or a projection.
+5. How the migration is gated and how the engine is switched.
+6. Whether to require x86 Linux in CI.
+7. Worker limits on the Pi, and the Task Manager host (Pi only, or Sextant too).
+8. The first scope or stream for rollout, and whether Prefect is enabled.
