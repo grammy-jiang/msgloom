@@ -10,19 +10,16 @@
 **Review record:** [Readiness audit](../notes/a2-kedro-readiness-audit-20261023.md).
 **A1 output and automatic activation:** [Source-verified integration](../notes/a1-kedro-handoff-activation-20261023.md).
 
-**D4 R3 source-level correction (superseding earlier assumptions):** The
-accepted PreparationIntakeWorkset is not lossless: IntakeSelection lacks
-primary/component role, contexts are not saved as primary selections, and
-IntakeTransition omits full transition reasons, parent and evidence details.
-Kedro may re-read **only the same immutable ReleaseEntryRef** and match it
-against the saved selection to recover such metadata. If ambiguous or missing,
-mark the affected record held/incomplete; never use mutable A1 current state.
-The existing scheduled handler masks some trust errors as generic INCOMPLETE,
-so a distinct new A2 outcome mapper is required before Prefect deployment.
-Claims, bounded cancellation and deterministic accepted result identity are
-specified in the
-[R3 corrective contract](../notes/a1-kedro-handoff-r3-corrections-20261023.md).
-R3 review remains REVISE; no runtime implementation has begun.
+**D4 R4 architectural and handoff correction:** A2 consumes a frozen,
+intentionally reduced Workset, not a lossless serialized ReleasedInput. Any
+missing role/context/transition detail can be obtained only from the same
+immutable ReleaseEntryRef; the new A2-scheduled wrapper must distinguish
+trust errors from ordinary backlog. The new ETL requires deterministic
+input-only accepted result keys, durable A2-held dispositions, and versioned
+A2-owned completion receipts for prepared@2/zones@1. The current master does
+**not** provide those features; [the exact corrective contract](../notes/a1-kedro-handoff-r3-corrections-20261023.md)
+specifies implementation gates. Independent R4 at 467ca23 returned REVISE;
+a new exact-SHA review is still required. No A2 production coding has started.
 
 ## 1. Non-negotiable architectural decision
 
@@ -171,13 +168,40 @@ Kedro controls when a prepared, zoning, filter, grouping or scoped-transition ou
 
 The business partial-progress contract is explicit: results already durably accepted at the time of a later node/parser failure remain accessible for replay and diagnostic inspection, but a failed workset is **not complete**. There is no requirement to copy the old private stage-save order: the new graph's declared durable checkpoints define which partial refs may survive. Create independent tests with injected failures before/after each claim-fenced save, after parser output, and at group finalization; do not reuse tests that monkeypatch only the old class internals as proof of Kedro behaviour.
 
-External cancellation drains accepted I/O, parser and dataset operations under finite limits and cannot change an accepted result to an overwritten result. A stale/expired claim cannot append a semantic stage. Workset finalization requires exactly the accepted required manifests and source scope, never just a green Kedro exit. Held missing/corrupt entries allow later valid release progress without falsely marking the held content as understood.
+External cancellation drains accepted I/O, parser and dataset operations
+under finite limits and cannot change an accepted result to an overwritten
+result. A stale or expired claim cannot append a semantic stage.
+
+New A2 accepted result identity binds exact frozen input lineage, stage/schema,
+upstream accepted references and parser/policy/config/code versions, not the
+output digest. The canonical output digest is a separately verified persisted
+field; a different output digest at the same accepted key fails closed.
+After a crash, previously accepted stages are validated and reused without
+unnecessary repeated parsing. Execution/attempt identity remains audit
+metadata, not a new semantic acceptance key.
+
+Workset finalization requires complete accepted A2 v2 receipts, including one
+prepared result or an explicit A2-held disposition for each frozen selected
+root and all required scoped transitions. A green Kedro exit is never
+completion proof. An A2-time held-only result is terminal INCOMPLETE and
+queryable for explicit repair; it must not cause an infinite pending retry.
+Held missing or corrupt A1 evidence remains distinct from the A2-time
+disposition and cannot be fabricated as parsed text.
 
 ### 7.3 Replay, schema evolution and downstream
 
 A1 selection/release identities, consumer anchor and cursor remain authoritative. Replay reopens exact saved sources/byte digests and A2 versioned policy/normalizer/parser configuration. It never discovers a "latest" A1 row; changes to code or rules require explicit, recorded semantic reruns.
 
-A2 internal schema may evolve to preserve richer zoning/source mapping. Choose an explicit strategy before cutover: either add versioned `prepared@2` / `zones@1` results with a typed A3 adapter, or prove `prepared@1` can fully represent required output without information loss. Do not silently reinterpret old accepted results. Existing A3/A5 must still receive unambiguous source/version/limitation evidence; report coverage and cross-stage identity must be demonstrated on the new chain.
+The new Kedro output requires an **A2-owned v2 completion receipt**:
+legacy proof demands prepared@1 for every frozen root and cannot accept
+held-only or richer zoning/graph outputs. C0 must introduce an explicitly
+versioned A2 receipt and held-input disposition, preserving readable
+historical results and typed A3/A5 adapters. Implementations may add
+prepared@2/zones@1 or prove a compatible schema without losing new content,
+but cannot simply reuse old proof without a reviewed extension. The immutable
+A1 ReleaseEntry, selected input, workset, cursor and Task 15 source evidence
+are unaffected. Versioned output must retain exact input and limitation
+lineage and cannot silently reinterpret earlier accepted results.
 
 Task 15's 28-gate record is frozen and historically accepted. The **new Kedro candidate** needs new source-aware 13-scenario acceptance/targeted tests and an independent full exact-SHA review; cannot claim historical gates as new engine qualification.
 
@@ -192,6 +216,30 @@ Normalize with explicit chronology, participants, source span/cell/page mapping 
 Kedro Core candidate (2026-10-23): 1.7.0, pending independent pinned-version/source/security checks. PyPI wheel hash must be checked before execution; verify exact installed `AbstractDataset`, `DataCatalog`, `MemoryDataset`, `SequentialRunner` APIs on Python 3.12/3.13/3.14 and ARM64. Q0 must reconcile Kedro CVE-2026-3840 vs CVE-2026-35167 for the exact installed wheel with dated OSV/GitHub/GitLab/Snyk review and no unapproved ignore.
 
 No Kedro CLI, server, project scaffolding, YAML-driven object import, Kedro versioned data paths, plugin auto-discovery or telemetry. Initialize KEDRO_DISABLE_TELEMETRY or DO_NOT_TRACK before import and network-deny tests. Allowlisted programmatic datasets and nodes only; LogRecorder should redact data and not blindly propagate `DatasetError` messages. Measure worst-case MemoryDataset copy cost on Pi; use explicit immutable-object copy semantics only after source-level verification. Windows portable smoke does not qualify native secure A2 reader; real Teams live work/school tenant is separate.
+
+### New A2 scheduled outcome and workset proof boundary
+
+The accepted A1 intake is an admission operation; its cursor is not
+interpreted as Kedro completion. The **new** A2 scheduled status translator
+must distinguish known typed catalog-identity/anchor/behind-cursor trust
+errors from ordinary missing evidence or malformed source associations.
+The former receive BLOCKED with safe codes; ordinary ClaimUnavailableError
+receives INCOMPLETE/consumer-busy, valid backlog receives
+INCOMPLETE/scheduled-work-pending and failed/stale publication receives
+FAILED. The current scheduled.py masks many causes as INCOMPLETE; it does
+not implement this proposed classification. A narrow typed subclass of
+SourceReferenceError at the existing accepted intake validation points,
+without A1 schema changes, is a separately reviewed C0 task. Neither
+matching exception text nor treating every SourceReferenceError as an anchor
+mismatch is permitted.
+
+A workset whose selection cannot be enriched after admission is not
+retroactively added to workset.held. It receives an A2-owned durable
+a2_input_disposition@1; a new a2_completion_receipt@2 requires exactly one
+accepted prepared@2 or held disposition per selection root and all required
+scoped transitions. Terminal INCOMPLETE held worksets remain queryable for
+operator repair and are **not** retried as ordinary pending work. This is
+a reviewed A2 proof/store migration, not a change to A1 intake data.
 
 ## 10. Automatic activation after A1
 
