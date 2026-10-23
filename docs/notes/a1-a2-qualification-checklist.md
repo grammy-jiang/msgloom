@@ -89,7 +89,7 @@ source and evidence.
 | A1-focused | All top-level `tests/test_*.py` plus `tests/source_reader`. |
 | Normal/default coverage | Full pytest selection on Python 3.13.5. |
 | Serial exclusive state | `exclusive_state and not fastmcp_compat`, `-n 0`. |
-| FastMCP compatibility | Opt-in file and marker, frozen FastMCP 4.1.0, `-n 0`. |
+| FastMCP compatibility | Frozen 4.1.0; opt-in file/marker, `-n 0`. |
 | Python matrix | Normal, serial and FastMCP groups on 3.12/3.13/3.14. |
 | Ruff | `python -m ruff check .`. |
 | Format | `python -m ruff format --check .`. |
