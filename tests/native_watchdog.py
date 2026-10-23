@@ -100,7 +100,23 @@ def reap_hung_child(process: subprocess.Popen[str]) -> tuple[str, str]:
             return process.communicate(timeout=DUMP_GRACE_SECONDS)
         except subprocess.TimeoutExpired:
             pass
-    return _kill_and_reap(process)
+    try:
+        return _kill_and_reap(process)
+    except subprocess.TimeoutExpired as exc:
+        # A descendant can keep inherited capture pipes open after the
+        # direct child has been killed and reaped. Preserve available text
+        # and let run_native_command report the original watchdog failure.
+        def partial_text(value: bytes | str | None) -> str:
+            if isinstance(value, bytes):
+                return value.decode(errors="replace")
+            return value or ""
+
+        stderr = partial_text(exc.stderr)
+        stderr += (
+            "\nNative capture drain timed out after child termination; "
+            "a descendant may still hold the output pipes open."
+        )
+        return partial_text(exc.stdout), stderr
 
 
 def run_native_command(

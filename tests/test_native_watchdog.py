@@ -179,3 +179,53 @@ def test_killed_child_output_drain_and_reap_have_deadlines() -> None:
         or not fake.stderr.closed
     ):
         pytest.fail("Post-kill drain or reap was unbounded or left pipes open")
+
+
+def test_blocked_descendant_pipe_preserves_watchdog_output_and_reaps() -> None:
+    """A bounded drain timeout still reports captured stdout and stacks."""
+
+    class DescendantHeldPipe:
+        def __init__(self) -> None:
+            self.args = ["synthetic-native-child"]
+            self.returncode: int | None = None
+            self.stdout = StringIO()
+            self.stderr = StringIO()
+            self.budgets: list[float] = []
+            self.reaped = False
+
+        def poll(self) -> int | None:
+            return self.returncode
+
+        def send_signal(self, _signum: int) -> None:
+            """Pretend to request a stack dump from the hung child."""
+
+        def kill(self) -> None:
+            self.returncode = -9
+
+        def communicate(self, *, timeout: float) -> tuple[str, str]:
+            self.budgets.append(timeout)
+            raise subprocess.TimeoutExpired(
+                self.args, timeout, output=b"early stdout\n", stderr=b"stack dump\n"
+            )
+
+        def wait(self, *, timeout: float) -> int:
+            if timeout != DUMP_GRACE_SECONDS:
+                pytest.fail("Native child reap is not time-limited")
+            self.reaped = True
+            return -9
+
+    fake = DescendantHeldPipe()
+    stdout, stderr = reap_hung_child(cast("subprocess.Popen[str]", fake))
+    if stdout != "early stdout\n" or not stderr.startswith("stack dump\n"):
+        pytest.fail("Watchdog lost partial stdout or stderr during cleanup")
+    if "Native capture drain timed out" not in stderr:
+        pytest.fail("Watchdog hid the inherited-pipe drain timeout")
+    if (
+        not fake.reaped
+        or fake.returncode != -9
+        or not fake.budgets
+        or any(budget != DUMP_GRACE_SECONDS for budget in fake.budgets)
+        or not fake.stdout.closed
+        or not fake.stderr.closed
+    ):
+        pytest.fail("Watchdog output preservation bypassed bounded reaping")
