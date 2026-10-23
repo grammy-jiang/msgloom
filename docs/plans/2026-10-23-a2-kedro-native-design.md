@@ -11,6 +11,20 @@
 **A1 output and automatic activation:** [Source-verified integration](../notes/a1-kedro-handoff-activation-20261023.md).
 **A1 post-release orchestration plan:** [Automatic wake-up, catch-up, and E2E gates](2026-10-23-a1-release-to-kedro-auto-handoff.md).
 
+**D4 R3 source-level correction (superseding earlier assumptions):** The
+accepted PreparationIntakeWorkset is not lossless: IntakeSelection lacks
+primary/component role, contexts are not saved as primary selections, and
+IntakeTransition omits full transition reasons, parent and evidence details.
+Kedro may re-read **only the same immutable ReleaseEntryRef** and match it
+against the saved selection to recover such metadata. If ambiguous or missing,
+mark the affected record held/incomplete; never use mutable A1 current state.
+The existing scheduled handler masks some trust errors as generic INCOMPLETE,
+so a distinct new A2 outcome mapper is required before Prefect deployment.
+Claims, bounded cancellation and deterministic accepted result identity are
+specified in the
+[R3 corrective contract](../notes/a1-kedro-handoff-r3-corrections-20261023.md).
+R3 review remains REVISE; no runtime implementation has begun.
+
 ## 1. Non-negotiable architectural decision
 
 **Kedro is the primary A2 ETL framework**, not a decorative subgraph attached to the existing A2 implementation. Its Pipeline/DataCatalog/Runner determine the dependency graph and dataflow from exactly pinned A1 source inputs, through content extraction, parser dispatch, normalization, zoning, evidence-aware native relationships, filtering and grouping, to versioned stage publication.

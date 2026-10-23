@@ -17,6 +17,7 @@ Earlier 2026-10-23 documents at commits 37f5886 and c1ac6cf **incorrectly limite
 
 - [D4 independent review R1](a2-kedro-independent-review-r1-20261023.txt), SHA 37f5886, DECISION: REVISE, 9 P1 and 8 P2.
 - [D4 independent review R2](a2-kedro-independent-review-r2-20261023.txt), SHA c1ac6cf, DECISION: REVISE, remaining 3 blockers and P2 follow-ups.
+- [D4 independent review R3](a2-kedro-independent-review-r3-20261023.txt), SHA 3c0903b, DECISION: REVISE, 3 source-contract blockers; source-level role/outcome/claim remediation draft at [A1 Kedro R3 corrections](a1-kedro-handoff-r3-corrections-20261023.md).
 - Local 2026-09-29 branch program/kedro-a2-plan, c7dcb41, 648-line migration-only plan pinned Kedro 1.6.0; useful background but not an authoritative implementation specification for this fresh A2.
 
 **New direction:** Kedro controls exact-A1-to-persisted-A2 **ETL** dependencies, including source extraction interfaces, parser invocation via trusted datasets, normalization, source-aware zones, relations, filter/group policies and ordered semantic-result saves. msgloom remains authoritative for A1, async I/O, parser sandbox, SQL transaction and claim fences. The new design is more ambitious than the superseded narrow-pure-DAG design; the dataset/async bridge is an explicit feasibility hard gate, not an assumed solved problem.
@@ -116,7 +117,7 @@ The [source-to-workset trace](a1-kedro-handoff-activation-20261023.md) records t
 | D1 A1 output/handoff source coverage | Recovered from accepted code/qualification; 20-Spider/7-stream/13-case matrix |
 | D2 new architecture | Rewritten with full ETL DAG and owned dataset/async bridge; pending independent review |
 | D3 detailed implementation plan | Rewritten with Q0/C0/P1/P2/P3/E0/T0/V0 DAG and parallel ownership; pending review |
-| D4 independent review of this rewrite | **PENDING** — historical R1/R2 REVISE cannot qualify this new design |
+| D4 independent review of Kedro-primary/A1 automatic design | **REVISE on 3c0903b** — 3 source-contract findings now documented; revised exact SHA re-review is still required |
 | Q0 external Kedro security/runtime | **NOT RUN**; exact pinned source/code security and bridge PoC must pass before production |
 | Implementation / dependency lock | **NOT STARTED**; master runtime unchanged |
 

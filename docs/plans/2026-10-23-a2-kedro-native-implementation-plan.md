@@ -11,6 +11,15 @@
 **Actual A1 output / activation contract:** [Source trace](../notes/a1-kedro-handoff-activation-20261023.md).
 **Automatic activation execution plan:** [AUTO-01–AUTO-14](2026-10-23-a1-release-to-kedro-auto-handoff.md).
 
+**New D4 R3 hard prerequisites:** (1) immutable role/provenance re-read matching
+against a reduced workset; (2) a deliberate new A2 scheduled outcome taxonomy
+that distinguishes trust BLOCKED, normal pending, busy claim and held-only;
+(3) exact intake/workset/partition/transition claim ownership, finite worker
+drain budget and deterministic accepted semantic result identity. Details:
+[R3 corrective contract](../notes/a1-kedro-handoff-r3-corrections-20261023.md).
+The historical R3 reviewer returned REVISE; this revised design remains
+unaccepted until a separate exact-SHA review.
+
 ## 0. Implementation objective and authority boundaries
 
 Build a **fresh Kedro-primary A2 ETL pipeline**: exact A1 released inputs -> verified extraction -> parser execution -> normalization -> semantic zoning -> source-native relationships -> deterministic filtering -> bounded grouping -> durable versioned semantic outputs -> A3. Kedro must own the stage-level dependency graph and its DataCatalog I/O relationships. It cannot merely be invoked by the old custom PreparationHandler after parsing and before saving.
@@ -122,6 +131,8 @@ Q0.5 requires an isolated disposable test environment and deliberately injected 
 | C0.6 | 25m | Choose `prepared@2` + `zones@1` or prove old output shape adequate; formal versioning/persistence schema plan | A3/A5 typed compatibility and historical saved result loading |
 | C0.7 | 20m | Public `async def prepare` input/output, claim and terminal status contract | Bad plan rejected before IO; no event loop creation in API |
 | C0.8 | 20m | Decide bounded partition and grouping context (not copied blindly from old A2) with versioned policy | No accidental merging across worksets/scopes |
+| C0.9 | 25m | Re-read exact ReleaseEntry by saved ref for roles, contexts and full transitions without altering IntakeSelection | Missing/ambiguous equality-match held; global sequence gaps accepted |
+| C0.10 | 25m | Freeze workset/partition/transition claims, plan proof, deterministic accepted result identity and outward status taxonomy | No generic INCOMPLETE for trust errors; no duplicate accepted ResultRef |
 
 No C0 code is accepted unless requirements and acceptance cases have been explicitly frozen; no user-entered provider URL/path or A1 Graph context is ever allowed as dynamic Kedro Dataset factory input.
 
@@ -187,9 +198,9 @@ Old A2 tests are regression *evidence*. Reuse tests that assert requirements; de
 | E0.10 | 20m | Deployment-owned Prefect one-shot wakeup after A1 job and configurable reconciliation sweep | Same prepare-scheduled API with fresh invocation; no A1 mutation, no internal scheduler |
 | E0.11 | 20m | Safely handle no-work, INCOMPLETE, BLOCKED and FAILED command outcomes | No blind retry, stable consumer_id and catalog pin, preserved pending |
 | E0.12 | 20m | Cold-start eligibility inventory and explicit historical baseline only when approved | Unreleased raw evidence is not automatically promoted into A2 |
-| E0.10 | 25m | External Prefect/launcher wrapper wakes `prepare-scheduled` after each finite A1 collection attempt and coalesces by stable consumer scope | Wake-up after committed A1 release starts Kedro; no Spider signal dependency |
-| E0.11 | 25m | Crash-safe startup/periodic bounded catch-up, including A1 partial exits and lost wake-ups | Missed hint recovers from durable cursor; unchanged source is no-op |
-| E0.12 | 25m | Pending-page backpressure, overlapping wake-ups and source/cutoff concurrency integration | No unbounded drain, no duplicate accepted result, later release processed on next invocation |
+| E0.13 | 25m | External Prefect/launcher wrapper wakes `prepare-scheduled` after each finite A1 collection attempt and coalesces by stable consumer scope | Wake-up after committed A1 release starts Kedro; no Spider signal dependency |
+| E0.14 | 25m | Crash-safe startup/periodic bounded catch-up, including A1 partial exits and lost wake-ups | Missed hint recovers from durable cursor; unchanged source is no-op |
+| E0.15 | 25m | Pending-page backpressure, overlapping wake-ups and source/cutoff concurrency integration | No unbounded drain, no duplicate accepted result, later release processed on next invocation |
 
 During development, new and old may coexist in *isolated test worktrees* for comparison. There is one production A2 path at any moment. Do not permanently operate both or automatically fall back to silently wrong legacy results.
 

@@ -46,6 +46,8 @@ flowchart TD
 | [A2 Kedro Readiness Audit](notes/a2-kedro-readiness-audit-20261023.md) | A2 preparation assessment | Historical plan reconciliation, exact A1 source inventory and independent D4 review record. |
 | [A2 Kedro First Independent Review](notes/a2-kedro-independent-review-r1-20261023.txt) | A2 planning review history | Original read-only REVISION verdict on 37f5886; retained without changing the result. |
 | [A2 Kedro Second Independent Review](notes/a2-kedro-independent-review-r2-20261023.txt) | A2 planning review history | Second read-only REVISE verdict on c1ac6cf; precedes the major Kedro-primary design correction. |
+| [A2 Kedro Third Independent Review](notes/a2-kedro-independent-review-r3-20261023.txt) | A1/A2 auto-handoff review | Read-only REVISE verdict on 3c0903b, with field, outcome and claim findings. |
+| [A1 Kedro Handoff R3 Corrections](notes/a1-kedro-handoff-r3-corrections-20261023.md) | Proposed source-contract corrections | Field-level ReleasedInput mapping, distinct new A2 outcome statuses, claim scopes, deadline/identity and AUTO-15..22. |
 | [Operator Configuration](notes/operator-configuration.md#scheduled-preparation) | Finite A2 operation | Stable scheduled intake targets, invocation format, explicit historical baseline service, pending-work retry, and recovery. |
 | [Microsoft Graph Change Notifications](microsoft-change-notifications.md) | Deployment integration | Webhook validation/renewal boundary and privacy-safe sync-trigger contract. |
 

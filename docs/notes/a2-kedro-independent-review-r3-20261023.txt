@@ -1,0 +1,89 @@
+DECISION: REVISE
+REVIEWED_SHA: 3c0903bc23be2ebe9594ffe08a423a586a846595
+
+This is a document and source read only. I ran no tests or commands, wrote no files and used no network. I took no prior R1 or R2 verdict into account.
+
+## Verified scope
+- I read the five docs and the listed A1 and intake sources.
+- I read `message_ingest/catalog/stores/handoff.py` and `models/handoff.py` as far as they bear on release sequencing.
+- I also read `cli/composition.py`, `cli/runner.py`, `configuration/models.py`, `transitions.py`, `handler.py` and `stage_steps.py` where they affect lifecycle.
+- I read `tests/test_a1_handoff_scheduled_e2e.py` and `operator-configuration.md`.
+- The activation note's "1 passed in 6.93s" is the author's report, which I did not re-run.
+- I did not verify the "20 Spiders / 13 scenarios / 28 gates" counts.
+- I did not verify any Kedro 1.7.0 API or CVE claim. Kedro is absent from `pyproject.toml`, `uv.lock` and `msgloom/`, so these are Q0 items, not defects.
+
+## Blocking findings (P1, doc-fixable)
+
+**P1-1. The A1-to-workset mapping is called exact and lossless but is neither, and the promised crosswalk is missing.**
+- Design `:216-217` and plan `:83` (D0.3) point to a "crosswalk". The activation note `:12-47` is prose only, with no field-level table.
+- **Primary vs component role is lost.**
+  - `IntakeSelection` stores only `entry` and `result` (`intake_models.py:82-86`).
+  - `intake.py:180-187` flattens `(selection, *components)` into `values`. The ordinal appears only inside the hashed identity (`intake.py:205-219`).
+  - An entry whose `selection` is None, such as a Teams component-only release, therefore has a component as its first `IntakeSelection`.
+  - `FrozenSourceSelection` (design `:117`) needs primary / component / context-only / supporting, and neither the workset nor the saved `CollectedSelection` can supply it.
+  - Recommendation: say that the dataset must re-call `ReleaseSourceReader.read_entry(entry_ref)` and match each saved selection to `released.selection` or `released.components` by equality. Alternatively, record a persisted role, but that changes frozen intake.
+- **Contexts are never persisted.** `intake.py:180-187` drops `released.contexts`. Only a `context_refresh` `IntakeTransition` per `control_context` fact survives (`:146-158`).
+  - Design `:71` lists `contexts` as an input to `select_source_components`, but the workset cannot supply it. It is reachable only via `read_entry` or `read_supporting_context`.
+- **Transitions are lossy.**
+  - `ScopedTransition` carries `reason`, `parent_*`, `authority_revision`, `provider_order` and `evidence` (`release_models.py:24-39`).
+  - `IntakeTransition` keeps only a 5-value classification plus resource and scope (`intake_models.py:103-119`).
+  - For Teams component facts the parent identity replaces the component identity (`intake.py:162-177`).
+  - The existing lane republishes the workset transitions verbatim (`transitions.py:96`).
+  - The design must state whether Kedro uses the lossy workset form or re-reads the entry.
+- **Held reasons.** Only `byte_limit`, `query_limit` and `materialization_failed` are ever produced (`intake.py:194-199, 238-239`). `missing_evidence`, `corrupt_evidence` and `unsupported_source_type` are never emitted (`intake_models.py:129-131`). Tests and docs must not assert them.
+- **Sequence gaps** are legal (`intake_models.py:142`), and the cursor is per source and stream over a global sequence. The docs never say this.
+- Coarse prose elsewhere matches source: workset fields, `selection_refs`, cursor-equals-admission, the genesis and cutoff behaviour in the e2e test, and the future-only default.
+
+**P1-2. The claimed BLOCKED/FAILED semantics contradict the source, and the Prefect wrapper cannot tell outcomes apart.**
+- Handoff plan `:90` says catalog mismatch or claim loss means "STOP and mark FAILED/BLOCKED". AUTO-10 (`:118`) requires "BLOCKED before source/claim changes".
+- In source, the pin mismatch is raised at `scheduled.py:76` and swallowed at `:151-152`.
+  - The result is INCOMPLETE (exit 4) with only the `scheduled-work-pending` limitation (`:155-160`).
+  - A `ClaimUnavailableError` from `intake.py:76`, or an anchor mismatch such as "ledger moved behind cursor" (`intake.py:118`), takes the same path.
+- Backlog, a duplicate wake-up, a wrong catalog and a restored catalog all look identical. AUTO-12 and the "inspect limitation codes" rule (`:92`) are therefore unimplementable as written.
+- `operator-configuration.md:180` says "fails", which is also not what the outcome mapping does.
+- Decide one of two options:
+  - Declare a small, explicit change to the handoff-layer outcome mapping (distinct limitation or failure codes, BLOCKED for trust errors) as permitted non-A1 work, or
+  - Rewrite AUTO-10 and AUTO-12 to the INCOMPLETE semantics and add diagnostic codes.
+- Either way, require the wrapper to detect no-progress and back off. Today a persistent INCOMPLETE is indistinguishable from a backlog.
+
+**P1-3. Claim, timeout and result-identity semantics are unspecified, and the legacy behaviour conflicts with the stated goals.**
+- **Claim layers today.** There is a workset PREPARE claim (`scheduled.py:205`), a per-plan PREPARE claim keyed by plan hash (`handler.py:82, 277-287`), and a separate transitions claim (`transitions.py:104`).
+  - Design `:105` says only "exact token", and plan E0.1 (`:178`) defers the question.
+  - If Kedro replaces `PreparationHandler`, the per-plan claim disappears. The design must say which token each dataset saves under: workset, per-partition or per-attempt.
+- **Clocks today.**
+  - Each await in `scheduled.py` has an `execution_timeout` bound (`:72, 88, 106`).
+  - The whole workset has an outer `execution + (lease-execution)/2` bound (`:187-191`).
+  - Each handler plan batch has its own `execution_timeout` (`handler.py:114-122`).
+  - Config requires lease > execution + 1 s, with no lease renewal (`configuration/models.py:227-228, 271`).
+  - The design gives no budget for the bridge deadline (`design:133, 140`) or for per-partition versus per-workset time.
+- **Result identity.**
+  - Legacy stage result IDs include execution and attempt (`stage_steps.py:193`, `transitions.py:113-121`), so a retry after a crash between save and finalize creates a second accepted result.
+  - Design `:142`, V08 and AUTO-04 demand no duplicate accepted effect.
+  - Specify a deterministic ID, derived from input refs, stage, schema, and config and code versions, and state that the transition lane must change.
+- **Cancellation.** A sync worker thread cannot be killed. Specify that every dataset facade checks a shared cancel flag, and that the outer coroutine awaits worker drain before `finish_claim`. Also name the fallback if a CPU node cannot be stopped; "reconsider" at design `:140` is not a design.
+
+## Improvements (P2)
+- **AUTO coverage gaps.**
+  - Lost wake-up and startup catch-up appear only in note `§5.4` and T0-H, with no AUTO row.
+  - Partial A1 failure after a committed release is missing. AUTO-02 covers only failure without a release.
+  - Stale cursor, a restored catalog behind the cursor, and sequence gaps have no tests.
+  - Backlog larger than one page is untested.
+  - Component-only, context-only and transition-only entries have no golden crosswalk test. The only existing e2e covers a single native Mail primary entry (`tests/test_a1_handoff_scheduled_e2e.py:29`).
+  - A held-only or zero-selection workset needs a rule. Today it finalizes COMPLETE with no held signal (`scheduled.py:216-289`), which conflicts with design `:161` ("required manifests") and with AUTO-07's "Held is explicit".
+- **Concurrent collecting.** It appears safe on a read of the source. `_release` writes the group and entries in one caller transaction (`handoff.py:316-425`). The sequence uses `sqlite_autoincrement` (`models/handoff.py:59,69`). Intake bounds listing by a captured ceiling (`intake.py:117-128`). Record the single-writer, visible-prefix assumption explicitly.
+- **Wake-up granularity.** The plan coalesces per scope (note `:115`), but the CLI walks up to 32 targets sequentially (`scheduled.py:64-78`). Overlapping invocations will end INCOMPLETE through claim collision. State that this is expected and not an error.
+- **Partition naming.** Name partitions and datasets by selection `ResultRef` ordinal, not source `VersionRef`. The same source can appear in several entries (`scheduled.py:234-245`).
+- **Plan hygiene.** E0.10 to E0.12 are defined twice with different content (`implementation-plan:187-192`). Design `:9` and `:12` are duplicate links.
+- **Redaction.** I believe Kedro's `AbstractDataset.save` rejects `None` and wraps inner exceptions into `DatasetError` messages. That is from my background knowledge, not checked against 1.7.0. The redaction requirement (design `:181`) is correct, so make it a Q0.3 test.
+
+## Answers to the focus items
+1. **Mapping:** coarse prose is accurate. It is not exact or lossless for role, contexts or transition detail (P1-1). The `ReleaseEntry` to `ReleasedInput` step, the held shape, cursor semantics and release-entry sequence are accurately described.
+2. **Automatic wake safety:** the correctness argument is sound. Only committed entries count, the wake-up is a hint, and periodic reconciliation covers lost hints. Interrupted acquisition, crash recovery and the cutoff are safe because of atomic release groups and the durable cursor. The gaps are observability (P1-2) and missing tests (P2).
+3. **Kedro stage graph:** it is a plausible design. Pure-ish nodes with effects confined to typed `AbstractDataset` adapters respect Node intent, and `AbstractDataset` supports distinct save and load types. This is design feasibility only. The bridge, ordering under exceptions, release behaviour, copy cost and CVE reconciliation are unrun Q0 items. Do not count them against the design.
+4. **Invented or non-existent APIs:** none are claimed as working. `AsyncServiceBridge`, `msgloom/a2_kedro/` and the `*Dataset` classes are labelled proposed. The docs state correctly that the Prefect flow is undeployed (`architecture.md:246`) and that the CLI still dispatches the legacy handler (`composition.py:206`). The one overclaim is the BLOCKED behaviour in P1-2.
+5. **AUTO-01..14:** not sufficient (P2), and they hide inconsistent lifecycle semantics (P1-3).
+6. **User decisions:** retained. Kedro is the main ETL (ADR `:13-35`, design `:14-22`). Legacy A2 is deprecated, with the accepted A1 and intake boundary excepted. The public API stays async and Kedro runs in an owned worker (design `:131-133`). There is no A1 redo (design `:38`, plan `:24`). There is no permanent dual engine (plan `:31, 194`).
+
+## Gate recommendation
+- **Design closure: NO-GO now.** It becomes GO after doc-only revision of P1-1 to P1-3 (a field-level crosswalk table, a status and diagnostic taxonomy, and a claim, clock and result-identity table) plus the added AUTO rows. A quick re-review should then be enough.
+- **Source-code implementation: NO-GO.** Q0 (bridge proof, Kedro API and wheel verification, CVE reconciliation, Pi measurements) is unresolved and independent of these doc fixes, and no D4 acceptance exists yet.

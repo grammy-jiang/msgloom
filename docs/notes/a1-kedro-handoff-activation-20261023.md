@@ -9,6 +9,14 @@
 **Automatic deployment tasks:** [A1 release-to-Kedro plan](../plans/2026-10-23-a1-release-to-kedro-auto-handoff.md), including AUTO-01 through AUTO-14 acceptance gates.
 **Scope:** actual A1 emitted data and deployment activation, not A1 code refactoring.
 
+**R3 field-level qualification:** The saved workset is an intentionally reduced
+admission projection, not a lossless copy of ReleasedInput. For primary versus
+component role, exact contexts and the full original transition record, the
+new Dataset adapter must re-read the same immutable released entry and verify
+equality against the frozen selection. A missing or ambiguous match is held,
+not guessed. The full [role/status/claim table](a1-kedro-handoff-r3-corrections-20261023.md)
+supersedes any earlier informal lossless-workset wording.
+
 ## 1. What A1 actually publishes
 
 A1 is the Graph-over-Scrapy acquisition engine (Scrapy 2.19.0). A crawler success or Spider close alone **is not proof of a downstream release**. Provider facts, effective-state/authority gates and their scoped release are validated and committed in the A1 catalog.
