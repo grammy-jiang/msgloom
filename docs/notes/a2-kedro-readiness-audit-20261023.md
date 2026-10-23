@@ -1,7 +1,7 @@
 # A2 Kedro-primary ETL readiness and historical-decision audit
 
 **Date:** 2026-10-23 Australia/Sydney.
-**Status:** D0 historic decision RECONCILED; D1 accepted handoff audited; D2/D3 design + plan rewritten; D4 R4 returned REVISE and R4 corrective proposal is documented, pending independent re-review.
+**Status:** D0 historic decision RECONCILED; D1 accepted handoff audited; D2/D3 design + plan rewritten; D4 R5 returned REVISE; two documentation contradictions have been corrected, pending a new exact-SHA independent review.
 **Current production master at audit:** 895fc40a0ec889bd96f620df8c62491787218217.
 **A1 qualification:** 34057c6c9f85688fd2bd1868d90302ab5a61205f, exact-SHA Task 15 28/28 automatic gates and separate accepted independent review; not new A2 certification.
 **Authority:** [Historical user decision ADR](../decisions/2026-10-23-a2-kedro-primary-etl.md), [architecture](../plans/2026-10-23-a2-kedro-native-design.md), [implementation plan](../plans/2026-10-23-a2-kedro-native-implementation-plan.md).
@@ -19,6 +19,7 @@ Earlier 2026-10-23 documents at commits 37f5886 and c1ac6cf **incorrectly limite
 - [D4 independent review R2](a2-kedro-independent-review-r2-20261023.txt), SHA c1ac6cf, DECISION: REVISE, remaining 3 blockers and P2 follow-ups.
 - [D4 independent review R3](a2-kedro-independent-review-r3-20261023.txt), SHA 3c0903b, DECISION: REVISE, 3 source-contract blockers; source-level role/outcome/claim remediation draft at [A1 Kedro R3 corrections](a1-kedro-handoff-r3-corrections-20261023.md).
 - [D4 independent review R4](a2-kedro-independent-review-r4-20261023.txt), SHA 467ca23, DECISION: REVISE; four narrow field/identity/outcome/held/gate findings. All source-level proposals are preserved in the expanded [R3/R4 correction](a1-kedro-handoff-r3-corrections-20261023.md), with no A1 schema changes.
+- [D4 independent review R5](a2-kedro-independent-review-r5-20261023.txt), SHA d2f02fe, DECISION: REVISE; two remaining issues were the conflicting SourceReferenceError instructions and stale AUTO-26 references. The new corrected document maps intake/preflight exceptions conservatively without changing A1, while post-intake dataset errors get A2-held dispositions; the acceptance gate is AUTO-01–25.
 - Local 2026-09-29 branch program/kedro-a2-plan, c7dcb41, 648-line migration-only plan pinned Kedro 1.6.0; useful background but not an authoritative implementation specification for this fresh A2.
 
 **New direction:** Kedro controls exact-A1-to-persisted-A2 **ETL** dependencies, including source extraction interfaces, parser invocation via trusted datasets, normalization, source-aware zones, relations, filter/group policies and ordered semantic-result saves. msgloom remains authoritative for A1, async I/O, parser sandbox, SQL transaction and claim fences. The new design is more ambitious than the superseded narrow-pure-DAG design; the dataset/async bridge is an explicit feasibility hard gate, not an assumed solved problem.
@@ -108,7 +109,7 @@ The accepted A1 release ledger is the authoritative source of new work, but no d
 
 A read-only metadata-only check of the local default acquisition catalog (var/msgloom.sqlite3) on 2026-10-23 found 178 raw_http_evidence records, 0 acquisition_release_groups, 0 acquisition_release_entries and 0 acquisition_release_entry_facts. That is **not** the formal Task 15 candidate catalog, and it is not evidence of A1 failure. A new Kedro A2 invoked against a zero-release ledger must return a no-work result. HistoricalBaselineService requires caller-approved exact versions with resolvable immutable evidence and may be unavailable for some pre-ledger sources. No private catalog IDs or raw historical records are added to these public planning files.
 
-The [source-to-workset trace](a1-kedro-handoff-activation-20261023.md) records the existing native Mail acceptance (1 passed in 6.93s with the project venv). The [automatic-handoff plan](../plans/2026-10-23-a1-release-to-kedro-auto-handoff.md) records the exact invocation, trust pin, status, duplicates, backlog, no-release, crash and A1-concurrent-publication cases as future AUTO-01 to AUTO-26 gates.
+The [source-to-workset trace](a1-kedro-handoff-activation-20261023.md) records the existing native Mail acceptance (1 passed in 6.93s with the project venv). The [automatic-handoff plan](../plans/2026-10-23-a1-release-to-kedro-auto-handoff.md) records the exact invocation, trust pin, status, duplicates, backlog, no-release, crash and A1-concurrent-publication cases as future AUTO-01 to AUTO-25 gates.
 
 ## 6. D0–D4 and code admission status
 
@@ -118,7 +119,7 @@ The [source-to-workset trace](a1-kedro-handoff-activation-20261023.md) records t
 | D1 A1 output/handoff source coverage | Recovered from accepted code/qualification; 20-Spider/7-stream/13-case matrix |
 | D2 new architecture | Rewritten with full ETL DAG and owned dataset/async bridge; pending independent review |
 | D3 detailed implementation plan | Rewritten with Q0/C0/P1/P2/P3/E0/T0/V0 DAG and parallel ownership; pending review |
-| D4 independent review of Kedro-primary/A1 automatic design | **REVISE on 467ca23** — R4 findings corrected in proposal, but a fresh independent exact-SHA review is still required |
+| D4 independent review of Kedro-primary/A1 automatic design | **REVISE on d2f02fe** — R5 contradictions repaired in proposal; a fresh independent exact-SHA review is still required |
 | Q0 external Kedro security/runtime | **NOT RUN**; exact pinned source/code security and bridge PoC must pass before production |
 | Implementation / dependency lock | **NOT STARTED**; master runtime unchanged |
 

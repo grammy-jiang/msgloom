@@ -11,14 +11,18 @@
 **Actual A1 output / activation contract:** [Source trace](../notes/a1-kedro-handoff-activation-20261023.md).
 **Automatic activation execution plan:** [AUTO-01–AUTO-25](2026-10-23-a1-release-to-kedro-auto-handoff.md).
 
-**New D4 R3 hard prerequisites:** (1) immutable role/provenance re-read matching
+**D4 R5-corrected hard prerequisites:** (1) immutable role/provenance re-read matching
 against a reduced workset; (2) a deliberate new A2 scheduled outcome taxonomy
 that distinguishes trust BLOCKED, normal pending, busy claim and held-only;
 (3) exact intake/workset/partition/transition claim ownership, finite worker
 drain budget and deterministic accepted semantic result identity. Details:
 [R3 corrective contract](../notes/a1-kedro-handoff-r3-corrections-20261023.md).
-The historical R3 reviewer returned REVISE; this revised design remains
-unaccepted until a separate exact-SHA review.
+R5 at d2f02fe returned REVISE and identified contradicting trust-error
+classification and a stale AUTO range. Those instructions are now unified:
+escaped intake/preflight SourceReferenceError is conservatively BLOCKED
+without exception subclass changes to accepted A1; post-intake dataset
+read failures are A2-held. The current full gate is AUTO-01–25.
+The revised design remains unaccepted until independent exact-SHA D4 review.
 
 ## 0. Implementation objective and authority boundaries
 

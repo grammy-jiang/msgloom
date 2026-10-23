@@ -18,8 +18,8 @@ trust errors from ordinary backlog. The new ETL requires deterministic
 input-only accepted result keys, durable A2-held dispositions, and versioned
 A2-owned completion receipts for prepared@2/zones@1. The current master does
 **not** provide those features; [the exact corrective contract](../notes/a1-kedro-handoff-r3-corrections-20261023.md)
-specifies implementation gates. Independent R4 at 467ca23 returned REVISE;
-a new exact-SHA review is still required. No A2 production coding has started.
+specifies implementation gates. Independent R4 at 467ca23 and R5 at d2f02fe returned REVISE;
+this new candidate needs a fresh exact-SHA review. No A2 production coding has started.
 
 ## 1. Non-negotiable architectural decision
 
@@ -219,27 +219,48 @@ No Kedro CLI, server, project scaffolding, YAML-driven object import, Kedro vers
 
 ### New A2 scheduled outcome and workset proof boundary
 
-The accepted A1 intake is an admission operation; its cursor is not
-interpreted as Kedro completion. The **new** A2 scheduled status translator
-must distinguish known typed catalog-identity/anchor/behind-cursor trust
-errors from ordinary missing evidence or malformed source associations.
-The former receive BLOCKED with safe codes; ordinary ClaimUnavailableError
-receives INCOMPLETE/consumer-busy, valid backlog receives
-INCOMPLETE/scheduled-work-pending and failed/stale publication receives
-FAILED. The current scheduled.py masks many causes as INCOMPLETE; it does
-not implement this proposed classification. A narrow typed subclass of
-SourceReferenceError at the existing accepted intake validation points,
-without A1 schema changes, is a separately reviewed C0 task. Neither
-matching exception text nor treating every SourceReferenceError as an anchor
-mismatch is permitted.
+A1 intake is durable **admission**, not Kedro completion. The new A2
+scheduled wrapper intentionally adds typed, privacy-safe outcome mapping
+without changing the accepted A1 reader, release ledger, intake Workset
+or cursor:
 
-A workset whose selection cannot be enriched after admission is not
-retroactively added to workset.held. It receives an A2-owned durable
-a2_input_disposition@1; a new a2_completion_receipt@2 requires exactly one
-accepted prepared@2 or held disposition per selection root and all required
-scoped transitions. Terminal INCOMPLETE held worksets remain queryable for
-operator repair and are **not** retried as ordinary pending work. This is
-a reviewed A2 proof/store migration, not a change to A1 intake data.
+- A trusted catalog-pin preflight failure is BLOCKED/catalog-mismatch.
+- **Every escaped `SourceReferenceError` from the intake/preflight
+  boundary** is conservatively BLOCKED/source-reference-invalid. This
+  includes invalid selected results, cursor anchor mismatch, ledger
+  rollback and corrupted exact references (intake.py raise sites 105,
+  116, 119, 253, 264, 323, 325). Invariant failures in this class
+  intentionally count as BLOCKED trust/reference failures, not FAILED.
+  No new exception subclass, duplicate cursor probe or exception-text
+  matching is required.
+- Consumer `ClaimUnavailableError` is INCOMPLETE/consumer-busy;
+  expected pending/backlog is INCOMPLETE/work-pending; stale publication
+  is FAILED/claim-lost. Unexpected storage failures outside
+  `SourceReferenceError` are FAILED/persistence-failed.
+- **After intake has accepted exact inputs**, a `SourceReaderError`
+  (including `SourceReferenceError`) raised from the Kedro
+  Dataset's own attempt to re-read the frozen entry/bytes is treated as
+  an **A2-held input** with exact provenance and a redacted reason,
+  not as an escaped intake/preflight BLOCKED status. No fallback to
+  current A1 projections is allowed.
+
+These are **proposed new A2 wrapper semantics**, not what current
+scheduled.py does; it presently collapses multiple cases into
+INCOMPLETE/scheduled-work-pending. The
+[exact status table](../notes/a1-kedro-handoff-r3-corrections-20261023.md)
+is normative for the new A2 implementation.
+
+An unprepared selected input is never retroactively added to
+`workset.held`. The new A2 publishes a durable
+`a2_input_disposition@1` and the required
+`a2_completion_receipt@2` which accepts **exactly one** completed
+prepared@2 OR held disposition for every frozen selected input, and
+requires exact scoped transition coverage. Any **nonempty
+`workset.held`** also forces terminal INCOMPLETE even if all
+other root inputs were accepted. These are A2-owned proof changes,
+not already-supported existing persistence behavior. Terminal held/
+partial outputs remain queryable and are not automatically re-selected
+from the pending index.
 
 ## 10. Automatic activation after A1
 

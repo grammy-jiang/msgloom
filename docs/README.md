@@ -48,7 +48,8 @@ flowchart TD
 | [A2 Kedro Second Independent Review](notes/a2-kedro-independent-review-r2-20261023.txt) | A2 planning review history | Second read-only REVISE verdict on c1ac6cf; precedes the major Kedro-primary design correction. |
 | [A2 Kedro Third Independent Review](notes/a2-kedro-independent-review-r3-20261023.txt) | A1/A2 auto-handoff review | Read-only REVISE verdict on 3c0903b, with field, outcome and claim findings. |
 | [A2 Kedro Fourth Independent Review](notes/a2-kedro-independent-review-r4-20261023.txt) | A2 automatic handoff review | Read-only REVISE verdict on 467ca23: deterministic result key, typed trust errors, A2-time held completion and AUTO gate coverage. |
-| [A1 Kedro Handoff R3 Corrections](notes/a1-kedro-handoff-r3-corrections-20261023.md) | Proposed source-contract corrections | Field-level ReleasedInput mapping, distinct new A2 outcome statuses, claim scopes, deadline/identity and AUTO-15..22. |
+| [A2 Kedro Fifth Independent Review](notes/a2-kedro-independent-review-r5-20261023.txt) | A2 design review | Read-only REVISE on d2f02fe; identified contradictory source-reference classification and stale acceptance range, both corrected in the new candidate. |
+| [A1 Kedro Handoff R3 Corrections](notes/a1-kedro-handoff-r3-corrections-20261023.md) | Proposed source-contract corrections | Field-level ReleasedInput mapping, distinct new A2 outcome statuses, claim scopes, deadline/identity and AUTO-01..25. |
 | [Operator Configuration](notes/operator-configuration.md#scheduled-preparation) | Finite A2 operation | Stable scheduled intake targets, invocation format, explicit historical baseline service, pending-work retry, and recovery. |
 | [Microsoft Graph Change Notifications](microsoft-change-notifications.md) | Deployment integration | Webhook validation/renewal boundary and privacy-safe sync-trigger contract. |
 

@@ -1,6 +1,6 @@
 # A1 → Kedro A2: exact handoff, status, claim and receipt contract
 
-**Status:** design candidate amended after independent R4 (REVISE), pending exact-SHA R5 review.
+**Status:** design candidate amended after independent R5 (REVISE), pending exact-SHA R6 review.
 **Date:** 2026-10-23 (Australia/Sydney).
 **A1 accepted qualification SHA:** 34057c6c9f85688fd2bd1868d90302ab5a61205f.
 **Repository source baseline:** 895fc40a0ec889bd96f620df8c62491787218217.
@@ -63,11 +63,22 @@ pending index, source reader identity and public saved inputs unchanged.
 | Intentionally held-only or A2-held selection, no unresolved schedulable work | INCOMPLETE (terminal workset) | scheduled-work-held | Retain durable held disposition; alert for explicit repair/replay, **not** automatic busy retry |
 | Consumer claim unavailable | INCOMPLETE | scheduled-consumer-busy | Coalesce and retry after bounded backoff |
 | Trusted expected catalog pin differs (checked before source admission) | BLOCKED | scheduled-catalog-mismatch | Stop scope; trusted operator reconfiguration only |
-| Escaped `SourceReferenceError` from accepted intake/reader, including lost cursor anchor / rollback / invalid exact reference | BLOCKED | scheduled-source-reference-invalid | Stop scope; verify catalog and restore coherently, never parse exception text |
+| Escaped `SourceReferenceError` **from intake/preflight** including catalog/cursor anchor, ledger rollback or invariant violation | BLOCKED | scheduled-source-reference-invalid | Stop scope, restore safely; no exception-text parsing or second cursor check |
 | Invalid trusted authorization or unsupported secure host | BLOCKED | scheduled-invalid-authority | Stop without source mutation |
 | Unexpected persistence/invariant failure | FAILED | scheduled-persistence-failed | Alert, preserve already accepted refs and pending |
+| Same accepted logical input key produces a conflicting canonical output digest | FAILED | scheduled-acceptance-conflict | Stop automatic retries; preserve earlier accepted result and require independent investigation |
 | Accepted partial parser/semantic output with explicit limitations | INCOMPLETE (terminal workset) | scheduled-preparation-incomplete | Inspect saved results; deliberate explicit replay only if required |
 | External cancellation / lost claim while publishing | CANCELLED / FAILED | scheduled-cancelled / scheduled-claim-lost | Await cleanup, no late durable publication |
+
+**Distinct post-intake DataCatalog error handling:** After the Workset
+is durably admitted, errors from Kedro `ExactHandoffDataset` or
+`VerifiedEvidenceDataset` while re-reading the **same** selected
+reference (`SourceReaderError`, including subclasses) become an
+`a2_input_disposition@1` with redacted
+`source_evidence_unavailable` or `role_unverifiable`.
+They do **not** propagate out as a new intake/preflight trust-blocking
+error. Full workset receipt remains INCOMPLETE and evidence is never
+recollected from Graph or current projections.
 
 **Classification implementation choice (fixes R4):** The new A2 wrapper
 must catch `ClaimUnavailableError` distinctly from
@@ -79,6 +90,14 @@ an untrusted second cursor pre-check to distinguish `anchor` from
 without modifying A1 or intake persistence and without needing new
 exception subclasses. Typed-source refinement can be considered separately
 with source evidence and review, but is not a prerequisite.
+
+Status and progress are not derived only from CLI exit 4. The proposed
+read-only A2 scope-status command recalculates the **current** trusted
+catalog pin and saved-cursor anchor as read-only checks, and reads
+stored workset/accepted-result/disposition metadata; it does not
+pretend an existing BLOCKED outcome is durably indexed by scope. Its
+response may include the most recent saved execution's blocking code
+when available. No new status write or new A1 source lookup is implied.
 
 ### 2.1 External Prefect visibility and progress
 
@@ -163,12 +182,14 @@ The new A2 should separate:
    unaccepted dependencies within the same bounded workset. Explicit
    reproducibility tests can recompute a stage and verify digest equality;
    a nondeterministic parser mismatch must fail closed.
-6. **Mid-pending upgrade.** A workset's frozen code/config versions are
-   not silently reinterpreted by new A2 policy. At cutover, inventory and
-   drain old-engine pending worksets where possible or perform an approved
-   versioned downstream plan/receipt migration linked to the same frozen
-   inputs **without modifying the intake cursor**. Keep old results
-   readable. No automatic dual-engine fallback.
+6. **Mid-pending upgrade.** A workset's frozen code/config versions
+   cannot be silently reinterpreted by the new Kedro policy. **Require a
+   pre-cutover audit with zero legacy pending worksets** and drain them
+   under the old producer before switching. If any cannot be drained,
+   CUTOVER IS BLOCKED; a separate owner-approved versioned downstream
+   migration design and test would be necessary, and it may never edit
+   the existing A1/Intake cursor. Preserve old accepted results and
+   history. No implicit dual-engine fallback.
 
 **Existing Phase1Persistence cannot be assumed to support this.** C0 must
 inspect `StageResult` execution/attempt binding and result uniqueness,
@@ -198,6 +219,10 @@ new A2-owned completion proof are **mandatory**, not optional.
   every frozen root, plus every required scoped transition. It must reject
   missing, overlapping, foreign or stale claims and correctly produce
   INCOMPLETE on partial/held sources.
+- A mandatory receipt validator rule: if **workset.held is nonempty**,
+  the A2 completion receipt's terminal status MUST be INCOMPLETE even
+  with all remaining selections successfully prepared. No zero-proof
+  held-only workset may be declared COMPLETE.
 - Intake-only `workset.held` entries have **no frozen selection
   root**; their existence independently requires terminal
   INCOMPLETE/held, not a false COMPLETE.
@@ -208,6 +233,12 @@ new A2-owned completion proof are **mandatory**, not optional.
   receipts. This is a downstream A2 proof migration and requires a separate
   focused change, CI, independent review and A3 compatibility, not a new
   A1 authority or checkpoint.
+- **Explicit replay target is always the same original immutable
+  Workset ResultRef**, not a silently derived intake workset. A
+  terminal INCOMPLETE workset cannot be finalized a second time;
+  operator-approved replay creates a separate A2 attempt and
+  append-only A2 completion record referencing that original workset,
+  while leaving its original terminal receipt unchanged.
 - An A2-held selection can be finalized as **terminal INCOMPLETE** with its
   exact durable disposition and scoped manifest so ordinary scheduled
   invocations do not spin on it. Later explicit repair/replay produces a
@@ -223,8 +254,8 @@ even if the new pipeline otherwise reuses existing pure parser helpers.
 
 ## 6. Required automatic E2E acceptance tests
 
-AUTO-01 through AUTO-22 are in the companion activation plan.
-Three additional hard cases must be included:
+AUTO-01 through AUTO-25 are already in one companion activation
+table, including the following last three hard cases:
 
 - AUTO-23: Same immutable acceptance key with two different canonical
   parser outputs: second publish is rejected, no duplicate accepted
@@ -253,5 +284,5 @@ security advisories before dependency or production code admission.
 All new statuses, receipt types, deterministic accepted keys, scope-status
 command and retry policies described here are **proposed**, not present in
 master. New-code implementation remains NO-GO until an independent
-exact-SHA D4 ACCEPT and the required Q0 proofs. Preserve original R1–R4
+exact-SHA D4 ACCEPT and the required Q0 proofs. Preserve original R1–R5
 review output and treat each acceptance as binding only to its exact SHA.

@@ -136,8 +136,6 @@ No private catalog identity, source ID, body, path or credential belongs in chec
 
 | Gate | Execution test | Pass condition |
 | --- | --- | --- |
-| Gate | Execution test | Pass condition |
-| --- | --- | --- |
 | AUTO-01 | Native A1 fixture commits a valid release, external wrapper wakes Kedro | One immutable A2 workset and accepted stage results |
 | AUTO-02 | Spider exits without any committed release | No false Kedro preparation |
 | AUTO-03 | New A1 release arrives after fixed A2 cutoff | Later entry waits for next finite invocation |
@@ -162,7 +160,7 @@ No private catalog identity, source ID, body, path or credential belongs in chec
 | AUTO-22 | Scoped status reports no-progress, held and blocked | External wrapper sees safe progress digest; no busy loop |
 | AUTO-23 | Same input-only key produces different canonical parser digests | Second result rejected, first accepted result immutable |
 | AUTO-24 | Unverifiable A2 role after frozen intake | Durable a2_input_disposition@1 and a2_completion_receipt@2; explicit repair only |
-| AUTO-25 | Pending workset retains old code_version at Kedro cutover | Drain or explicitly migrate A2 receipt with same A1 cursor/selection |
+| AUTO-25 | Pending workset retains old code_version at Kedro cutover | Cutover blocked until legacy pending drains; original A1 cursor/selection unchanged |
 
 These tests are on the **new Kedro candidate** and a deployment-owned orchestration harness. The old `tests/test_a1_handoff_scheduled_e2e.py`, `tests/preparation_pipeline/test_scheduled_recovery.py`, and `tests/application_cli/test_scheduled_prepare.py` are source-level oracles, not substitutes for new Kedro tests. Keep A1's original Task 15 28-gate evidence frozen.
 

@@ -6,7 +6,7 @@
 **Formal upstream A1 qualification:** Task 15 source 34057c6c9f85688fd2bd1868d90302ab5a61205f.
 **Owner decision:** [Kedro is A2's primary ETL](../decisions/2026-10-23-a2-kedro-primary-etl.md).
 **Related design:** [Kedro A2 architecture](../plans/2026-10-23-a2-kedro-native-design.md).
-**Automatic deployment tasks:** [A1 release-to-Kedro plan](../plans/2026-10-23-a1-release-to-kedro-auto-handoff.md), including AUTO-01 through AUTO-26 acceptance gates.
+**Automatic deployment tasks:** [A1 release-to-Kedro plan](../plans/2026-10-23-a1-release-to-kedro-auto-handoff.md), including AUTO-01 through AUTO-25 acceptance gates.
 **Scope:** actual A1 emitted data and deployment activation, not A1 code refactoring.
 
 **R3 field-level qualification:** The saved workset is an intentionally reduced
