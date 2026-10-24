@@ -39,7 +39,7 @@ installed before the run, with a self-check call before the run.
 1. A language model (a Claude Sonnet 5.5 worker) annotated each expected
    value by hand-reading the A2 blueprint and the accepted A1 notes and
    fixtures. No program may generate an expected value. One disclosed
-   exception exists: the two pinned digests (SHA-256 and byte count) in
+   exception exists: the pinned digests (SHA-256 and byte count) in
    T0-08-P01 and T0-08-P02 were computed with `json` and `hashlib` from the
    base payload in the file and compared with the A1 v1 codec output. No human
    has reviewed the corpus. The 35 cases that carry a `policy_status` marker

@@ -87,6 +87,7 @@ NON_HOST_TOKENS = frozenset(
         "secret.json",
         "socket.getaddrinfo",
         "socket.socket.connect",
+        "socket.socket",
         "task15-final-qualification-20261016.md",
         "todo-sync.md",
         "u0000.txt",

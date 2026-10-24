@@ -90,12 +90,12 @@
       "expected": {
         "guards_installed": ["socket.create_connection", "socket.getaddrinfo", "socket.socket.connect"],
         "guard_installed_before_run_starts_and_removed_after_it": true,
-        "guard_behavior": "append the call arguments to a list, then raise OSError so that no packet leaves the host",
+        "guard_behavior": "append the call arguments to a list; for a loopback address (127.0.0.1, ::1 or localhost) call the original function and return its result; for any other address raise OSError so that no packet leaves the host",
         "outbound_connections_means": "recorded create_connection and connect calls whose address is not 127.0.0.1, ::1 or localhost",
         "dns_lookups_to_non_loopback_means": "recorded getaddrinfo calls whose host is not 127.0.0.1, ::1 or localhost",
         "pass_when": {"outbound_connections": 0, "dns_lookups_to_non_loopback": 0},
         "guard_self_check": "before the run, one getaddrinfo call to a name under example.invalid must be recorded exactly once, then the list is cleared",
-        "known_limit": "the observer sees Python-level calls only; a subprocess or a C extension that opens its own socket is outside it"
+        "known_limit": "the observer sees Python-level calls only; a subprocess or a C extension that opens its own socket is outside it, and so are socket.socket.connect_ex, UDP sendto, and names bound before the guard is installed (for example from socket import getaddrinfo)"
       },
       "rationale": "PROPOSED. T0-10-N13 states counts of 0 but not how a test sees them. The execution plan (F0-04) asks for socket and real-network deny controls but names no observable. This case fixes one observable so that a consuming test cannot pass because the guard was never installed."
     },
