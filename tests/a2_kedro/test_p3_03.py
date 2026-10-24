@@ -334,6 +334,24 @@ def contract_data(result: FilterEvaluation) -> dict[str, Any]:
     )
 
 
+def test_no_match_is_reported_as_unknown_not_contract_no_match() -> None:
+    """Pin the mapping a later stage must apply to build a FilterResult.
+
+    The contract verdict ``no_match`` is never produced here. A caller that
+    needs a ``FilterResult`` must map ``unknown`` plus ``no_rule_matched``.
+    """
+    result = evaluate_filters(
+        rules(rule("a", "include", "folder_id", "inbox")),
+        full(folder_id="archive"),
+    )
+    check(result.verdict.value == "unknown", "verdict is unknown")
+    check(
+        ("no_rule_matched" in [code for code, _ in limits(result)]),
+        "no_rule_matched limitation",
+    )
+    check(result.verdict.value != "no_match", "no_match never produced")
+
+
 def test_evaluation_agrees_with_filter_result_contract() -> None:
     rs_all = [
         (rules(rule("a", "include", "folder_id", "inbox")), full()),
