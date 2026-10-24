@@ -49,6 +49,7 @@ from typing import Any, Literal
 
 from msgloom.a2_kedro.contracts.codec import A2ContractError, sha256_hex
 from msgloom.a2_kedro.contracts.parse import ParserReceipt
+from msgloom.a2_kedro.parsers.json_scan import clean_surrogates, exceeds_depth
 
 WORKER = "msgloom.a2_kedro.parsers.plain_json"
 
@@ -66,7 +67,6 @@ TRUNCATED_KEY = "truncated"
 _UTF8_BOM = b"\xef\xbb\xbf"
 _WIDE_BOMS = (b"\xff\xfe", b"\xfe\xff", b"\x00\x00\xfe\xff")
 _EOL = re.compile(rb"\r\n|\n|\r")
-_NESTING = re.compile(r'"[^"\\]*(?:\\.[^"\\]*)*(?:"|\Z)|[\[\]{}]', re.DOTALL)
 _INDEX = re.compile(r"0|[1-9][0-9]*")
 
 
@@ -103,13 +103,14 @@ class Limitation(StrEnum):
 
 
 class FieldState(StrEnum):
-    """Outcome of one JSON field: three different states and two more."""
+    """Outcome of one JSON field: three different states and three more."""
 
     TEXT = "text"
     EMPTY = "empty"
     NULL = "null"
     MISSING = "missing"
     OTHER = "other"
+    UNPROVEN = "unproven"
 
 
 LineEnding = Literal["lf", "crlf", "cr", "none"]
@@ -207,12 +208,16 @@ class ParseResult:
 
         Raise :exc:`PlainJsonInputError` when the pointer is malformed or
         when no JSON document was parsed. A missing key is answered only
-        when a document exists, so ``MISSING`` is never a guess.
+        when a document exists. An absent key is ``MISSING`` only when
+        absence is proven. With ``PAGING_MARKER``, ``FIELD_LIMIT`` or
+        ``HUGE_INTEGER`` it is ``UNPROVEN``. Strings are cleaned as in
+        :attr:`fields`.
         """
         if self.format != "json" or not self.parsed:
             raise PlainJsonInputError("no parsed JSON document")
         if pointer and not pointer.startswith("/"):
             raise PlainJsonInputError("malformed JSON pointer")
+        gone = self._absent()
         node: Any = self.document
         for raw in pointer.split("/")[1:] if pointer else ():
             token = raw.replace("~1", "/").replace("~0", "~")
@@ -220,11 +225,16 @@ class ParseResult:
                 node = node[token]
             elif isinstance(node, list) and _INDEX.fullmatch(token):
                 if int(token) >= len(node):
-                    return FieldLookup(FieldState.MISSING, None)
+                    return gone
                 node = node[int(token)]
             else:
-                return FieldLookup(FieldState.MISSING, None)
-        return _classify(node)
+                return gone
+        return _classify(clean_surrogates(node))
+
+    def _absent(self) -> FieldLookup:
+        unproven = _UNPROVEN_ABSENCE.intersection(self.limitations)
+        state = FieldState.UNPROVEN if unproven else FieldState.MISSING
+        return FieldLookup(state, None)
 
     def to_receipt(self, worker_version: str) -> ParserReceipt | None:
         """
@@ -244,6 +254,12 @@ class ParseResult:
             input_bytes=self.input_bytes,
             part_count=1,
         )
+
+
+#: Limitations after which a missing key is not proof of absence.
+_UNPROVEN_ABSENCE = frozenset(
+    {Limitation.PAGING_MARKER, Limitation.FIELD_LIMIT, Limitation.HUGE_INTEGER}
+)
 
 
 def _classify(node: Any) -> FieldLookup:
@@ -389,19 +405,6 @@ class _State:
         return math.nan
 
 
-def _too_deep(text: str) -> bool:
-    depth = 0
-    for match in _NESTING.finditer(text):
-        token = match.group()
-        if token in "[{":
-            depth += 1
-            if depth > MAX_JSON_DEPTH:
-                return True
-        elif token in "]}":
-            depth = max(depth - 1, 0)
-    return False
-
-
 def parse_json(data: bytes) -> ParseResult:
     """
     Parse saved JSON bytes into text-bearing fields with JSON Pointers.
@@ -419,7 +422,7 @@ def parse_json(data: bytes) -> ParseResult:
     except UnicodeDecodeError:
         found.add(Limitation.INVALID_UTF8)
         return _finish("json", raw, found)
-    if _too_deep(text):
+    if exceeds_depth(text, MAX_JSON_DEPTH):
         found.add(Limitation.DEPTH_LIMIT)
         return _finish("json", raw, found)
     state = _State()
@@ -490,10 +493,7 @@ def _collect_fields(document: Any) -> tuple[tuple[JsonField, ...], bool, bool]:
             continue
         if len(fields) >= MAX_JSON_FIELDS:
             return tuple(fields), True, surrogate
-        value = node
-        if value is not None and not value.isascii():
-            clean = value.encode("utf-8", "replace").decode("utf-8")
-            surrogate = surrogate or clean != value
-            value = clean
+        value = clean_surrogates(node)
+        surrogate = surrogate or value != node
         fields.append(JsonField(pointer, _classify(value).state, value))
     return tuple(fields), False, surrogate

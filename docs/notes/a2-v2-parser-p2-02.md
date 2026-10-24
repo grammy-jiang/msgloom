@@ -54,14 +54,20 @@ characters; invalid UTF-8 and NUL bytes set a limitation.
 
 - Standard library only. Duplicate keys, `NaN`, `Infinity` and `-Infinity`
   and floats that overflow to infinity yield a limitation and no fields.
-- A regex scan bounds nesting depth before `json.loads` runs. Brackets in
-  strings do not count.
+- A linear single-pass scanner (`parsers/json_scan.py`) bounds nesting
+  depth before `json.loads` runs. Brackets in strings do not count. An
+  unterminated string or a trailing lone backslash ends the input. No
+  input shape causes a rescan.
 - Integers longer than `MAX_INT_DIGITS` become a placeholder and set
   `huge_integer`. Text fields are still listed.
 - Fields: every string, empty string and `null` leaf, in document order,
   with its JSON Pointer.
 - `null`, `""` and a missing key are `FieldState.NULL`, `EMPTY` and
-  `MISSING`. `lookup` answers `MISSING` only when a document was parsed.
+  `MISSING`. `lookup` answers `MISSING` only when a document was parsed
+  and absence is proven. With `paging_marker`, `field_limit` or
+  `huge_integer` an absent key is `FieldState.UNPROVEN`.
+- Lone surrogates become `?` in both `fields` and `lookup`, and set
+  `lone_surrogate`.
 - Truncation: a decode error at the end of the text, or an unterminated
   string, is `truncated_json`. Any other decode error is `invalid_json`.
 - Paging: a non-empty root `@odata.nextLink` or `nextPageToken`, or a root

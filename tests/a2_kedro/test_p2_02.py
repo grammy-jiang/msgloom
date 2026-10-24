@@ -2,11 +2,14 @@
 
 from __future__ import annotations
 
+import time
+
 import pytest
 
 from msgloom.a2_kedro.contracts.codec import A2ContractError, sha256_hex
 from msgloom.a2_kedro.contracts.parse import ByteLink, ParsedParts, Part
 from msgloom.a2_kedro.parsers import plain_json as pj
+from msgloom.a2_kedro.parsers.json_scan import exceeds_depth
 from msgloom.a2_kedro.parsers.plain_json import (
     FieldState,
     Limitation,
@@ -224,8 +227,40 @@ def test_json_lone_surrogate_is_flagged_and_replaced() -> None:
     result = parse_json(b'{"a": "x\\ud800y"}')
     check(limits(result) == ("lone_surrogate",), "surrogate flagged")
     check(result.fields[0].value == "x?y", "value is encodable")
+    check(result.lookup("/a").value == "x?y", "lookup is cleaned the same way")
+    check(result.lookup("/a").state is FieldState.TEXT, "lookup state is text")
+    lone = parse_json(b'{"a": "\\ud800"}')
+    check(field_map(lone)["/a"] == (FieldState.TEXT, "?"), "lone value is cleaned")
+    check(lone.lookup("/a").value == "?", "lone value in lookup")
     clean = parse_json('{"a": "café"}'.encode())
     check(clean.outcome is Outcome.COMPLETE, "valid non-ASCII is complete")
+
+
+PARTIAL_VIEWS = [
+    (b'{"nextPageToken": "t", "a": "x"}', "paging_marker"),
+    (b'{"truncated": true, "a": "x"}', "paging_marker"),
+    (b'{"id": ' + b"9" * 80 + b', "a": "x"}', "huge_integer"),
+]
+
+
+@pytest.mark.parametrize(("data", "reason"), PARTIAL_VIEWS)
+def test_absence_is_unproven_when_the_document_is_a_partial_view(data, reason) -> None:
+    result = parse_json(data)
+    check(reason in limits(result), "limitation present")
+    check(result.lookup("/a").state is FieldState.TEXT, "present key is answered")
+    for pointer in ("/nope", "/a/0", "/a/b"):
+        got = result.lookup(pointer)
+        check(got.state is FieldState.UNPROVEN and got.value is None, pointer)
+
+
+def test_absence_is_unproven_after_the_field_bound_else_missing(monkeypatch) -> None:
+    whole = parse_json(b'{"a": "x", "b": "\\ud800"}')
+    check(whole.lookup("/c").state is FieldState.MISSING, "proven absence")
+    monkeypatch.setattr(pj, "MAX_JSON_FIELDS", 1)
+    result = parse_json(b'{"a": "x", "b": "y"}')
+    check("field_limit" in limits(result), "field bound hit")
+    check(result.lookup("/b").value == "y", "document still answers")
+    check(result.lookup("/c").state is FieldState.UNPROVEN, "absence unproven")
 
 
 def test_json_invalid_utf8_is_flagged() -> None:
@@ -354,6 +389,62 @@ def test_depth_at_the_bound_is_parsed_and_brackets_in_strings_ignored() -> None:
     check(limits(over) == ("depth_limit",), "one past the bound")
     text = parse_json(b'{"a": "[[[[[[[[[[' + b"[" * 200 + b'\\"[[["}')
     check(text.outcome is Outcome.COMPLETE, "brackets in strings do not count")
+
+
+# --- hostile input: linear time -----------------------------------------
+
+#: name -> (prefix, repeated unit, suffix)
+SHAPES = {
+    "escaped_quotes": (b'"', b'\\"', b"\\"),
+    "quotes": (b"", b'"', b""),
+    "backslashes": (b'"', b"\\", b""),
+    "open_brackets": (b"", b"[", b""),
+    "unterminated": (b'["', b"a", b""),
+    "alternating": (b"", b'"\\""', b"\\"),
+    "empty_pairs": (b"", b"[]", b""),
+}
+
+
+def hostile(kind: str, size: int) -> bytes:
+    prefix, unit, suffix = SHAPES[kind]
+    return prefix + unit * (size // len(unit)) + suffix
+
+
+def best_time(data: bytes) -> float:
+    times = []
+    for _ in range(2):
+        begin = time.perf_counter()
+        parse_json(data)
+        times.append(time.perf_counter() - begin)
+    return min(times)
+
+
+@pytest.mark.parametrize("kind", sorted(SHAPES))
+def test_hostile_one_megabyte_body_parses_fast_and_linear(kind) -> None:
+    check(parse_json(hostile(kind, 10**6)).outcome is Outcome.INCOMPLETE, "incomplete")
+    small = best_time(hostile(kind, 250_000))
+    large = best_time(hostile(kind, 10**6))
+    check(large < 2.0, f"1 MB took too long: {large:.2f}s")
+    check(large < max(small, 0.02) * 12, "time grows faster than linear")
+
+
+DEPTH_CASES = [
+    ("[[[]]]", False),
+    ("[[[[]]]]", True),
+    ('{"a":[[{}]]}', True),
+    ('["[[[[[[", "\\"[[[["]', False),
+    ('["x\\\\"]', False),
+    ('["x\\\\", [[[1]]]]', True),
+    ('[[["abc', False),
+    ('[[["abc\\', False),
+    ("]]]]]]", False),
+    ("]]][[[[", True),
+]
+
+
+@pytest.mark.parametrize(("text", "deep"), DEPTH_CASES)
+def test_depth_scan_counts_depth_outside_strings_only(text, deep) -> None:
+    check(exceeds_depth(text, 3) is deep, "depth verdict")
 
 
 # --- determinism, receipt, PII ----------------------------------------
