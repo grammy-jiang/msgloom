@@ -25,7 +25,9 @@ iterates only those extents, capped by ``MAX_GRID_AREA``.
 
 Bounds: input bytes, ZIP entries, actual (not declared) uncompressed size,
 sheets, cells, text characters, grid area, scanned XML elements, stored
-hidden indexes and iterated rows (see :mod:`.sheet_scan`). A hit gives
+hidden indexes and iterated rows (see :mod:`.sheet_scan`). The style and
+shared strings parts, which ``openpyxl`` loads in full, are counted before
+it opens the workbook (``SCAN_LIMIT``, no cells). A hit gives
 ``INCOMPLETE``. Rows or cells out of order give ``OUT_OF_ORDER``.
 Present but unextracted content (merges, comments, charts, images, drawings,
 pivot caches, external links, embedded objects, macros) gets a limitation.
@@ -41,7 +43,7 @@ import zipfile
 from dataclasses import dataclass, field
 from enum import StrEnum
 from io import BytesIO
-from typing import Any, Literal
+from typing import Any
 
 import openpyxl
 from openpyxl.utils.cell import get_column_letter
@@ -59,13 +61,14 @@ from msgloom.a2_kedro.parsers.sheet_scan import (
     MAX_ROW_SPAN,
     MAX_SCAN_ELEMENTS,
     Budget,
+    Format,
     Scans,
     SheetScan,
+    content_kinds,
+    detect,
     drop_capped,
     scan_members,
     sheet_paths,
-    small,
-    xml_parser,
 )
 
 __all__ = [
@@ -91,8 +94,6 @@ MAX_CELL_CHARS = 32_767
 MAX_GRID_AREA = 2_000_000
 _OLE = b"\xd0\xcf\x11\xe0\xa1\xb1\x1a\xe1"
 _OLE_ENCRYPTED = "EncryptedPackage".encode("utf-16-le")
-
-Format = Literal["xlsx", "xlsm"]
 
 
 class Outcome(StrEnum):
@@ -257,24 +258,6 @@ class SheetResult:
 # --- bounded scans of the saved bytes -------------------------------------
 
 
-def _detect(zf: zipfile.ZipFile) -> Format | None:
-    names = set(zf.namelist())
-    if "[Content_Types].xml" not in names:
-        return None
-    kinds: dict[str, str] = {}
-
-    def hook(_tag: str, a: dict[str, str]) -> None:
-        kinds[a.get("PartName", "").lower()] = a.get("ContentType", "").lower()
-
-    xml_parser(frozenset({"Override"}), hook).Parse(
-        small(zf, "[Content_Types].xml"), True
-    )
-    sheet = kinds.get("/xl/workbook.xml", "") if "xl/workbook.xml" in names else ""
-    if sheet.endswith("macroenabled.main+xml"):
-        return "xlsm"
-    return "xlsx" if sheet.endswith("spreadsheetml.sheet.main+xml") else None
-
-
 def _kind(value: object, error: bool) -> CellKind:
     if value is None or value == "":
         return "empty"
@@ -420,7 +403,7 @@ def _run_zip(zf: zipfile.ZipFile, raw: bytes, build: _Build) -> Format | None:
         found.add(L.CORRUPT)
     elif any(i.flag_bits & 1 for i in infos):
         found.add(L.PASSWORD_PROTECTED)
-    elif (fmt := _detect(zf)) is None:
+    elif (fmt := detect(zf, kinds := content_kinds(zf))) is None:
         found.add(L.UNSUPPORTED_FORMAT)
     else:
         found.update(
@@ -431,9 +414,12 @@ def _run_zip(zf: zipfile.ZipFile, raw: bytes, build: _Build) -> Format | None:
         )
         paths = sheet_paths(zf)
         parts = frozenset(paths.values()) - {""}
-        scan, too_big = scan_members(zf, parts, MAX_UNCOMPRESSED, build.budget)
+        args = (zf, parts, MAX_UNCOMPRESSED, build.budget, kinds)
+        scan, too_big, loaded_too_big = scan_members(*args)
         if too_big:
             found.add(L.ZIP_LIMIT)
+        elif loaded_too_big:  # openpyxl would load an unbounded part
+            found.add(L.SCAN_LIMIT)
         else:
             if any(s.merged for s in scan.values()):
                 found.add(L.MERGED_CELLS)

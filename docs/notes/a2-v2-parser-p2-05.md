@@ -119,6 +119,20 @@ streaming; a member larger than its declared size is `corrupt`),
   workbook, so a capped sheet part is replaced by an empty stub in a copy
   of the package. A capped sheet gives no cells. Rows over `MAX_ROW_SPAN`
   give `dimension_limit`.
+- Parts that `openpyxl` loads in full are counted before it opens the
+  workbook (`parsers/sheet_scan.py`, `scan_members`). `xl/styles.xml` has
+  `MAX_STYLE_ELEMENTS` 50 000 start tags. The shared strings part (found
+  by content type, as `openpyxl` does) has `MAX_SHARED_STRINGS` 100 000
+  `<si>` items and `MAX_STRING_ELEMENTS` 400 000 start tags. Every other
+  part that `openpyxl` parses at load time (workbook, content types,
+  `docProps/core.xml`, `docProps/custom.xml`, any `.rels`) has
+  `MAX_PART_ELEMENTS` 50 000 start tags. Each of these parts also has
+  `MAX_PART_BYTES` 16 MiB of actual bytes. The same expat parser rejects
+  `DOCTYPE` and entities. If a part exceeds a bound, the walk stops, the
+  workbook is never opened with `openpyxl`, and the result is `incomplete`
+  with `scan_limit` and no sheets or cells (no new limitation code). A
+  probe showed that 1.25 million `<xf/>` took 73 s and 2.1 GB, and 3.8
+  million `<si>` took 105 s and 529 MB, before this bound.
 - Rows with a non-increasing `r`, and cells with a non-increasing column in
   a row, give `out_of_order`. `openpyxl` read-only mode drops such rows and
   overwrites such cells. The readable cells are still returned.
@@ -138,6 +152,18 @@ streaming; a member larger than its declared size is `corrupt`),
 exception text is dropped and never stored.
 
 ## Known gaps and follow-up
+
+- `openpyxl` still loads the style and string parts once per pass (two
+  passes: formula view and cached view). The parts are bounded, so this
+  costs about twice a few seconds at the bounds, but the load is not shared
+  between passes. A part just under the bounds is parsed twice.
+- Parts that `openpyxl` read-only mode does not open (theme bytes,
+  comments, drawings, charts, pivots) are not scanned. The theme part is
+  only read as bytes and is limited by `MAX_UNCOMPRESSED`. The bounds are
+  provisional parser decisions, chosen above ordinary Excel files.
+- `sheet_scan.py`, `tests/a2_kedro/test_p2_05_hostile.py`,
+  `tests/a2_kedro/test_p2_05_rows.py` and this note exceed the manifest
+  `edit_paths` of P2-05. They need a Supervisor allowlist waiver.
 
 - ODS and XLSB are refused (see above). Follow-up: adopt the bounded
   pre-scan of `parsers/sheet_scan.py` for them. XLSB

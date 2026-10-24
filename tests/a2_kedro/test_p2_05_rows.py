@@ -6,11 +6,13 @@ import time
 import zipfile
 from io import BytesIO
 
+import pytest
+
 from msgloom.a2_kedro.parsers import spreadsheets as sp
 from msgloom.a2_kedro.parsers.spreadsheets import Limitation as L
 from msgloom.a2_kedro.parsers.spreadsheets import Outcome, parse_spreadsheet
 from tests.a2_kedro.helpers import check
-from tests.a2_kedro.test_p2_05_hostile import SLOW, inline, mini
+from tests.a2_kedro.test_p2_05_hostile import SHEET, SLOW, inline, mini, spy_load
 
 FLOOD = 2_000_000
 HIDDEN_ROW = '<row hidden="1"/>'
@@ -156,3 +158,54 @@ def test_receipt_limit_hit_follows_the_limitation() -> None:
         receipt = parse_spreadsheet(data).to_receipt("1")
         hits.append(None if receipt is None else receipt.limit_hit)
     check(hits == ["bytes", "parts", "cells"], "limit hit values")
+
+
+# --- mutation gaps: text truncation, duplicate members, open options -----
+
+
+def test_long_cell_text_is_cut_at_the_cell_bound_and_flagged() -> None:
+    limit = sp.MAX_CELL_CHARS
+    rows = f'<row r="1">{inline("A1", "x" * (limit + 5))}</row>'
+    rows += f'<row r="2">{inline("A2", "y" * limit)}</row>'
+    result = parse_spreadsheet(mini(f"<sheetData>{rows}</sheetData>"))
+    first, second = result.cells
+    check(str(first.value) == "x" * limit and first.truncated, "long text is cut")
+    check(str(second.value) == "y" * limit and not second.truncated, "exact fit")
+    check(result.limitations == (L.TEXT_LIMIT,), "text limit")
+    check(result.outcome is Outcome.INCOMPLETE, "partial")
+
+
+def test_long_formula_text_is_cut_at_the_cell_bound_and_flagged() -> None:
+    limit = sp.MAX_CELL_CHARS
+    cell = f'<c r="A1"><f>{"A" * (limit + 5)}</f><v>1</v></c>'
+    result = parse_spreadsheet(mini(f'<sheetData><row r="1">{cell}</row></sheetData>'))
+    (only,) = result.cells
+    check(only.formula is not None and len(only.formula) == limit, "formula cut")
+    check(only.truncated and L.TEXT_LIMIT in result.limitations, "flagged")
+
+
+def test_duplicate_zip_member_names_are_corrupt() -> None:
+    data = mini("<sheetData/>")
+    check(parse_spreadsheet(data).outcome is Outcome.COMPLETE, "control")
+    with zipfile.ZipFile(BytesIO(data)) as zf:
+        files = {n: zf.read(n) for n in zf.namelist()}
+    dup = BytesIO()
+    with zipfile.ZipFile(dup, "w") as zf:
+        for name, body in files.items():
+            zf.writestr(name, body)
+        with pytest.warns(UserWarning):
+            zf.writestr(SHEET, files[SHEET])
+    result = parse_spreadsheet(dup.getvalue())
+    check(result.outcome is Outcome.FAILED, "duplicate member fails")
+    check(result.limitations == (L.CORRUPT,) and not result.sheets, "corrupt")
+
+
+def test_workbook_is_opened_read_only_without_vba_or_links(monkeypatch) -> None:
+    calls = spy_load(monkeypatch)
+    parse_spreadsheet(mini("<sheetData/>"))
+    check(len(calls) == 2, "two passes")
+    check(sorted(k["data_only"] for _, k in calls) == [False, True], "both views")
+    for _, kwargs in calls:
+        check(kwargs["read_only"] is True, "read only")
+        check(kwargs["keep_vba"] is False, "keep_vba must stay false")
+        check(kwargs["keep_links"] is False, "keep_links must stay false")

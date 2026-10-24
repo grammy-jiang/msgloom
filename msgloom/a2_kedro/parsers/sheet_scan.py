@@ -21,6 +21,17 @@ Bounds, all provisional parser decisions:
   together. Bounds the size of the result.
 - ``MAX_ROW_SPAN``: rows that ``openpyxl`` may iterate for all sheets
   together. The caller spends it. Empty rows between cells cost one each.
+- ``MAX_STYLE_ELEMENTS``: start tags of ``xl/styles.xml``.
+- ``MAX_SHARED_STRINGS`` and ``MAX_STRING_ELEMENTS``: ``<si>`` items and
+  start tags of the shared strings part.
+- ``MAX_PART_ELEMENTS`` and ``MAX_PART_BYTES``: start tags and actual bytes
+  of any other part that ``openpyxl`` parses at load time (relationships,
+  core and custom properties, workbook, content types).
+
+``openpyxl`` loads the style and string parts in full, once per pass, with
+no limit of its own. :func:`scan_members` therefore counts them first. If a
+part exceeds a bound, the scan stops at once, the caller never opens the
+workbook with ``openpyxl`` and reports ``scan_limit``.
 
 Nothing here keeps text, names or values from the workbook.
 """
@@ -32,7 +43,7 @@ import zipfile
 from collections.abc import Callable
 from dataclasses import dataclass, field
 from io import BytesIO
-from typing import Any
+from typing import Any, Literal
 from xml.parsers import expat
 
 from openpyxl.utils.cell import coordinate_to_tuple
@@ -40,6 +51,11 @@ from openpyxl.utils.cell import coordinate_to_tuple
 MAX_SCAN_ELEMENTS = 250_000
 MAX_HIDDEN = 20_000
 MAX_ROW_SPAN = 200_000
+MAX_STYLE_ELEMENTS = 50_000
+MAX_SHARED_STRINGS = 100_000
+MAX_STRING_ELEMENTS = 400_000
+MAX_PART_ELEMENTS = 50_000
+MAX_PART_BYTES = 16 * 1024 * 1024
 _SMALL, _CHUNK, _MAX_COLUMN = 1024 * 1024, 64 * 1024, 16_384
 _TRUE = ("1", "true")
 _WORKSHEET = "/relationships/worksheet"
@@ -48,6 +64,7 @@ _STUB = (
     b'2006/main"><sheetData/></worksheet>'
 )
 
+Format = Literal["xlsx", "xlsm"]
 Hook = Callable[[str, dict[str, str]], None]
 
 
@@ -71,6 +88,14 @@ class SheetScan:
     merged: int = 0
     capped: bool = False  # a budget ended the scan early
     disordered: bool = False  # non-increasing row or cell position
+
+
+@dataclass(frozen=True, slots=True)
+class Guard:
+    """Start-tag bound, and an optional ``<si>`` bound, of one loaded part."""
+
+    elements: int
+    strings: int = 0  # 0: no bound on ``<si>`` items
 
 
 Scans = dict[str, SheetScan]
@@ -178,6 +203,72 @@ def _sheet_parser(scan: SheetScan, budget: Budget) -> Any:
     return xml_parser(wanted, hook, every)
 
 
+def content_kinds(zf: zipfile.ZipFile) -> dict[str, str]:
+    """Map each lower-case override part name to its lower-case content type."""
+    kinds: dict[str, str] = {}
+    if "[Content_Types].xml" not in zf.namelist():
+        return kinds
+
+    def hook(_tag: str, a: dict[str, str]) -> None:
+        kinds[a.get("PartName", "").lower()] = a.get("ContentType", "").lower()
+
+    xml_parser(frozenset({"Override"}), hook).Parse(
+        small(zf, "[Content_Types].xml"), True
+    )
+    return kinds
+
+
+def detect(zf: zipfile.ZipFile, kinds: dict[str, str]) -> Format | None:
+    """Return the format named by the content types, or ``None``."""
+    present = "xl/workbook.xml" in set(zf.namelist())
+    sheet = kinds.get("/xl/workbook.xml", "") if present else ""
+    if sheet.endswith("macroenabled.main+xml"):
+        return "xlsm"
+    return "xlsx" if sheet.endswith("spreadsheetml.sheet.main+xml") else None
+
+
+def guards(kinds: dict[str, str]) -> dict[str, Guard]:
+    """
+    Map lower-case names of parts that ``openpyxl`` loads in full to bounds.
+
+    The shared strings and workbook parts are found by content type, as
+    ``openpyxl`` does, so a renamed part is still bounded.
+    """
+    other = Guard(MAX_PART_ELEMENTS)
+    strings = Guard(MAX_STRING_ELEMENTS, MAX_SHARED_STRINGS)
+    found = {
+        "xl/styles.xml": Guard(MAX_STYLE_ELEMENTS),
+        "xl/sharedstrings.xml": strings,
+        "docprops/core.xml": other,
+        "docprops/custom.xml": other,
+        "xl/workbook.xml": other,
+        "[content_types].xml": other,
+    }
+    for part, kind in kinds.items():
+        if kind.endswith("sharedstrings+xml"):
+            found[part.lstrip("/")] = strings
+        elif kind.endswith("main+xml"):
+            found[part.lstrip("/")] = other
+    return found
+
+
+def _guard_parser(guard: Guard) -> Any:
+    left = {"elements": guard.elements, "strings": guard.strings}
+
+    def every() -> None:
+        left["elements"] -= 1
+        if left["elements"] < 0:
+            raise _Stop
+
+    def item(_tag: str, _attrs: dict[str, str]) -> None:
+        left["strings"] -= 1
+        if left["strings"] < 0:
+            raise _Stop
+
+    wanted = frozenset({"si"}) if guard.strings else frozenset()
+    return xml_parser(wanted, item, every)
+
+
 def small(zf: zipfile.ZipFile, name: str) -> bytes:
     """Return a small member. Reject a member over the small bound."""
     info = zf.getinfo(name)
@@ -232,43 +323,61 @@ def scan_members(
     sheet_parts: frozenset[str],
     max_uncompressed: int,
     budget: Budget,
-) -> tuple[Scans, bool]:
+    kinds: dict[str, str],
+) -> tuple[Scans, bool, bool]:
     """
     Stream every member once. Count actual bytes, never declared bytes.
 
     A member is a sheet if it is in ``sheet_parts`` or under
-    ``xl/worksheets/``. Return the scans and whether the uncompressed bound
-    ended the walk. A member that exceeds its declared size raises
+    ``xl/worksheets/``. A member that ``openpyxl`` loads in full (see
+    :func:`guards`, and every ``.rels`` part) gets a start-tag bound and a
+    byte bound. Return the scans, whether the uncompressed bound ended the
+    walk, and whether a loaded part exceeded its bound. In the last case
+    the walk ends at once. A member that exceeds its declared size raises
     :exc:`Reject`.
     """
     scan: Scans = {}
     total = 0
+    bounds = guards(kinds)
     for info in zf.infolist():
         if info.is_dir():
             continue
         name = info.filename.lower()
         parser = None
+        guard = bounds.get(name) or (
+            Guard(MAX_PART_ELEMENTS) if name.endswith(".rels") else None
+        )
         if name in sheet_parts or (
             name.startswith("xl/worksheets/") and name.endswith(".xml")
         ):
             parser = _sheet_parser(scan.setdefault(name, SheetScan()), budget)
+            guard = None
+        elif guard is not None:
+            parser = _guard_parser(guard)
         seen = 0
         with zf.open(info) as handle:
             while chunk := handle.read(_CHUNK):
                 seen, total = seen + len(chunk), total + len(chunk)
                 if total > max_uncompressed:
-                    return scan, True
+                    return scan, True, False
                 if seen > info.file_size:
                     raise Reject
+                if guard is not None and seen > MAX_PART_BYTES:
+                    return scan, False, True
                 if parser is None:
                     continue
                 try:
                     parser.Parse(chunk, False)
                 except _Stop:
+                    if guard is not None:
+                        return scan, False, True
                     parser = None
         if parser is not None:
-            parser.Parse(b"", True)
-    return scan, False
+            try:
+                parser.Parse(b"", True)
+            except _Stop:
+                return scan, False, True
+    return scan, False, False
 
 
 def drop_capped(zf: zipfile.ZipFile, scan: Scans) -> bytes | None:
