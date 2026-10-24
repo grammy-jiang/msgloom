@@ -7,6 +7,11 @@ a :class:`ScopeStatusError`) plus the small :class:`ScopeProgress` that
 names the frozen scope. Its output is a frozen :class:`ScopeStatus`, a
 stable process exit code and a one-line text.
 
+The :class:`ScopeProgress` also names the frozen workset reference. A
+receipt for another workset raises :exc:`ScopeInputError` before any count
+is read, so a foreign receipt never gives ``COMPLETE``. The scope id is a
+digest, never free text, so an address or a path cannot enter a status.
+
 Boundaries: no database is opened, nothing is written, the environment is
 never read and no persistence module is imported. A caller that wants a
 status from storage must load typed objects first. The status holds only a
@@ -22,7 +27,8 @@ claims more is ignored. Anything else is never ``COMPLETE``.
 Exit codes follow ``msgloom/cli/runner.py``: 0 is success and 4 is a
 failed operation (reused here for claim loss). That module keeps 2 for
 invalid input and 3 for an untrusted authority, so this table avoids both.
-The other values are new and documented in :data:`EXIT_CODES`.
+The other values are new, provisional and documented in
+:data:`EXIT_CODES`.
 
 CANDIDATE/RESEARCH: nothing calls this module yet.
 """
@@ -38,11 +44,11 @@ from typing import Annotated, ClassVar
 
 from pydantic import Field, model_validator
 
-from msgloom.a2_kedro.contracts.codec import A2ContractError, A2Model, Text
+from msgloom.a2_kedro.contracts.codec import A2ContractError, A2Model, Digest
 from msgloom.a2_kedro.contracts.held import KIND as HELD_KIND
 from msgloom.a2_kedro.contracts.held import InputDisposition
 from msgloom.a2_kedro.contracts.receipt import CompletionReceipt, TerminalRoot
-from msgloom.contracts import TerminalStatus
+from msgloom.contracts import ResultRef, TerminalStatus
 
 COMPLETE, INCOMPLETE = TerminalStatus.COMPLETE, TerminalStatus.INCOMPLETE
 #: Provisional bound; it equals the receipt root bound.
@@ -51,13 +57,19 @@ MAX_OCCURRENCES = 1024
 MAX_CODES = 64
 #: A limitation code that may appear in a status or in the text line.
 _SAFE_CODE = re.compile(r"^[a-z][a-z0-9_]{0,63}$")
+#: A scope id is a lowercase SHA-256 digest (same pattern as ``Digest``).
+_SCOPE_DIGEST = re.compile(r"^[0-9a-f]{64}$")
 #: Fixed stand-ins; they keep unsafe or excess codes out of the status.
 UNSAFE_CODE = "limitation_code_unsafe"
 TRUNCATED_CODE = "limitation_codes_truncated"
 
 
 class ScopeState(StrEnum):
-    """Closed states of one scope. ``HELD`` and ``BUSY`` are INCOMPLETE."""
+    """
+    Closed states of one scope. ``HELD`` and ``BUSY`` are INCOMPLETE.
+
+    The wire names are provisional until a CLI decision confirms them.
+    """
 
     COMPLETE = "complete"
     INCOMPLETE = "incomplete"
@@ -87,9 +99,11 @@ _TERMINAL: Mapping[ScopeState, TerminalStatus] = MappingProxyType(
     }
 )
 
-#: Stable process exit codes, one per state. Only 0 and 4 are shared with
-#: ``runner.py``. A script may rely on every value. A new state needs a new
-#: value; an existing value never changes.
+#: Process exit codes, one per state. Only 0 and 4 are shared with
+#: ``runner.py`` and only those two are stable. The values 20 to 32 are
+#: PROVISIONAL, as are the state wire names and the limitation codes
+#: ``occurrence_missing``, ``batch_missing`` and ``intake_held``. A script
+#: must not rely on them until a CLI decision confirms them.
 EXIT_CODES: Mapping[ScopeState, int] = MappingProxyType(
     {
         ScopeState.COMPLETE: 0,
@@ -175,9 +189,10 @@ class HeldTerminalError(ScopeStatusError):
 
 
 class ScopeProgress(A2Model):
-    """The frozen scope that a receipt must cover, as plain counts."""
+    """The frozen scope that a receipt must cover, as a workset and counts."""
 
-    scope_id: Text
+    scope_id: Digest
+    workset: ResultRef
     expected_occurrences: Annotated[int, Field(ge=0, le=MAX_OCCURRENCES)]
     expects_batch: bool = False
     expected_intake_held: Annotated[int, Field(ge=0, le=MAX_OCCURRENCES)] = 0
@@ -194,7 +209,7 @@ class ScopeProgress(A2Model):
 class ScopeStatus(A2Model):
     """Frozen status of one scope: state, counts and limitation codes."""
 
-    scope_id: Text
+    scope_id: Digest
     state: ScopeState
     occurrences: Annotated[int, Field(ge=0, le=MAX_OCCURRENCES)] = 0
     complete: Annotated[int, Field(ge=0, le=MAX_OCCURRENCES)] = 0
@@ -208,13 +223,13 @@ class ScopeStatus(A2Model):
 
     @model_validator(mode="after")
     def _shape(self) -> ScopeStatus:
+        if self.batches_complete > self.batches:
+            raise A2ContractError("batch complete count exceeds batch count")
         parts = self.complete + self.incomplete + self.held + self.missing
         if self.state is not ScopeState.COMPLETE and parts == 0 == self.occurrences:
             return self._codes_only()
         if parts != self.occurrences:
             raise A2ContractError("status counts do not add up")
-        if self.batches_complete > self.batches:
-            raise A2ContractError("batch complete count exceeds batch count")
         self._codes_only()
         if self.state is not ScopeState.COMPLETE:
             return self
@@ -269,7 +284,7 @@ def status_line(status: ScopeStatus) -> str:
 
 
 def _scope_id(scope_id: object) -> str:
-    if type(scope_id) is not str or not scope_id:
+    if type(scope_id) is not str or not _SCOPE_DIGEST.fullmatch(scope_id):
         raise ScopeInputError
     return scope_id
 
@@ -327,9 +342,10 @@ def status_from_receipt(
     Return the status of ``progress`` as covered by ``receipt``.
 
     A receipt with fewer roots than expected leaves the missing
-    occurrences open, so the state is INCOMPLETE. A receipt that names an
-    occurrence outside the scope, other intake-held entries or an
-    unexpected batch raises :exc:`ScopeInputError`. A root that claims
+    occurrences open, so the state is INCOMPLETE. A receipt for another
+    workset, a receipt that names an occurrence outside the scope, other
+    intake-held entries or an unexpected batch raises
+    :exc:`ScopeInputError`. The workset check comes first. A root that claims
     held and COMPLETE raises :exc:`HeldTerminalError`.
     """
     if not isinstance(progress, ScopeProgress):
@@ -340,7 +356,9 @@ def status_from_receipt(
     batch = receipt.transition_batch
     expected = progress.expected_occurrences
     if (
-        len(roots) > expected
+        receipt.workset != progress.workset
+        or type(receipt.intake_held_count) is not int
+        or len(roots) > expected
         or receipt.intake_held_count != progress.expected_intake_held
         or (batch is not None and not progress.expects_batch)
         or [r.workset_selection_index for r in roots] != list(range(len(roots)))

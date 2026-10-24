@@ -12,11 +12,7 @@ import pytest
 from pydantic import ValidationError
 
 from msgloom.a2_kedro.contracts.held import HeldReason, InputDisposition
-from msgloom.a2_kedro.contracts.receipt import (
-    CompletionReceipt,
-    TerminalRoot,
-    TransitionBatch,
-)
+from msgloom.a2_kedro.contracts.receipt import TerminalRoot
 from msgloom.cli import a2_scope_status as module
 from msgloom.cli.a2_scope_status import (
     EXIT_CODES,
@@ -38,18 +34,16 @@ from msgloom.cli.a2_scope_status import (
     status_line,
 )
 from msgloom.contracts import Limitation, TerminalStatus
-from tests.a2_kedro.helpers import (
-    CODE,
-    CONFIG,
-    WORKSET_REF,
-    accepted_ref,
-    check,
-    root_for,
-    workset,
-)
-from tests.a2_kedro.test_held_receipt import (
+from tests.a2_kedro.helpers import CODE, CONFIG, WORKSET_REF, check, root_for, workset
+from tests.a2_kedro.helpers_c0_18 import (
+    SCOPE,
+    batch_for,
+    complete_receipt,
+    forged_receipt,
     held_ref,
+    open_root,
     prepared_ref,
+    progress,
     receipt,
     terminal,
 )
@@ -57,7 +51,6 @@ from tests.a2_kedro.test_held_receipt import (
 COMPLETE, INCOMPLETE = TerminalStatus.COMPLETE, TerminalStatus.INCOMPLETE
 MODULE_PATH = Path(module.__file__ or "")
 SECRET = "sentinel-private-detail-text"
-SCOPE = "scope-visible-in-status-only"
 
 
 STATE_CODES = [
@@ -74,53 +67,6 @@ STATE_CODES = [
 
 class SubStr(str):
     """A str subclass that strict models must refuse."""
-
-
-def progress(occurrences: int = 2, **changes: Any) -> ScopeProgress:
-    return ScopeProgress(scope_id=SCOPE, expected_occurrences=occurrences, **changes)
-
-
-def open_root(ws: Any, index: int, limitations: tuple[Limitation, ...]) -> TerminalRoot:
-    """Return an INCOMPLETE prepared root with explicit ``limitations``."""
-    return TerminalRoot(
-        workset_selection_index=index,
-        result=prepared_ref(str(index + 1)),
-        disposition="prepared",
-        status=INCOMPLETE,
-        limitations=limitations,
-        selection=ws.selections[index],
-    )
-
-
-def complete_receipt() -> CompletionReceipt:
-    ws = workset(2)
-    return receipt(
-        (terminal(ws, 0, prepared_ref("1")), terminal(ws, 1, prepared_ref("2")))
-    )
-
-
-def forged_receipt(
-    roots: tuple[TerminalRoot, ...], status: TerminalStatus
-) -> CompletionReceipt:
-    """Build a receipt that skips validation, as a hostile caller could."""
-    return CompletionReceipt.model_construct(
-        workset=WORKSET_REF,
-        status=status,
-        policy_version="policy-1",
-        roots=roots,
-        transition_batch=None,
-        intake_held_count=0,
-        acceptance_index_sha256="0" * 64,
-        claim_proofs=(),
-    )
-
-
-def batch_for(ws: Any, status: TerminalStatus) -> TransitionBatch:
-    return TransitionBatch(
-        transitions=ws.transitions,
-        result=accepted_ref("3", "prepared_transitions", "2"),
-        status=status,
-    )
 
 
 def test_complete_receipt_is_the_only_complete_state() -> None:
@@ -192,7 +138,7 @@ def test_missing_batch_and_incomplete_batch_are_never_complete() -> None:
 def test_held_only_receipt_is_incomplete_intake_held() -> None:
     held_only = receipt((), status=INCOMPLETE, intake_held_count=2)
     status = status_from_receipt(
-        ScopeProgress(scope_id=SCOPE, expected_occurrences=0, expected_intake_held=2),
+        progress(0, expected_intake_held=2),
         held_only,
     )
     check(status.intake_held == 2 and status.occurrences == 0, "counts")
@@ -384,15 +330,19 @@ def test_unexpected_batch_and_foreign_status_are_rejected() -> None:
 
 def test_models_reject_bad_shapes() -> None:
     with pytest.raises(ValidationError):
-        ScopeProgress(scope_id="", expected_occurrences=1)  # empty scope id
+        ScopeProgress(
+            scope_id="", workset=WORKSET_REF, expected_occurrences=1
+        )  # empty scope id
     with pytest.raises(ValueError, match="no frozen work"):
-        ScopeProgress(scope_id=SCOPE, expected_occurrences=0)  # empty scope
+        ScopeProgress(scope_id=SCOPE, workset=WORKSET_REF, expected_occurrences=0)
     with pytest.raises(ValidationError):
-        ScopeProgress(scope_id=SubStr(SCOPE), expected_occurrences=1)
+        ScopeProgress(
+            scope_id=SubStr(SCOPE), workset=WORKSET_REF, expected_occurrences=1
+        )
     with pytest.raises(ValidationError):
-        ScopeProgress(scope_id=SCOPE, expected_occurrences=True)  # bool is not int
+        ScopeProgress(scope_id=SCOPE, workset=WORKSET_REF, expected_occurrences=True)
     with pytest.raises(ValidationError):
-        ScopeProgress(scope_id=SCOPE, expected_occurrences=1, extra_field=1)  # type: ignore[call-arg]
+        progress(1, extra_field=1)  # type: ignore[call-arg]
     with pytest.raises(ValidationError):
         ScopeStatus(scope_id=SCOPE, state="unknown")  # type: ignore[arg-type]
     with pytest.raises(ValidationError):
@@ -445,25 +395,65 @@ def test_status_is_frozen_and_deterministic() -> None:
         first.state = ScopeState.INCOMPLETE  # type: ignore[misc]
 
 
-def test_module_never_touches_persistence_environment_or_files() -> None:
-    tree = ast.parse(MODULE_PATH.read_text(encoding="utf-8"))
+FORBIDDEN_ROOTS = {
+    "sqlite3",
+    "os",
+    "pathlib",
+    "subprocess",
+    "socket",
+    "urllib",
+    "http",
+    "requests",
+}
+FORBIDDEN_NAMES = {"os.environ", "sys.environ"}
+
+
+def forbidden_uses(source: str) -> list[str]:
+    """Return dotted names in ``source`` that reach storage, files or network."""
     names: set[str] = set()
-    for node in ast.walk(tree):
+    for node in ast.walk(ast.parse(source)):
         if isinstance(node, ast.Import):
             names.update(alias.name for alias in node.names)
         elif isinstance(node, ast.ImportFrom):
-            names.add(node.module or "")
+            module = node.module or ""
+            names.add(module)
+            names.update(f"{module}.{alias.name}" for alias in node.names)
         elif isinstance(node, ast.Attribute) and isinstance(node.value, ast.Name):
             names.add(f"{node.value.id}.{node.attr}")
-    forbidden = ("persistence", "sqlite3", "os", "pathlib", "sys.environ", "open")
-    for name in names:
-        check(
-            not any(part in forbidden for part in name.split(".")),
-            "forbidden dependency in scope status module",
-        )
+    return sorted(
+        name
+        for name in names
+        if name.split(".")[0] in FORBIDDEN_ROOTS
+        or "persistence" in name.split(".")
+        or any(name == bad or name.startswith(bad + ".") for bad in FORBIDDEN_NAMES)
+    )
+
+
+def test_forbidden_use_check_detects_each_dependency() -> None:
+    for source in (
+        "import sqlite3",
+        "import os.path",
+        "from os import environ",
+        "from sys import environ",
+        "import sys\nsys.environ",
+        "import os\nos.environ",
+        "import subprocess",
+        "import socket",
+        "import urllib.request",
+        "from http import client",
+        "import requests",
+        "from msgloom.a2_kedro.persistence import store",
+    ):
+        check(bool(forbidden_uses(source)), f"not detected: {source!r}")
+    check(forbidden_uses("import sys\nsys.argv\nimport re") == [], "false hit")
+
+
+def test_module_never_touches_persistence_environment_or_files() -> None:
+    source = MODULE_PATH.read_text(encoding="utf-8")
+    check(forbidden_uses(source) == [], "forbidden dependency in scope status module")
     calls = {
         node.func.id
-        for node in ast.walk(tree)
+        for node in ast.walk(ast.parse(source))
         if isinstance(node, ast.Call) and isinstance(node.func, ast.Name)
     }
     check("open" not in calls, "no file open")
