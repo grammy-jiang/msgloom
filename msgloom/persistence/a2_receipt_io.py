@@ -45,10 +45,12 @@ def read_bounded(path: Path, limit: int) -> bytes | None:
     Return the content of a regular file of at most ``limit`` bytes.
 
     Return ``None`` if the file is absent. Never follow a final symlink.
+    Never block on a FIFO or other special file: it raises ``read-failed``.
     Read until end of file or ``limit + 1`` bytes, because one ``os.read``
     may return fewer bytes than asked.
     """
-    flags = os.O_RDONLY | getattr(os, "O_NOFOLLOW", 0)
+    # O_NONBLOCK: opening a FIFO must not wait. S_ISREG then rejects it.
+    flags = os.O_RDONLY | getattr(os, "O_NOFOLLOW", 0) | getattr(os, "O_NONBLOCK", 0)
     try:
         fd = os.open(path, flags)
     except FileNotFoundError:
@@ -94,8 +96,10 @@ def create_once(directory: Path, name: str, data: bytes) -> bool:
 
     A failure before the link leaves no final file. The temporary file is
     removed on every exit path. A directory ``fsync`` failure after the
-    link raises ``write-failed``. The complete file stays, and a retry
-    flushes the directory again before it reports a replay.
+    link raises ``write-failed``. The complete file stays. A retry that finds
+    the name already linked flushes the directory again before it reports
+    a replay. The caller must do the same on a replay path that returns
+    before this function runs (``append_claim`` does).
     """
     temp = directory / f".tmp-{secrets.token_hex(8)}"
     try:

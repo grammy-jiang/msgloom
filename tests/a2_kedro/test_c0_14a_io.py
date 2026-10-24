@@ -18,6 +18,7 @@ from msgloom.persistence.a2_receipt_store import (
     MAX_CLAIM_BYTES,
     MAX_PROOF_BYTES,
     A2ReceiptConflict,
+    A2ReceiptError,
     CoverageItem,
     ReceiptStore,
     build_receipt_proof,
@@ -224,6 +225,47 @@ def test_directory_fsync_failure_is_write_failed(
     check(env.append(0) in ("inserted", "replayed"), "claim retry")
     check(env.store.get_receipt_proof(WORKSET_REF) == env.good, "whole proof")
     check(len(env.history()) == 1, "whole claim")
+
+
+@POSIX_ONLY
+def test_claim_replay_flushes_the_directory_before_replayed(
+    env: Env, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    # The post-link flush fails: the claim file stays but its name is not durable.
+    monkeypatch.setattr(os, "fsync", FsyncLog((2,)))
+    expect("write-failed", lambda: env.append(0))
+    check(len(env.history()) == 1, "the complete claim file remains")
+    # A retry while the flush still fails must never report a replay.
+    monkeypatch.setattr(os, "fsync", FsyncLog((1, 2, 3)))
+    expect("write-failed", lambda: env.append(0))
+    expect("write-failed", lambda: env.append(0))
+    # A retry with a working flush replays, and it flushes the directory.
+    log = FsyncLog()
+    monkeypatch.setattr(os, "fsync", log)
+    check(env.append(0) == "replayed", "retry replays")
+    check(log.events.count("dir") >= 1, f"directory flushed on replay {log.events}")
+
+
+@POSIX_ONLY
+def test_fifo_in_place_of_a_claim_is_read_failed_without_blocking(env: Env) -> None:
+    if not hasattr(os, "mkfifo"):
+        pytest.skip("os.mkfifo unsupported")
+    env.append(0)
+    env.append(1)
+    os.mkfifo(env.workset_dir() / "claim-00002.json")
+    outcome: list[str] = []
+
+    def work() -> None:
+        try:
+            env.history()
+        except A2ReceiptError as error:
+            outcome.append(error.reason)
+
+    thread = threading.Thread(target=work, daemon=True)
+    thread.start()
+    thread.join(timeout=10)
+    check(not thread.is_alive(), "reading a FIFO must not block")
+    check(outcome == ["read-failed"], f"FIFO outcome {outcome}")
 
 
 def test_tail_truncation_is_detected_only_with_an_anchor(env: Env) -> None:

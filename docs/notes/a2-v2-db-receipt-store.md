@@ -59,11 +59,16 @@ the file size are checked before `os.link` publishes the file. A short write,
 a zero write or an error removes the temporary file and raises
 `write-failed`. No final file exists after such a failure. The directory is
 flushed with `fsync` after `os.link` and after `mkdir`. A directory `fsync`
-error raises `write-failed`. The complete file can remain. A retry flushes
-the directory again before it reports a replay. On Windows a directory
+error raises `write-failed`. The complete file can remain. A retry of
+`put_receipt_proof` or `append_claim` flushes the directory again before it
+reports `replayed`. If that flush fails, the retry raises `write-failed` and
+never reports `replayed`. On Windows a directory
 cannot be opened for `fsync`. There the flush is skipped, and a new name is
 not guaranteed durable. Reads loop until end of file or the limit plus one
-byte. An oversize payload raises `A2ReceiptBoundError`.
+byte. Reads open files with `O_NOFOLLOW` and `O_NONBLOCK` (where the
+platform has them). A symlink, a FIFO or another non-regular file raises
+`read-failed` and does not block. An oversize payload raises
+`A2ReceiptBoundError`.
 
 ## Read rules
 

@@ -341,6 +341,13 @@ class ReceiptStore:
             raise A2ReceiptError("store-root-invalid")
         self._root = root
 
+    def _flush(self, workset: ResultRef) -> None:
+        """Flush the workset directory; an ``OSError`` is ``write-failed``."""
+        try:
+            fsync_directory(self._directory(workset))
+        except OSError:
+            raise A2ReceiptError("write-failed") from None
+
     def _directory(self, workset: ResultRef, *, create: bool = False) -> Path:
         name = domain_sha256(
             _DIR_DOMAIN, [workset.result_id, workset.kind, workset.schema_version]
@@ -438,8 +445,9 @@ class ReceiptStore:
         """
         Append ``entry`` at ``expected_seq``; never rewrite history.
 
-        The same entry at a stored sequence replays. A different entry
-        raises :exc:`A2ReceiptConflict`. A sequence past the end raises
+        The same entry at a stored sequence replays, after the workset
+        directory is flushed again. A failed flush raises ``write-failed``
+        and never returns ``replayed``. A different entry raises :exc:`A2ReceiptConflict`. A sequence past the end raises
         ``claim-gap``. A full history raises :exc:`A2ReceiptBoundError`.
 
         ``expected_head_sha256`` is checked against the stored head before
@@ -450,6 +458,8 @@ class ReceiptStore:
             raise A2ReceiptBoundError("claim-history-too-long")
         history = self.claim_history(workset, expected_head_sha256=expected_head_sha256)
         if (outcome := _replay(history, entry, expected_seq)) is not None:
+            # The stored name may not be durable yet: flush it before replaying.
+            self._flush(workset)
             return outcome
         prev = history[-1].entry_sha256 if history else GENESIS
         stored = StoredClaim(
