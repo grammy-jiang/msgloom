@@ -119,7 +119,9 @@ def test_new_resource_is_presence() -> None:
 
 
 def test_content_scope_requires_hash_and_marker_refuses_it() -> None:
-    for bad in (now("m1", None), now("m1", "a", marker="provider")):
+    # The marker uses the real scope authority, so only the role check can
+    # refuse the record that carries both a hash and a marker.
+    for bad in (now("m1", None), now("m1", "a", marker="content-src")):
         with pytest.raises(TransitionSemanticsError) as err:
             derive_transitions(obs(), (), (bad,))
         check(err.value.code == "role_violation", "role code")
@@ -384,6 +386,9 @@ def test_error_messages_do_not_echo_payloads() -> None:
             (now(SECRET, fact="d"), now("m2", fact="d")),
         ),
         lambda: derive_transitions(obs(), (now(SECRET),), ()),
+        lambda: derive_transitions(
+            obs(), (), (now("m1", None, marker=SECRET + "-claim"),)
+        ),
     ]
     for call in cases:
         with pytest.raises(TransitionSemanticsError) as err:
