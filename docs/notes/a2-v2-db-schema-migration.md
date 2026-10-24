@@ -155,6 +155,22 @@ schema digest differs from the pinned value. It does not read or hash the
 backup. It does not take the path of the user's database from any default,
 environment variable or settings file. The caller passes an open connection.
 
+Limits of the gate in this stage:
+
+- `backup_sha256` is checked for shape only (64 hex characters). The
+  function does not read the backup and cannot prove that the backup
+  exists or matches the file. The real operator gate is the maintenance
+  CLI (C0-11c). It is not part of this stage. It must verify the backup.
+- Foreign objects that do not use the `phase1_` prefix are tolerated.
+  Examples are a table with another prefix and an index on such a table.
+  The recognizer checks owned `phase1_` objects only. It still refuses any
+  view, any trigger, any extra index on an owned table and any
+  `phase1_a2_*` name that is not reviewed.
+- The migration reclassifies the file inside the write lock. A change made
+  between an earlier read-only check and `BEGIN IMMEDIATE` is refused with
+  a reason code. A failure of `COMMIT` rolls back and raises
+  `migration-failed`.
+
 No other code path creates A2 tables:
 
 - `require_schema5` checks a file and raises on schema 4. It writes nothing.

@@ -435,9 +435,17 @@ def test_errors_never_leak_paths_keys_or_sql(tmp_path: Path) -> None:
                 p, f"INSERT INTO phase1_schema_metadata VALUES ('{CANARY}', '{CANARY}')"
             ),
         ),
-        "trigger": lambda p: (
+        "view": lambda p: (
             build_schema4(p),
             mutate_file(p, f'CREATE VIEW "{CANARY}" AS SELECT 1'),
+        ),
+        "trigger": lambda p: (
+            build_schema4(p),
+            mutate_file(
+                p,
+                f'CREATE TRIGGER "{CANARY}" AFTER INSERT ON phase1_schema_metadata '
+                "BEGIN SELECT 1; END",
+            ),
         ),
     }
     for name, make in cases.items():
@@ -455,7 +463,7 @@ def test_errors_never_leak_paths_keys_or_sql(tmp_path: Path) -> None:
     with pytest.raises(A2SchemaError) as missing:
         connect_existing(folder / "absent.sqlite")
     errors.append(missing.value)
-    check(len(errors) >= 9, f"expected many refusals, got {len(errors)}")
+    check(len(errors) >= 11, f"expected many refusals, got {len(errors)}")
     for error in errors:
         check(CANARY not in formatted(error), f"leak in {error.reason}")
         check(str(folder) not in formatted(error), "path leaked")

@@ -387,7 +387,15 @@ def migrate_schema4_to_v5(connection: sqlite3.Connection, gate: MigrationGate) -
     except BaseException:
         connection.execute("ROLLBACK")
         raise
-    connection.execute("COMMIT")
+    try:
+        connection.execute("COMMIT")
+    except sqlite3.Error:
+        try:
+            if connection.in_transaction:
+                connection.execute("ROLLBACK")
+        except sqlite3.Error:
+            pass
+        raise A2SchemaError("migration-failed") from None
 
 
 def acquire_claim(connection: sqlite3.Connection, proof: AttemptProof) -> int | None:
