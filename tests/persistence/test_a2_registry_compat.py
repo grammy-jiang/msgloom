@@ -470,27 +470,12 @@ def test_old_extension_path_is_unchanged() -> None:
         pytest.fail("old with_schema mutated its source")
 
 
-@pytest.mark.xfail(
-    strict=True,
-    reason=(
-        "defect: A2HeaderCodec.encode accepts a header without 'profile'. "
-        "StageHeader defaults it, so the wire carries a profile-less header, "
-        "a second byte form for one logical header."
-    ),
-)
 def test_header_without_profile_is_rejected_on_encode() -> None:
     value = {"body": {"n": 1}, "header": {"kind": "zones", "version": "1"}}
     with pytest.raises(A2RegistryError):
         A2HeaderCodec("zones", "1").encode(value)
 
 
-@pytest.mark.xfail(
-    strict=True,
-    reason=(
-        "defect: A2HeaderCodec.decode accepts canonical bytes whose header "
-        "lacks 'profile'. Expected a rejection (A2ContractError family)."
-    ),
-)
 def test_header_without_profile_is_rejected_on_decode() -> None:
     payload = b'{"body":{"n":1},"header":{"kind":"zones","version":"1"}}'
     with pytest.raises(A2ContractError):

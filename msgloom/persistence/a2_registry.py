@@ -175,6 +175,10 @@ class A2HeaderCodec:
         header = value.get("header") if isinstance(value, dict) else None
         if not isinstance(header, dict):
             raise A2RegistryError("payload has no header")
+        # StageHeader defaults a missing profile. Require the key so one
+        # logical header has one byte form, as a wrong profile is refused.
+        if "profile" not in header:
+            raise A2RegistryError("header is not an approved header")
         try:
             pair = StageHeader.model_validate(header)
         except ValueError:
