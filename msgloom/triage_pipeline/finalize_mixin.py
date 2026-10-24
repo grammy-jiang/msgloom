@@ -1,4 +1,18 @@
-"""Multipart reconciliation and terminal publication helpers for A3."""
+"""
+Multipart reconciliation and terminal publication helpers for A3.
+
+Terminal status (C0-17g): :meth:`_TriageFinalizeMixin._terminal_state`
+decides the status of a finished run from its input snapshot. A
+``triage_input@1`` snapshot keeps the unchanged rule: ``COMPLETE`` with
+exactly the limitations the caller computed. A ``triage_input@2`` snapshot
+is verified first. A missing, forged or invalid digest raises
+:exc:`~msgloom.triage_pipeline.limitations.V2ProvenanceError` and nothing
+is saved. If the verified snapshot is incomplete or holds a source, the
+status is ``INCOMPLETE`` and the v2 limitations (with their original
+provenance) are appended. Only a complete snapshot without a held source
+gets ``COMPLETE``. :meth:`_TriageFinalizeMixin._save_triage_v2` applies
+that decision and writes one new result. It never rewrites a saved result.
+"""
 
 from __future__ import annotations
 
@@ -28,6 +42,7 @@ from msgloom.triage import (
     TriageCandidate,
 )
 from msgloom.triage_input import TriageInputSnapshot
+from msgloom.triage_input.models_v2 import TriageInputSnapshot as V2Snapshot
 from msgloom.working_context import WorkingContextSnapshot, snapshot_ref
 
 from .common import (
@@ -38,6 +53,12 @@ from .common import (
     record_result,
     result_ref,
     stable_id,
+)
+from .limitations import (
+    MAX_PROPAGATED_LIMITATIONS,
+    KnownLimitationError,
+    V2ProvenanceError,
+    v2_input_limitations,
 )
 from .models import TriageProducerConfig
 
@@ -149,6 +170,7 @@ class _TriageFinalizeMixin:
         evidence_refs,
         context,
         limitations=(),
+        status=TerminalStatus.COMPLETE,
     ) -> ResultRef:
         result_id = stable_id(
             "triage",
@@ -190,10 +212,58 @@ class _TriageFinalizeMixin:
             working_context=snapshot_ref(context),
             topic_versions=tuple(topic.assessment_ref for topic in data.topics),
             limitations=limitations,
+            status=status,
         )
         ensure_acceptance_time()
         await self._persistence.append_result_with_data(result, data, claim=claim)
         return record_result(result_ref(result))
+
+    @staticmethod
+    def _terminal_state(
+        snapshot: object,
+        limitations: tuple[Limitation, ...] = (),
+        expected_snapshot_sha256: str | None = None,
+    ) -> tuple[TerminalStatus, tuple[Limitation, ...]]:
+        """Return the terminal status and limitations for ``snapshot``.
+
+        A v1 snapshot returns ``COMPLETE`` and ``limitations`` unchanged.
+        Any other value must be a verified v2 snapshot, else
+        :exc:`V2ProvenanceError` is raised.
+        """
+        if isinstance(snapshot, TriageInputSnapshot):
+            return TerminalStatus.COMPLETE, limitations
+        if not isinstance(snapshot, V2Snapshot):
+            raise V2ProvenanceError("v2-provenance-missing")
+        held = v2_input_limitations(snapshot, expected_snapshot_sha256)
+        if not held:
+            return TerminalStatus.COMPLETE, limitations
+        merged = (*limitations, *(item for item in held if item not in limitations))
+        if len(merged) > MAX_PROPAGATED_LIMITATIONS:
+            raise KnownLimitationError("v2-limitation-overflow")
+        return TerminalStatus.INCOMPLETE, merged
+
+    async def _save_triage_v2(
+        self,
+        snapshot: object,
+        request: OperationRequest,
+        *args: Any,
+        limitations: tuple[Limitation, ...] = (),
+        expected_snapshot_sha256: str | None = None,
+    ) -> OperationOutcome:
+        """Save one triage result with a v2-aware terminal status.
+
+        ``args`` are the arguments of :meth:`_save_triage` after
+        ``request``. The provenance check runs before any write, so a
+        forged snapshot saves nothing. The outcome status equals the saved
+        result status.
+        """
+        status, merged = self._terminal_state(
+            snapshot, limitations, expected_snapshot_sha256
+        )
+        final_ref = await self._save_triage(
+            request, *args, limitations=merged, status=status
+        )
+        return self._outcome(request, status, refs=(final_ref,), limitations=merged)
 
     def _stage(
         self,
