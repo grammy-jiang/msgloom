@@ -232,8 +232,8 @@ def test_finalized_workset_leaves_the_pending_queue(held_world: World) -> None:
 
 
 def test_rotation_before_migration_still_migrates(tmp_path: Path) -> None:
-    # major: the v1 rotation key makes migrate_schema4_to_v5 raise
-    # ``unknown-metadata-key``. Every v1 scheduler run writes that key.
+    # Every v1 scheduler run writes a rotation key. Migration must accept it
+    # and keep it (fixed in a2_schema._check_keys).
     path = tmp_path / "rotated.sqlite"
     store = h.store(path)
     try:
@@ -241,14 +241,23 @@ def test_rotation_before_migration_still_migrates(tmp_path: Path) -> None:
         check(len(store.select_preparation_intake_worksets(value.scope)) == 1, "v1")
         db = raw(path)
         migrate_schema4_to_v5(db, GATE)
+        keys = {k for (k,) in db.execute('SELECT "key" FROM phase1_schema_metadata')}
+        version = db.execute(
+            "SELECT value FROM phase1_schema_metadata WHERE \"key\" = 'schema_version'"
+        ).fetchone()
         db.close()
+        check(
+            any(k.startswith("preparation_intake_rotation:") for k in keys),
+            "rotation key kept",
+        )
+        check(version is not None and version[0] != "4", "migrated past schema 4")
     finally:
         store.close()
 
 
 def test_v1_rotation_after_migration_does_not_block_v2(held_world: World) -> None:
-    # major: a long-lived v1 store writes the rotation key after migration.
-    # ``require_schema5`` then refuses every v2 finalize.
+    # A long-lived v1 store writes the rotation key after migration.
+    # ``require_schema5`` must still accept the file.
     w = held_world
     check(len(w.store.select_preparation_intake_worksets(w.value.scope)) == 1, "v1")
     v2_finalize(w)
