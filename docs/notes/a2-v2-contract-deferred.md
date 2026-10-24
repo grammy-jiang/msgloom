@@ -30,3 +30,14 @@ batch body is equal. It must check `batch_sha256` itself.
 
 Code: `msgloom/a2_kedro/contracts/identity.py`,
 `msgloom/a2_kedro/contracts/transition.py`.
+
+## D-2: foreign transition models are not text-checked here
+
+`StageIdentity.transitions` holds `IntakeTransition` models from
+`msgloom/preparation_pipeline/intake_models.py`. Those models accept `str`
+subclasses and newlines in `resource_identity`, `resource_kind` and
+`scope_identity`. These values reach `logical_key()`.
+
+`TransitionItem` checks again the fields that it copies, so C0-08 items are
+safe. C0-10 must decide whether `StageIdentity` re-validates the foreign
+fields. Do not change the foreign model in this stream.

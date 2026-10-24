@@ -22,8 +22,9 @@ may add a sort rule; until then the producer must use a stable order.
 Metadata is a bounded, sorted list of text pairs. Keys and values are exact
 ``str`` and hold no control character (no NUL, tab, newline, DEL, C1,
 U+2028 or U+2029). Metadata is identifier-like data, not body text.
-``encode_metadata`` and ``decode_metadata`` are the metadata codec. Decode is strict: size limits,
-canonical form, text values only and no duplicate keys.
+``encode_metadata`` and ``decode_metadata`` are the metadata codec. Decode
+is strict: size limits, canonical form, text values only and no duplicate
+keys.
 
 Failure handling: any violation raises :exc:`A2ContractError` (or a pydantic
 ``ValueError`` subclass at model construction). Messages carry no content.
