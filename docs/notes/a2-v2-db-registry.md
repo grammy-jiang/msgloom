@@ -63,6 +63,19 @@ registered pair, then writes or reads bounded canonical JSON. It does not
 validate the body. Body validation stays in the typed contract models.
 Typed per-kind codecs are a later step.
 
+`decode` returns a mapping, not a typed model. An arbitrary body next to a
+valid header round-trips. Very deep JSON nesting raises `A2RegistryError`.
+
+## Scope limits
+
+- The registry holds only the 14 A2 v2 pairs. It does not hold the intake
+  kinds `collected_selection@1` and `preparation_intake_workset@1`. A store
+  that calls `supports()` on this registry alone refuses them. Composition
+  must decide how to combine the old and the A2 registries.
+- The seal stops ordinary use only. In-process code can bypass it with
+  `object.__setattr__`, a crafted pickle, or a subclass. That needs code
+  execution already.
+
 ## Old behavior is unchanged
 
 No old file was edited. `ResultSchemaRegistry.phase1()`,

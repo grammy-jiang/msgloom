@@ -195,7 +195,10 @@ class A2HeaderCodec:
 
     def decode(self, payload: bytes) -> object:
         """Decode canonical bytes and check the header pair."""
-        value = decode_canonical_json(payload, max_bytes=self.max_bytes)
+        try:
+            value = decode_canonical_json(payload, max_bytes=self.max_bytes)
+        except RecursionError:
+            raise A2RegistryError("payload nesting is too deep") from None
         self._check_header(value)
         return value
 

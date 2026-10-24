@@ -51,6 +51,26 @@ def old_snapshot() -> tuple[object, ...]:
     )
 
 
+LITERAL_APPROVED_PAIRS = frozenset(
+    {
+        ("a2_completion_receipt", "2"),
+        ("a2_input_disposition", "1"),
+        ("a2_result_manifest", "1"),
+        ("extracted_components", "1"),
+        ("filter_result", "2"),
+        ("frozen_source_selection", "1"),
+        ("group_result", "2"),
+        ("native_relations", "1"),
+        ("normalized_content", "1"),
+        ("parsed_parts", "1"),
+        ("prepared", "2"),
+        ("prepared_transitions", "2"),
+        ("triage_input", "2"),
+        ("zones", "1"),
+    }
+)
+
+
 def test_allowlist_is_derived_frozen_and_complete() -> None:
     if not isinstance(A2_APPROVED_PAIRS, frozenset):
         pytest.fail("allowlist must be a frozenset")
@@ -58,6 +78,8 @@ def test_allowlist_is_derived_frozen_and_complete() -> None:
         pytest.fail("allowlist differs from approved_pairs()")
     if len(A2_APPROVED_PAIRS) != 14:
         pytest.fail("expected 12 stage pairs and 2 external pairs")
+    if A2_APPROVED_PAIRS != LITERAL_APPROVED_PAIRS:
+        pytest.fail("allowlist differs from the pinned literal pair set")
 
 
 @pytest.mark.parametrize(("kind", "version"), APPROVED)
@@ -313,3 +335,10 @@ def test_decode_rejects_tampered_and_non_canonical_bytes() -> None:
     )
     with pytest.raises(SemanticDataIntegrityError):
         registry.decode(other, spaced)
+
+
+def test_codec_decode_wraps_deep_nesting() -> None:
+    codec = A2HeaderCodec("zones", "1")
+    deep = b"[" * 100_000 + b"]" * 100_000
+    with pytest.raises((A2RegistryError, A2ContractError)):
+        codec.decode(deep)
