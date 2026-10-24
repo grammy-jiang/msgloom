@@ -34,6 +34,7 @@ list the conversations that accept context. A :class:`PublicationTarget`
 asks for one destination. The scope guard allows the request only when:
 
 * the target scope and the target workset equal the grant exactly;
+* the grant source ID equals the identity of the record source scope;
 * the grant stream is the stream of the context type;
 * the target conversation, if any, is listed in the grant.
 
@@ -78,7 +79,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from datetime import datetime
 from enum import StrEnum
-from typing import get_args
+from typing import Literal, get_args
 
 from msgloom.a2_kedro.contracts.codec import (
     MAX_TEXT_BYTES,
@@ -107,6 +108,15 @@ TITLE_DOMAIN = "a2-context-title@1"
 
 _CONVERSATION_KINDS = frozenset(get_args(ScopeKind))
 
+#: Closed vocabularies for the fields of a publication.
+ContextStream = Literal["outlook_calendar", "todo", "onedrive", "contacts"]
+LimitationCode = Literal[
+    "content_not_published",
+    "source_limited",
+    "time_whole_seconds",
+    "type_fields_unavailable",
+]
+
 
 class ContextType(StrEnum):
     """Closed set of context types. Order is not meaningful."""
@@ -131,7 +141,7 @@ _COMMUNICATION: frozenset[PreparedSourceType] = frozenset(
     }
 )
 #: The Intake stream name that carries each context type.
-STREAM_OF_TYPE: dict[ContextType, str] = {
+STREAM_OF_TYPE: dict[ContextType, ContextStream] = {
     ContextType.CALENDAR_EVENT: "outlook_calendar",
     ContextType.TODO_ITEM: "todo",
     ContextType.ONEDRIVE_FILE: "onedrive",
@@ -144,6 +154,7 @@ _MESSAGES: dict[str, str] = {
     "not_context_source": "source type is communication, not context",
     "stream_mismatch": "grant stream does not carry this context type",
     "out_of_scope": "publication target is outside the granted scope",
+    "source_mismatch": "grant source does not match the record source scope",
     "oversized": "context input exceeds a bound",
     "unsafe_text": "context text is empty, unencodable or has a control character",
     "inconsistent_record": "selection and record disagree",
@@ -167,7 +178,7 @@ class ContextRefusal(A2ContractError):
 class ConversationScope:
     """One conversation that may accept context (existing scope kinds)."""
 
-    kind: str
+    kind: ScopeKind
     scope_id: str
 
 
@@ -199,7 +210,7 @@ class ContextPublication:
     """Metadata-level context. In-process only; not a wire record."""
 
     context_type: ContextType
-    stream: str
+    stream: ContextStream
     workset: ResultRef
     conversation: ConversationScope | None
     source: VersionRef
@@ -209,7 +220,7 @@ class ContextPublication:
     source_time: int
     attachment_count: int
     metadata_count: int
-    limitations: tuple[str, ...]
+    limitations: tuple[LimitationCode, ...]
 
 
 def _text(value: object) -> str:
@@ -284,9 +295,18 @@ def context_type_of(source_type: object) -> ContextType:
 
 
 def _check_scope(
-    context_type: ContextType, grant: ContextGrant, target: PublicationTarget
+    context_type: ContextType,
+    grant: ContextGrant,
+    target: PublicationTarget,
+    record_scope: VersionRef,
 ) -> None:
-    """Refuse every target that the grant does not allow. The only guard."""
+    """
+    Refuse every target that the grant does not allow. The only guard.
+
+    The grant ``source_id`` must equal the identity of the record
+    ``source_scope`` (kind ``source_scope``). Equal stream and kind are not
+    enough: a record of source A never publishes under a grant for source B.
+    """
     if _intake_scope(grant.scope).stream != STREAM_OF_TYPE[context_type]:
         raise ContextRefusal("stream_mismatch")
     if (
@@ -294,6 +314,11 @@ def _check_scope(
         or _result_ref(target.workset) != grant.workset
     ):
         raise ContextRefusal("out_of_scope")
+    if (
+        _version_ref(record_scope).kind != "source_scope"
+        or record_scope.identity != grant.scope.source_id
+    ):
+        raise ContextRefusal("source_mismatch")
     if target.conversation is None:
         return
     if not isinstance(grant.conversations, tuple):
@@ -367,11 +392,11 @@ def publish_context(
         raise ContextRefusal("wrong_type")
     record = _record_of(selection)
     context_type = context_type_of(record.source_type)
-    _check_scope(context_type, grant, target)
+    _check_scope(context_type, grant, target, record.source_scope)
     identity = _text(record.semantic_identity)
     attachments = _count(record.attachments)
     metadata = _count(record.metadata)
-    limits = {"type_fields_unavailable", "time_whole_seconds"}
+    limits: set[LimitationCode] = {"type_fields_unavailable", "time_whole_seconds"}
     if _has_body(record) or attachments:
         limits.add("content_not_published")
     if _count(record.limitations):

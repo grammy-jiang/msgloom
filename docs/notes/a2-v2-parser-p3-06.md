@@ -79,8 +79,29 @@ body, party, attachment, metadata value or location is published.
   characters. Only the unencodable form and the size are refused.
 - Scope text is validated inside `_check_scope`. Disabling the guard also
   disables that check. The mutation test covers this on purpose.
-- A record `source_scope` is published as given. It is not compared to the
-  Intake scope, because no contract links the two.
+- A record `source_scope` is published as given. Review fix 1 compares its
+  identity to the grant `source_id`. No other link to the Intake scope exists.
 - Record and source limitations are counted (`source_limited`). Their codes
   and details are not copied.
 - Many records, a batch API and ordering across records are out of scope.
+
+## Review fixes
+
+- Cross-source leak fixed. `_check_scope` now compares the identity of the
+  record `source_scope` (kind `source_scope`) with `grant.scope.source_id`.
+  A mismatch raises `ContextRefusal("source_mismatch")`. The message is
+  fixed text and holds no input value. The comparison is strict equality,
+  the same rule as `historical_baseline`. The check runs after the target
+  equals the grant, so a hostile scope text still gives `unsafe_text`.
+- New tests are in `tests/a2_kedro/test_p3_06_scope.py`: source mismatch
+  for all four types, one differing part at a time (consumer, catalog,
+  stream, source), a positive case, and a sentinel that never appears in
+  `str` or `repr` of a refusal. Removing the new check fails these tests.
+- `test_p3_06.py` fixtures: the record `source_scope` identity is now
+  `src-1`, equal to the fixture grant. Another test uses the fixture source.
+- Closed types: `ConversationScope.kind` is `ScopeKind`,
+  `ContextPublication.stream` is `ContextStream` and
+  `ContextPublication.limitations` is `tuple[LimitationCode, ...]`. These are
+  `Literal` types for the type checker only. Dataclasses do not check them
+  at run time. `ConversationScope.kind` is still checked at run time.
+- Still open: the guard trusts the grant (see Limitations).

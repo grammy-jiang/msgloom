@@ -72,7 +72,7 @@ def record_of(
     **changes: Any,
 ) -> CollectedRecord:
     source = VersionRef(source_type.value, identity, "observation-1")
-    scope = VersionRef("source_scope", "source", "1")
+    scope = VersionRef("source_scope", "src-1", "1")
     values: dict[str, Any] = {
         "source": source,
         "source_scope": scope,
@@ -311,7 +311,7 @@ def test_grant_stream_must_carry_the_type() -> None:
 
 
 def test_unknown_conversation_kind_and_wrong_workset_kind_are_refused() -> None:
-    bad_kind = ConversationScope("calendar", "x")
+    bad_kind = ConversationScope("calendar", "x")  # type: ignore[arg-type]
     code = refusal_code(
         lambda: publish_context(
             selection_of(PreparedSourceType.TODO),
@@ -422,7 +422,7 @@ def test_oversized_inputs_are_refused() -> None:
         "item bound",
     )
     long_id = PII + "b" * ct.MAX_TEXT_BYTES
-    scope = scope_for("todo", "ok")
+    scope = scope_for("todo")
     grant = ContextGrant(scope, WORKSET, (ConversationScope("thread", long_id),))
     code = refusal_code(
         lambda: publish_context(
