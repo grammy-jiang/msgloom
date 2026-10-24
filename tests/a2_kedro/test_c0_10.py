@@ -266,6 +266,21 @@ def test_acceptance_index_binds_order_status_and_results() -> None:
     limited = (good.roots[0], terminal(ws, 1, prepared_ref("2"), INCOMPLETE))
     check(acceptance_index(limited, good.transition_batch) != base, "status bound")
     check(acceptance_index(good.roots, None) != base, "batch bound")
+    first = good.roots[0]
+    only = {
+        "status alone": {"status": TerminalStatus.INCOMPLETE},
+        "limitations alone": {"limitations": (Limitation("x", "y"),)},
+        "disposition alone": {
+            "disposition": "held" if first.disposition == "prepared" else "prepared"
+        },
+    }
+    for label, update in only.items():
+        changed = (first.model_copy(update=update), *good.roots[1:])
+        check(acceptance_index(changed, good.transition_batch) != base, label)
+    batch = good.transition_batch
+    if batch is not None:
+        flipped = batch.model_copy(update={"status": TerminalStatus.INCOMPLETE})
+        check(acceptance_index(good.roots, flipped) != base, "batch status alone")
     other_batch = batch_for(ws, "9")
     check(acceptance_index(good.roots, other_batch) != base, "batch result bound")
 

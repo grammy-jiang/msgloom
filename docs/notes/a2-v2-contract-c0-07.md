@@ -23,6 +23,8 @@ Every record has a required `header` with its approved `(kind, version)`.
 - `parts`: `part_id`, `role`, `status`, `sha256`. One entry per parsed part,
   including attachments. `validate_against(parsed, zones)` proves nothing
   was dropped.
+- `parts` are sorted by `part_id`. A block never names a body part whose
+  status is `missing`. A `partial` body part keeps its blocks.
 - `blocks`: `part_id`, `zone_id`, `kind`, `original` span, `text_sha256`.
   One entry per zone. No text is stored.
 - `participants`: `role`, `identity_sha256`. A digest, never an address.

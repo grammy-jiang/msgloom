@@ -16,8 +16,9 @@ each `ResultRef` against durable accepted-stage proofs.
   `result_base.check_limitations`, shared with `prepared@2`.
 - `CompletionReceipt` has two new fields:
   - `acceptance_index_sha256`: digest (domain `a2-acceptance-index@1`) of
-    the ordered terminal coverage and the batch. If a caller omits it, the
-    model derives it. A supplied value must match.
+    the ordered terminal coverage and the batch. The wire value is required.
+    `CompletionReceipt.build(**fields)` computes it for code callers. Any
+    supplied value, on the wire or in `build`, must match.
   - `claim_proofs`: tuple of `ResultClaimProof` (`result`, `proof`). The
     `proof` is the existing `AttemptProof`: execution, attempt, claim key
     and a claim token digest. No raw token is stored.
