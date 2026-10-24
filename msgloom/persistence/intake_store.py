@@ -19,6 +19,7 @@ from msgloom.contracts import (
     StageResult,
     TerminalStatus,
 )
+from msgloom.persistence.a2_producer_binding import require_v1_writer_allowed
 from msgloom.persistence.claim_store import (
     claim_attempt,
     require_claim_publication,
@@ -454,6 +455,7 @@ class PreparationIntakeStore(ABC):
     @staticmethod
     def _require_terminal_history(connection, result_id, values) -> None:
         """Keep historical dispositions immutable, including explicit holds."""
+        require_v1_writer_allowed(connection, result_id)
         hold = connection.execute(
             select(SCHEMA_METADATA.c.key).where(
                 SCHEMA_METADATA.c.key == LEGACY_TERMINAL_PREFIX + result_id,
@@ -477,6 +479,7 @@ class PreparationIntakeStore(ABC):
             and row["state"] == "terminal"
             and any(row[key] != value for key, value in values.items())
         ):
+            require_v1_writer_allowed(connection, result_id)  # type the refusal
             raise ImmutableRecordError("terminal intake processing is immutable")
 
     @staticmethod
