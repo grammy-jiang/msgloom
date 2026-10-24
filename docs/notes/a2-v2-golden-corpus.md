@@ -1,8 +1,8 @@
 # A2 v2 independent golden corpus
 
 This corpus is the hand-annotated oracle for tasks T0-01, T0-02, T0-03,
-T0-04, T0-05, T0-07, T0-09 and T0-10 of the A2 Kedro v2 programme. It lives in
-`tests/a2_kedro/golden/`. The execution manifest names `tests/a2_kedro/gold/`.
+T0-04, T0-05, T0-06, T0-07, T0-09 and T0-10 of the A2 Kedro v2 programme. It
+lives in `tests/a2_kedro/golden/`. The execution manifest names `tests/a2_kedro/gold/`.
 The supervisor changed the path to `golden/`.
 
 ## Coverage
@@ -14,11 +14,12 @@ The supervisor changed the path to `golden/`.
 | `t0_03.json` | Teams chat, channel, component-only, scope refresh | 5 | 6 |
 | `t0_04.json` | Calendar, To Do, OneDrive, Contacts stay contextual | 5 | 5 |
 | `t0_05.json` | PDF, Word, Excel, malformed, large, partial | 7 | 7 |
+| `t0_06.json` | Held, intake-held, transition-only: one terminal per item | 11 | 20 |
 | `t0_07.json` | Crash, restart, late write, cancel: accepted prefix, replay | 10 | 3 |
 | `t0_09.json` | Prefect lost, duplicate hint, partial A1 finish | 6 | 8 |
 | `t0_10.json` | Node.run logger, PII canary, telemetry, illegal paths | 5 | 13 |
 
-T0-06 and T0-08 are outside this corpus. They depend on contract tasks.
+T0-08 is outside this corpus. It depends on contract tasks.
 
 ## Independence rules
 
