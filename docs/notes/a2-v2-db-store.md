@@ -70,3 +70,56 @@ cases with a hooked connection and a second real connection.
 - Stored semantic-data bytes are not compared with `canonical_sha256`.
   Upstream reachability beyond the direct refs is not checked.
 - The async facade (C0-12c) and old store hooks are later steps.
+
+## C0-13: `msgloom/persistence/a2_held_store.py`
+
+The held index stores `InputDisposition` records
+(`msgloom.a2_kedro.contracts.held`, importable in this branch). It binds to
+that contract directly. No local row dataclass replaces it. `HeldRow` is
+only a read view of closed columns.
+
+### Table and schema integration (pending)
+
+Schema 5 has no held-index table. `a2_schema.py` stays unchanged. The table
+`a2_held_index_pending` is created only by the explicit, idempotent
+`ensure_held_index(db)`. No store function creates it. A missing table
+raises `held-index-missing`. A table that differs from the pinned DDL
+raises `held-index-definition-mismatch`.
+
+Safety rules of `ensure_held_index`:
+
+- A file with any `phase1_*` table is refused (`phase1-database-refused`).
+- With `pending_integration_ack=True`, the file must be exact schema 5.
+- The table name has no `phase1_` prefix. `classify_schema` still returns
+  schema 5 after creation. A test checks this on a `tmp_path` file.
+- The function is not called by any open or migration path.
+
+### Queries and writes
+
+| Function | Contract |
+| --- | --- |
+| `put_held` / `put_many` | Idempotent. Identical replay returns `replayed`. A batch holds 1 to 1024 records and is all or nothing. |
+| `list_held` | Takes a workset ref, a required `limit` (1 to 500, never clamped) and an optional `HeldCursor`. Orders by `workset_index`. Reads `limit + 1` rows to find the next cursor. A cursor of another workset is refused. |
+| `get_held` | Returns the digest-verified `InputDisposition` of one index. |
+| `held_status` | Counts by closed reason and repair class, plus baseline and incremental counts. At most 10 groups. |
+
+Conflict rule: one primary key `(workset_id, workset_index)` and one unique
+key `(workset_id, selected_id)`. A different record at the same index, or
+the same selection at another index, raises `A2HeldConflict` with field
+names only. The stored row never changes.
+
+Privacy: `held_status` selects only `reason`, `repair_class`, the baseline
+flag and a count. It never reads `record_json`. `list_held` rows carry no
+version text and no approval text. A test puts a canary string in every
+free-text field and checks that no query result or error shows it.
+
+### Open items (C0-13)
+
+- Move the table into `a2_schema.py` as a reviewed schema revision, with a
+  foreign key to the workset and the migration test matrix. Until then the
+  index is not part of the pinned schema 5 definition.
+- Link held rows to the accepted-stage proof of the held record
+  (`a2_input_disposition@1` is an accepted stage kind). Today the index
+  stores the record but does not check that an accepted stage exists.
+- The async facade (C0-13a) and the receipt store (C0-14a) are later steps.
+- Intake-held entries are frozen by Intake. They are not in this index.
