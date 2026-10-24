@@ -13,8 +13,10 @@ Status rules:
   never dropped silently.
 * ``unsupported`` carries a reference and a digest together, or neither.
 
-Metadata is a bounded, sorted list of text pairs. ``encode_metadata`` and
-``decode_metadata`` are the metadata codec. Decode is strict: size limits,
+Metadata is a bounded, sorted list of text pairs. Keys and values are exact
+``str`` and hold no control character (no NUL, tab, newline, DEL, C1,
+U+2028 or U+2029). Metadata is identifier-like data, not body text.
+``encode_metadata`` and ``decode_metadata`` are the metadata codec. Decode is strict: size limits,
 canonical form, text values only and no duplicate keys.
 
 Failure handling: any violation raises :exc:`A2ContractError` (or a pydantic
@@ -39,6 +41,7 @@ from msgloom.a2_kedro.contracts.codec import (
     canonical_model_bytes,
     decode_canonical_json,
     decode_model_bytes,
+    has_control_character,
 )
 from msgloom.a2_kedro.contracts.header import StageHeader
 
@@ -66,6 +69,10 @@ def _check_pairs(pairs: MetadataPairs) -> None:
     if keys != sorted(keys):
         raise A2ContractError("metadata keys are not sorted")
     for key, value in pairs:
+        if type(key) is not str or type(value) is not str:
+            raise A2ContractError("metadata must hold exact text only")
+        if has_control_character(key) or has_control_character(value):
+            raise A2ContractError("metadata holds a control character")
         if not key or len(key.encode()) > MAX_METADATA_KEY_BYTES:
             raise A2ContractError("metadata key size is out of bounds")
         if len(value.encode()) > MAX_METADATA_VALUE_BYTES:
@@ -75,7 +82,7 @@ def _check_pairs(pairs: MetadataPairs) -> None:
 def encode_metadata(metadata: dict[str, str]) -> bytes:
     """Return bounded canonical bytes for a metadata mapping."""
     for key, value in metadata.items():
-        if not isinstance(key, str) or not isinstance(value, str):
+        if type(key) is not str or type(value) is not str:
             raise A2ContractError("metadata must hold text only")
     _check_pairs(tuple(sorted(metadata.items())))
     return canonical_json_bytes(metadata, max_bytes=MAX_METADATA_BYTES)

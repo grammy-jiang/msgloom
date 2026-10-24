@@ -12,11 +12,20 @@ freezes them.
 
 from __future__ import annotations
 
+import dataclasses
 import hashlib
 import json
-from typing import Annotated, Any
+import unicodedata
+from enum import Enum
+from typing import Annotated, Any, get_args
 
-from pydantic import BaseModel, ConfigDict, Field, field_validator
+from pydantic import (
+    BaseModel,
+    ConfigDict,
+    Field,
+    ValidationInfo,
+    field_validator,
+)
 
 #: Default upper bound for one canonical contract payload.
 MAX_CANONICAL_BYTES = 4 * 1024 * 1024
@@ -37,16 +46,104 @@ class A2ContractError(ValueError):
     """
 
 
+#: Unicode categories refused in contract text. ``Cc`` covers C0, DEL and
+#: C1 (including U+0085). ``Zl`` and ``Zp`` cover U+2028 and U+2029.
+_FORBIDDEN_CATEGORIES = frozenset({"Cc", "Zl", "Zp"})
+
+
+def has_control_character(text: str) -> bool:
+    """
+    Return whether ``text`` holds a control or line-separator character.
+
+    The check covers NUL, tab, newline, DEL, the C1 range, U+2028 and
+    U+2029.
+    """
+    return any(unicodedata.category(char) in _FORBIDDEN_CATEGORIES for char in text)
+
+
+def _enum_annotation(annotation: Any) -> bool:
+    if isinstance(annotation, type) and issubclass(annotation, Enum):
+        return True
+    return any(_enum_annotation(arg) for arg in get_args(annotation))
+
+
+def _walk_text(value: Any, *, allow_enum: bool) -> None:
+    if isinstance(value, str):
+        if type(value) is not str and not (allow_enum and isinstance(value, Enum)):
+            raise ValueError("text must be an exact str")
+        return
+    if isinstance(value, (tuple, list)):
+        for item in value:
+            _walk_text(item, allow_enum=allow_enum)
+        return
+    if dataclasses.is_dataclass(value) and not isinstance(value, type):
+        for field in dataclasses.fields(value):
+            _walk_text(getattr(value, field.name), allow_enum=False)
+
+
+def _arrays_to_tuples(value: Any) -> Any:
+    # A before validator hands strict mode a parsed JSON list, which strict
+    # mode refuses for a tuple field. Convert only in JSON mode.
+    if isinstance(value, list):
+        return tuple(_arrays_to_tuples(item) for item in value)
+    return value
+
+
+def _walk_clean(value: Any) -> None:
+    if isinstance(value, Enum):
+        return
+    if isinstance(value, str):
+        if has_control_character(value):
+            raise ValueError("text holds a control character")
+        return
+    if isinstance(value, (tuple, list)):
+        for item in value:
+            _walk_clean(item)
+        return
+    if dataclasses.is_dataclass(value) and not isinstance(value, type):
+        for field in dataclasses.fields(value):
+            _walk_clean(getattr(value, field.name))
+
+
 class A2Model(BaseModel):
-    """Frozen, strict base: no coercion, no unknown fields, bounded text."""
+    """
+    Frozen, strict base for every A2 v2 contract model.
+
+    Text rules, applied to every field including text nested in tuples
+    and in dataclass values such as ``ResultRef``. Text inside a foreign
+    pydantic model (for example ``IntakeTransition``) is checked by that
+    model, not here:
+
+    * A value must be an exact ``str``. A ``str`` subclass is rejected
+      before validation, because pydantic strict mode accepts it. A
+      ``StrEnum`` member is accepted only for a field typed as that enum.
+    * A text value holds no control character: no C0 or C1 control, no
+      NUL, newline, tab, DEL, U+0085, U+2028 or U+2029. No A2 v2 field
+      is body text today. A future body-text field must opt in by name
+      in its own decision record; it must not relax this base.
+    * JSON arrays become tuples before validation, in JSON mode only.
+      Python-mode callers must pass tuples.
+    * A text value is at most ``MAX_TEXT_BYTES`` bytes in UTF-8.
+    """
 
     model_config = ConfigDict(frozen=True, strict=True, extra="forbid")
+
+    @field_validator("*", mode="before")
+    @classmethod
+    def _exact_text(cls, value: Any, info: ValidationInfo) -> Any:
+        field = cls.model_fields.get(info.field_name or "")
+        allow_enum = field is not None and _enum_annotation(field.annotation)
+        _walk_text(value, allow_enum=allow_enum)
+        if info.mode == "json":
+            return _arrays_to_tuples(value)
+        return value
 
     @field_validator("*")
     @classmethod
     def _bounded_text(cls, value: Any) -> Any:
         if isinstance(value, str) and len(value.encode()) > MAX_TEXT_BYTES:
             raise ValueError("text exceeds identifier bound")
+        _walk_clean(value)
         return value
 
 
