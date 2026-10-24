@@ -18,9 +18,10 @@ never carry source bytes or provider identifiers.
 It holds the ordered roots of one workset under one scope. Exactly one of
 ``incremental_roots`` and ``baseline_roots`` is set. It never mixes them.
 The model recomputes ``selection_set_sha256`` from its canonical content.
-A supplied value that differs fails validation, so a forged root, role or
-index is detected. ``verify_against`` compares the roots with the frozen
-Intake workset. Re-reading A1 bytes stays with the adapter below.
+A supplied value that differs fails validation. That detects edits only.
+``verify_against`` compares the roots with the frozen Intake workset.
+``verify_against_evidence`` rebuilds every root from A1 evidence. It
+rejects a forged role, ordinal or saved digest, even with a new digest.
 
 PROVISIONAL wire names (not frozen by the plan): ``header``, ``workset``,
 ``scope``, ``incremental_roots``, ``baseline_roots``,
@@ -37,8 +38,8 @@ from __future__ import annotations
 
 import hashlib
 import json
+from collections.abc import Sequence
 from dataclasses import asdict, dataclass
-from itertools import pairwise
 from typing import Annotated, Any, Literal, Protocol
 
 from pydantic import Field, model_validator
@@ -54,6 +55,10 @@ from msgloom.a2_kedro.contracts.codec import (
     sha256_hex,
 )
 from msgloom.a2_kedro.contracts.header import LIMITS, StageHeader
+from msgloom.a2_kedro.contracts.source_selection_checks import (
+    check_baseline,
+    check_incremental,
+)
 from msgloom.contracts import ResultRef, VersionRef
 from msgloom.preparation_pipeline.intake_models import (
     IntakeScope,
@@ -70,7 +75,6 @@ Index = Annotated[int, Field(ge=0, le=1023)]
 KIND = "frozen_source_selection"
 VERSION = "1"
 SELECTION_DOMAIN = "a2-frozen-source-selection@1"
-_PROOF_PREFIX = "intake-selection:"
 
 
 def _is_selection(ref: ResultRef) -> bool:
@@ -112,42 +116,6 @@ class FrozenRoot(A2Model):
 Roots = tuple[FrozenRoot, ...]
 
 
-def _check_incremental(roots: Roots, scope: IntakeScope) -> None:
-    indexes = [root.workset_index for root in roots]
-    if any(a >= b for a, b in pairwise(indexes)):
-        raise A2ContractError("workset indexes must be unique and ascending")
-    seen: set[tuple[ReleaseEntryRef, int]] = set()
-    primaries: set[ReleaseEntryRef] = set()
-    for root in roots:
-        entry, ordinal = root.entry, root.ordinal
-        if root.role == "baseline" or entry is None or ordinal is None:
-            raise A2ContractError("incremental selection holds a baseline root")
-        if entry.catalog != scope.catalog:
-            raise A2ContractError("root entry is outside the selection scope")
-        if (entry, ordinal) in seen:
-            raise A2ContractError("duplicate entry ordinal occurrence")
-        seen.add((entry, ordinal))
-        if root.role == "primary":
-            if ordinal != 0 or entry in primaries:
-                raise A2ContractError("primary role needs the only ordinal 0")
-            primaries.add(entry)
-        proof = root.selected.result_id.removeprefix(_PROOF_PREFIX)
-        if not root.selected.result_id.startswith(_PROOF_PREFIX) or (
-            proof != root.a1_ordinal_proof
-        ):
-            raise A2ContractError("ordinal proof differs from selection id")
-
-
-def _check_baseline(roots: Roots) -> None:
-    indexes = [root.workset_index for root in roots]
-    if any(a >= b for a, b in pairwise(indexes)):
-        raise A2ContractError("workset indexes must be unique and ascending")
-    if any(root.role != "baseline" for root in roots):
-        raise A2ContractError("baseline selection holds a non-baseline root")
-    if len({root.baseline_approval for root in roots}) != 1:
-        raise A2ContractError("baseline roots need one approval")
-
-
 class FrozenSourceSelection(A2Model):
     """
     ``frozen_source_selection@1``: the ordered roots of one frozen workset.
@@ -181,9 +149,9 @@ class FrozenSourceSelection(A2Model):
         if len(chosen[0]) > LIMITS["max_roots"]:
             raise A2ContractError("root count exceeds the workset bound")
         if self.incremental_roots:
-            _check_incremental(self.incremental_roots, self.scope)
+            check_incremental(self.incremental_roots, self.scope)
         elif self.baseline_roots:
-            _check_baseline(self.baseline_roots)
+            check_baseline(self.baseline_roots)
         if self.selection_set_sha256 != self.content_sha256():
             raise A2ContractError("selection digest does not match content")
         return self
@@ -225,14 +193,22 @@ class FrozenSourceSelection(A2Model):
         """
         Prove that every root equals the frozen Intake workset content.
 
-        Raise :exc:`A2ContractError` for another scope, a baseline
-        mismatch, or a root that is not the workset item at its index.
+        Raise :exc:`A2ContractError` for a stale digest, another scope, a
+        mode or root-count mismatch, or a root that is not the workset item
+        at its index. Without A1 evidence this cannot prove ``role``,
+        ``ordinal`` or ``selection_sha256``. Use
+        :meth:`verify_against_evidence` for those.
         """
+        if self.content_sha256() != self.selection_set_sha256:
+            raise A2ContractError("selection digest does not match content")
         if workset.scope != self.scope:
             raise A2ContractError("selection scope differs from workset")
         if (workset.baseline_approval is not None) != bool(self.baseline_roots):
             raise A2ContractError("selection mode differs from workset")
-        for root in self.roots():
+        roots = self.roots()
+        if len(roots) != len(workset.baseline_sources or workset.selections):
+            raise A2ContractError("root count differs from the frozen workset")
+        for root in roots:
             index = root.workset_index
             if root.role == "baseline":
                 same = (
@@ -249,6 +225,33 @@ class FrozenSourceSelection(A2Model):
                 )
             if not same:
                 raise A2ContractError("root differs from the frozen workset")
+
+    def verify_against_evidence(
+        self,
+        workset: PreparationIntakeWorkset,
+        evidence: Sequence[OccurrenceEvidence | CollectedSelection],
+    ) -> None:
+        """
+        Prove every root against A1 evidence, one evidence item per root.
+
+        ``evidence[i]`` belongs to ``roots()[i]``. An incremental root needs
+        the :class:`OccurrenceEvidence` of its release entry. A baseline
+        root needs the real :class:`CollectedSelection`. Each root is
+        rebuilt by :func:`verify_exact_occurrence` or
+        :func:`verify_baseline_selection`. The rebuilt root must equal the
+        stored root in every proven field. Raise :exc:`A2ContractError`
+        for a missing or extra item, or any forged role, ordinal, proof,
+        selected reference or saved selection digest.
+        """
+        self.verify_against(workset)
+        roots = self.roots()
+        if len(evidence) != len(roots):
+            raise A2ContractError("evidence count differs from root count")
+        for root, item in zip(roots, evidence, strict=True):
+            proven = _proven_root(workset, root, item)
+            for name in FrozenRoot.model_fields:
+                if getattr(root, name) != getattr(proven, name):
+                    raise A2ContractError(f"root {name} differs from A1 evidence")
 
     def encode(self) -> bytes:
         """Return the bounded canonical bytes of this record."""
@@ -465,4 +468,25 @@ def verify_baseline_selection(
         workset,
         index,
         selection_sha256=sha256_hex(CollectedSelectionCodec().encode(value)),
+    )
+
+
+def _proven_root(
+    workset: PreparationIntakeWorkset,
+    root: FrozenRoot,
+    item: OccurrenceEvidence | CollectedSelection,
+) -> FrozenRoot:
+    """Rebuild ``root`` from its evidence; reuse the two A1 verifiers."""
+    index = root.workset_index
+    if root.role == "baseline":
+        if isinstance(item, OccurrenceEvidence):
+            raise A2ContractError("baseline root needs a CollectedSelection")
+        return verify_baseline_selection(workset, index, item)
+    if not isinstance(item, OccurrenceEvidence):
+        raise A2ContractError("incremental root needs occurrence evidence")
+    return verify_exact_occurrence(
+        workset,
+        workset.selections[index],
+        item,
+        saved_selection_sha256=root.selection_sha256,
     )
