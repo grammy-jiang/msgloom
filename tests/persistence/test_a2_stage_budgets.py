@@ -13,6 +13,7 @@ from msgloom.persistence.a2_stage_budgets import (
     DEFAULT_POLICY,
     A2BudgetConfigError,
     A2BudgetExceeded,
+    A2StageBudgetError,
     ArtifactBudget,
     RetentionAction,
     StageBudgetPolicy,
@@ -164,6 +165,44 @@ def test_policy_rejects_bad_entry_limit(entries: int) -> None:
 def test_policy_rejects_bad_workset_byte_limit(total: int) -> None:
     with pytest.raises(A2BudgetConfigError):
         small_policy(workset_bytes=total, payload=1)
+
+
+@pytest.mark.parametrize("entries", [1_000_001, 1.5, "3"])
+def test_policy_rejects_entry_limit_above_bound_or_not_int(entries: object) -> None:
+    with pytest.raises(A2BudgetConfigError):
+        small_policy(entries=entries)  # type: ignore[arg-type]
+
+
+@pytest.mark.parametrize("total", [(1 << 40) + 1, 100.0, True, "100"])
+def test_policy_rejects_workset_bytes_above_bound_or_not_int(total: object) -> None:
+    with pytest.raises(A2BudgetConfigError):
+        small_policy(workset_bytes=total, payload=1)  # type: ignore[arg-type]
+
+
+def test_policy_accepts_the_documented_upper_bounds() -> None:
+    policy = small_policy(entries=1_000_000, workset_bytes=1 << 40)
+    check(policy.max_bytes_per_workset == 1 << 40, "bytes bound is inclusive")
+
+
+def test_policy_rejects_list_and_foreign_artifact_elements() -> None:
+    good = small_policy()
+    for bad in (
+        list(good.artifacts),
+        (*good.artifacts[:-1], None),
+        (*good.artifacts[:-1], 3),
+    ):
+        with pytest.raises(A2BudgetConfigError):
+            StageBudgetPolicy(bad, 3, 100)  # type: ignore[arg-type]
+
+
+def test_int_subclasses_are_refused() -> None:
+    class Loud(int):
+        pass
+
+    with pytest.raises(A2BudgetConfigError):
+        small_policy(entries=Loud(3))
+    with pytest.raises(A2StageBudgetError):
+        retention_action("zones", Loud(3), small_policy())
 
 
 def test_policy_rejects_artifact_limit_above_workset_limit() -> None:

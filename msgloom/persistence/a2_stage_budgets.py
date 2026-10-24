@@ -75,7 +75,7 @@ class RetentionAction(StrEnum):
 
 def _require_count(value: object, name: str, upper: int) -> int:
     """Return ``value`` when it is a real int in ``1..upper``."""
-    if isinstance(value, bool) or not isinstance(value, int):
+    if type(value) is not int:
         raise A2BudgetConfigError(f"{name}-not-int")
     if not 1 <= value <= upper:
         raise A2BudgetConfigError(f"{name}-out-of-range")
@@ -92,7 +92,7 @@ class ArtifactBudget:
     digest_days: int
 
     def __post_init__(self) -> None:
-        if self.kind not in STAGE_SCHEMAS:
+        if type(self.kind) is not str or self.kind not in STAGE_SCHEMAS:
             raise A2BudgetConfigError("unknown-kind")
         _require_count(self.max_payload_bytes, "max-payload-bytes", MAX_PAYLOAD_BYTES)
         _require_count(self.payload_days, "payload-days", MAX_RETENTION_DAYS)
@@ -118,6 +118,10 @@ class StageBudgetPolicy:
     def __post_init__(self) -> None:
         _require_count(self.max_entries_per_workset, "max-entries", 1_000_000)
         _require_count(self.max_bytes_per_workset, "max-workset-bytes", 1 << 40)
+        if type(self.artifacts) is not tuple or not all(
+            type(budget) is ArtifactBudget for budget in self.artifacts
+        ):
+            raise A2BudgetConfigError("artifacts-not-budget-tuple")
         kinds = [budget.kind for budget in self.artifacts]
         if len(set(kinds)) != len(kinds):
             raise A2BudgetConfigError("duplicate-kind")
@@ -163,7 +167,7 @@ DEFAULT_POLICY = StageBudgetPolicy(
 
 def _require_measure(value: object, name: str) -> int:
     """Return ``value`` when it is a real int that is zero or more."""
-    if isinstance(value, bool) or not isinstance(value, int) or value < 0:
+    if type(value) is not int or value < 0:
         raise A2BudgetExceeded(f"{name}-invalid")
     return value
 
@@ -206,7 +210,9 @@ def retention_action(
 
     Below ``payload_days``: KEEP. From ``payload_days`` below
     ``digest_days``: DROP_PAYLOAD_KEEP_DIGEST. From ``digest_days``:
-    DELETE. A negative or non-integer age raises :exc:`A2BudgetExceeded`.
+    DELETE. ``age_days`` is whole elapsed days, rounded down by the caller.
+    Rounding down delays an action and never brings one forward. A negative
+    or non-integer age raises :exc:`A2BudgetExceeded`.
     """
     budget = policy.budget_for(kind)
     age = _require_measure(age_days, "age-days")

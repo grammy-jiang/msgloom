@@ -176,6 +176,22 @@ this stage adds no store test. The following work is deferred:
 6. Measure real parser output on the Pi to confirm or replace the proposed
    limits. Use the exclusive benchmark slot from blueprint section 6.2.
 
+## 8a. Scope limits of the policy (review findings)
+
+- The policy bounds one workset. The number of worksets is not bounded. A
+  global disk bound or a running retention job is still open, and C0-20c must
+  not accept without one.
+- The byte budget counts ``canonical_byte_count`` only. Each accepted row
+  also holds ``record_json`` of up to 16 KiB. The attempt and claim tables
+  are not budgeted. Those bytes are not part of the proposed workset limit.
+- The 1 MiB cap for ``a2_result_manifest`` reuses the receipt cap. No
+  manifest contract exists in this tree, so the value is a weak proposal.
+- ``check_artifact`` takes no schema version. It cannot refuse a historical
+  ``@1`` version of a kind. ``require_stage_schema`` refuses those versions.
+  Section 7 means that refusal, not an ``unknown-kind`` error from this module.
+- ``age_days`` is whole elapsed days. The caller rounds down. That delays an
+  action and never brings one forward.
+
 ## 9. Owner approval list
 
 All of these are `PROPOSED_NEEDS_OWNER`:
