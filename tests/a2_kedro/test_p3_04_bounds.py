@@ -45,7 +45,7 @@ def random_messages(seed: int) -> list[OutlookMessage]:
     rng = random.Random(seed)
     count = rng.randrange(2, 24)
     ids = [f"m{i}" for i in range(count)]
-    index = base64.b64encode(bytes([seed % 7]) * 22).decode()
+    index = base64.b64encode(b"\x01" + bytes([seed % 7 + 1]) * 21).decode()
     items: list[OutlookMessage] = []
     for mid in ids:
         parents = tuple(

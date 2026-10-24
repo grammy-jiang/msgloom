@@ -42,12 +42,13 @@ join different IDs): only ``conversation_id`` edges are kept.
 Bounds and failure handling
 ===========================
 
-More than ``MAX_MESSAGES`` messages, or a reference list above
-``MAX_REFERENCE_IDS``, raises
+More than ``MAX_MESSAGES`` messages raises
 :exc:`~msgloom.a2_kedro.contracts.codec.A2ContractError` with a fixed text
-and gives no partial result. A malformed model raises a pydantic error
-that hides the input. No error echoes an ID or a subject. A cut hint list
-reports ``hints_truncated``. Output order does not depend on input order.
+and gives no partial result. A reference list above ``MAX_REFERENCE_IDS``
+raises a pydantic ``ValidationError`` when the message is built. It wraps
+a fixed ``A2ContractError`` text. A malformed model raises the same kind
+of error and hides the input. No error echoes an ID or a subject. A cut
+hint list reports ``hints_truncated``. Output order does not depend on input order.
 See ``docs/notes/a2-v2-p3-04.md``.
 
 CANDIDATE/RESEARCH, PROVISIONAL: wire names and limits are not frozen.
@@ -55,8 +56,6 @@ CANDIDATE/RESEARCH, PROVISIONAL: wire names and limits are not frozen.
 
 from __future__ import annotations
 
-import base64
-import binascii
 import hashlib
 import re
 import unicodedata
@@ -75,14 +74,16 @@ from msgloom.a2_kedro.contracts.codec import (
 )
 from msgloom.a2_kedro.contracts.relations import NodeRef, ScopeKind
 from msgloom.a2_kedro.contracts.result_base import ResultPart
+from msgloom.a2_kedro.semantics.outlook_index import (  # noqa: F401
+    INDEX_HEADER_BYTES,  # re-exported
+    index_header,
+)
 
 #: Provisional bounds.
 MAX_MESSAGES = 1024
 MAX_REFERENCE_IDS = 32
 MAX_HINTS = 256
 MAX_HINT_MEMBERS = 16
-#: Outlook conversation header length in bytes.
-INDEX_HEADER_BYTES = 22
 
 _REPLY_PREFIX = re.compile(r"^\s*(?:re|fw|fwd)\s*:\s*", re.IGNORECASE)
 
@@ -111,6 +112,7 @@ class LimitationCode(StrEnum):
 
     CANDIDATE_ONLY = "candidate_only"
     CONFLICT_PRESENT = "conflict_present"
+    WITHDRAWN_BY_CONFLICT = "withdrawn_by_conflict"
     UNRESOLVED_REFERENCE = "unresolved_reference"
     AMBIGUOUS_REFERENCE = "ambiguous_reference"
     SELF_REFERENCE = "self_reference"
@@ -209,15 +211,6 @@ def _normalize_subject(subject: str) -> str:
     return " ".join(text.casefold().split())
 
 
-def _index_header(text: str) -> str | None:
-    """Return the hex conversation header, or None if it is unusable."""
-    try:
-        raw = base64.b64decode(text, validate=True)
-    except (binascii.Error, ValueError):
-        return None
-    return raw[:INDEX_HEADER_BYTES].hex() if len(raw) >= INDEX_HEADER_BYTES else None
-
-
 def _components(
     members: list[str], edges: list[_Edge]
 ) -> list[tuple[list[str], set[EvidenceKind]]]:
@@ -306,11 +299,12 @@ class _Scope:
         parents = set(msg.in_reply_to)
         if len(parents) > 1:
             self.conflict(ConflictCode.CONFLICTING_PARENTS, [mid])
-            return True
-        if parents and msg.references and msg.references[-1] not in parents:
+        elif parents and msg.references and msg.references[-1] not in parents:
             self.conflict(ConflictCode.PARENT_MISMATCH, [mid])
-            return True
-        return False
+        else:
+            return False
+        self.note(mid, LimitationCode.WITHDRAWN_BY_CONFLICT)
+        return True
 
     def edges(self, active: dict[str, OutlookMessage]) -> list[_Edge]:
         by_cid: dict[str, list[str]] = defaultdict(list)
@@ -323,7 +317,7 @@ class _Scope:
                 owners[msg.internet_message_id].add(mid)
             if msg.conversation_index is None:
                 continue
-            if (header := _index_header(msg.conversation_index)) is None:
+            if (header := index_header(msg.conversation_index)) is None:
                 self.note(mid, LimitationCode.INVALID_CONVERSATION_INDEX)
                 continue
             by_header[header].append(mid)

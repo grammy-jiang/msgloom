@@ -29,8 +29,8 @@ INDEX = EvidenceKind.CONVERSATION_INDEX
 
 
 def header(seed: int) -> bytes:
-    """Return a synthetic 22-byte conversation header."""
-    return bytes([seed]) * 22
+    """Return a synthetic 22-byte header: byte 0x01, then a non-zero seed."""
+    return b"\x01" + bytes([seed]) * 21
 
 
 def index(seed: int, children: int = 0) -> str:
@@ -112,6 +112,55 @@ def test_invalid_conversation_index_is_unknown_not_a_match() -> None:
     check(
         unknown(result, LimitationCode.INVALID_CONVERSATION_INDEX) == ["a", "b", "c"],
         "reported per message",
+    )
+
+
+# Hand-written base64 of 22-byte headers (and one with a 5-byte child block).
+ZERO_HEADER = "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=="  # 22 bytes of 0x00
+BAD_FIRST_BYTE = "AgICAgICAgICAgICAgICAgICAgICAg=="  # 0x02, then 21 bytes 0x02
+ZERO_GUID = "AQICAgICAAAAAAAAAAAAAAAAAAAAAA=="  # 0x01, 5 bytes 0x02, 16 bytes 0x00
+GOOD_HEADER = "AQICAgICAwMDAwMDAwMDAwMDAwMDAw=="  # 0x01, 5 bytes 0x02, 16 bytes 0x03
+GOOD_CHILD = "AQICAgICAwMDAwMDAwMDAwMDAwMDAwEBAQEB"  # GOOD_HEADER + 5 bytes 0x01
+
+
+def test_all_zero_or_wrong_first_byte_header_is_rejected() -> None:
+    result = run(
+        msg("a", conversation_index=ZERO_HEADER),
+        msg("b", conversation_index=ZERO_HEADER),
+        msg("c", conversation_index=BAD_FIRST_BYTE),
+        msg("d", conversation_index=BAD_FIRST_BYTE),
+    )
+    check(result.groups == (), "an invalid header never groups")
+    check(
+        unknown(result, LimitationCode.INVALID_CONVERSATION_INDEX)
+        == ["a", "b", "c", "d"],
+        "each message reports an invalid index",
+    )
+
+
+def test_header_with_zero_guid_is_rejected() -> None:
+    result = run(
+        msg("a", conversation_index=ZERO_GUID),
+        msg("b", conversation_index=ZERO_GUID),
+    )
+    check(result.groups == (), "a zero GUID never groups")
+    check(
+        unknown(result, LimitationCode.INVALID_CONVERSATION_INDEX) == ["a", "b"],
+        "reported",
+    )
+
+
+def test_valid_header_with_nonzero_guid_still_groups() -> None:
+    result = run(
+        msg("a", conversation_index=GOOD_HEADER),
+        msg("b", conversation_index=GOOD_CHILD),
+        msg("c", conversation_index=ZERO_HEADER),
+    )
+    check(members(result) == [("a", "b")], "valid headers group")
+    check(result.groups[0].evidence == (INDEX,), "index evidence")
+    check(
+        unknown(result, LimitationCode.INVALID_CONVERSATION_INDEX) == ["c"],
+        "only the invalid one is reported",
     )
 
 
@@ -269,6 +318,10 @@ def test_conflicting_parents_are_flagged_and_withdrawn() -> None:
     check(codes(result) == ["conflicting_parents"], "conflict")
     check([n.node_id for n in result.conflicts[0].members] == ["c"], "names c")
     check(members(result) == [("a", "b")], "c is not merged")
+    check(
+        unknown(result, LimitationCode.WITHDRAWN_BY_CONFLICT) == ["c"],
+        "withdrawn message is recorded as unresolved",
+    )
 
 
 def test_parent_mismatch_is_flagged_and_withdrawn() -> None:
@@ -284,6 +337,10 @@ def test_parent_mismatch_is_flagged_and_withdrawn() -> None:
     )
     check(codes(result) == ["parent_mismatch"], "conflict")
     check(result.groups == (), "no merge")
+    check(
+        unknown(result, LimitationCode.WITHDRAWN_BY_CONFLICT) == ["c"],
+        "withdrawn message is recorded as unresolved",
+    )
 
 
 def test_matching_parent_and_last_reference_is_not_a_conflict() -> None:
