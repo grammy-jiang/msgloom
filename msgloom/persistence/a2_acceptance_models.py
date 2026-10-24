@@ -18,6 +18,7 @@ is not the production acceptance writer.
 
 from __future__ import annotations
 
+import re
 from typing import Annotated, Literal
 
 from pydantic import Field, model_validator
@@ -38,13 +39,27 @@ from msgloom.a2_kedro.contracts.identity import (
     stage_metadata,
     status_limitations_digest,
 )
-from msgloom.a2_kedro.contracts.schema_ids import is_accepted_key, require_stage_schema
+from msgloom.a2_kedro.contracts.schema_ids import (
+    ACCEPTED_KEY_PREFIX,
+    is_accepted_key,
+    require_stage_schema,
+)
 from msgloom.contracts import ResultRef, StageResult, TerminalStatus
 
 #: Largest payload an accepted stage may claim; mirrors semantic-data bounds.
 MAX_PAYLOAD_BYTES = 64 * 1024 * 1024
 #: Largest stored record, so a row stays small.
 MAX_RECORD_BYTES = 16 * 1024
+
+#: Exactly 64 lowercase hex digits; ``fullmatch`` so no trailing newline.
+_HEX64 = re.compile(r"[0-9a-f]{64}")
+#: Digest fields that must never equal the digest part of the logical key.
+_OUTPUT_DIGESTS = (
+    "canonical_sha256",
+    "stage_metadata_sha256",
+    "lineage_digest",
+    "limitations_digest",
+)
 
 #: Fields that must match exactly on replay, in reporting order.
 INTEGRITY_FIELDS = (
@@ -87,13 +102,22 @@ class AcceptedStage(A2Model):
 
     @model_validator(mode="after")
     def _closed(self) -> AcceptedStage:
+        # The closed allowlist rejects ``prepared@1`` and other history.
         require_stage_schema(self.output.kind, self.output.schema_version)
+        digests = {name: getattr(self, name) for name in _OUTPUT_DIGESTS}
+        digests["claim_token_sha256"] = self.writer.claim_token_sha256
+        for name, value in digests.items():
+            if not _HEX64.fullmatch(value):
+                raise A2ContractError(f"{name} is not a lowercase sha256")
         if not is_accepted_key(self.logical_key):
             raise A2ContractError("invalid logical key")
         if self.status not in ACCEPTED_STATUSES:
             raise A2ContractError("only complete or incomplete can be accepted")
         if self.output.result_id != self.logical_key:
             raise A2ContractError("output ref does not carry the logical key")
+        key_digest = self.logical_key[len(ACCEPTED_KEY_PREFIX) :]
+        if key_digest in {getattr(self, name) for name in _OUTPUT_DIGESTS}:
+            raise A2ContractError("logical key must not equal an output digest")
         return self
 
     def record_bytes(self) -> bytes:
@@ -156,3 +180,19 @@ def decide_append_or_verify(
     if differing:
         raise AcceptanceConflict(differing)
     return "replay"
+
+
+def verify_accepted_stage(
+    record: AcceptedStage, identity: StageIdentity, result: StageResult
+) -> None:
+    """
+    Raise unless ``record`` is what ``identity`` and ``result`` derive.
+
+    CANDIDATE/RESEARCH. Rebuilds the record from the frozen input identity
+    and the saved result, so the key, the payload digest and length, the
+    stage metadata SHA, the lineage and the status/limitations digest are
+    all recomputed, never trusted. Raises :exc:`AcceptanceConflict` naming
+    the differing fields. The writer proof is not compared.
+    """
+    expected = accepted_stage_from_result(identity, result, record.writer)
+    decide_append_or_verify(expected, record)
