@@ -24,8 +24,10 @@ could mark a held-only workset COMPLETE.
 
 Index and proof fields: ``acceptance_index_sha256`` is a digest over the
 ordered terminal coverage (index, disposition, status, result ref and
-limitations) and the batch. A caller can omit it; the model then derives
-it. A supplied value must match. ``claim_proofs`` holds one structural
+limitations) and the batch. The wire value is required. Parsing wire data
+without it fails. Code that builds a receipt in memory calls
+:meth:`CompletionReceipt.build`, which computes it. A supplied value must
+match. ``claim_proofs`` holds one structural
 :class:`~msgloom.a2_kedro.contracts.identity.AttemptProof` per terminal
 result. They are digests of claims, never tokens. They are all or
 nothing; :meth:`CompletionReceipt.require_claim_proofs` lets a finalizer
@@ -175,10 +177,6 @@ def acceptance_index(
     return domain_sha256(INDEX_DOMAIN, covered)
 
 
-def _derived_index(data: dict[str, Any]) -> str:
-    return acceptance_index(data.get("roots", ()), data.get("transition_batch"))
-
-
 class CompletionReceipt(A2Model):
     """Structural receipt for one frozen workset."""
 
@@ -188,8 +186,23 @@ class CompletionReceipt(A2Model):
     roots: tuple[TerminalRoot, ...] = ()
     transition_batch: TransitionBatch | None = None
     intake_held_count: Annotated[int, Field(ge=0, le=1024)] = 0
-    acceptance_index_sha256: Digest = Field(default_factory=_derived_index)  # type: ignore[arg-type]
+    acceptance_index_sha256: Digest
     claim_proofs: tuple[ResultClaimProof, ...] = ()
+
+    @classmethod
+    def build(cls, **fields: Any) -> CompletionReceipt:
+        """
+        Build a receipt in memory and compute the acceptance index.
+
+        ``roots`` and ``transition_batch`` must be model instances. An
+        explicit ``acceptance_index_sha256`` is kept and then checked, so
+        a wrong value still fails. Wire parsing never calls this method.
+        """
+        fields.setdefault(
+            "acceptance_index_sha256",
+            acceptance_index(fields.get("roots", ()), fields.get("transition_batch")),
+        )
+        return cls(**fields)
 
     @model_validator(mode="after")
     def _structure(self) -> CompletionReceipt:

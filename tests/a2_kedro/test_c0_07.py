@@ -195,6 +195,7 @@ def test_block_and_part_shape_rules() -> None:
     parts, blocks = data["parts"], data["blocks"]
     rejects(Prepared, prepared_data(parts=[]), "part count")
     rejects(Prepared, prepared_data(parts=[parts[0], parts[0]]), "duplicate")
+    rejects(Prepared, prepared_data(parts=[parts[1], parts[0], parts[2]]), "sorted")
     rejects(Prepared, prepared_data(blocks=[{**blocks[0], "part_id": "p1"}]), "body")
     rejects(Prepared, prepared_data(blocks=[blocks[0], blocks[0]]), "duplicate")
     rejects(Prepared, prepared_data(blocks=[blocks[1], blocks[0]]), "not sorted")
@@ -204,10 +205,27 @@ def test_block_and_part_shape_rules() -> None:
     rejects(Prepared, prepared_data(participants=twice), "duplicate")
 
 
+def test_blocks_need_a_present_body_part() -> None:
+    data = prepared_data()
+    parts, blocks = data["parts"], data["blocks"]
+    check(parts[0]["role"] == "body", "fixture part 0 is the body")
+    check(len(make(Prepared, data).blocks) == len(blocks), "present body passes")
+    for status in ("partial", "missing"):
+        body = {**parts[0], "status": status}
+        if status == "missing":
+            body["sha256"] = None
+        rejects(
+            Prepared,
+            prepared_data(parts=[body, *parts[1:]]),
+            "not present",
+        )
+
+
 def test_every_limitation_is_required_and_status_agrees() -> None:
     parts = prepared_data()["parts"]
     cases = [
-        ({"parts": [{**parts[0], "status": "partial"}, *parts[1:]]}, "body_partial"),
+        ({"parts": [{**parts[0], "status": "partial"}, *parts[1:]], "blocks": []},
+         "body_partial"),
         ({"parts": [*parts[:2], {**parts[2], "status": "missing", "sha256": None}]},
          "attachment_missing"),
         ({"blocks": []}, "body_absent"),
@@ -216,9 +234,13 @@ def test_every_limitation_is_required_and_status_agrees() -> None:
     ]  # fmt: skip
     for changes, code in cases:
         rejects(Prepared, prepared_data(**changes), "required limitation|status")
-        kept = prepared_data(**changes, status="incomplete", limitations=[limit(code)])
+        extra = ["body_absent"] if code == "body_partial" else []
+        codes = sorted([code, *extra])
+        kept = prepared_data(
+            **changes, status="incomplete", limitations=[limit(c) for c in codes]
+        )
         value = make(Prepared, kept)
-        check(value.limitations[0].code == code, "limitation kept")
+        check(code in [x.code for x in value.limitations], "limitation kept")
         dropped = prepared_data(
             **changes, status="incomplete", limitations=[limit("x")]
         )

@@ -50,7 +50,7 @@ def receipt(roots: tuple[TerminalRoot, ...] = (), **changes: Any) -> CompletionR
         "roots": roots,
     }
     values.update(changes)
-    return CompletionReceipt.model_validate(values)
+    return CompletionReceipt.build(**values)
 
 
 def test_every_reason_carries_the_explicit_repair_class() -> None:

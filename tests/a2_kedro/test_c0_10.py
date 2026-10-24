@@ -250,7 +250,17 @@ def test_acceptance_index_binds_order_status_and_results() -> None:
     )
     rejects("String should match", roots=good.roots, acceptance_index_sha256="xyz")
     base = acceptance_index(good.roots, good.transition_batch)
-    check(good.acceptance_index_sha256 == base, "derived when omitted")
+    check(good.acceptance_index_sha256 == base, "build computes the index")
+    wire = json.loads(good.model_dump_json())
+    del wire["acceptance_index_sha256"]
+    with pytest.raises(ValueError, match="acceptance_index_sha256"):
+        CompletionReceipt.model_validate_json(json.dumps(wire))
+    with pytest.raises(ValueError, match="acceptance_index_sha256"):
+        CompletionReceipt.model_validate(wire)
+    with pytest.raises(ValueError, match="acceptance index"):
+        CompletionReceipt.model_validate_json(
+            json.dumps({**wire, "acceptance_index_sha256": "0" * 64})
+        )
     other = (terminal(ws, 0, prepared_ref("1")), terminal(ws, 1, prepared_ref("5")))
     check(acceptance_index(other, good.transition_batch) != base, "result bound")
     limited = (good.roots[0], terminal(ws, 1, prepared_ref("2"), INCOMPLETE))

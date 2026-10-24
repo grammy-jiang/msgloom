@@ -58,7 +58,7 @@ def receipt(roots: tuple[TerminalRoot, ...] = (), **changes: Any) -> CompletionR
         "roots": roots,
     }
     values.update(changes)
-    return CompletionReceipt.model_validate(values)
+    return CompletionReceipt.build(**values)
 
 
 def test_held_record_is_built_from_the_verified_root() -> None:

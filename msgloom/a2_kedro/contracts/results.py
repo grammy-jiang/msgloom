@@ -15,9 +15,10 @@ A participant is a digest, never an address.
 * :class:`Prepared` binds the frozen root and the accepted parsed,
   normalized, zones and relations refs. Its ``parts`` list covers every
   parsed part (body, alternate, attachment, embedded). Its ``blocks`` list
-  covers every zone. A body, an attachment, a time or a participant list
-  that is missing or not usable needs a named limitation. A record cannot
-  be COMPLETE and carry a limitation.
+  covers every zone. Parts are sorted by ``part_id``. A block names only
+  a body part whose status is ``present``. A body, an attachment, a time
+  or a participant list that is missing or not usable needs a named
+  limitation. A record cannot be COMPLETE and carry a limitation.
 * :class:`FilterResult` lists every rule that ran, not the best match. The
   ``matched`` list, the verdict and the reasons must equal what the
   evaluations imply, so a record with only the best match fails.
@@ -165,9 +166,7 @@ class Prepared(ResultModel):
             raise A2ContractError("lineage refs must be distinct")
         if self.lineage_sha256 != lineage_digest(self.lineage()):
             raise A2ContractError("lineage digest differs from refs")
-        ids = [part.part_id for part in self.parts]
-        if len(set(ids)) != len(ids):
-            raise A2ContractError("duplicate part id")
+        sorted_unique([part.part_id for part in self.parts], "part")
         sorted_unique(
             [(b.part_id, b.original.start, b.zone_id) for b in self.blocks], "block"
         )
@@ -176,6 +175,9 @@ class Prepared(ResultModel):
         bodies = {p.part_id for p in self.parts if p.role == "body"}
         if any(block.part_id not in bodies for block in self.blocks):
             raise A2ContractError("block names no body part")
+        usable = {p.part_id for p in self.parts if p.status == "present"}
+        if any(block.part_id not in usable for block in self.blocks):
+            raise A2ContractError("block names a body part that is not present")
         sorted_unique([(p.role, p.identity_sha256) for p in self.participants], "p")
         check_limitations(self.status, self.limitations, self._required_limitations())
         return self
