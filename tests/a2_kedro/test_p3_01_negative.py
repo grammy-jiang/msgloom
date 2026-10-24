@@ -5,18 +5,23 @@ from __future__ import annotations
 import pytest
 from pydantic import ValidationError
 
+from msgloom.a2_kedro.contracts.codec import MAX_CANONICAL_BYTES
 from msgloom.a2_kedro.contracts.relations import MAX_NODES, MAX_RELATIONS
 from msgloom.a2_kedro.semantics.relations import (
     MAX_ANCESTOR_DEPTH,
+    MAX_INPUT_IDS,
+    MAX_INPUT_MESSAGES,
+    MAX_LIMITATIONS,
     MAX_PARENT_REFS,
     MAX_QUOTE_MARKERS,
+    MAX_UNRESOLVED,
     MessageEvidence,
     QuoteMarker,
     SourceEvidence,
     recover_relations,
 )
 from tests.a2_kedro.helpers import check
-from tests.a2_kedro.test_p3_01 import codes, edges, msg, run
+from tests.a2_kedro.test_p3_01 import codes, edges, msg, run, src
 
 SECRET = "secret-id-x9@example.invalid"
 
@@ -182,7 +187,14 @@ def test_malformed_evidence_is_rejected_without_echo() -> None:
     bad: list[dict[str, object]] = [
         {"message_id": SECRET + "\n"},
         {"message_id": ""},
-        {"message_id": SECRET, "reply_parent_ids": [SECRET]},
+        {"message_id": SECRET, "reply_parent_ids": (SECRET, SECRET + "\n")},
+        {
+            "message_id": SECRET,
+            "quote_markers": (
+                QuoteMarker(target_id=SECRET),
+                {"target_id": SECRET + "\n"},
+            ),
+        },
         {"message_id": SECRET, "subject": SECRET},
         {"message_id": SECRET, "ancestor_ids": (SECRET, "")},
     ]
@@ -190,6 +202,8 @@ def test_malformed_evidence_is_rejected_without_echo() -> None:
         with pytest.raises(ValidationError) as caught:
             MessageEvidence.model_validate(payload)
         check(SECRET not in str(caught.value), "input is hidden in the error")
+        types = {item["type"] for item in caught.value.errors()}
+        check("tuple_type" not in types, "the element fails, not the container type")
     with pytest.raises(ValidationError):
         SourceEvidence(scope_kind="folder", scope_id="x")  # type: ignore[arg-type]
     with pytest.raises(ValidationError):
@@ -202,3 +216,92 @@ def test_models_are_frozen() -> None:
         item.message_id = "b"  # type: ignore[misc]
     result = recover_relations(SourceEvidence(scope_kind="mailbox", scope_id="mb"))
     check(result.relations.nodes == (), "mailbox scope is accepted")
+
+
+def hostile_source() -> SourceEvidence:
+    """Many messages, each naming many absent targets of every kind."""
+    items = [
+        msg(
+            f"m{i:04d}",
+            ancestor_ids=[f"x{i}-{j}" for j in range(MAX_ANCESTOR_DEPTH)],
+            reply_parent_ids=[f"p{i}"],
+            quotes=[f"q{i}-{j}" for j in range(MAX_QUOTE_MARKERS)],
+        )
+        for i in range(MAX_NODES)
+    ]
+    return src(*items)
+
+
+def test_unresolved_and_limitations_are_bounded() -> None:
+    result = recover_relations(hostile_source())
+    check(len(result.unresolved) == MAX_UNRESOLVED, "unresolved is cut to the bound")
+    check(len(result.limitations) <= MAX_LIMITATIONS, "limitations are cut")
+    got = codes(result)
+    check("too_many_unresolved" in got, "stand-in for the unresolved cut")
+    check("too_many_limitations" in got, "stand-in for the limitation cut")
+    check(got.count("too_many_unresolved") == 1, "one stand-in only")
+    check(got.count("too_many_limitations") == 1, "one stand-in only")
+    size = len(result.model_dump_json().encode())
+    check(size < MAX_CANONICAL_BYTES, "output fits the canonical byte bound")
+
+
+def test_output_cut_keeps_the_sorted_prefix_in_any_input_order() -> None:
+    source = hostile_source()
+    first = recover_relations(source)
+    flipped = recover_relations(
+        SourceEvidence(
+            scope_kind=source.scope_kind,
+            scope_id=source.scope_id,
+            messages=tuple(reversed(source.messages)),
+        )
+    )
+    check(first.model_dump_json() == flipped.model_dump_json(), "stable cut")
+    keys = [u.sort_key() for u in first.unresolved]
+    check(keys == sorted(keys), "unresolved is sorted")
+    check(keys[0] == ("ancestor", "m0000", "x0-0"), "smallest item is kept")
+    check(
+        all(u.source_id == "m0000" or u.source_id < "m0004" for u in first.unresolved),
+        "only the smallest keys remain",
+    )
+    kept = [x.sort_key() for x in first.limitations]
+    check(kept == sorted(kept), "limitations are sorted")
+
+
+def test_bounds_below_the_cut_add_no_stand_in() -> None:
+    result = run(msg("a", ancestor_ids=["g1", "g2"], quotes=["g3"]))
+    check(len(result.unresolved) == 3, "all kept")
+    check(codes(result) == ["unresolved_target"] * 3, "no stand-in")
+
+
+def test_message_tuple_is_bounded() -> None:
+    item = msg("a")
+    ok = SourceEvidence(
+        scope_kind="thread", scope_id="s", messages=(item,) * MAX_INPUT_MESSAGES
+    )
+    check(len(ok.messages) == MAX_INPUT_MESSAGES, "the bound itself is accepted")
+    with pytest.raises(ValidationError) as caught:
+        SourceEvidence(
+            scope_kind="thread",
+            scope_id="s",
+            messages=(item,) * (MAX_INPUT_MESSAGES + 1),
+        )
+    check("too_long" in {e["type"] for e in caught.value.errors()}, "length error")
+
+
+def test_id_and_marker_tuples_are_bounded() -> None:
+    for field in ("reply_parent_ids", "ancestor_ids"):
+        full = MessageEvidence.model_validate(
+            {"message_id": "a", field: ("z",) * MAX_INPUT_IDS}
+        )
+        check(len(getattr(full, field)) == MAX_INPUT_IDS, "the bound is accepted")
+        with pytest.raises(ValidationError) as caught:
+            MessageEvidence.model_validate(
+                {"message_id": "a", field: (SECRET,) * (MAX_INPUT_IDS + 1)}
+            )
+        check(SECRET not in str(caught.value), "no echo")
+        check("too_long" in {e["type"] for e in caught.value.errors()}, field)
+    marks = (QuoteMarker(target_id="z"),)
+    MessageEvidence(message_id="a", quote_markers=marks * MAX_INPUT_IDS)
+    with pytest.raises(ValidationError) as caught:
+        MessageEvidence(message_id="a", quote_markers=marks * (MAX_INPUT_IDS + 1))
+    check("too_long" in {e["type"] for e in caught.value.errors()}, "markers")

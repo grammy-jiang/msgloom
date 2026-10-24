@@ -207,3 +207,19 @@ def test_empty_source_gives_empty_valid_record() -> None:
     check(result.relations.nodes == () and result.relations.relations == (), "empty")
     check(result.limitations == () and result.unresolved == (), "no limitation")
     check(LimitationCode("cycle") is LimitationCode.CYCLE, "closed code set")
+
+
+def test_basis_text_is_pinned_for_each_kind() -> None:
+    # Literal text on purpose: the constants must not vouch for themselves.
+    result = run(
+        msg("a"),
+        msg("b", reply_parent_ids=["a"], ancestor_ids=["a"], quotes=["a"]),
+    )
+    basis = {e[0]: e[3] for e in edges(result)}
+    check(basis["reply_to"] == "same_source:reply_parent", "reply_to basis")
+    check(basis["ancestor"] == "same_source:ancestor_list", "ancestor basis")
+    check(basis["reference"] == "same_source:quote_marker", "quote basis")
+    check(len(set(basis.values())) == 3, "the three basis texts differ")
+    check(BASIS_REPLY == "same_source:reply_parent", "reply constant")
+    check(BASIS_ANCESTOR == "same_source:ancestor_list", "ancestor constant")
+    check(BASIS_QUOTE == "same_source:quote_marker", "quote constant")

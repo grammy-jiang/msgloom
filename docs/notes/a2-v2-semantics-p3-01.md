@@ -36,6 +36,12 @@ pure. It handles one source per call and never links two sources.
 and the contract bounds of 1024 nodes and 4096 relations. Truncation keeps
 the sorted prefix, so it is deterministic.
 
+Output bounds: 256 unresolved relations and 256 limitations. Each cut adds
+one stand-in limitation (`too_many_unresolved`, `too_many_limitations`).
+Stand-ins are never cut. Input bounds: 2048 messages per source and 128
+items per ID or marker tuple. A longer input is rejected as a malformed
+model.
+
 ## Open
 
 - `native_relations@1` has no field for limitations or unresolved
@@ -50,3 +56,9 @@ the sorted prefix, so it is deterministic.
   group. It does not guess which edge is wrong.
 - Conflicting parents record no `reply_to`. An unresolved parent in a
   conflicting set is not reported as unresolved.
+
+## Review process
+
+`tests/a2_kedro/test_p3_01_negative.py` and this note are not in the task
+manifest. They need a Supervisor allowlist waiver. `test_p3_01.py` would
+exceed 500 lines without the negative test module.
