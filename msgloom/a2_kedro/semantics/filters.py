@@ -78,6 +78,7 @@ CANDIDATE/RESEARCH, PROVISIONAL: names and limits are not frozen.
 
 from __future__ import annotations
 
+from dataclasses import dataclass
 from enum import StrEnum
 from typing import Annotated
 
@@ -169,36 +170,64 @@ class RuleSet(ResultPart):
 class FilterInput(ResultPart):
     """Typed message fields. ``None`` means the field is missing."""
 
-    sender_domain: Text | None = None
-    folder_id: Text | None = None
-    labels: Annotated[tuple[Text, ...], Field(max_length=MAX_LABELS)] | None = None
-    subject: str | None = None
+    # Raw input values are hidden from ``repr``.
+    sender_domain: Text | None = Field(default=None, repr=False)
+    folder_id: Text | None = Field(default=None, repr=False)
+    labels: Annotated[tuple[Text, ...], Field(max_length=MAX_LABELS)] | None = Field(
+        default=None, repr=False
+    )
+    subject: str | None = Field(default=None, repr=False)
 
 
-def _test(predicate: FilterPredicate, record: FilterInput) -> bool | None:
+@dataclass(frozen=True, slots=True)
+class _Folded:
+    """Case-folded record values. Built once for each evaluation."""
+
+    sender_domain: str | None
+    labels: frozenset[str] | None
+    subject: str | None
+
+
+def _fold(record: FilterInput) -> _Folded:
+    """Case-fold each record value once, so rules do not repeat the work."""
+    sender = record.sender_domain
+    labels = record.labels
+    subject = record.subject
+    return _Folded(
+        sender_domain=None if sender is None else sender.casefold(),
+        labels=None if labels is None else frozenset(i.casefold() for i in labels),
+        subject=None if subject is None else subject.casefold(),
+    )
+
+
+def _test(
+    predicate: FilterPredicate, record: FilterInput, folded: _Folded
+) -> bool | None:
     """Return the test result, or ``None`` when the field is missing."""
     value = predicate.value
     match predicate.field:
         case FilterField.SENDER_DOMAIN:
-            if record.sender_domain is None:
+            if folded.sender_domain is None:
                 return None
-            return record.sender_domain.casefold() == value.casefold()
+            return folded.sender_domain == value.casefold()
         case FilterField.FOLDER_ID:
             if record.folder_id is None:
                 return None
             return record.folder_id == value
         case FilterField.LABEL:
-            if record.labels is None:
+            if folded.labels is None:
                 return None
-            return value.casefold() in {item.casefold() for item in record.labels}
+            return value.casefold() in folded.labels
         case FilterField.SUBJECT_PREFIX:
-            if record.subject is None:
+            if folded.subject is None:
                 return None
-            return record.subject.casefold().startswith(value.casefold())
+            return folded.subject.startswith(value.casefold())
 
 
-def _evaluate_rule(rule: FilterRule, record: FilterInput) -> RuleEvaluation:
-    result = _test(rule.predicate, record)
+def _evaluate_rule(
+    rule: FilterRule, record: FilterInput, folded: _Folded
+) -> RuleEvaluation:
+    result = _test(rule.predicate, record, folded)
     if result is None:
         outcome, effect = "unknown", None
     elif result:
@@ -290,7 +319,8 @@ def evaluate_filters(rule_set: RuleSet, record: FilterInput) -> FilterEvaluation
     if len(set(ids)) != len(ids):
         raise DuplicateRuleIdError("duplicate rule id in rule set")
     rules = tuple(sorted(rule_set.rules, key=lambda rule: rule.rule_id))
-    evals = tuple(_evaluate_rule(rule, record) for rule in rules)
+    folded = _fold(record)
+    evals = tuple(_evaluate_rule(rule, record, folded) for rule in rules)
     verdict, reasons = _verdict(evals)
     limitations = _limitations(evals, rules, verdict)
     return FilterEvaluation(

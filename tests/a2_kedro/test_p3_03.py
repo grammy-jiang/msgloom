@@ -372,3 +372,56 @@ def test_evaluation_agrees_with_filter_result_contract() -> None:
         result = evaluate_filters(rs, record)
         built = FilterResult.model_validate(contract_data(result), strict=False)
         check(built.verdict == result.verdict.value, "contract accepts verdict")
+
+
+class _CountingStr(str):
+    """A ``str`` that counts its ``casefold`` calls in a shared list."""
+
+    calls: list[int]
+
+    def casefold(self) -> str:
+        self.calls.append(1)
+        return super().casefold()
+
+
+def _counting(text: str, calls: list[int]) -> _CountingStr:
+    item = _CountingStr(text)
+    item.calls = calls
+    return item
+
+
+def test_labels_are_casefolded_once_per_evaluation() -> None:
+    n_labels, n_rules = 256, 1024
+    calls: list[int] = []
+    labels = tuple(
+        _counting(f"Label{i:04d}" + "X" * 990, calls) for i in range(n_labels)
+    )
+    # Validation requires an exact str, so build the record without it.
+    record = FilterInput.model_construct(labels=labels)
+    items = tuple(
+        rule(f"r{i:04d}", "include", "label", f"label{i:04d}" + "x" * 990)
+        for i in range(n_rules)
+    )
+    result = evaluate_filters(rules(*items), record)
+    check(
+        len(calls) <= n_labels + 4,
+        "casefold work does not grow with rules x labels",
+    )
+    check(len(result.matched) == n_labels, "each rule with a label match matches")
+    check(result.matched[0] == "r0000", "matched IDs are sorted")
+    check(result.verdict is FilterVerdict.INCLUDE, "verdict is include")
+    again = evaluate_filters(rules(*reversed(items)), record)
+    check(again == result, "result is deterministic")
+
+
+def test_repr_hides_input_values() -> None:
+    text = repr(
+        FilterInput(
+            sender_domain=FAKE_EMAIL,
+            folder_id="fake-folder-id",
+            labels=("fake-label",),
+            subject=FAKE_SUBJECT,
+        )
+    )
+    for secret in (FAKE_EMAIL, "fake-folder-id", "fake-label", FAKE_SUBJECT):
+        check(secret not in text, "repr hides input value")
