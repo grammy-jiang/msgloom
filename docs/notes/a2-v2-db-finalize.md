@@ -17,14 +17,62 @@ One `BEGIN IMMEDIATE` transaction on a caller-owned autocommit connection:
    (kind and version only), row scope and cutoff equal the Workset.
 3. Row `pending` and the proof is the live claim in `phase1_a2_claims`.
 4. Metadata recheck: every receipt result is an accepted-stage record that
-   the coverage proof binds. No payload, semantic-data or body is read.
-5. `UPDATE` the legacy row, write the receipt proof file, read the row back,
-   `COMMIT`.
+   the coverage proof binds. Then each accepted stage is verified from the
+   database (see "Durable recheck" below). No payload, semantic-data or body
+   is read.
+5. `UPDATE` the legacy row, read the row back (still inside the transaction),
+   write the receipt proof file, `COMMIT`.
 
 Written columns: `state='terminal'`, `terminal_status` (receipt status),
 `result_refs` (root results in order, then the batch result),
 `terminal_claim_token` (the claim token SHA-256, never the raw token),
 `terminal_execution_id`, `terminal_attempt_id`.
+
+## Durable recheck
+
+For every accepted stage the receipt names, in the lock, from metadata only
+(`phase1_stage_results`, `phase1_a2_accepted_stages`, `phase1_a2_claims`,
+`phase1_a2_stage_attempts`; never `phase1_semantic_data`):
+
+| Check | Reason code on failure |
+| --- | --- |
+| Saved `StageResult` row exists | `stage-result-missing` |
+| Row decodes and is an acceptable stage | `stage-result-corrupt` |
+| Row kind/version equal the record; writer execution and attempt equal the record writer | `stage-result-mismatch`, `stage-result-writer-mismatch` |
+| Canonical SHA, length and semantic data id from the stored `semantic_data_ref` equal the record | `stage-result-mismatch` |
+| Stage metadata SHA, lineage digest, status and limitations digest, recomputed from the saved row, equal the record | `stage-result-mismatch` |
+| Accepted-stage columns (SHA, length, data id, metadata SHA, lineage, limitations digest) equal the record | `accepted-columns-mismatch` |
+| Claim row at `writer_claim_seq` exists and equals the record writer (key, execution, attempt, token SHA-256) | `publish-claim-missing`, `publish-claim-mismatch` |
+| That claim has an `inserted` row for the key in `phase1_a2_stage_attempts` | `publish-attempt-missing` |
+| Receipt status equals the record status (coverage proof) | `accepted-result-mismatch` |
+
+A stage may come from an earlier attempt. The old same-attempt rule of v1 is
+not applied. Each stage carries its own original publication proof, and the
+publishing claim may be released.
+
+The canonical SHA comes from the `semantic_data_ref` text column of
+`phase1_stage_results`. That column is metadata. It is not the
+`phase1_semantic_data` table. The SHA of the stored payload bytes is not
+recomputed here.
+
+### Limits of the recheck (no stored metadata to compare)
+
+1. The input-only accepted key is not recomputed. Recomputing needs the frozen
+   `StageIdentity` (the plan). Schema 5 stores no plan, and the request does
+   not carry one. The check is limited to key equality between the receipt,
+   the accepted record and the saved result row.
+2. "Published plan" is not checked, for the same reason. The lineage digest
+   is compared with the saved row's `input_refs`, not with a stored plan.
+   Required inputs are not rechecked at finalize time.
+3. The payload SHA and byte count in `phase1_semantic_data` are not compared
+   with the stored `semantic_data_ref`. That table is a payload table, and the
+   task forbids reading it.
+4. The receipt carries a status but no limitations. Limitations are compared
+   between the saved result and the accepted record (digest), not against the
+   receipt.
+5. The attempt history is the SQL `phase1_a2_stage_attempts` table. The
+   file-based claim history of `ReceiptStore` is not cross-checked with SQL
+   (decision 6 below).
 
 ## Outcomes
 
@@ -43,7 +91,9 @@ differ from its own, so a v2-terminal row cannot be finished again by v1.
 ## Atomicity limit
 
 SQLite cannot roll back a file. The write-once proof file is written after
-the `UPDATE` and before `COMMIT`. A failure before `COMMIT` rolls back SQL.
+the `UPDATE` and the read-back, and before `COMMIT`. A failure before
+`COMMIT` rolls back SQL. The read-back runs before the file write, so a
+mismatch leaves no orphan proof file.
 A proof file written before a failed `COMMIT` stays as an orphan. A retry of
 the same receipt replays it. A different receipt raises `A2ReceiptConflict`
 and the row stays pending. A terminal row always has a proof file.
