@@ -39,9 +39,17 @@ Failure handling: errors are the typed, fixed-message classes of
 :mod:`~msgloom.triage_input.codec_v2`. None carries a value, a key or a
 chained cause. Errors raised by persistence itself pass through unchanged.
 
+Exception delta for v1 input: :func:`load_values` first classifies the refs.
+A v1 mix or an unknown version raises the typed adapter errors instead of
+loading. The handler cannot reach that case, because ``admit_upstream`` has
+already checked a superset of these refs.
+
 CANDIDATE/RESEARCH, PROVISIONAL: the handler still stops an upstream-v2 run
-as INCOMPLETE before this loader runs (see ``adapter_v2``). No v2 claim
-path, builder or provider call exists yet.
+as INCOMPLETE before this loader runs (see ``adapter_v2``), so the v2 branch
+has no caller in a real run and only the unit tests reach it. No v2 claim
+path, builder or provider call exists yet. The ``phase1`` semantic registry
+has no persistence codec for ``prepared@2``, ``filter_result@2`` or
+``group_result@2`` yet, so a real SQLite load of a v2 ref is not supported.
 """
 
 from __future__ import annotations
@@ -66,11 +74,11 @@ from msgloom.triage_input.adapter_v2 import (
     LossyProjectionError,
     MixedVersionsError,
     UpstreamStateError,
+    _check_v2_result,
     classify_upstream,
 )
 from msgloom.triage_input.codec_v2 import (
     DigestMismatchError,
-    DuplicateKeyError,
     ExtraFieldError,
     HistoricalVersionError,
     InvalidValueError,
@@ -81,6 +89,8 @@ from msgloom.triage_input.codec_v2 import (
     TriageInputV2Error,
     UnknownKindError,
     UnknownVersionError,
+    _no_duplicates,
+    _no_number_constant,
 )
 
 #: v2 model type for each family kind. These are the v2 ``expected`` types.
@@ -97,17 +107,6 @@ MAX_SOURCE_BYTES = MAX_CANONICAL_BYTES
 
 class _SemanticLoader(Protocol):
     async def load_semantic_data(self, reference: SemanticDataRef) -> object: ...
-
-
-def _no_duplicates(pairs: list[tuple[str, Any]]) -> dict[str, Any]:
-    keys = [key for key, _ in pairs]
-    if len(keys) != len(set(keys)):
-        raise DuplicateKeyError
-    return dict(pairs)
-
-
-def _no_number_constant(_name: str) -> Any:
-    raise NonCanonicalError
 
 
 def _parse(payload: bytes) -> dict[str, Any]:
@@ -230,6 +229,7 @@ async def _load_v2[T](
             raise InvalidValueError
         saved = by_id[ref.result_id]
         semantic = _check_saved(ref, saved)
+        _check_v2_result(ref, saved)  # failures, status vs limitations
         loaded = await persistence.load_semantic_data(semantic)
         model = V2_MODELS[kind]
         record: Any = decode_v2(_payload_of(loaded, model), model, semantic)

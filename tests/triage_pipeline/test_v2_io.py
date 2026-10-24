@@ -18,6 +18,7 @@ from msgloom.a2_kedro.contracts.results import (
 from msgloom.contracts import (
     AttemptIdentity,
     ExecutionIdentity,
+    Failure,
     Limitation,
     ResultRef,
     SemanticDataRef,
@@ -100,6 +101,7 @@ def stage(reference: ResultRef, semantic: SemanticDataRef | None, **kw: Any) -> 
         acceptable=True,
         semantic_data_ref=semantic,
         limitations=kw.pop("limitations", ()),
+        failures=kw.pop("failures", ()),
     )
 
 
@@ -229,6 +231,20 @@ def test_v2_limitations_and_incomplete_state_are_preserved() -> None:
         ),
         UpstreamStateError,
     )
+
+
+def test_saved_result_with_failures_is_refused() -> None:
+    payload = encoded(Prepared, prepared_data())
+    item = entry("prepared", payload)
+    failed = Entry(
+        item.ref,
+        stage(
+            item.ref,
+            item.saved.semantic_data_ref,
+            failures=(Failure("upstream_failed", "synthetic"),),
+        ),
+    )
+    refuses(lambda: load((failed,), {0: payload}, Prepared), UpstreamStateError)
 
 
 # -- dispatch ----------------------------------------------------------------
