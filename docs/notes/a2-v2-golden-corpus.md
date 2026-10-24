@@ -14,7 +14,7 @@ The supervisor changed the path to `golden/`.
 | `t0_03.json` | Teams chat, channel, component-only, scope refresh | 5 | 6 |
 | `t0_04.json` | Calendar, To Do, OneDrive, Contacts stay contextual | 5 | 5 |
 | `t0_05.json` | PDF, Word, Excel, malformed, large, partial | 7 | 7 |
-| `t0_09.json` | Prefect lost, duplicate hint, partial A1 finish | 6 | 7 |
+| `t0_09.json` | Prefect lost, duplicate hint, partial A1 finish | 6 | 8 |
 | `t0_10.json` | Node.run logger, PII canary, telemetry, illegal paths | 5 | 13 |
 
 T0-06, T0-07 and T0-08 are outside this corpus. They depend on contract tasks.
@@ -29,7 +29,11 @@ T0-06, T0-07 and T0-08 are outside this corpus. They depend on contract tasks.
 4. A2 authors must not change an expected value to make a test pass. A change
    needs a new reviewer and a new line in the manifest.
 5. A2 authors must not rewrite A1 acceptance rules. T0-01 fixes those rules.
-6. All data is synthetic. Domains end in `example.invalid` or `example.test`.
+6. All data is synthetic. Hosts must be reserved names from RFC 2606 and
+   RFC 6761: `example.com`, `example.net`, `example.org` (and subdomains), or a
+   name that ends in `.example`, `.invalid`, `.test` or `.localhost`. The
+   corpus uses `example.invalid` and `example.test`. The test rejects any other
+   host, such as `foo.internal`.
    The canary string `CANARY-PII-7731-ZQ` marks data that must never reach a
    log, a status record or a stored artifact.
 
@@ -42,7 +46,46 @@ Some cases add `rationale`. A positive case shows required behavior. A
 negative case shows behavior that must not happen, or a trap.
 
 T0-05 uses these status words: `complete`, `partial`, `unsupported`, `failed`.
-A parse error must never give `complete`.
+A parse error must never give `complete`. The words map to A1 behavior so:
+
+| Oracle status | A1 behavior |
+| --- | --- |
+| `failed` | The parser raises (for PDF: `PdfParseError`) or the boundary rejects the input before extraction. Cases: encrypted PDF, malformed PDF or DOCX, wrong detected format, ZIP byte limit, PDF output limit, worker crash. |
+| `unsupported` | The parser returns output whose only content is an unsupported limitation for the whole input. Case: legacy `.doc`. |
+| `partial` | The parser returns output with a content-loss limitation (scanned, partial, unsupported part). Other content may remain. |
+| `complete` | The parser returns content with no content-loss limitation. |
+
+Disclosure-only limitations that every successful parse carries do not count
+as content loss. Examples are the PDF reading-order, layout and table notes
+and the Word `word-feature-coverage` limitation. Complete cases therefore use
+the field `content_loss_limitations`. Sources: `parser-pdf.md` ("Lifecycle
+and failures"), `parser-word.md`, `parser-excel.md`.
+
+## Decisions that are not from A1
+
+These expected values are not derived from A1 docs. Each needs owner sign-off.
+The cases name the status in their provenance or rationale.
+
+- **T0-10 Dataset paths (PROPOSED POLICY).** No cited A1 or master document
+  defines a Dataset path rule. The accept and reject verdicts and the reason
+  words in P01, P05 and N01 to N10 are the plain security answer. Each of
+  those cases carries a `provenance` field that says so. A2 authors must not
+  cite them as A1 requirements.
+- **T0-09 N08 (PROPOSED POLICY).** The handoff spec (H6, H18) does not say how
+  A2 reacts when A1 authority advanced with no release. N04 fixes only what
+  the rules decide: no work, no cursor move, no invented release. N08 proposes
+  a visible failure.
+- **T0-04 Calendar (task-goal decision).** `preparation-semantics.md` names
+  only To Do, OneDrive and Contacts as contextual inputs. The handoff spec
+  leaves Calendar's final A2 role open. T0-04 P04, P05 and N03 treat Calendar
+  as contextual with a one-member None group because the task goal says so.
+- **T0-02 reply text split (A2-level).** The contributed text and quoted text
+  split and the oldest-first ancestor order are task-level annotations. The
+  cited A1 docs do not define them.
+- **T0-02 P01.** This case follows A1 only. `parser-mime-html.md` says MIME
+  alternatives are extracted independently and that equivalence is not
+  inferred. The case does not count the HTML alternative as the same
+  contribution. How A2 merges the two texts is open.
 
 ## Integrity
 
@@ -53,8 +96,9 @@ A parse error must never give `complete`.
 
 `tests/a2_kedro/test_gold_corpus.py` checks structure and the manifest only. It
 checks strict JSON (duplicate keys fail), required fields, unique case IDs,
-both polarities per file, non-empty provenance and independence text, and
-synthetic domains. It does not check behavior.
+both polarities per file, positive cases before negative cases, non-empty
+provenance and independence text, and reserved synthetic hosts only. It does
+not check behavior.
 
 ## How implementation tests consume the oracle
 
