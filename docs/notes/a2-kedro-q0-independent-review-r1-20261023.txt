@@ -1,0 +1,75 @@
+DECISION: REVISE
+REVIEWED_SHA: ddceb3719d753d13f1265472bb83f7b7d1af832c
+
+I ran nothing. This is a read-only review of the files in the worktree and `/tmp/msgloom-a2-q0-20261023`. I did not recompute any hash, re-execute the probe, or open the GHSA, GitLab or Snyk pages (none are cached locally).
+
+The core finding holds up. Kedro 1.7.0 `SequentialRunner` and `DataCatalog` can drive a thread-bridged async-backed DAG. The synthetic Q0 claim is mostly sound, but several scenarios prove less than the gate table says. The fixes are small: tighten the probe, correct the wording, and rerun.
+
+## P1 blockers
+
+**P1-1. Redaction is not tested on Kedro's real leak path.**
+- `kedro/pipeline/node.py:555-562` logs `str(exc)` at ERROR for any node-function exception. The probe only fails inside dataset `save()`, which the runner reports through the `runner.py:339` resume warning and no exception text. The probe's own comment at `q0_kedro_runtime_probe.py:365` ("actual exception logging path") is wrong.
+- `probe:391` passes on an empty capture, and nothing asserts the capture is non-empty. A globally muted logger would still pass.
+- There is no positive control, such as a deliberately leaking node showing the capture catches it.
+- The "565 chars" in the evidence is only reported, never asserted.
+- Wording to fix: md:18 ("no synthetic payload in failure log capture"), md:58 and md:77.
+- Fix: add a node-function failure that raises the canary, assert the capture is non-empty, and add a control.
+
+**P1-2. The heartbeat scenario cannot fail.**
+- `probe:346-356` asserts `heartbeats == 8`. `gather` waits for both coroutines, so `tick()` always reaches 8, even if the runner blocked the loop.
+- No gap or lag is measured, and no CPU work runs during the test (the delay is `asyncio.sleep`).
+- Wording to fix: md:73 ("eight Application-loop heartbeat ticks while runner is active").
+- Fix: record the maximum inter-tick gap, run it during the CPU node, and assert a bound.
+
+**P1-3. Cancellation and late-write proof is narrower than claimed.**
+- The cancel test (`probe:329-335`) drains in 0.161 s, which is the full `parser_delay`. Cancellation does not interrupt the in-flight service call. `bridge.call` (`:136`) blocks in `fut.result` ignoring `stopped` until the call finishes or the deadline passes. The real worker is drained and no service future is detached on this path, so that part of the claim holds.
+- The result is discarded after the service has finished (`:137-138`). A cancel or deadline during `publish` gives "committed but reported failed". Every cancel and deadline test fires during the parse phase, so this is never exercised.
+- The deadline path calls `fut.cancel()` (`:141`) without awaiting it. The service task is cancelled asynchronously after the worker has already returned, which is a brief detached-service window.
+- "Fake claim check" is the static `claim_valid` bool (`:101`), evaluated once. It is never revoked mid-flight or after cancellation, so only "claim already invalid" is proven.
+- `run_case` (`:279-290`) swallows `CancelledError` and returns a flagged tuple. It also reports "cancelled" when the worker actually succeeded and committed, because both branches at `:286-290` return identical values. Structured-concurrency semantics (`asyncio.timeout`, `TaskGroup`) would break if this pattern moved into production.
+- Fix: add a cancel-during-publish scenario and an out-of-order claim revocation scenario, and make the committed-versus-reported state explicit.
+
+**P1-4. Telemetry and network "PASS" is vacuous.**
+- `SequentialRunner.run` defaults to `_NullPluginManager` (`runner.py:107`). The kedro-telemetry hook is registered only through entry points (`entry_points.txt:4-5`) and `task.py:133-143`, so the probe never loads it.
+- "0 socket attempts" therefore shows the programmatic path doesn't call out, not that opt-out works. Only `connect`, `connect_ex` and `create_connection` are patched. DNS and UDP are not, and there is no positive control.
+- Gate Q0.4 "PASS" (md:18) should be reworded, or the probe should call `kedro_telemetry.plugin._check_for_telemetry_consent` and confirm it returns False.
+
+**P1-5. "12/12 PASS" is a literal, and failures cannot be told apart.**
+- `probe:410` hard-codes `scenarios_passed: 12` and the scenario list (`:398-409`) is static. The only gates are `assert`s, which disappear under `python -O`. They also violate AGENTS.md's no-`assert` rule; the research tree is ruff-excluded, but the rule is still worth following in a probe that gates a decision.
+- `bridge.call` collapses every error into `trusted-service-failed`. The conflict, `parser_failure`, `stage_failure` and `stale_claim` cases (`:306-327`) accept any `SafeBoundaryError` or `DatasetError`, with no counter showing which failure fired.
+- `results/probe-py313-stderr.txt` shows an earlier probe version crashing in the conflict case with an uncaught `DatasetError`. The `except` was then widened. That is not disclosed in the md. `results/probe-py313.json` is not JSON; it is a log from an older run.
+- Evidence has no exit codes. The probe stdout (`probe-py31x.stdout:1-5`) is not clean JSON because a Kedro log line precedes it.
+
+## P2 non-blocking
+
+- **Catalog guard (probe:244-246).** It is correct by source. `runner.py:96` calls `catalog.get(..., fallback_to_runtime_pattern=True)` for every pipeline dataset, and `data_catalog.py:211-213` maps `{default}` to `MemoryDataset`. `keys()` (`:442-456`) lists only registered datasets, so unconfigured outputs become implicit `MemoryDataset`s and the guard catches them. Unconfigured inputs raise `ValueError` (`runner.py:100-105`). No negative test exercises the guard.
+- **DAG shape.** It is real, and the Rich log (`results/probe-py313.json:15-52`) confirms the order: source load, parse save and load, transform, semantic save and load, manifest. The `emit` node is an identity pass-through whose only job is to trigger the save. The datasets keep results in instance state.
+- **CVE wording.**
+  - The wheel hash `488701…` matches the PyPI JSON and the candidate lock (`lock-candidate/uv.lock:1601`). The size is 248245 and the sdist is `50b654…`.
+  - The guard is at `core.py:950-957` and `utils.py:346-352`, and `cli/utils.py:507` also uses it, which covers `_split_load_versions` from the CVE-2026-3840 text. The installed copies in all three envs show the same occurrence counts.
+  - The wheel was installed from a local file (`direct_url.json`), with no hash recorded and no `--require-hashes`.
+  - Official versus registry sources are mostly differentiated. OSV CVE-2026-35167 lists 0 through 1.2.0 with the fix in 1.3.0 and a GHSA alias. OSV CVE-2026-3840 lists only 1.2.0 (CPE `last_affected`), with no fix event or alias, and comes from the huntr CNA. Calling both "fixed 1.3.0" would be wrong.
+  - Snyk stays "unresolved" (evidence:14), which is honest. The md should say it is a manual applicability call, not a pass.
+  - The path-guard script behind "11 cases" is not in the repo or the results directory, and it tests a private function. The "merged 2026-03-10" date and the GHSA, GitLab and Snyk contents are not cached, so I could not verify them.
+- **Lock and audit.**
+  - The 146 to 166 (+20) delta, with 0 changed and 0 removed, matches the evidence list of 20 names.
+  - Both audit JSONs show the same two vulnerabilities (scrapy `PYSEC-2017-83`, twisted `GHSA-8pqf-f4m5-798g`), both with empty `fix_versions`, so 0 new ones.
+  - The exit-1 claim is plausible but not recorded anywhere.
+  - Both `.err` files show `uv audit` is an experimental preview, which the md doesn't say.
+  - Count the supply-chain surface as well as the advisories: 20 new packages including `cookiecutter`, `gitpython` and `build`, which a programmatic runtime never uses.
+- **Import-time side effects.** `kedro.framework.project` runs `dictConfig` on import (`project/__init__.py:303-347`) and reads `KEDRO_LOGGING_CONFIG` or `conf/logging.yml` from the current directory. It writes to stdout, which could corrupt an stdio MCP or CLI. Test this when msgloom and Kedro are co-installed.
+- **Unproven for production.** There is no subprocess, cgroup, native parser or real `Phase1Persistence` coverage. The CPU test polls a flag every loop iteration (`probe:203-212`), which a pdfium, lxml or calamine call cannot do. Executor sizing for `to_thread` and the GIL effect on the loop under load are also unmeasured.
+- **Minor.** RSS is in the md but not in the JSON, and two values are rounded up (44320 KiB is 43.3 MiB, shown as ~44; 47424 KiB is 46.3 MiB, shown as ~47). I could not check the probe sha256 in the evidence (`75bd26…`).
+
+## Verdicts
+
+- **Synthetic Q0 feasibility:** REVISE. It becomes ACCEPT after P1-1 to P1-5, a rerun on 3.12, 3.13 and 3.14 with recorded exit codes, and softened wording.
+- **Production Q0/C0:** not met, and the md already says so. C0 design can continue; the `pyproject.toml`/`uv.lock` PR stays blocked. The owner disposition on the Snyk CVE-2026-3840 advisory is also still needed.
+
+## Next steps
+
+1. Rework the probe: node-failure redaction with a control, a non-empty capture assertion, a gap-based heartbeat under CPU load, cancel-during-publish and claim-revoked-mid-flight scenarios, failure-cause counters, a negative guard test, and a real pass counter that doesn't use `assert`.
+2. Fix the md wording in the Q0.4, Q0.5 and redaction lines, and record exit codes and the `uv audit` preview status in the evidence JSON.
+3. Move the path-guard script into the evidence and rerun the matrix, then request a re-review of the new SHA.
+
+I did not write a plan file, since this was a review and not an implementation plan.
