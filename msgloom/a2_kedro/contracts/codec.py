@@ -147,3 +147,20 @@ def domain_sha256(domain: str, value: Any) -> str:
     if not domain or "\x00" in domain:
         raise A2ContractError("invalid digest domain")
     return sha256_hex(domain.encode() + b"\x00" + canonical_json_bytes(value))
+
+
+def decode_model_bytes[ModelT: BaseModel](
+    model: type[ModelT], data: bytes, *, max_bytes: int = MAX_CANONICAL_BYTES
+) -> ModelT:
+    """
+    Decode canonical bytes into ``model`` with strict validation.
+
+    The bytes must be the exact canonical form. Validation errors surface
+    as :exc:`A2ContractError`, so a caller handles one failure type. The
+    message never carries payload content.
+    """
+    decode_canonical_json(data, max_bytes=max_bytes)
+    try:
+        return model.model_validate_json(data, strict=True)
+    except ValueError as error:
+        raise A2ContractError("payload does not match the contract") from error
