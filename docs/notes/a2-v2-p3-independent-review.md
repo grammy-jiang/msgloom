@@ -360,3 +360,25 @@ deletion in the code as it stands. The major findings are gaps that
 become unsafe when the modules are wired or merged.
 
 This review is a source reading. It does not replace a test run.
+
+## 6. Re-review addendum (cycle 43)
+
+A second independent read-only reviewer checked each fix at its exact
+SHA. That reviewer ran the focused tests of each branch, ran ruff, and
+proved the F7 test with two mutations in a `/tmp` copy. This addendum
+does not change sections 1 to 5.
+
+| Finding | Branch fix | Status | Note |
+| --- | --- | --- | --- |
+| F1 | P3-08 `8ddbae4b2a71630100c128de2c2b0ee1f1e858dd` | closed | `to_batch` refuses a partial outcome. |
+| F2 | P3-08 `8ddbae4b2a71630100c128de2c2b0ee1f1e858dd` | closed | A marker in a membership scope is refused. The owner may change this rule. |
+| F3 | P3-02 `7861dc2d5dfc06b19412ec47eb631f5e8c56445e` | closed (code) | `from_native` needs recovery limits. The caller still copies them by hand. |
+| F4 | P3-06 `824bd01781ae0a7bcab1fbf2250b2f29ed44c306` | partly closed | The grant is bound to a `FrozenSelection`. Both are built by the caller. A signed binding or store lookup is an owner question. It becomes major if untrusted code can build either object. |
+| F5 | P3-07 `a77d25059c66031db141c5710924eae58d2ed43b` | closed | `scope_key` and `workset` are required in the key. |
+| F6 | P3-04 `385237ffac9d9c4b25ec86d4d05d4217976e965f` | closed | Stale files removed. Merge with P3-02 gives modify/delete conflicts. Keep the P3-02 files. |
+| F7 | P3-03 `9a266c05b4aba3bc953d22ded498fb3a86c4fe54` | closed | Verdict domain equals the contract. `FilterEvaluation` rejects a forged verdict. |
+
+Result: no code defect from the major list is open. One owner question
+remains for F4. Minor points left open: P3-03 imports the private
+`_expected` from the contract; a `no_match` result is `INCOMPLETE` by
+choice; a control character in a subject still raises (F15d, second part).
