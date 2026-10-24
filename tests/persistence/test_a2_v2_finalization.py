@@ -67,7 +67,6 @@ UNPROVEN: dict[Finalizer, str] = {
     finalize_a2_workset_fenced: "stage-unproven",
 }
 STORE_PROOF = "put_receipt_proof"
-ROTATION_BUG = pytest.mark.xfail(strict=True, raises=A2SchemaError, reason="major")
 
 
 @pytest.fixture
@@ -232,7 +231,6 @@ def test_finalized_workset_leaves_the_pending_queue(held_world: World) -> None:
     )
 
 
-@ROTATION_BUG
 def test_rotation_before_migration_still_migrates(tmp_path: Path) -> None:
     # major: the v1 rotation key makes migrate_schema4_to_v5 raise
     # ``unknown-metadata-key``. Every v1 scheduler run writes that key.
@@ -248,7 +246,6 @@ def test_rotation_before_migration_still_migrates(tmp_path: Path) -> None:
         store.close()
 
 
-@ROTATION_BUG
 def test_v1_rotation_after_migration_does_not_block_v2(held_world: World) -> None:
     # major: a long-lived v1 store writes the rotation key after migration.
     # ``require_schema5`` then refuses every v2 finalize.
