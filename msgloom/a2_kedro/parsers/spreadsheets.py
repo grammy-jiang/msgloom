@@ -24,7 +24,9 @@ value or formula, hidden rows and columns, and merges. ``openpyxl``
 iterates only those extents, capped by ``MAX_GRID_AREA``.
 
 Bounds: input bytes, ZIP entries, actual (not declared) uncompressed size,
-sheets, cells, text characters and grid area. A hit gives ``INCOMPLETE``.
+sheets, cells, text characters, grid area, scanned XML elements, stored
+hidden indexes and iterated rows (see :mod:`.sheet_scan`). A hit gives
+``INCOMPLETE``. Rows or cells out of order give ``OUT_OF_ORDER``.
 Present but unextracted content (merges, comments, charts, images, drawings,
 pivot caches, external links, embedded objects, macros) gets a limitation.
 ``repr`` shows no text, name or value. Details are fixed text.
@@ -36,23 +38,47 @@ from __future__ import annotations
 
 import datetime as dt
 import zipfile
-from collections.abc import Callable
 from dataclasses import dataclass, field
 from enum import StrEnum
 from io import BytesIO
 from typing import Any, Literal
-from xml.parsers import expat
 
 import openpyxl
-from openpyxl.utils.cell import coordinate_to_tuple, get_column_letter
+from openpyxl.utils.cell import get_column_letter
 
 from msgloom.a2_kedro.contracts.codec import A2ContractError, sha256_hex
 from msgloom.a2_kedro.contracts.parse import (
     MAX_CELLS,
     MAX_SHEETS,
     CellKind,
+    LimitHit,
     ParserReceipt,
 )
+from msgloom.a2_kedro.parsers.sheet_scan import (
+    MAX_HIDDEN,
+    MAX_ROW_SPAN,
+    MAX_SCAN_ELEMENTS,
+    Budget,
+    Scans,
+    SheetScan,
+    drop_capped,
+    scan_members,
+    sheet_paths,
+    small,
+    xml_parser,
+)
+
+__all__ = [
+    "MAX_HIDDEN",
+    "MAX_ROW_SPAN",
+    "MAX_SCAN_ELEMENTS",
+    "Cell",
+    "Limitation",
+    "Outcome",
+    "Sheet",
+    "SheetResult",
+    "parse_spreadsheet",
+]
 
 WORKER = "msgloom.a2_kedro.parsers.spreadsheets"
 
@@ -63,10 +89,8 @@ MAX_ENTRIES = 2048
 MAX_TEXT_CHARS = 1_000_000
 MAX_CELL_CHARS = 32_767
 MAX_GRID_AREA = 2_000_000
-_SMALL, _CHUNK, _MAX_COLUMN = 1024 * 1024, 64 * 1024, 16_384
 _OLE = b"\xd0\xcf\x11\xe0\xa1\xb1\x1a\xe1"
 _OLE_ENCRYPTED = "EncryptedPackage".encode("utf-16-le")
-_TRUE = ("1", "true")
 
 Format = Literal["xlsx", "xlsm"]
 
@@ -92,6 +116,9 @@ class Limitation(StrEnum):
     CELL_LIMIT = "cell_limit"
     TEXT_LIMIT = "text_limit"
     DIMENSION_LIMIT = "dimension_limit"
+    SCAN_LIMIT = "scan_limit"
+    OUT_OF_ORDER = "out_of_order"
+    UNSUPPORTED_LAYOUT = "unsupported_layout"
     FORMULA_WITHOUT_CACHE = "formula_without_cache"
     MERGED_CELLS = "merged_cells"
     COMMENTS = "comments"
@@ -121,6 +148,28 @@ _FEATURES = (
     ("xl/embeddings/", L.EMBEDDED_OBJECTS),
     ("xl/vbaproject.bin", L.MACROS),
 )
+#: Limitation -> receipt ``limit_hit``. The first mapped limitation, in
+#: enum order, wins. ``LimitHit`` has no value for malformed or unsupported
+#: content, merges, uncached formulas or row order. Those fall back to
+#: ``"bytes"``, as in P2-02. Present but unextracted package parts map to
+#: ``"parts"``.
+_HITS: dict[Limitation, LimitHit] = {
+    L.SIZE_LIMIT: "bytes",
+    L.ZIP_LIMIT: "bytes",
+    L.SHEET_LIMIT: "parts",
+    L.CELL_LIMIT: "cells",
+    L.DIMENSION_LIMIT: "cells",
+    L.SCAN_LIMIT: "cells",
+    L.TEXT_LIMIT: "bytes",
+    L.COMMENTS: "parts",
+    L.CHARTS: "parts",
+    L.IMAGES: "parts",
+    L.DRAWINGS: "parts",
+    L.PIVOT_CACHE: "parts",
+    L.EXTERNAL_LINKS: "parts",
+    L.EMBEDDED_OBJECTS: "parts",
+    L.MACROS: "parts",
+}
 _DATES = (dt.datetime, dt.date, dt.time, dt.timedelta)
 
 
@@ -188,92 +237,24 @@ class SheetResult:
         """Return the parser receipt, or ``None`` for a ``FAILED`` result."""
         if self.outcome is Outcome.FAILED:
             return None
-        found = bool(self.limitations)
+        hit: LimitHit = "none"
+        if self.limitations:
+            hit = "bytes"
+            for item in self.limitations:
+                if item in _HITS:
+                    hit = _HITS[item]
+                    break
         return ParserReceipt(
             worker=WORKER,
             worker_version=worker_version,
-            outcome="partial" if found else "complete",
-            limit_hit="bytes" if found else "none",
+            outcome="partial" if self.limitations else "complete",
+            limit_hit=hit,
             input_bytes=self.input_bytes,
             part_count=1,
         )
 
 
 # --- bounded scans of the saved bytes -------------------------------------
-
-
-@dataclass(slots=True)
-class _SheetScan:  # real extents (1-based counts) and flags of one sheet
-    hidden_rows: set[int] = field(default_factory=set)
-    hidden_cols: set[int] = field(default_factory=set)
-    max_row: int = 0
-    max_col: int = 0
-    merged: int = 0
-
-
-class _Reject(Exception): ...  # DTD, entity, size mismatch or bad package
-
-
-def _reject(*_args: object) -> None:
-    raise _Reject
-
-
-Hook = Callable[[str, dict[str, str]], None]
-
-
-def _xml_parser(wanted: frozenset[str], hook: Hook) -> Any:
-    parser = expat.ParserCreate(namespace_separator=" ")
-
-    def start(name: str, attrs: dict[str, str]) -> None:
-        if (local := name.rsplit(" ", 1)[-1]) in wanted:
-            hook(local, {k.rsplit(" ", 1)[-1]: v for k, v in attrs.items()})
-
-    parser.StartElementHandler = start
-    parser.StartDoctypeDeclHandler = _reject
-    parser.EntityDeclHandler = _reject
-    return parser
-
-
-def _int(text: str | None, default: int) -> int:
-    if text is None or not text.isascii() or not text.isdigit() or len(text) > 9:
-        return default
-    return int(text)
-
-
-def _sheet_parser(scan: _SheetScan) -> Any:
-    at = {"row": 0, "col": 0, "cell_row": 0, "cell_col": 0}
-
-    def hook(tag: str, a: dict[str, str]) -> None:
-        if tag == "row":
-            at["row"], at["col"] = _int(a.get("r"), at["row"] + 1), 0
-            if a.get("hidden") in _TRUE:
-                scan.hidden_rows.add(at["row"] - 1)
-        elif tag == "c":
-            at["col"] += 1
-            if "r" in a:
-                at["col"] = coordinate_to_tuple(a["r"])[1]
-            at["cell_row"], at["cell_col"] = at["row"], at["col"]
-        elif tag == "col" and a.get("hidden") in _TRUE:
-            low = _int(a.get("min"), 0)
-            high = min(_int(a.get("max"), 0), _MAX_COLUMN)
-            scan.hidden_cols.update(range(low - 1, high))
-        elif tag == "mergeCell":
-            scan.merged += 1
-        elif tag in ("v", "f", "is"):
-            scan.max_row = max(scan.max_row, at["cell_row"])
-            scan.max_col = max(scan.max_col, at["cell_col"])
-
-    return _xml_parser(
-        frozenset({"row", "c", "v", "f", "is", "col", "mergeCell"}), hook
-    )
-
-
-def _small(zf: zipfile.ZipFile, name: str) -> bytes:
-    info = zf.getinfo(name)
-    if info.file_size > _SMALL:
-        raise _Reject
-    with zf.open(info) as handle:
-        return handle.read(_SMALL + 1)
 
 
 def _detect(zf: zipfile.ZipFile) -> Format | None:
@@ -285,43 +266,13 @@ def _detect(zf: zipfile.ZipFile) -> Format | None:
     def hook(_tag: str, a: dict[str, str]) -> None:
         kinds[a.get("PartName", "").lower()] = a.get("ContentType", "").lower()
 
-    _xml_parser(frozenset({"Override"}), hook).Parse(
-        _small(zf, "[Content_Types].xml"), True
+    xml_parser(frozenset({"Override"}), hook).Parse(
+        small(zf, "[Content_Types].xml"), True
     )
     sheet = kinds.get("/xl/workbook.xml", "") if "xl/workbook.xml" in names else ""
     if sheet.endswith("macroenabled.main+xml"):
         return "xlsm"
     return "xlsx" if sheet.endswith("spreadsheetml.sheet.main+xml") else None
-
-
-Scans = dict[str, _SheetScan]
-
-
-def _scan_members(zf: zipfile.ZipFile, found: set[Limitation]) -> Scans:
-    """Stream every member once. Count actual bytes, never declared bytes."""
-    scan, total = {}, 0
-    for info in zf.infolist():
-        name = info.filename.lower()
-        found.update(f for prefix, f in _FEATURES if name.startswith(prefix))
-        if info.is_dir():
-            continue
-        parser = None
-        if name.startswith("xl/worksheets/") and name.endswith(".xml"):
-            parser = _sheet_parser(scan.setdefault(name, _SheetScan()))
-        seen = 0
-        with zf.open(info) as handle:
-            while chunk := handle.read(_CHUNK):
-                seen, total = seen + len(chunk), total + len(chunk)
-                if total > MAX_UNCOMPRESSED:
-                    found.add(L.ZIP_LIMIT)
-                    return scan
-                if seen > info.file_size:
-                    raise _Reject
-                if parser is not None:
-                    parser.Parse(chunk, False)
-        if parser is not None:
-            parser.Parse(b"", True)
-    return scan
 
 
 def _kind(value: object, error: bool) -> CellKind:
@@ -344,7 +295,8 @@ class _Build:
         self.sheets: list[Sheet] = []
         self.cells: list[Cell] = []
         self.chars, self.index, self.full = 0, 0, False
-        self.scan = _SheetScan()
+        self.scan = SheetScan()
+        self.budget = Budget()
 
     def add(
         self, row: int, col: int, value: Any, formula: str | None, error: bool
@@ -383,7 +335,9 @@ class _Build:
         self.sheets.append(Sheet(self.index, name, state, rows, cols, *hidden))
 
 
-def _read_openpyxl(raw: bytes, scan: Scans, build: _Build) -> None:
+def _read_openpyxl(
+    raw: bytes, scan: Scans, paths: dict[str, str], build: _Build
+) -> None:
     opts: dict[str, Any] = {"read_only": True, "keep_links": False, "keep_vba": False}
     books: list[Any] = []
     try:
@@ -391,15 +345,17 @@ def _read_openpyxl(raw: bytes, scan: Scans, build: _Build) -> None:
             books.append(
                 openpyxl.load_workbook(BytesIO(raw), data_only=data_only, **opts)
             )
-        for index, (wf, wc) in enumerate(
-            zip(*(b.worksheets for b in books), strict=False)
-        ):
+        sheets = list(zip(*(b.worksheets for b in books), strict=False))
+        if len(sheets) != len(paths):  # openpyxl skips a part it cannot find
+            build.found.add(L.UNSUPPORTED_LAYOUT)
+        for index, (wf, wc) in enumerate(sheets):
             if index >= MAX_SHEETS:
                 build.found.add(L.SHEET_LIMIT)
                 break
-            info = scan.get(str(wf._worksheet_path).lstrip("/").lower())
-            if info is None:
-                raise _Reject
+            # The path comes from the workbook relationships, by sheet name.
+            if (info := scan.get(paths.get(wf.title, ""))) is None:
+                build.found.add(L.UNSUPPORTED_LAYOUT)
+                continue
             build.index, build.scan = index, info
             _walk_sheet(wf, wc, build)
     except Exception:  # noqa: BLE001 - library errors must not leak their text
@@ -411,9 +367,18 @@ def _read_openpyxl(raw: bytes, scan: Scans, build: _Build) -> None:
 
 def _walk_sheet(wf: Any, wc: Any, build: _Build) -> None:
     first, rows, cols = len(build.cells), build.scan.max_row, build.scan.max_col
+    if build.scan.capped:  # the sheet part is a stub: no cells to read
+        build.found.add(L.SCAN_LIMIT)
+        rows = 0
+    if build.scan.disordered:
+        build.found.add(L.OUT_OF_ORDER)
     if rows * cols > MAX_GRID_AREA:
         build.found.add(L.DIMENSION_LIMIT)
         rows = max(1, MAX_GRID_AREA // cols)
+    if rows > build.budget.span:  # empty rows between cells cost time too
+        build.found.add(L.DIMENSION_LIMIT)
+        rows = build.budget.span
+    build.budget.span -= rows
     if rows * cols and not build.full:
         opts = {"max_row": rows, "max_col": cols}
         both = zip(wf.iter_rows(**opts), wc.iter_rows(**opts), strict=False)
@@ -458,11 +423,22 @@ def _run_zip(zf: zipfile.ZipFile, raw: bytes, build: _Build) -> Format | None:
     elif (fmt := _detect(zf)) is None:
         found.add(L.UNSUPPORTED_FORMAT)
     else:
-        scan = _scan_members(zf, found)
-        if L.ZIP_LIMIT not in found:
+        found.update(
+            f
+            for i in infos
+            for prefix, f in _FEATURES
+            if i.filename.lower().startswith(prefix)
+        )
+        paths = sheet_paths(zf)
+        parts = frozenset(paths.values()) - {""}
+        scan, too_big = scan_members(zf, parts, MAX_UNCOMPRESSED, build.budget)
+        if too_big:
+            found.add(L.ZIP_LIMIT)
+        else:
             if any(s.merged for s in scan.values()):
                 found.add(L.MERGED_CELLS)
-            _read_openpyxl(raw, scan, build)
+            safe = drop_capped(zf, scan)
+            _read_openpyxl(raw if safe is None else safe, scan, paths, build)
         return fmt
     return None
 

@@ -49,8 +49,13 @@ with the allowlist of one module file. See "Follow-up".
 - `FAILED`: `empty_file`, `unsupported_format`, `password_protected` or
   `corrupt`, and no sheet read. `to_receipt` returns `None`.
 
-`to_receipt` maps every limitation to `limit_hit == "bytes"`, as in P2-02.
-`LimitHit` has no value for malformed or unsupported content.
+`to_receipt` maps the first mapped limitation (enum order) to `limit_hit`:
+`size_limit`, `zip_limit`, `text_limit` to `bytes`; `sheet_limit` and the
+unextracted package parts (comments, charts, images, drawings, pivot
+cache, external links, embedded objects, macros) to `parts`;
+`cell_limit`, `dimension_limit`, `scan_limit` to `cells`. `LimitHit` has no
+value for malformed or unsupported content, merges, uncached formulas or
+row order. Those use `bytes`, as in P2-02.
 
 ## Formula and cached value
 
@@ -78,7 +83,8 @@ extracted and flagged. A hidden row range (`<row hidden>`) is per row. A
 
 `empty_file`, `unsupported_format`, `password_protected`, `corrupt`,
 `size_limit`, `zip_limit`, `sheet_limit`, `cell_limit`, `text_limit`,
-`dimension_limit`, `formula_without_cache`, `merged_cells`, `comments`,
+`dimension_limit`, `scan_limit`, `out_of_order`, `unsupported_layout`,
+`formula_without_cache`, `merged_cells`, `comments`,
 `charts`, `images`, `drawings`, `pivot_cache`, `external_links`,
 `embedded_objects`, `macros`.
 
@@ -105,6 +111,21 @@ streaming; a member larger than its declared size is `corrupt`),
 - `openpyxl` iterates only `max_row` and `max_col` from the scan, limited
   by `MAX_GRID_AREA`. A sparse far cell gives `dimension_limit`, not an
   allocation.
+- Shared scan budgets (`parsers/sheet_scan.py`): `MAX_SCAN_ELEMENTS`
+  250 000 start tags, `MAX_HIDDEN` 20 000 stored hidden row and column
+  indexes, `MAX_ROW_SPAN` 200 000 rows iterated by `openpyxl`, all for the
+  whole workbook. A sheet that exhausts the first two stops its scan
+  (`scan_limit`). `openpyxl` parses a whole sheet part when it opens a
+  workbook, so a capped sheet part is replaced by an empty stub in a copy
+  of the package. A capped sheet gives no cells. Rows over `MAX_ROW_SPAN`
+  give `dimension_limit`.
+- Rows with a non-increasing `r`, and cells with a non-increasing column in
+  a row, give `out_of_order`. `openpyxl` read-only mode drops such rows and
+  overwrites such cells. The readable cells are still returned.
+- The sheet part path comes from the workbook relationships, matched by
+  sheet name. A sheet part outside `xl/worksheets/` is read. A duplicate
+  sheet name, a missing part, or a different sheet count in `openpyxl`
+  gives `unsupported_layout`.
 - Expat rejects `DOCTYPE` and entity declarations (`corrupt`).
 - Duplicate ZIP member names, ZIP-level encryption flags, and OLE2
   containers with an `EncryptedPackage` stream are detected from bytes.
@@ -118,16 +139,17 @@ exception text is dropped and never stored.
 
 ## Known gaps and follow-up
 
-- ODS and XLSB are refused (see above). Follow-up: allow a second module
-  (for example `parsers/sheet_scan.py`) and adopt the bounded pre-scan. XLSB
+- ODS and XLSB are refused (see above). Follow-up: adopt the bounded
+  pre-scan of `parsers/sheet_scan.py` for them. XLSB
   hidden rows and columns would still be unchecked.
 - `PartFormat` has only `xlsx`. XLSM, XLSB and ODS need a C0 change before
   they can enter `ParsedParts`. No `to_records` helper is provided; cell
   digests for `CellRecord` need that contract decision first.
-- Hidden rows use a set, bounded only by the file size cap.
+- One row with many cells, under the element budget (250 000), can still
+  make `openpyxl` build a large row. Its memory use was not measured.
 - A cell with an empty-string cached value is treated as empty.
-- `xl/worksheets/*.xml` scan relies on `openpyxl` private `_worksheet_path`
-  (pinned 3.1.5).
+- Strict-namespace worksheet relationships may be skipped by `openpyxl`;
+  the sheet count check then gives `unsupported_layout`.
 - Comments, charts, images, merges and similar content are flagged, not
   extracted.
 - Hyperlinks, data validation and conditional formats are ignored and not
