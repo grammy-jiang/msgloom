@@ -34,7 +34,18 @@ change when a later page is cut off by a limit. A page with no text is
 The page count in a PDF is a claim of the file. pdfium may report a count
 that the file cannot support. The parser reads at most ``MAX_PAGES``
 pages, counts pages that fail to load as ``UNREADABLE`` and reports the
-claim in :attr:`PdfParseResult.claimed_pages`.
+claim in :attr:`PdfParseResult.claimed_pages`. pdfium trusts a ``/Count``
+above zero and cannot load a page past it. The parser therefore scans the
+raw bytes for page leaf objects (``/Type /Page``). More leaves than the
+claim gives ``PAGE_COUNT_MISMATCH`` and the result is never ``COMPLETE``.
+The scan is a heuristic. It misses page objects inside object streams and
+names written with ``#`` escapes. It can flag a file with old page
+revisions (incremental update) or with that token inside stream data.
+Those cases are flagged, never hidden.
+
+A page text that pdfium returns with undecodable UTF-16 (a lone
+surrogate) is read with replacement characters and gives
+``TEXT_UNDECODABLE``. The text is not cut silently.
 
 Bounds: ``MAX_PDF_BYTES`` (input), ``MAX_PAGES`` (pages read) and
 ``MAX_TEXT_CHARS`` (text characters over all pages). A page limit or a
@@ -112,6 +123,8 @@ class PdfLimit(StrEnum):
     PAGE_UNREADABLE = "page_unreadable"
     NO_TEXT_LAYER = "no_text_layer"
     NO_TEXT = "no_text"
+    PAGE_COUNT_MISMATCH = "page_count_mismatch"
+    TEXT_UNDECODABLE = "text_undecodable"
 
 
 _DETAIL: dict[PdfLimit, str] = {
@@ -128,6 +141,8 @@ _DETAIL: dict[PdfLimit, str] = {
     PdfLimit.PAGE_UNREADABLE: "at least one page cannot be read",
     PdfLimit.NO_TEXT_LAYER: "at least one page has content but no text layer",
     PdfLimit.NO_TEXT: "the PDF has no text",
+    PdfLimit.PAGE_COUNT_MISMATCH: "the PDF may have more pages than it claims",
+    PdfLimit.TEXT_UNDECODABLE: "text of at least one page was not decodable",
 }
 
 
@@ -311,34 +326,49 @@ def _clean(text: str) -> str:
     return unified.encode("utf-8", "replace").decode()
 
 
+def _page_text(textpage: pdfium.PdfTextPage, count: int) -> tuple[str, bool]:
+    """Return the cleaned text and whether it needed replacement characters."""
+    if not count:
+        return "", False
+    try:
+        return _clean(textpage.get_text_range(0, count, errors="strict")), False
+    except UnicodeDecodeError:
+        return _clean(textpage.get_text_range(0, count, errors="replace")), True
+
+
 def _read_page(
     document: pdfium.PdfDocument, index: int, budget: int
-) -> tuple[PdfPage, bool]:
+) -> tuple[PdfPage, bool, bool]:
     """
-    Read one page and tell whether the text limit cut its text.
+    Read one page and return the page and two flags.
+
+    The second item is ``True`` when the text limit cut the page text. The
+    third item is ``True`` when the text was not decodable and holds
+    replacement characters.
 
     ``budget`` is the number of text characters left.
     """
     try:
         page = document[index]
     except Exception:  # noqa: BLE001 - pdfium text must not leak via errors
-        return PdfPage(index, PageState.UNREADABLE), False
+        return PdfPage(index, PageState.UNREADABLE), False, False
     try:
         width, height = (round(side, 2) for side in page.get_size())
         textpage = page.get_textpage()
         try:
             total = textpage.count_chars()
             count = min(total, budget)
-            text = _clean(textpage.get_text_range(0, count)) if count else ""
+            text, lossy = _page_text(textpage, count)
         finally:
             textpage.close()
         if text.strip():
-            return PdfPage(index, PageState.TEXT, text, width, height), total > budget
+            shown = PdfPage(index, PageState.TEXT, text, width, height)
+            return shown, total > budget, lossy
         objects = pdfium_raw.FPDFPage_CountObjects(page.raw)
         state = PageState.NO_TEXT_LAYER if objects else PageState.BLANK
-        return PdfPage(index, state, "", width, height), total > budget
+        return PdfPage(index, state, "", width, height), total > budget, lossy
     except Exception:  # noqa: BLE001 - pdfium text must not leak via errors
-        return PdfPage(index, PageState.UNREADABLE), False
+        return PdfPage(index, PageState.UNREADABLE), False, False
     finally:
         page.close()
 
@@ -347,12 +377,43 @@ _PAGE_LIMITS = {
     PageState.UNREADABLE: PdfLimit.PAGE_UNREADABLE,
     PageState.NO_TEXT_LAYER: PdfLimit.NO_TEXT_LAYER,
 }
+_LEAF_END = frozenset(b" \t\r\n\f\x00/<>[]()%")
+_LEAF_GAP = 64
+
+
+def _has_more_leaves(raw: bytes, claimed: int) -> bool:
+    """
+    Tell whether ``raw`` holds more ``/Type /Page`` leaves than ``claimed``.
+
+    A plain ``bytes.find`` loop with early exit; the work is linear in
+    ``raw``. ``/Pages`` and other ``/Page...`` names do not count.
+    """
+    if raw.count(b"/Page") <= claimed:
+        return False
+    leaves = 0
+    at = raw.find(b"/Page")
+    while at >= 0:
+        end = at + 5
+        before = at
+        floor = max(0, at - _LEAF_GAP)
+        while before > floor and raw[before - 1] in _LEAF_END:
+            before -= 1
+        is_leaf = (
+            before >= 5
+            and (end >= len(raw) or raw[end] in _LEAF_END)
+            and raw.startswith(b"/Type", before - 5)
+        )
+        if is_leaf:
+            leaves += 1
+            if leaves > claimed:
+                return True
+        at = raw.find(b"/Page", end)
+    return False
 
 
 def _read_pages(
-    document: pdfium.PdfDocument, found: set[PdfLimit]
-) -> tuple[tuple[PdfPage, ...], int]:
-    claimed = len(document)
+    document: pdfium.PdfDocument, claimed: int, found: set[PdfLimit]
+) -> tuple[PdfPage, ...]:
     if claimed == 0:
         found.add(PdfLimit.NO_PAGES)
     wanted = min(claimed, MAX_PAGES)
@@ -362,16 +423,18 @@ def _read_pages(
         if used >= MAX_TEXT_CHARS:
             found.add(PdfLimit.TEXT_LIMIT)
             break
-        page, cut = _read_page(document, index, MAX_TEXT_CHARS - used)
+        page, cut, lossy = _read_page(document, index, MAX_TEXT_CHARS - used)
         pages.append(page)
         used += page.char_count
         if cut:
             found.add(PdfLimit.TEXT_LIMIT)
+        if lossy:
+            found.add(PdfLimit.TEXT_UNDECODABLE)
         if page.state in _PAGE_LIMITS:
             found.add(_PAGE_LIMITS[page.state])
     if claimed > MAX_PAGES:
         found.add(PdfLimit.PAGE_LIMIT)
-    return tuple(pages), claimed
+    return tuple(pages)
 
 
 def parse_pdf(data: bytes | bytearray | memoryview) -> PdfParseResult:
@@ -405,9 +468,17 @@ def parse_pdf(data: bytes | bytearray | memoryview) -> PdfParseResult:
         found.add(PdfLimit.INVALID_PDF)
         return _finish(raw, found)
     try:
-        if pdfium_raw.FPDF_GetSecurityHandlerRevision(document.raw) != -1:
+        try:
+            encrypted = pdfium_raw.FPDF_GetSecurityHandlerRevision(document.raw) != -1
+            claimed = len(document)
+        except Exception:  # noqa: BLE001 - pdfium text must not leak via errors
+            found.add(PdfLimit.INVALID_PDF)
+            return _finish(raw, found)
+        if encrypted:
             found.add(PdfLimit.ENCRYPTED)
-        pages, claimed = _read_pages(document, found)
+        pages = _read_pages(document, claimed, found)
     finally:
         document.close()
+    if claimed <= MAX_PAGES and _has_more_leaves(raw, claimed):
+        found.add(PdfLimit.PAGE_COUNT_MISMATCH)
     return _finish(raw, found, pages, claimed)
