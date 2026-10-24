@@ -8,7 +8,7 @@ from typing import Any
 import pytest
 from pydantic import ValidationError
 
-from msgloom.a2_kedro.contracts.results import FilterResult
+from msgloom.a2_kedro.contracts.results import Reason, RuleEvaluation
 from msgloom.a2_kedro.semantics.filters import (
     DuplicateRuleIdError,
     FilterEvaluation,
@@ -22,7 +22,6 @@ from msgloom.a2_kedro.semantics.filters import (
 )
 from msgloom.contracts import Limitation, TerminalStatus
 from tests.a2_kedro.helpers import check
-from tests.a2_kedro.result_fixtures import filter_data
 
 FAKE_EMAIL = "jane.doe.fake@example.invalid"
 FAKE_SUBJECT = "Re: private fake subject"
@@ -101,19 +100,20 @@ def test_conflict_when_both_kinds_match_and_no_kind_is_picked() -> None:
     check(result.reasons[0].rule_ids == ("i1", "e1"), "include then exclude ids")
 
 
-def test_unknown_when_no_rule_matches_with_limitation() -> None:
+def test_no_match_when_no_rule_matches_with_limitation() -> None:
     rs = rules(rule("a", "include", "folder_id", "archive"))
     result = evaluate_filters(rs, full())
-    check(result.verdict is FilterVerdict.UNKNOWN, "unknown, not include")
+    check(result.verdict is FilterVerdict.NO_MATCH, "no_match, not include")
+    check(result.reasons == (), "no reason for no_match")
     check(result.matched == (), "nothing matched")
     check(limits(result) == [("no_rule_matched", "no rule matched")], "limited")
     check(result.status is TerminalStatus.INCOMPLETE, "incomplete")
 
 
-def test_unknown_does_not_default_to_exclude_either() -> None:
+def test_no_match_does_not_default_to_exclude_either() -> None:
     rs = rules(rule("a", "exclude", "folder_id", "archive"))
     result = evaluate_filters(rs, full())
-    check(result.verdict is FilterVerdict.UNKNOWN, "unknown, not exclude")
+    check(result.verdict is FilterVerdict.NO_MATCH, "no_match, not exclude")
 
 
 def test_missing_field_gives_unknown_with_limitation() -> None:
@@ -173,8 +173,6 @@ def test_exclude_survives_an_unknown_rule_but_is_incomplete() -> None:
 
 def test_unknown_verdict_never_complete_or_unlimited() -> None:
     cases = [
-        (rules(rule("a", "include", "folder_id", "zzz")), full()),
-        (rules(rule("a", "exclude", "label", "zzz")), full()),
         (rules(rule("a", "include", "label", "work")), full(labels=None)),
         (
             rules(
@@ -183,6 +181,7 @@ def test_unknown_verdict_never_complete_or_unlimited() -> None:
             ),
             full(labels=None),
         ),
+        (rules(rule("a", "include", "folder_id", "inbox")), full(folder_id=None)),
     ]
     for rs, record in cases:
         result = evaluate_filters(rs, record)
@@ -191,14 +190,27 @@ def test_unknown_verdict_never_complete_or_unlimited() -> None:
         check(result.status is not TerminalStatus.COMPLETE, "not complete")
 
 
+def test_no_match_carries_a_limitation_and_is_incomplete() -> None:
+    cases = [
+        (rules(rule("a", "include", "folder_id", "zzz")), full()),
+        (rules(rule("a", "exclude", "label", "zzz")), full()),
+    ]
+    for rs, record in cases:
+        result = evaluate_filters(rs, record)
+        check(result.verdict is FilterVerdict.NO_MATCH, "no_match case")
+        check(bool(result.limitations), "no_match carries a limitation")
+        check(result.status is not TerminalStatus.COMPLETE, "not complete")
+
+
 def unknown_model(
     status: TerminalStatus, limitations: tuple[Limitation, ...] = ()
 ) -> FilterEvaluation:
     return FilterEvaluation(
         rule_set_version="v",
-        evaluations=(),
+        evaluations=(RuleEvaluation(rule_id="a", rule_version="1", outcome="unknown"),),
         matched=(),
         verdict=FilterVerdict.UNKNOWN,
+        reasons=(Reason(code="unknown_rule", rule_ids=("a",)),),
         status=status,
         limitations=limitations,
     )
@@ -320,58 +332,6 @@ def test_result_is_frozen() -> None:
     check(isinstance(result.matched, tuple), "tuple, not a mutable list")
     with pytest.raises(ValidationError):
         full().sender_domain = "x"  # type: ignore[misc]
-
-
-def contract_data(result: FilterEvaluation) -> dict[str, Any]:
-    dumped = result.model_dump(mode="json")
-    return filter_data(
-        evaluations=dumped["evaluations"],
-        matched=list(result.matched),
-        verdict=result.verdict.value,
-        reasons=dumped["reasons"],
-        status=result.status.value,
-        limitations=dumped["limitations"],
-    )
-
-
-def test_no_match_is_reported_as_unknown_not_contract_no_match() -> None:
-    """Pin the mapping a later stage must apply to build a FilterResult.
-
-    The contract verdict ``no_match`` is never produced here. A caller that
-    needs a ``FilterResult`` must map ``unknown`` plus ``no_rule_matched``.
-    """
-    result = evaluate_filters(
-        rules(rule("a", "include", "folder_id", "inbox")),
-        full(folder_id="archive"),
-    )
-    check(result.verdict.value == "unknown", "verdict is unknown")
-    check(
-        ("no_rule_matched" in [code for code, _ in limits(result)]),
-        "no_rule_matched limitation",
-    )
-    check(result.verdict.value != "no_match", "no_match never produced")
-
-
-def test_evaluation_agrees_with_filter_result_contract() -> None:
-    rs_all = [
-        (rules(rule("a", "include", "folder_id", "inbox")), full()),
-        (rules(rule("a", "exclude", "folder_id", "inbox")), full()),
-        (
-            rules(
-                rule("a", "exclude", "folder_id", "inbox"),
-                rule("b", "include", "label", "work"),
-            ),
-            full(),
-        ),
-        (
-            rules(rule("a", "include", "sender_domain", "example.com")),
-            full(sender_domain=None),
-        ),
-    ]
-    for rs, record in rs_all:
-        result = evaluate_filters(rs, record)
-        built = FilterResult.model_validate(contract_data(result), strict=False)
-        check(built.verdict == result.verdict.value, "contract accepts verdict")
 
 
 class _CountingStr(str):

@@ -35,34 +35,40 @@ Each rule gets one :class:`~msgloom.a2_kedro.contracts.results.RuleEvaluation`:
 ``matched`` (with its effect), ``not_matched``, or ``unknown`` when its
 field is missing. A missing field never counts as a match.
 
-The verdict follows the ``filter_result@2`` contract, in this order:
+The verdict domain equals the ``filter_result@2`` verdict domain. One
+function, ``msgloom.a2_kedro.contracts.results._expected``, defines the
+mapping. This module calls it and does not copy it. Its order is:
 
 1. ``conflict``: an include rule and an exclude rule both match. Neither
    effect is chosen.
 2. ``exclude``: an exclude rule matches and no include rule matches. This
    holds even when another rule is ``unknown``. The reasons name the rule
    IDs.
-3. ``unknown``: a rule is ``unknown``, or no rule matches. This verdict
-   never becomes ``include`` or ``exclude`` by default. An ``unknown``
-   rule blocks ``include`` because it could have matched with the opposite
-   effect.
+3. ``unknown``: no conflict and no exclude, and a rule is ``unknown``. An
+   ``unknown`` rule blocks ``include`` because it could have matched with
+   the opposite effect. This verdict never becomes ``include`` or
+   ``exclude`` by default.
 4. ``include``: an include rule matches, no exclude rule matches and no
    rule is ``unknown``.
-
-The contract name ``no_match`` is not used. When no rule matches, this
-module reports ``unknown`` with the ``no_rule_matched`` limitation.
+5. ``no_match``: no rule matches and no rule is ``unknown``.
 
 Limitations and status
 ======================
 
 * ``missing_field``: one per missing field that a rule needed. The detail
   is the field name.
-* ``no_rule_matched``: no rule matched and no rule is ``unknown``. The
-  detail is fixed text.
+* ``no_rule_matched``: the verdict is ``no_match``. The detail is fixed
+  text. ``FilterResult`` accepts this limitation, because its only status
+  rule is that ``COMPLETE`` holds exactly when there is no limitation.
 
 Status is ``COMPLETE`` only when there is no limitation, else
-``INCOMPLETE``. :class:`FilterEvaluation` refuses a record whose verdict is
-``unknown`` without a limitation or with ``COMPLETE`` status.
+``INCOMPLETE``. A ``no_match`` result is therefore ``INCOMPLETE``.
+
+:class:`FilterEvaluation` recomputes the verdict and the reasons from its
+evaluations and refuses a record that differs. It also refuses a record
+whose verdict is ``unknown`` without a limitation or with ``COMPLETE``
+status. A ``FilterResult`` can be built from any valid
+:class:`FilterEvaluation`.
 
 Ordering and failure handling
 =============================
@@ -93,7 +99,12 @@ from msgloom.a2_kedro.contracts.result_base import (
     check_limitations,
     sorted_unique,
 )
-from msgloom.a2_kedro.contracts.results import MAX_RULES, Reason, RuleEvaluation
+from msgloom.a2_kedro.contracts.results import (
+    MAX_RULES,
+    Reason,
+    RuleEvaluation,
+    _expected,
+)
 from msgloom.contracts import Limitation, TerminalStatus
 
 __all__ = [
@@ -129,12 +140,13 @@ class FilterField(StrEnum):
 
 
 class FilterVerdict(StrEnum):
-    """The four verdicts of this evaluator."""
+    """The verdicts of ``filter_result@2``."""
 
     INCLUDE = "include"
     EXCLUDE = "exclude"
     CONFLICT = "conflict"
     UNKNOWN = "unknown"
+    NO_MATCH = "no_match"
 
 
 class FilterLimitationCode(StrEnum):
@@ -245,24 +257,9 @@ def _evaluate_rule(
 def _verdict(
     evals: tuple[RuleEvaluation, ...],
 ) -> tuple[FilterVerdict, tuple[Reason, ...]]:
-    """Return the verdict and reasons in the order the contract expects."""
-    inc = tuple(e.rule_id for e in evals if e.effect == "include")
-    exc = tuple(e.rule_id for e in evals if e.effect == "exclude")
-    unk = tuple(e.rule_id for e in evals if e.outcome == "unknown")
-    reasons: list[Reason] = []
-    if inc and exc:
-        reasons.append(Reason(code="conflict", rule_ids=(*inc, *exc)))
-    if exc:
-        reasons.append(Reason(code="excluded", rule_ids=exc))
-    if unk:
-        reasons.append(Reason(code="unknown_rule", rule_ids=unk))
-    if inc and exc:
-        return FilterVerdict.CONFLICT, tuple(reasons)
-    if exc:
-        return FilterVerdict.EXCLUDE, tuple(reasons)
-    if unk or not inc:
-        return FilterVerdict.UNKNOWN, tuple(reasons)
-    return FilterVerdict.INCLUDE, tuple(reasons)
+    """Return the verdict and reasons that the contract expects."""
+    verdict, reasons = _expected(evals)
+    return FilterVerdict(verdict), tuple(reasons)
 
 
 class FilterEvaluation(ResultPart):
@@ -284,7 +281,14 @@ class FilterEvaluation(ResultPart):
 
     @model_validator(mode="after")
     def _closed(self) -> FilterEvaluation:
+        if not 1 <= len(self.evaluations) <= MAX_RULES:
+            raise A2ContractError("rule count is out of bounds")
         sorted_unique([e.rule_id for e in self.evaluations], "rule")
+        if self.matched != tuple(e.rule_id for e in self.evaluations if e.effect):
+            raise A2ContractError("matched list is not every matched rule")
+        verdict, reasons = _verdict(self.evaluations)
+        if self.verdict is not verdict or self.reasons != reasons:
+            raise A2ContractError("verdict or reasons differ from evaluations")
         check_limitations(self.status, self.limitations)
         if self.verdict is FilterVerdict.UNKNOWN and (
             self.status is COMPLETE or not self.limitations
@@ -301,7 +305,7 @@ def _limitations(
     unknown_ids = {e.rule_id for e in evals if e.outcome == "unknown"}
     fields = {r.predicate.field.value for r in rules if r.rule_id in unknown_ids}
     found = {Limitation(FilterLimitationCode.MISSING_FIELD.value, f) for f in fields}
-    if verdict is FilterVerdict.UNKNOWN and not unknown_ids:
+    if verdict is FilterVerdict.NO_MATCH:
         found.add(
             Limitation(FilterLimitationCode.NO_RULE_MATCHED.value, NO_MATCH_DETAIL)
         )
