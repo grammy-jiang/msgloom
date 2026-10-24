@@ -123,7 +123,8 @@ EXPECTED_SPIDERS = {
 EXPECTED_SCENARIOS = words("1 2 3 4 5 6 7 8 9 10 11 12 13")
 
 # Hand-written from the ``build_plan`` gate list: 6 runtime, 1 a1, 9
-# normal/exclusive/fastmcp, and 12 tool and audit gates.
+# normal/exclusive/fastmcp, and 12 tool and audit gates. ``ruff`` and
+# ``format`` are two separate gate names that sit side by side in the list.
 EXPECTED_GATES = words(
     "runtime312 runtime312fastmcp runtime313 runtime313fastmcp "
     "runtime314 runtime314fastmcp a1 normal313 exclusive313 fastmcp313 "
@@ -347,7 +348,8 @@ def test_spider_discovery_ignores_nested_name_assignments(tmp_path: Path) -> Non
     (base / "one.py").write_text(
         "class A:\n    name = 'a_spider'\n\n"
         "def f():\n    name = 'not_a_spider'\n"
-        "class B:\n    other = 'x'\n"
+        "class B:\n    other = 'x'\n",
+        encoding="utf-8",
     )
     if discover_spiders(tmp_path) != {"A": "a_spider"}:
         pytest.fail("discovery must use only class-level name assignments")
@@ -366,7 +368,7 @@ def test_a2_sources_do_not_import_a1_modules() -> None:
     if len(a2_sources()) < 10:
         pytest.fail("A2 source discovery found too few files")
     for path in a2_sources():
-        hits = a1_imports(path.read_text())
+        hits = a1_imports(path.read_text(encoding="utf-8"))
         if hits:
             pytest.fail(f"{path.relative_to(REPO)} imports A1 modules: {hits}")
 
@@ -469,7 +471,7 @@ def test_added_spider_file_fails_with_unexpected_error(tmp_path: Path) -> None:
     root = copy_a1(tmp_path)
     baseline = snapshot(root, A1_FILES)
     extra = root / SPIDER_ROOT / "microsoft" / "extra.py"
-    extra.write_text("name = 'x'\n")
+    extra.write_text("name = 'x'\n", encoding="utf-8")
     with pytest.raises(A1CompatibilityError) as caught:
         verify(root, baseline)
     if str(caught.value) != f"A1 unexpected file: {SPIDER_ROOT}/microsoft/extra.py":
@@ -481,10 +483,10 @@ def test_mutated_copy_no_longer_matches_hand_written_spider_list(
 ) -> None:
     root = copy_a1(tmp_path)
     target = root / SPIDER_ROOT / "microsoft" / "profile.py"
-    text = target.read_text().replace(
+    text = target.read_text(encoding="utf-8").replace(
         'name = "microsoft_profile"', 'name = "microsoft_profile_x"'
     )
-    target.write_text(text)
+    target.write_text(text, encoding="utf-8")
     found = discover_spiders(root)
     if found == EXPECTED_SPIDERS:
         pytest.fail("renamed Spider must differ from the expected list")
