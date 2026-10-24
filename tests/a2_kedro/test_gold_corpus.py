@@ -35,9 +35,50 @@ POLARITIES = ("positive", "negative")
 # RFC 2606 and RFC 6761 reserved names. The corpus may use only these hosts.
 RESERVED_SECOND_LEVEL = ("example.com", "example.net", "example.org")
 RESERVED_TLDS = ("example", "invalid", "test", "localhost")
-# Dotted tokens that are file names or code names, not hosts.
-FILE_SUFFIXES = ("md", "py", "json", "txt", "pdf", "doc", "docx", "xlsx", "sha256")
-NON_HOST_TOKENS = ("node.run",)
+# Exact file names and code names that the corpus cites. Each is a dotted
+# token that looks like a host only because its suffix is also a country
+# TLD (``.md``, ``.py``) or a file type. The check never exempts a suffix.
+# It exempts only these whole tokens, and never in a URL or email position.
+# ``test_non_host_allowlist_is_exact_and_used`` rejects stale entries.
+NON_HOST_TOKENS = frozenset(
+    {
+        "2026-10-03-a1-a2-handoff-contract-design.md",
+        "a1-closeout.md",
+        "agents.md",
+        "architecture.md",
+        "component-layout.md",
+        "contacts-sync.md",
+        "container-deployment.md",
+        "contracts.py",
+        "dependency-vulnerability-policy.md",
+        "handoff.py",
+        "inside.json",
+        "mail-provisional-authority.md",
+        "microsoft-graph-error-handling.md",
+        "msgloom-security-review.md",
+        "node.run",
+        "notes.txt",
+        "ok.json",
+        "onedrive-resync.md",
+        "out.json",
+        "outside.json",
+        "parser-excel.md",
+        "parser-isolation.md",
+        "parser-mime-html.md",
+        "parser-pdf.md",
+        "parser-qualification.md",
+        "parser-word.md",
+        "part-0001.json",
+        "phase1-claim-fencing.md",
+        "phase1-claim-reconciliation.md",
+        "preparation-semantics.md",
+        "report.pdf",
+        "secret.json",
+        "task15-final-qualification-20261016.md",
+        "todo-sync.md",
+        "u0000.txt",
+    }
+)
 HOST_RE = re.compile(
     r"(?<![A-Za-z0-9_-])((?:[A-Za-z0-9-]+\.)+[A-Za-z]{2,})(?![A-Za-z0-9_-])"
 )
@@ -63,12 +104,19 @@ def bad_hosts(text: str) -> list[str]:
     found = []
     for match in HOST_RE.finditer(text):
         host = match.group(1).lower()
-        if host in NON_HOST_TOKENS or host.rsplit(".", 1)[-1] in FILE_SUFFIXES:
+        if host in NON_HOST_TOKENS and not _in_url_or_email(text, match.start()):
             continue
         if is_reserved_host(host):
             continue
         found.append(host)
     return found
+
+
+def _in_url_or_email(text: str, start: int) -> bool:
+    """Return True when a token follows ``//`` or ``@`` and so may be a host."""
+    return (
+        text[max(0, start - 2) : start].endswith("//") or text[start - 1 : start] == "@"
+    )
 
 
 def is_reserved_host(host: str) -> bool:
@@ -242,3 +290,28 @@ def test_host_check_accepts_reserved_hosts() -> None:
             pytest.fail(f"reserved host {host} was flagged")
     if bad_hosts("notexample.com") != ["notexample.com"]:
         pytest.fail("suffix lookalike notexample.com was not flagged")
+
+
+def test_host_check_has_no_suffix_exemption() -> None:
+    for token in ("evil.md", "evil.py", "files.json", "a.example.md", "x.zip"):
+        if bad_hosts(f"connect to {token} now") != [token]:
+            pytest.fail(f"suffix exemption hid {token}")
+
+
+def test_non_host_allowlist_cannot_hide_a_host() -> None:
+    # A listed file name is exempt only as a bare token.
+    for name in sorted(NON_HOST_TOKENS)[:3]:
+        for text in (f"https://{name}/x", f"mail@{name}"):
+            if bad_hosts(text) != [name]:
+                pytest.fail(f"allowlisted {name} hid a host in {text!r}")
+    if bad_hosts("see parser-pdf.md.evil.io") != ["parser-pdf.md.evil.io"]:
+        pytest.fail("allowlist matched a prefix of a longer host")
+
+
+def test_non_host_allowlist_is_exact_and_used() -> None:
+    corpus = "\n".join(p.read_text(encoding="utf-8") for p in _corpus_files())
+    for name in sorted(NON_HOST_TOKENS):
+        if name != name.lower() or is_reserved_host(name):
+            pytest.fail(f"allowlist entry {name} is not an exact lowercase name")
+        if name not in corpus.lower():
+            pytest.fail(f"allowlist entry {name} is unused; remove it")
