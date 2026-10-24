@@ -33,6 +33,7 @@ def _run_probe(mode: str) -> dict[str, Any]:
         text=True,
         timeout=120,
         cwd=ROOT,
+        check=False,
     )
     if result.returncode != 0:
         pytest.fail(f"probe exit {result.returncode}: {result.stderr[-400:]}")
