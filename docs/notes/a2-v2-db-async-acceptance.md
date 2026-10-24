@@ -3,12 +3,14 @@
 Status: PROVISIONAL. Research only. No database is opened except
 `tmp_path` SQLite files in tests.
 
-## C0-12c result: BLOCKED_PROTECTED_FILE
+## C0-12c result: DELIVERED
 
-`msgloom/persistence/a2_acceptance_async.py` is not delivered. The module
-needs one small hook in the protected file
-`msgloom/persistence/async_store.py`. The supervisor must approve the hook.
-This stage did not edit `async_store.py`.
+Status was BLOCKED_PROTECTED_FILE. The Supervisor cleared the hook below in
+this unmerged draft branch. `Phase1Persistence.run_bounded` is added to
+`msgloom/persistence/async_store.py` (453 lines). The facade
+`msgloom/persistence/a2_acceptance_async.py` and the tests
+`tests/a2_kedro/test_c0_12c.py` are delivered. The sections below keep the
+original analysis as the record of the decision.
 
 ### Feasibility check
 

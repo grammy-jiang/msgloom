@@ -331,6 +331,17 @@ class Phase1Persistence:
             )
         )
 
+    async def run_bounded[T](self, operation: Callable[[], T]) -> T:
+        """
+        Run one synchronous operation through the shared bounded worker slot.
+
+        The operation must open and close every resource it uses inside the
+        worker thread. It must not touch this facade's store. Cancellation is
+        delayed until the thread ends. ``close`` waits for accepted calls and
+        rejects later ones.
+        """
+        return await self._call(operation)
+
     async def close(self) -> None:
         """
         Reject new calls, drain every accepted call, and dispose exactly once.
