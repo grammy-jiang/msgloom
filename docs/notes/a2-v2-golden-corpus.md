@@ -1,6 +1,6 @@
 # A2 v2 independent golden corpus
 
-This corpus is the hand-annotated oracle for tasks T0-01, T0-02, T0-03,
+This corpus is the oracle for tasks T0-01, T0-02, T0-03,
 T0-04, T0-05, T0-06, T0-07, T0-08, T0-09 and T0-10 of the A2 Kedro v2 programme. It
 lives in `tests/a2_kedro/golden/`. The execution manifest names `tests/a2_kedro/gold/`.
 The supervisor changed the path to `golden/`.
@@ -22,7 +22,15 @@ The supervisor changed the path to `golden/`.
 
 ## Independence rules
 
-1. A person writes each expected value by hand. No program may generate it.
+1. A language model (a Claude Sonnet 5.5 worker) annotated each expected
+   value by hand-reading the A2 blueprint and the accepted A1 notes and
+   fixtures. No program may generate an expected value. One disclosed
+   exception exists: the two pinned digests (SHA-256 and byte count) in
+   T0-08-P01 and T0-08-P02 were computed with `json` and `hashlib` from the
+   base payload in the file and compared with the A1 v1 codec output. No human
+   has reviewed the corpus. The 23 cases that carry a `policy_status` marker
+   need owner sign-off (see `a2-v2-golden-decisions.md`). Do not describe the
+   corpus as human-annotated or human-reviewed.
 2. The author reads only A1 code names, A1 docs, the A1 spec and A1 tests. The
    `provenance.sources` field of each file lists what was read.
 3. Nobody runs or imports `msgloom.a2_kedro` or other A2 code to get an
@@ -114,7 +122,7 @@ The cases name the status in their provenance or rationale.
 ## Integrity
 
 `MANIFEST.sha256` lists a SHA-256 digest for each `t0_*.json` file. It uses the
-`sha256sum` format. A human updates it after a reviewed change:
+`sha256sum` format. A reviewer updates it after a reviewed change:
 
     cd tests/a2_kedro/golden && sha256sum t0_*.json > MANIFEST.sha256
 
@@ -140,7 +148,8 @@ code on each `input`. They compare the result with `expected`. Rules:
 
 ## Limits
 
-The expected values are a human reading of written A1 rules. They are not
-proof of live provider behavior. Some terms in T0-05 and T0-10 (for example the
+The expected values are a language model's hand reading of written A1 rules
+and the A2 blueprint. No human has reviewed them. They are not proof of live
+provider behavior. Some terms in T0-05 and T0-10 (for example the
 reason words) are oracle vocabulary. The implementation may map them to its own
 enum names in the consuming test.

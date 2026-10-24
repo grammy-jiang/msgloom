@@ -1,12 +1,13 @@
 """Validate the hand-written T0-06 coverage oracle (no missing, no overlap).
 
-A person wrote every expected answer in ``golden/t0_06.json`` from the A2
-Kedro v2 blueprint. The small pure-Python checker below only tests that the
-answers agree with these rules: each frozen item has exactly one valid
-terminal (prepared@2, A2-held disposition, transition batch or frozen
-intake-held entry); a receipt row must point at an accepted store record of
-the right kind that covers the item; A2 never rewrites intake-held; held or
-partial results allow only INCOMPLETE. The module never imports ``msgloom``.
+A language model annotated every expected answer in ``golden/t0_06.json``
+from the A2 Kedro v2 blueprint. The small pure-Python checker below only
+tests that the answers agree with these rules: each frozen item has exactly
+one valid terminal (prepared@2, A2-held disposition, transition batch or
+frozen intake-held entry); a receipt row must point at an accepted store
+record of the right kind that covers the item; A2 never rewrites
+intake-held; held or partial results allow only INCOMPLETE. The module never
+imports ``msgloom``.
 Every rule can be switched off by name so tests can prove a mutant dies.
 """
 

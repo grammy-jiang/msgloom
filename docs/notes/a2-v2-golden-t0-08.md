@@ -2,9 +2,11 @@
 
 This note describes `tests/a2_kedro/golden/t0_08.json`. The oracle covers the
 rule "an old prepared@1 stays readable and a new prepared@2 maps correctly".
-A person wrote every expected decision by hand from the A2 Kedro v2
-blueprint, the frozen v1 contract and the A1 fixtures. No A2 v2 code produced
-any value.
+A language model (a Claude Sonnet 5.5 worker) annotated every expected
+decision by hand-reading the A2 Kedro v2 blueprint, the frozen v1 contract
+and the A1 fixtures. No A2 v2 code produced any value. Only the two pinned
+digests (see "Pinned digests") were computed by a program. No human has
+reviewed the file.
 
 The execution manifest names `tests/a2_kedro/gold/t0_08.json`. The file lives
 in `golden/`, as in decision 5 of `a2-v2-golden-decisions.md`.

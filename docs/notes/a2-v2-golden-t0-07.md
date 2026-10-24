@@ -172,7 +172,6 @@ decisions are also in `a2-v2-golden-decisions.md`.
 
 ## Follow-up outside T0-07
 
-The T0-06 and T0-08 files and notes, and the independence rules in
-`a2-v2-golden-corpus.md`, still say that "a person" wrote the values. A
-Claude worker annotated them. A later change must reword that text. This
-change does not touch it.
+The T0-06 and T0-08 notes and the independence rules in
+`a2-v2-golden-corpus.md` once said that "a person" wrote the values. A Claude
+worker annotated them. A later change reworded that text.

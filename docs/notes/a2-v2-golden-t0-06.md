@@ -3,8 +3,9 @@
 This note describes `tests/a2_kedro/golden/t0_06.json`. The oracle covers the
 rule "every item in a held, intake-held, A2-held or transition-only scope has
 an accepted prepared@2 result or a held record, never missing and never
-both". A person wrote every expected answer by hand from the A2 Kedro v2
-blueprint. No msgloom code produced any value.
+both". A language model (a Claude Sonnet 5.5 worker) annotated every expected
+answer by hand-reading the A2 Kedro v2 blueprint. No msgloom code produced
+any value. No human has reviewed the file.
 
 The execution manifest names `tests/a2_kedro/gold/t0_06.json`. The file lives
 in `golden/`, as in decision 5 of `a2-v2-golden-decisions.md`.

@@ -1,10 +1,10 @@
 """Validate the structure and integrity of the A2 independent golden corpus.
 
-The corpus lives in ``tests/a2_kedro/golden``. Humans annotated every
-expected value by hand. This module checks only shape: strict JSON, required
-fields, unique case IDs, polarity coverage, provenance text, synthetic-only
-domains, and the SHA-256 manifest. It never imports ``msgloom.a2_kedro`` and
-never computes an expected value.
+The corpus lives in ``tests/a2_kedro/golden``. A language model annotated
+every expected value by hand-reading; no human has reviewed it. This module
+checks only shape: strict JSON, required fields, unique case IDs, polarity
+coverage, provenance text, synthetic-only domains, and the SHA-256 manifest.
+It never imports ``msgloom.a2_kedro`` and never computes an expected value.
 """
 
 from __future__ import annotations

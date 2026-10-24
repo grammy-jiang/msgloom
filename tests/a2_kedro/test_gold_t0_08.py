@@ -1,8 +1,8 @@
 """Validate the hand-written T0-08 historical reader oracle.
 
-A person wrote every decision in ``golden/t0_08.json`` from the A2 Kedro v2
-blueprint, the frozen v1 contract and the A1 fixtures. The small reference
-reader below only checks that the answers agree with each other. Each rule of
+A language model annotated every decision in ``golden/t0_08.json`` from the
+A2 Kedro v2 blueprint, the frozen v1 contract and the A1 fixtures. The small
+reference reader below only checks that the answers agree with each other. Each rule of
 the reader has a name and can be switched off, so that the mutation tests in
 ``test_gold_t0_08_mutants.py`` can prove that the oracle needs the rule. This
 module never imports ``msgloom``.
