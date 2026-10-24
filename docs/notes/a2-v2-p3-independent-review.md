@@ -363,10 +363,10 @@ This review is a source reading. It does not replace a test run.
 
 ## 6. Re-review addendum (cycle 43)
 
-A second independent read-only reviewer checked each fix at its exact
-SHA. That reviewer ran the focused tests of each branch, ran ruff, and
-proved the F7 test with two mutations in a `/tmp` copy. This addendum
-does not change sections 1 to 5.
+A second independent read-only reviewer read each fix at its exact SHA.
+This addendum makes no test-execution claim. Test runs for each fix are
+recorded in the manager report, not here. This addendum does not change
+sections 1 to 5.
 
 | Finding | Branch fix | Status | Note |
 | --- | --- | --- | --- |
