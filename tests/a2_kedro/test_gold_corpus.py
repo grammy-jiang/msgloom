@@ -32,11 +32,12 @@ FILE_FIELDS = (
 )
 CASE_FIELDS = ("case_id", "polarity", "title", "input", "expected")
 POLARITIES = ("positive", "negative")
-ALLOWED_DOMAINS = ("example.invalid", "example.test")
-REAL_TLDS = (
-    "com", "net", "org", "edu", "gov", "io", "co", "us", "uk", "de", "cn",
-    "jp", "ai", "dev", "app", "info", "biz", "ru", "fr", "cloud",
-)  # fmt: skip
+# RFC 2606 and RFC 6761 reserved names. The corpus may use only these hosts.
+RESERVED_SECOND_LEVEL = ("example.com", "example.net", "example.org")
+RESERVED_TLDS = ("example", "invalid", "test", "localhost")
+# Dotted tokens that are file names or code names, not hosts.
+FILE_SUFFIXES = ("md", "py", "json", "txt", "pdf", "doc", "docx", "xlsx", "sha256")
+NON_HOST_TOKENS = ("node.run",)
 HOST_RE = re.compile(
     r"(?<![A-Za-z0-9_-])((?:[A-Za-z0-9-]+\.)+[A-Za-z]{2,})(?![A-Za-z0-9_-])"
 )
@@ -58,18 +59,23 @@ def load_strict(path: Path) -> Any:
 
 
 def bad_hosts(text: str) -> list[str]:
-    """Return host-like tokens that use a real-looking TLD outside the allow list."""
+    """Return host-like tokens that are not RFC 2606 or RFC 6761 reserved names."""
     found = []
     for match in HOST_RE.finditer(text):
         host = match.group(1).lower()
-        if (
-            host.endswith(tuple("." + d for d in ALLOWED_DOMAINS))
-            or host in ALLOWED_DOMAINS
-        ):
+        if host in NON_HOST_TOKENS or host.rsplit(".", 1)[-1] in FILE_SUFFIXES:
             continue
-        if host.rsplit(".", 1)[-1] in REAL_TLDS:
-            found.append(host)
+        if is_reserved_host(host):
+            continue
+        found.append(host)
     return found
+
+
+def is_reserved_host(host: str) -> bool:
+    """Return True when host is a reserved example, test, invalid or local name."""
+    if host.rsplit(".", 1)[-1] in RESERVED_TLDS:
+        return True
+    return any(host == d or host.endswith("." + d) for d in RESERVED_SECOND_LEVEL)
 
 
 def _corpus_files() -> list[Path]:
@@ -150,6 +156,14 @@ def test_cases_have_required_fields_and_both_polarities(path: Path) -> None:
         )
 
 
+@pytest.mark.parametrize("path", _corpus_files(), ids=lambda p: p.name)
+def test_positive_cases_come_before_negative_cases(path: Path) -> None:
+    order = [case["polarity"] for case in load_strict(path)["cases"]]
+    first_negative = order.index("negative") if "negative" in order else len(order)
+    if "positive" in order[first_negative:]:
+        pytest.fail(f"{path.name} lists a positive case after a negative case")
+
+
 def test_case_ids_unique_across_corpus() -> None:
     seen: dict[str, str] = {}
     for path in _corpus_files():
@@ -170,7 +184,7 @@ def test_only_synthetic_domains(path: Path) -> None:
     for email in re.findall(
         r"[A-Za-z0-9._%+-]+@([A-Za-z0-9-]+(?:\.[A-Za-z0-9-]+)+)", text
     ):
-        if not email.lower().endswith(ALLOWED_DOMAINS):
+        if not is_reserved_host(email.lower()):
             pytest.fail(f"{path.name} has non-synthetic email domain {email}")
 
 
@@ -210,3 +224,21 @@ def test_host_check_flags_real_looking_domain() -> None:
         pytest.fail("synthetic host was flagged")
     if bad_hosts("see https://outlook.com/x") != ["outlook.com"]:
         pytest.fail("real-looking host was not flagged")
+
+
+def test_host_check_rejects_non_reserved_hosts() -> None:
+    for host in ("foo.internal", "files.corp", "mail.example.invalid.evil.io"):
+        if bad_hosts(f"connect to {host} now") != [host]:
+            pytest.fail(f"non-reserved host {host} was not flagged")
+
+
+def test_host_check_accepts_reserved_hosts() -> None:
+    reserved = (
+        "example.com", "www.example.net", "a.b.example.org", "host.example",
+        "x.invalid", "mail.test", "svc.localhost", "files.example.invalid",
+    )  # fmt: skip
+    for host in reserved:
+        if bad_hosts(f"connect to {host} now") != []:
+            pytest.fail(f"reserved host {host} was flagged")
+    if bad_hosts("notexample.com") != ["notexample.com"]:
+        pytest.fail("suffix lookalike notexample.com was not flagged")
