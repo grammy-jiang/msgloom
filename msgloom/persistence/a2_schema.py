@@ -76,6 +76,8 @@ SCHEMA4_TABLES = frozenset(
     }
 )
 _LEGACY_PREFIX = "preparation_proof_legacy_terminal:"
+# Written by every v1 scheduler run (msgloom/persistence/intake_scheduling.py).
+_ROTATION_PREFIX = "preparation_intake_rotation:"
 _A2_KEYS = {"a2_schema_revision": A2_REVISION, "a2_producer_marker": PRODUCER_MARKER}
 _V4_KEYS = {"schema_version", "preparation_proof_revision"}
 _HEX64_RE = re.compile(r"[0-9a-f]{64}")
@@ -249,7 +251,9 @@ def _metadata(connection: sqlite3.Connection) -> dict[str, str]:
 
 def _check_keys(meta: dict[str, str], allowed: set[str]) -> None:
     for key in meta:
-        if key not in allowed and not key.startswith(_LEGACY_PREFIX):
+        if key not in allowed and not key.startswith(
+            (_LEGACY_PREFIX, _ROTATION_PREFIX)
+        ):
             raise A2SchemaError("unknown-metadata-key")
 
 
