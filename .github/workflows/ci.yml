@@ -360,3 +360,84 @@ jobs:
           tests/test_handoff_qualification_portable.py::test_coverage_map_requires_all_spiders_scenarios_and_executed_nodes
           tests/test_handoff_qualification_portable.py::test_reverse_import_scan_rejects_a2_and_dynamic_imports
           tests/test_handoff_qualification_portable.py::test_saved_reader_platform_gate_rejects_windows_in_portable_smoke
+
+  x86_64_a2:
+    name: Linux x86_64 wheel and A2 contracts (${{ matrix.python }})
+    # ubuntu-24.04 is the GitHub-hosted x86_64 label. Every other job in this
+    # file uses ubuntu-26.04-arm, macOS 15 arm64, or Windows. This job adds
+    # native x86_64 wheel and A2 coverage. It needs no bubblewrap, AppArmor,
+    # or cgroups, and it does not run the dependency audit (quality job).
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    permissions:
+      contents: read
+    strategy:
+      fail-fast: false
+      matrix:
+        python: ["3.12", "3.13", "3.14"]
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          fetch-depth: 2
+      - uses: astral-sh/setup-uv@07a047e608db84b3d8c06cd9a7c7dcc9c355c18e # v10.3.2
+        with:
+          version: "0.13.5"
+          python-version: ${{ matrix.python }}
+          enable-cache: true
+          cache-suffix: x86_64-${{ matrix.python }}
+      - name: Classify documentation-only changes
+        id: change_scope
+        shell: bash
+        env:
+          CI_BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.before }}
+          CI_PYTHON: ${{ matrix.python }}
+        run: |
+          uv run --no-project --python "$CI_PYTHON" python \
+            scripts/quality/ci_change_scope.py \
+            --event "$GITHUB_EVENT_NAME" --base "$CI_BASE_SHA" \
+            --head "$GITHUB_SHA" >> "$GITHUB_OUTPUT"
+      - name: Docs-only fast path (x86_64 contracts unchanged)
+        if: ${{ steps.change_scope.outputs.docs_only == 'true' }}
+        run: echo "Docs-only diff; x86_64 wheel and A2 contracts remain mandatory for code changes."
+      - name: Require an x86_64 runner
+        if: ${{ steps.change_scope.outputs.docs_only != 'true' }}
+        run: |
+          machine=$(uname -m)
+          echo "Runner architecture: $machine"
+          test "$machine" = "x86_64"
+      - name: Install locked development dependencies
+        if: ${{ steps.change_scope.outputs.docs_only != 'true' }}
+        run: uv sync --locked --group dev
+      - name: Qualify the rebuilt wheel outside the checkout
+        if: ${{ steps.change_scope.outputs.docs_only != 'true' }}
+        run: |
+          uv venv "$RUNNER_TEMP/wheel-env"
+          uv export --locked --no-dev --no-emit-project \
+            --format requirements-txt --output-file "$RUNNER_TEMP/runtime-requirements.txt"
+          uv pip sync --python "$RUNNER_TEMP/wheel-env/bin/python" \
+            "$RUNNER_TEMP/runtime-requirements.txt"
+          uv run --no-sync python scripts/qualify_installed_wheel.py \
+            --source-root "$GITHUB_WORKSPACE" \
+            --output-root "$RUNNER_TEMP/wheel-qualification" \
+            --env-python "$RUNNER_TEMP/wheel-env/bin/python" \
+            --uv "$(command -v uv)" --require-cli msgloom \
+            --require-resource msgloom.reporting:templates/report.txt.j2 \
+            --require-resource msgloom.reporting:templates/report.html.j2
+      # Run the portable A2 Kedro contracts from the checkout. Exclude the
+      # real-cgroup marker; the linux_safety job owns that suite. A missing
+      # tests/a2_kedro directory (a base without the A2 tests) is reported as
+      # a workflow warning. An existing directory must collect and pass tests;
+      # pytest exit code 5 (no tests collected) fails the job.
+      - name: Run targeted A2 Kedro contracts
+        if: ${{ steps.change_scope.outputs.docs_only != 'true' }}
+        run: |
+          if [[ ! -d tests/a2_kedro ]]; then
+            echo "::warning::tests/a2_kedro is absent; targeted A2 gate did not run."
+            exit 0
+          fi
+          uv run --no-sync python -m pytest -q -n 0 --strict-markers \
+            -p no:cacheprovider \
+            -m "not linux_cgroup_v2 and not fastmcp_compat" \
+            --junitxml="$RUNNER_TEMP/a2-kedro-x86_64.xml" \
+            tests/a2_kedro
