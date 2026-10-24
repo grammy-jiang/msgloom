@@ -1,0 +1,109 @@
+{
+  "schema": "a2-golden-case-file@1",
+  "task_id": "T0-04",
+  "title": "Calendar, To Do, OneDrive, Contacts: contextual items never forced into communication grouping",
+  "annotator": "claude-sonnet-5.5 worker, hand annotation on 2026-10-24 (human-style reading; no program produced any expected value)",
+  "independence_statement": "Items are invented by hand. Expected results follow the sentence in preparation-semantics.md that To Do, OneDrive and Contacts always get one-member None results, and the handoff spec statement that Calendar's final A2 role is not defined by A1. No grouping code was run or imported.",
+  "provenance": {
+    "sources": [
+      "docs/notes/preparation-semantics.md: 'To Do, OneDrive, and Contacts are contextual inputs...'",
+      "docs/superpowers/specs/2026-10-03-a1-a2-handoff-contract-design.md: non-goals ('define Calendar's final A2 semantic role'), streams list",
+      "docs/notes/todo-sync.md, docs/notes/contacts-sync.md, docs/notes/onedrive-resync.md",
+      "tests/calendar_authority_helpers.py, tests/_contacts_authority.py, tests/_onedrive_authority.py (A1 fixture shapes, read only)"
+    ]
+  },
+  "canary": "CANARY-PII-7731-ZQ",
+  "cases": [
+    {
+      "case_id": "T0-04-P01",
+      "polarity": "positive",
+      "title": "To Do task becomes a one-member None group",
+      "input": {"version_ref": "todo-1", "stream": "todo", "title": "Buy stamps", "list": "Errands"},
+      "expected": {"group_status": "none", "members": ["todo-1"], "group_size": 1, "evidence_claimed": []}
+    },
+    {
+      "case_id": "T0-04-P02",
+      "polarity": "positive",
+      "title": "OneDrive file becomes a one-member None group",
+      "input": {"version_ref": "od-1", "stream": "onedrive", "name": "notes.txt", "path": "/Documents/notes.txt"},
+      "expected": {"group_status": "none", "group_size": 1}
+    },
+    {
+      "case_id": "T0-04-P03",
+      "polarity": "positive",
+      "title": "Contact becomes a one-member None group",
+      "input": {"version_ref": "ct-1", "stream": "contacts", "display_name": "Dana Example", "email": "dana@example.invalid"},
+      "expected": {"group_status": "none", "group_size": 1}
+    },
+    {
+      "case_id": "T0-04-P04",
+      "polarity": "positive",
+      "title": "Calendar event is kept contextual, not placed in a communication group",
+      "input": {"version_ref": "cal-1", "stream": "outlook_calendar", "subject": "Planning meeting", "organizer": "alice@example.invalid"},
+      "expected": {"group_status": "none", "group_size": 1, "communication_group_member": false}
+    },
+    {
+      "case_id": "T0-04-P05",
+      "polarity": "positive",
+      "title": "Contextual sources are partitioned before grouping",
+      "input": {"version_refs": ["todo-1", "od-1", "ct-1", "cal-1"], "shared_scope": "scope-user-A"},
+      "expected": {"groups": [["todo-1"], ["od-1"], ["ct-1"], ["cal-1"]], "cross_source_join": false}
+    },
+    {
+      "case_id": "T0-04-N01",
+      "polarity": "negative",
+      "title": "Mail that mentions a To Do title is not joined to the task",
+      "input": {
+        "records": [
+          {"version_ref": "mail-9", "stream": "outlook_mail", "text": "Reminder: Buy stamps"},
+          {"version_ref": "todo-1", "stream": "todo", "title": "Buy stamps"}
+        ]
+      },
+      "expected": {"same_group": false, "group_status_todo": "none"}
+    },
+    {
+      "case_id": "T0-04-N02",
+      "polarity": "negative",
+      "title": "Generic relationship on a contextual item does not create a group",
+      "input": {
+        "records": [
+          {"version_ref": "od-2", "stream": "onedrive", "relationship": {"kind": "in_reply_to", "target": "mail-9"}},
+          {"version_ref": "mail-9", "stream": "outlook_mail"}
+        ]
+      },
+      "expected": {"group_status_od": "none", "group_size_od": 1, "same_group": false},
+      "rationale": "Source: 'always receive one-member None grouping results ... even if a generic relationship happens to be present'."
+    },
+    {
+      "case_id": "T0-04-N03",
+      "polarity": "negative",
+      "title": "Attendee email equal to a mail sender does not join an event to mail",
+      "input": {
+        "records": [
+          {"version_ref": "cal-2", "stream": "outlook_calendar", "attendees": ["erin@example.invalid"]},
+          {"version_ref": "mail-10", "stream": "outlook_mail", "from": "erin@example.invalid", "text": "CANARY-PII-7731-ZQ"}
+        ]
+      },
+      "expected": {"same_group": false}
+    },
+    {
+      "case_id": "T0-04-N04",
+      "polarity": "negative",
+      "title": "Contact with the same email as a Teams sender is not merged with a chat group",
+      "input": {
+        "records": [
+          {"version_ref": "ct-2", "stream": "contacts", "email": "frank@example.invalid"},
+          {"version_ref": "tct-30", "stream": "teams_chat", "sender_email": "frank@example.invalid", "scope": "scope-chat-A"}
+        ]
+      },
+      "expected": {"same_group": false, "group_status_contact": "none"}
+    },
+    {
+      "case_id": "T0-04-N05",
+      "polarity": "negative",
+      "title": "Deleted contextual item does not delete or alter any communication group",
+      "input": {"event": "todo_removed_from_snapshot", "version_ref": "todo-1", "communication_groups_before": [["mail-9"]]},
+      "expected": {"communication_groups_after": [["mail-9"]], "todo_absence_authority_over_mail": false}
+    }
+  ]
+}
