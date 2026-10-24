@@ -34,6 +34,7 @@ from msgloom.triage_input import (
     TriageSelection,
     encode_part,
 )
+from msgloom.triage_input.io_v2 import load_values
 from msgloom.working_context import (
     WORKING_CONTEXT_KIND,
     WORKING_CONTEXT_SCHEMA_VERSION,
@@ -104,16 +105,7 @@ class _TriageIOMixin:
         by_id: dict[str, StageResult],
         expected: type[T],
     ) -> tuple[T, ...]:
-        values: list[T] = []
-        for ref in refs:
-            semantic = by_id[ref.result_id].semantic_data_ref
-            if semantic is None:
-                raise ValueError("upstream semantic reference is missing")
-            value = await self._persistence.load_semantic_data(semantic)
-            if not isinstance(value, expected):
-                raise TypeError("upstream semantic value has unexpected type")
-            values.append(value)
-        return tuple(values)
+        return await load_values(self._persistence, refs, by_id, expected)
 
     async def _load_priors(
         self, by_id: dict[str, StageResult]
