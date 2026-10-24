@@ -102,7 +102,7 @@ Not done in this stage. One database owner does these steps with review:
 - The pinned schema 4 digest is unverified against a real production file.
   Verify it read only in the owner stage. The tool fails closed.
 - Live databases in WAL mode: the backup API is safe. Restore needs
-  exclusive access. A restore over a file with open readers fails with
+  exclusive access. A restore over a file with open readers is expected to fail with
   `backup-copy-failed`.
-- The logical dump comparison reads the whole file three times. This is
+- The logical dump comparison reads the whole file several times. This is
   acceptable for the current size. Revisit for very large files.
