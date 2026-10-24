@@ -35,8 +35,8 @@ PII: errors use fixed text. A declared or detected value is never copied
 into a reason, a decision or an error. :func:`classify_exception` ignores
 the exception message and its arguments.
 
-CANDIDATE/RESEARCH, PROVISIONAL: reason names and the unsupported format
-list are not frozen.
+CANDIDATE/RESEARCH, PROVISIONAL: reason names and the format
+allowlist are not frozen.
 """
 
 from __future__ import annotations
@@ -55,10 +55,18 @@ from msgloom.a2_kedro.contracts.parse import (
 )
 from msgloom.a2_kedro.contracts.source import FrozenRoot
 
-#: Formats that have no parser yet. Provisional; a parser task removes one.
-UNSUPPORTED_FORMATS: Final[frozenset[str]] = frozenset({"image", "pptx"})
-
 _KNOWN_FORMATS: Final[frozenset[str]] = frozenset(get_args(PartFormat))
+
+#: Allowlist: the only formats with a delivered parser task. Fail closed:
+#: P2-01 (rfc822, html), P2-02 (plain_text; json is not a part format),
+#: P2-03 (pdf), P2-04 (docx), P2-05 (xlsx, csv). A new ``PartFormat`` member
+#: is unsupported until a parser task adds it here. Provisional.
+PARSER_AVAILABLE_FORMATS: Final[frozenset[str]] = frozenset(
+    {"rfc822", "html", "plain_text", "pdf", "docx", "xlsx", "csv"}
+)
+
+#: Complement of the allowlist: every known format with no parser.
+UNSUPPORTED_FORMATS: Final[frozenset[str]] = _KNOWN_FORMATS - PARSER_AVAILABLE_FORMATS
 
 
 class FailurePolicyError(A2ContractError):
@@ -175,6 +183,8 @@ class FailureDecision:
     held_reason: HeldReason
 
     def __post_init__(self) -> None:
+        if not isinstance(self.held_reason, HeldReason):
+            raise FailurePolicyError("held reason must be a HeldReason member")
         if held_reason_for(self.outcome, self.reason) != self.held_reason:
             raise FailurePolicyError("held reason differs from the policy table")
 
@@ -205,12 +215,21 @@ def decide_from_receipt(receipt: ParserReceipt) -> FailureDecision | None:
     Return the decision for a worker receipt, or ``None`` when complete.
 
     A ``partial`` receipt maps to ``PARTIAL`` with the reason of its limit.
-    ``ParserReceipt`` already rejects ``partial`` with ``limit_hit`` of
-    ``none`` and ``complete`` with a limit, so a limit always maps.
+    Fail closed: the input must be a ``ParserReceipt``. A receipt that was
+    built without validation is re-checked here. A ``complete`` receipt with
+    a limit, a ``partial`` receipt without one and an unknown outcome all
+    raise :exc:`FailurePolicyError`. Only a ``complete`` receipt with
+    ``limit_hit`` of ``none`` returns ``None``.
     """
-    if receipt.outcome == "complete":
-        return None
+    if not isinstance(receipt, ParserReceipt):
+        raise FailurePolicyError("receipt must be a ParserReceipt")
     limit: LimitHit = receipt.limit_hit
+    if receipt.outcome == "complete":
+        if limit != "none":
+            raise FailurePolicyError("complete receipt must not carry a limit")
+        return None
+    if receipt.outcome != "partial":
+        raise FailurePolicyError("receipt outcome is not defined")
     why = _LIMIT_REASONS.get(limit)
     if why is None:
         raise FailurePolicyError("partial receipt has no limit")
@@ -234,7 +253,7 @@ def check_formats(declared: object, detected: object) -> FailureDecision | None:
     1. A detected value that is absent or not a known format is ``UNKNOWN``.
     2. A declared value that is present and not equal to the detected value
        is ``MIME_MISMATCH``. The declared value is never trusted.
-    3. A detected format with no parser is ``UNSUPPORTED``.
+    3. A detected format outside ``PARSER_AVAILABLE_FORMATS`` is ``UNSUPPORTED``.
 
     ``None`` means the formats agree and have a parser. A non-text value
     raises :exc:`FailurePolicyError`. No value is copied to the result.
@@ -247,7 +266,7 @@ def check_formats(declared: object, detected: object) -> FailureDecision | None:
         return decide(
             FailureOutcome.MIME_MISMATCH, FailureReason.DETECTED_FORMAT_DIFFERS
         )
-    if found in UNSUPPORTED_FORMATS:
+    if found not in PARSER_AVAILABLE_FORMATS:
         return decide(FailureOutcome.UNSUPPORTED, FailureReason.FORMAT_NOT_SUPPORTED)
     return None
 

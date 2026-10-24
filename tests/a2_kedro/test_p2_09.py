@@ -4,25 +4,26 @@ from __future__ import annotations
 
 import dataclasses
 import itertools
+from typing import get_args
 
 import pytest
 from pydantic import ValidationError
 
 from msgloom.a2_kedro.contracts.codec import A2ContractError
 from msgloom.a2_kedro.contracts.held import HeldReason
-from msgloom.a2_kedro.contracts.parse import ParserReceipt
+from msgloom.a2_kedro.contracts.parse import ParserReceipt, PartFormat
 from msgloom.a2_kedro.parsers import failure_policy as fp
 from msgloom.a2_kedro.parsers.failure_policy import (
+    PARSER_AVAILABLE_FORMATS,
+    UNSUPPORTED_FORMATS,
     FailureDecision,
     FailureOutcome,
     FailurePolicyError,
     FailureReason,
     check_formats,
-    classify_exception,
     decide,
     decide_from_receipt,
     held_reason_for,
-    parse_outcome,
     parse_reason,
     to_disposition,
 )
@@ -74,6 +75,7 @@ DEFINED = {
 SECRET = "alice.private@example.invalid"
 KNOWN = ("rfc822", "html", "plain_text", "pdf", "docx", "xlsx", "csv")
 NO_PARSER = ("image", "pptx")
+ALL_FORMATS = (*KNOWN, *NO_PARSER)
 
 HOSTILE = (
     SECRET,
@@ -120,39 +122,6 @@ def test_held_reasons_are_the_existing_contract_vocabulary() -> None:
 @pytest.mark.parametrize("name", REASONS)
 def test_parse_reason_accepts_each_exact_code(name: str) -> None:
     check(parse_reason(name).value == name, "exact code is accepted")
-
-
-@pytest.mark.parametrize(
-    "bad",
-    [*HOSTILE, "Size_Limit", "size-limit", "size_limit ", "complete", "ok"],
-    ids=range(len(HOSTILE) + 5),
-)
-def test_parse_reason_rejects_text_outside_the_closed_set(bad: str) -> None:
-    with pytest.raises(FailurePolicyError) as info:
-        parse_reason(bad)
-    check(SECRET not in str(info.value), "error has no input")
-    check(str(info.value) == "reason is not in the closed set", "fixed text")
-
-
-@pytest.mark.parametrize("bad", [None, 1, b"size_limit", ["size_limit"], 1.5])
-def test_parse_reason_rejects_other_types(bad: object) -> None:
-    with pytest.raises(FailurePolicyError):
-        parse_reason(bad)
-
-
-def test_parse_reason_rejects_str_subclass_with_odd_behavior() -> None:
-    class Sneaky(str):
-        def __hash__(self) -> int:
-            return hash("size_limit")
-
-    with pytest.raises(FailurePolicyError):
-        parse_reason(Sneaky("size_limit"))
-
-
-@pytest.mark.parametrize("bad", ["complete", "Partial", "", None, 3, "\ud800"])
-def test_parse_outcome_rejects_unknown_values(bad: object) -> None:
-    with pytest.raises(FailurePolicyError):
-        parse_outcome(bad)
 
 
 def test_policy_error_is_a_contract_error() -> None:
@@ -208,40 +177,39 @@ def test_agreeing_format_without_parser_is_unsupported(fmt: str) -> None:
         check(got.held_reason.value == "parser_unsupported", "held reason")
 
 
-@pytest.mark.parametrize(
-    "detected",
-    [None, "unknown", "application/pdf", *HOSTILE],
-    ids=range(len(HOSTILE) + 3),
-)
-def test_unknown_detected_format_is_unknown_even_if_declared_is_valid(
-    detected: object,
+def test_every_part_format_is_in_exactly_one_of_allowlist_or_remainder() -> None:
+    members = set(get_args(PartFormat))
+    check(members == set(ALL_FORMATS), "a new PartFormat needs a decision here")
+    check(PARSER_AVAILABLE_FORMATS <= members, "allowlist has only real members")
+    check(
+        PARSER_AVAILABLE_FORMATS.isdisjoint(UNSUPPORTED_FORMATS),
+        "no format is in both sets",
+    )
+    check(
+        PARSER_AVAILABLE_FORMATS | UNSUPPORTED_FORMATS == members,
+        "every member is in one set",
+    )
+    check(PARSER_AVAILABLE_FORMATS == set(KNOWN), "allowlist is the hand-written list")
+    check(UNSUPPORTED_FORMATS == set(NO_PARSER), "remainder is the hand-written list")
+
+
+def test_format_outside_the_allowlist_is_unsupported_fail_closed(
+    monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    got = check_formats("pdf", detected)
-    if got is None:
-        pytest.fail("unknown detection must be held")
-    check(got.outcome.value == "unknown", "outcome is unknown")
-    check(got.reason.value == "detected_format_unknown", "reason")
-    check(got.held_reason.value == "parser_unsupported", "held reason")
-    check(check_formats(None, detected) == got, "no declared value, same result")
-    check(check_formats(detected, detected) == got, "echoed claim, same result")
-
-
-@pytest.mark.parametrize(
-    "declared", ["application/x-evil", *HOSTILE], ids=range(len(HOSTILE) + 1)
-)
-def test_unknown_declared_text_is_a_mismatch_not_trusted(declared: str) -> None:
-    got = check_formats(declared, "pdf")
-    if got is None:
-        pytest.fail("odd declared text must not pass")
-    check(got.outcome.value == "mime_mismatch", "outcome is mime_mismatch")
-
-
-@pytest.mark.parametrize("bad", [1, b"pdf", ["pdf"], object()])
-def test_non_text_formats_are_rejected(bad: object) -> None:
-    with pytest.raises(FailurePolicyError):
-        check_formats(bad, "pdf")
-    with pytest.raises(FailurePolicyError):
-        check_formats("pdf", bad)
+    # A new PartFormat member must be held until a parser task lists it.
+    monkeypatch.setattr(fp, "_KNOWN_FORMATS", fp._KNOWN_FORMATS | {"future_fmt"})
+    for declared in ("future_fmt", None):
+        got = check_formats(declared, "future_fmt")
+        if got is None:
+            pytest.fail("a format outside the allowlist must be held")
+        check(got.outcome.value == "unsupported", "outcome is unsupported")
+        check(got.reason.value == "format_not_supported", "reason")
+    # Removing a listed format from the allowlist holds it too.
+    monkeypatch.setattr(
+        fp, "PARSER_AVAILABLE_FORMATS", PARSER_AVAILABLE_FORMATS - {"csv"}
+    )
+    held = check_formats("csv", "csv")
+    check(held is not None and held.outcome.value == "unsupported", "csv held")
 
 
 # --- (3) distinct outcomes, each held with a reason ----------------------
@@ -296,6 +264,27 @@ def test_hand_built_decision_must_match_the_table() -> None:
             "partial",  # type: ignore[arg-type]
             FailureReason.SIZE_LIMIT,
             HeldReason.INPUT_LIMIT,
+        )
+
+
+def test_decision_requires_a_held_reason_member_not_equal_text() -> None:
+    for text in ("input_limit", "INPUT_LIMIT", None, 1):
+        with pytest.raises(FailurePolicyError) as info:
+            FailureDecision(
+                FailureOutcome.PARTIAL,
+                FailureReason.SIZE_LIMIT,
+                text,  # type: ignore[arg-type]
+            )
+        check(str(info.value) == "held reason must be a HeldReason member", "text")
+
+    class Loose(str):
+        pass
+
+    with pytest.raises(FailurePolicyError):
+        FailureDecision(
+            FailureOutcome.PARTIAL,
+            FailureReason.SIZE_LIMIT,
+            Loose("input_limit"),  # type: ignore[arg-type]
         )
 
 
@@ -410,73 +399,7 @@ def test_to_disposition_rejects_a_non_decision() -> None:
         )
 
 
-# --- (6) hostile input ---------------------------------------------------
-
-
-def all_decision_text(d: FailureDecision) -> str:
-    return " ".join([repr(d), str(d), d.outcome.value, d.reason.value, d.held_reason])
-
-
-@pytest.mark.parametrize("hostile", HOSTILE, ids=range(len(HOSTILE)))
-def test_hostile_formats_never_reach_decisions(hostile: str) -> None:
-    for declared, detected in ((hostile, "pdf"), ("pdf", hostile), (hostile, hostile)):
-        got = check_formats(declared, detected)
-        if got is None:
-            pytest.fail("hostile text must not pass")
-        text = all_decision_text(got)
-        check(len(text) < 600, "decision text is small")
-        check(text.isascii() and text.isprintable(), "decision text is plain")
-        check(hostile[:8] not in text or hostile[:8] == "", "no text copied")
-
-
-@pytest.mark.parametrize("hostile", HOSTILE, ids=range(len(HOSTILE)))
-def test_hostile_text_never_reaches_errors(hostile: str) -> None:
-    calls = (
-        lambda: parse_reason(hostile),
-        lambda: parse_outcome(hostile),
-        lambda: decide(hostile, hostile),
-        lambda: decide("partial", hostile),
-        lambda: decide(hostile, "size_limit"),
-        lambda: check_formats(1, hostile),
-    )
-    for call in calls:
-        with pytest.raises(FailurePolicyError) as info:
-            call()
-        message = str(info.value)
-        check(len(message) < 80, "error text is short")
-        check(message.isascii() and message.isprintable(), "error text is plain")
-        check(hostile[:8] not in message or hostile[:8] == "", "no text copied")
-        check(info.value.__cause__ is None, "no chained cause")
-        check(
-            info.value.__context__ is None or info.value.__suppress_context__,
-            "no visible chained context",
-        )
-
-
-@pytest.mark.parametrize(
-    "error",
-    [
-        ValueError(SECRET),
-        KeyError(SECRET),
-        RuntimeError("A" * 100_000, SECRET),
-        UnicodeDecodeError("utf-8", b"\xff", 0, 1, SECRET),
-        OSError(2, SECRET, SECRET),
-        TimeoutError(SECRET),
-    ],
-)
-def test_parser_exception_becomes_unknown_without_its_text(error: Exception) -> None:
-    d = classify_exception(error)
-    check(d.outcome.value == "unknown", "exception is unknown")
-    check(d.reason.value == "parser_failed", "reason is parser_failed")
-    check(d.held_reason.value == "proof_missing", "held reason")
-    check(SECRET not in all_decision_text(d), "no exception text in decision")
-    check(d == decide("unknown", "parser_failed"), "same as the table pair")
-
-
-def test_classify_exception_rejects_non_exceptions() -> None:
-    for bad in (KeyboardInterrupt(), "boom", None):
-        with pytest.raises(FailurePolicyError):
-            classify_exception(bad)  # type: ignore[arg-type]
+# --- (6) hostile input: see test_p2_09_hostile.py ---
 
 
 def test_module_has_no_logging_or_io_imports() -> None:
