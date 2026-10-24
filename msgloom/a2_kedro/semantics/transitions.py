@@ -57,7 +57,10 @@ Authority
 
 The scope observation carries the authority of its source. Presence,
 refresh, absence and membership removal use it. A deletion uses the
-authority of its marker. The function never invents an authority.
+authority of its marker. The marker authority must equal the scope
+authority, or the function raises ``authority_mismatch``. A record
+cannot claim another authority than its scope. The function never
+invents an authority.
 
 Ordering and replay
 ===================
@@ -121,6 +124,7 @@ _MESSAGES = {
     "fact_conflict": "one fact ID is used by two transitions",
     "too_many": "record or transition count is out of bounds",
     "bad_record_type": "observed item is not an observed record",
+    "authority_mismatch": "deletion authority differs from scope authority",
 }
 
 
@@ -175,7 +179,8 @@ class ObservedRecord(StateRecord):
     One resource seen now, with the release entry that carried it.
 
     ``deletion_authority`` is set only for an explicit provider deletion
-    marker. A marker record has no content hash.
+    marker. It must equal ``ScopeObservation.authority``. A marker record
+    has no content hash.
     """
 
     entry: ReleaseEntryRef
@@ -256,6 +261,7 @@ def _index(
         ):
             raise TransitionSemanticsError("cross_scope", position)
         _check_role(record, scope.role, position)
+        _check_authority(record, scope, position)
         key = record.key()
         if key not in found:
             found[key] = record
@@ -275,6 +281,17 @@ def _check_role(record: StateRecord, role: Role, position: int) -> None:
     if role == "content" and has_hash == marker:
         # A content record needs a hash. A marker must not have one.
         raise TransitionSemanticsError("role_violation", position)
+
+
+def _check_authority(
+    record: StateRecord, scope: ScopeObservation, position: int
+) -> None:
+    """Refuse a deletion marker that claims another authority than the scope."""
+    if not isinstance(record, ObservedRecord):
+        return
+    claim = record.deletion_authority
+    if claim is not None and claim != scope.authority:
+        raise TransitionSemanticsError("authority_mismatch", position)
 
 
 def _transition(
@@ -300,7 +317,8 @@ def _present(
     scope: ScopeObservation, before: StateRecord | None, now: ObservedRecord
 ) -> ScopedTransition | None:
     if now.deletion_authority is not None:
-        return _transition(scope, now, now.entry, "deletion", now.deletion_authority)
+        # ``_index`` proved that the marker authority equals the scope's.
+        return _transition(scope, now, now.entry, "deletion", scope.authority)
     if before is None:
         return _transition(scope, now, now.entry, "presence", scope.authority)
     changed = before.content_sha256 != now.content_sha256

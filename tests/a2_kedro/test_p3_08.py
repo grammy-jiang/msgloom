@@ -206,25 +206,39 @@ def test_content_and_membership_runs_stay_separate() -> None:
 # (4) provider deletion marker ---------------------------------------------
 
 
-def test_marker_is_deletion_with_provider_authority() -> None:
+def test_marker_is_deletion_with_scope_authority() -> None:
     out = derive_transitions(
-        obs(), (prev("m1"),), (now("m1", None, marker="provider-x"),)
+        obs(), (prev("m1"),), (now("m1", None, marker="content-src"),)
     )
     check(kinds(out) == [("m1", "deletion")], "deletion expected")
-    check(out.transitions[0].authority == "provider-x", "provider authority")
+    check(out.transitions[0].authority == "content-src", "marker authority")
 
 
 def test_marker_in_partial_scope_still_deletes() -> None:
     scope = obs(enumeration="partial")
-    out = derive_transitions(scope, (), (now("m1", None, marker="provider-x"),))
+    out = derive_transitions(scope, (), (now("m1", None, marker="content-src"),))
     check(kinds(out) == [("m1", "deletion")], "marker needs no enumeration")
 
 
 def test_membership_marker_is_a_deletion() -> None:
     scope = obs(FOLDER, "membership")
-    gone = now("m1", None, FOLDER, marker="provider-x")
+    gone = now("m1", None, FOLDER, marker="content-src")
     out = derive_transitions(scope, (prev("m1", None, FOLDER),), (gone,))
     check(kinds(out) == [("m1", "deletion")], "marker wins over removal")
+
+
+def test_marker_with_other_authority_is_refused() -> None:
+    other = now("m1", None, marker="other-src")
+    for scope in (obs(), obs(enumeration="partial")):
+        with pytest.raises(TransitionSemanticsError) as err:
+            derive_transitions(scope, (prev("m1"),), (now("m0"), other))
+        check(err.value.code == "authority_mismatch", "authority code")
+        check(err.value.position == 1, "position reported")
+        check("other-src" not in str(err.value), "claim is not echoed")
+    member = obs(FOLDER, "membership")
+    with pytest.raises(TransitionSemanticsError) as err2:
+        derive_transitions(member, (), (now("m1", None, FOLDER, marker="x"),))
+    check(err2.value.code == "authority_mismatch", "membership scope")
 
 
 def test_blank_marker_authority_is_refused() -> None:
@@ -324,7 +338,7 @@ def test_output_order_ignores_input_order() -> None:
 
 def test_replay_gives_identical_output_and_batch() -> None:
     before = (prev("m1", "a"), prev("m2", "a"), prev("m3", "a"))
-    after = (now("m1", "b"), now("m4"), now("m2", None, marker="prov"))
+    after = (now("m1", "b"), now("m4"), now("m2", None, marker="content-src"))
     first = derive_transitions(obs(), before, after)
     second = derive_transitions(obs(), before, after)
     check(first == second, "same input, same outcome")
