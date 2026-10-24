@@ -165,6 +165,7 @@ class PartitionPlan(A2Model):
         previous: tuple[str, str, str] | None = None
         expected = 0
         used: set[int] = set()
+        last = -1
         for part in self.partitions:
             key = _key(part.workset)
             if key != previous:
@@ -173,12 +174,15 @@ class PartitionPlan(A2Model):
                 if key in seen:
                     raise A2ContractError("plan splits a workset run")
                 seen.add(key)
-                previous, expected, used = key, 0, set()
+                previous, expected, used, last = key, 0, set(), -1
             if part.ordinal != expected:
                 raise A2ContractError("partition ordinals are not contiguous")
             if used.intersection(part.indexes):
                 raise A2ContractError("occurrence appears in two partitions")
+            if part.indexes[0] <= last:
+                raise A2ContractError("partition indexes are not ascending")
             used.update(part.indexes)
+            last = part.indexes[-1]
             expected += 1
         if self.plan_sha256 != plan_digest(self.policy_sha256, self.partitions):
             raise A2ContractError("plan identity does not match its partitions")

@@ -3,7 +3,9 @@
 from __future__ import annotations
 
 import asyncio
+import functools
 import inspect
+from collections.abc import Callable, Coroutine
 from pathlib import Path
 from typing import Any
 
@@ -24,16 +26,20 @@ from msgloom.a2_kedro.contracts.codec import A2ContractError
 from msgloom.contracts import ResultRef
 from tests.a2_kedro.helpers import check, hexd
 
-pytestmark = pytest.mark.anyio
+
+def sync(test: Callable[..., Coroutine[Any, Any, None]]) -> Callable[..., None]:
+    """Run an async test on a fresh loop; avoids an async plugin dependency."""
+
+    @functools.wraps(test)
+    def wrapper(*args: Any, **kwargs: Any) -> None:
+        asyncio.run(test(*args, **kwargs))
+
+    return wrapper
+
 
 WS = ResultRef("ws-1", "preparation_intake_workset", "1")
 RECEIPT = ResultRef("rc-1", "a2_completion_receipt", "2")
 SECRET = "alice@example.com /home/alice/secret.eml"
-
-
-@pytest.fixture
-def anyio_backend() -> str:
-    return "asyncio"
 
 
 def pin(**changes: Any) -> AuthorityPin:
@@ -84,6 +90,7 @@ async def run(
     )
 
 
+@sync
 async def test_positive_path_returns_receipt() -> None:
     worker = Worker()
     out = await run(worker)
@@ -97,6 +104,7 @@ def test_prepare_is_a_coroutine_function() -> None:
     check(inspect.iscoroutinefunction(prepare), "prepare must be async def")
 
 
+@sync
 async def test_missing_authority_rejected_before_work() -> None:
     worker = Worker()
     out = await run(worker, authority=None)
@@ -105,6 +113,7 @@ async def test_missing_authority_rejected_before_work() -> None:
     check(worker.calls == 0, "worker must not run")
 
 
+@sync
 async def test_missing_claimed_pin_rejected_before_work() -> None:
     worker = Worker()
     out = await run(worker, req=request(None))
@@ -123,6 +132,7 @@ async def test_missing_claimed_pin_rejected_before_work() -> None:
         {"workset": ResultRef("ws-2", "preparation_intake_workset", "1")},
     ],
 )
+@sync
 async def test_mismatched_pin_rejected_before_work(changes: dict[str, Any]) -> None:
     worker = Worker()
     claimed = pin(**changes)
@@ -132,6 +142,7 @@ async def test_mismatched_pin_rejected_before_work(changes: dict[str, Any]) -> N
     check(worker.calls == 0, "worker must not run")
 
 
+@sync
 async def test_request_workset_must_match_trusted_workset() -> None:
     worker = Worker()
     other = ResultRef("ws-2", "preparation_intake_workset", "1")
@@ -147,6 +158,7 @@ async def test_request_workset_must_match_trusted_workset() -> None:
         ResultRef("ws-1", "preparation_intake_workset", "2"),
     ],
 )
+@sync
 async def test_wrong_workset_identity_rejected(ref: ResultRef) -> None:
     worker = Worker()
     out = await run(worker, req=request(pin(workset=ref), ws=ref))
@@ -155,6 +167,7 @@ async def test_wrong_workset_identity_rejected(ref: ResultRef) -> None:
     check(worker.calls == 0, "worker must not run")
 
 
+@sync
 async def test_wrong_request_type_rejected() -> None:
     worker = Worker()
     out = await prepare(
@@ -171,6 +184,7 @@ async def test_wrong_request_type_rejected() -> None:
     "timeout",
     [0, -1, 0.0, float("nan"), float("inf"), True, "1", None, MAX_TIMEOUT_SECONDS + 1],
 )
+@sync
 async def test_invalid_timeout_rejected(timeout: Any) -> None:
     worker = Worker()
     out = await run(worker, timeout=timeout)
@@ -179,6 +193,7 @@ async def test_invalid_timeout_rejected(timeout: Any) -> None:
     check(worker.calls == 0, "worker must not run")
 
 
+@sync
 async def test_timeout_is_classified_not_raised() -> None:
     async def slow(req: PrepareRequest) -> ResultRef:
         await asyncio.sleep(30)
@@ -190,12 +205,14 @@ async def test_timeout_is_classified_not_raised() -> None:
     check(out.receipt is None, "no receipt on timeout")
 
 
+@sync
 async def test_worker_own_timeout_error_is_failure_not_deadline() -> None:
     out = await run(Worker(error=TimeoutError(SECRET)))
     check(out.status is PrepareStatus.FAILED, "status")
     check(out.reason is PrepareReason.UNEXPECTED_ERROR, "reason")
 
 
+@sync
 async def test_contract_error_is_classified() -> None:
     out = await run(Worker(error=A2ContractError(SECRET)))
     check(out.status is PrepareStatus.FAILED, "status")
@@ -205,6 +222,7 @@ async def test_contract_error_is_classified() -> None:
 @pytest.mark.parametrize(
     "error", [RuntimeError(SECRET), ValueError(SECRET), OSError(SECRET)]
 )
+@sync
 async def test_failure_is_classified_without_pii(error: Exception) -> None:
     out = await run(Worker(error=error))
     check(out.status is PrepareStatus.FAILED, "status")
@@ -223,12 +241,14 @@ async def test_failure_is_classified_without_pii(error: Exception) -> None:
         ResultRef("rc-1", "prepared", "2"),
     ],
 )
+@sync
 async def test_bad_worker_result_fails_closed(bad: Any) -> None:
     out = await run(Worker(result=bad))
     check(out.status is PrepareStatus.FAILED, "status")
     check(out.reason is PrepareReason.BAD_WORKER_RESULT, "reason")
 
 
+@sync
 async def test_cancellation_propagates_to_caller() -> None:
     started = asyncio.Event()
     cleaned = asyncio.Event()
@@ -250,11 +270,13 @@ async def test_cancellation_propagates_to_caller() -> None:
     check(cleaned.is_set(), "worker cleanup must run")
 
 
+@sync
 async def test_cancelled_error_from_worker_is_not_swallowed() -> None:
     with pytest.raises(asyncio.CancelledError):
         await run(Worker(error=asyncio.CancelledError()))
 
 
+@sync
 async def test_uses_callers_loop_and_creates_none(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
@@ -268,6 +290,13 @@ async def test_uses_callers_loop_and_creates_none(
     out = await run(worker)
     check(out.status is PrepareStatus.PREPARED, "status")
     check(worker.loop is asyncio.get_running_loop(), "must use caller loop")
+
+
+@pytest.mark.parametrize("error", [KeyboardInterrupt(), SystemExit(1)])
+@sync
+async def test_process_exit_signals_are_not_classified(error: BaseException) -> None:
+    with pytest.raises(type(error)):
+        await run(Worker(error=error))
 
 
 def test_source_has_no_loop_creation() -> None:

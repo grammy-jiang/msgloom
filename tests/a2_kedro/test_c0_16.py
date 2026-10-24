@@ -251,3 +251,12 @@ def test_provisional_default_plans_a_full_workset() -> None:
     plan = partition(PROVISIONAL_POLICY, run(WS_A, HARD_MAX_ITEMS, size=1))
     check(len(plan.partitions) == HARD_MAX_ITEMS // 64, "64 items per partition")
     plan.check_within(PROVISIONAL_POLICY)
+
+
+def test_plan_rejects_descending_indexes_across_partitions() -> None:
+    plan = partition(policy(max_items_per_partition=2), run(WS_A, 4))
+    first, second = plan.partitions
+    low = first.model_copy(update={"indexes": (2, 3)})
+    high = second.model_copy(update={"indexes": (0, 1)})
+    with pytest.raises(ValidationError):
+        rebuilt(plan, (low, high))
