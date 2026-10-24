@@ -38,7 +38,14 @@ Reason                       Condition
 ``duplicate_message_id``     the child or the parent is declared more than
                              once with the same scope and ID
 ``cross_scope``              child and parent have different scopes
+``unconfirmable_basis``      the basis is not in :data:`CONFIRMABLE_BASES`
 ===========================  ===============================================
+
+Only same-source evidence can confirm a relation. The closed set
+:data:`CONFIRMABLE_BASES` holds the three same-source basis texts of
+P3-01. Any other basis is candidate-only evidence, for example a
+conversation ID, an empty text or an unknown text. A relation with such a
+basis is never ``CONFIRMED``. The check is an exact, case-sensitive match.
 
 Notes for a reviewer of this module:
 
@@ -60,9 +67,12 @@ Output order does not depend on input order. Reviews sort by kind, child,
 parent and basis. Equal candidates collapse to one review. The cycle search
 is iterative, so a long chain does not reach a recursion limit.
 
-A candidate whose child is not declared, or an input above the bounds,
-raises :exc:`~msgloom.a2_kedro.contracts.codec.A2ContractError` with a fixed
-text. A malformed model raises a pydantic error that hides the input. No
+An input above the bounds is rejected by the length limit of its field,
+before pydantic validates any element. A candidate whose child is not
+declared is rejected by a model validator. Both raise a pydantic
+:exc:`~pydantic.ValidationError`. The fixed text of the validator is an
+:exc:`~msgloom.a2_kedro.contracts.codec.A2ContractError` wrapped inside it.
+A malformed model also raises a pydantic error that hides the input. No
 error echoes an ID.
 
 CANDIDATE/RESEARCH, PROVISIONAL: names and limits are not frozen.
@@ -74,7 +84,7 @@ from collections import Counter
 from enum import StrEnum
 from typing import Self
 
-from pydantic import model_validator
+from pydantic import Field, model_validator
 
 from msgloom.a2_kedro.contracts.codec import A2ContractError, Text
 from msgloom.a2_kedro.contracts.relations import (
@@ -88,6 +98,17 @@ from msgloom.a2_kedro.contracts.result_base import ResultPart
 #: Provisional bounds. They exceed the P3-01 record bounds on purpose.
 MAX_REVIEW_NODES = 65536
 MAX_REVIEW_RELATIONS = 65536
+
+#: Closed set of basis texts that may support a ``CONFIRMED`` review. They
+#: are the same-source basis texts that P3-01 writes. Conversation-ID
+#: evidence and every other text are candidate-only.
+CONFIRMABLE_BASES = frozenset(
+    {
+        "same_source:reply_parent",
+        "same_source:ancestor_list",
+        "same_source:quote_marker",
+    }
+)
 
 
 class SafetyStatus(StrEnum):
@@ -104,6 +125,7 @@ class ReviewReason(StrEnum):
     CYCLE = "cycle"
     DUPLICATE_MESSAGE_ID = "duplicate_message_id"
     MISSING_PARENT = "missing_parent"
+    UNCONFIRMABLE_BASIS = "unconfirmable_basis"
 
 
 class CandidateRelation(ResultPart):
@@ -122,16 +144,13 @@ class CandidateRelation(ResultPart):
 class RelationReviewInput(ResultPart):
     """Declared nodes and candidate relations of one review call."""
 
-    nodes: tuple[NodeRef, ...]
-    relations: tuple[CandidateRelation, ...] = ()
+    nodes: tuple[NodeRef, ...] = Field(max_length=MAX_REVIEW_NODES)
+    relations: tuple[CandidateRelation, ...] = Field(
+        default=(), max_length=MAX_REVIEW_RELATIONS
+    )
 
     @model_validator(mode="after")
-    def _bounded_and_declared(self) -> Self:
-        if (
-            len(self.nodes) > MAX_REVIEW_NODES
-            or len(self.relations) > MAX_REVIEW_RELATIONS
-        ):
-            raise A2ContractError("review input exceeds count bound")
+    def _declared_children(self) -> Self:
         declared = set(self.nodes)
         if any(rel.child not in declared for rel in self.relations):
             raise A2ContractError("relation child is not a declared node")
@@ -275,6 +294,8 @@ def review_relations(review: RelationReviewInput) -> RelationSafetyReview:
             reasons.add(ReviewReason.DUPLICATE_MESSAGE_ID)
         if not _same_scope(rel.child, rel.parent):
             reasons.add(ReviewReason.CROSS_SCOPE)
+        if rel.basis not in CONFIRMABLE_BASES:
+            reasons.add(ReviewReason.UNCONFIRMABLE_BASIS)
         items.append(
             RelationReview(
                 relation=rel,

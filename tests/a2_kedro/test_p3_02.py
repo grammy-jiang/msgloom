@@ -44,7 +44,7 @@ def rel(
         kind=kind,  # type: ignore[arg-type]
         child=node(child, child_scope),
         parent=node(parent, parent_scope),
-        basis="same_source:test",
+        basis="same_source:reply_parent",
     )
 
 
@@ -213,7 +213,10 @@ def test_cross_scope_kind_difference_counts() -> None:
             nodes=(child, parent),
             relations=(
                 CandidateRelation(
-                    kind="reply_to", child=child, parent=parent, basis="x"
+                    kind="reply_to",
+                    child=child,
+                    parent=parent,
+                    basis="same_source:reply_parent",
                 ),
             ),
         )
@@ -288,13 +291,17 @@ def test_from_native_record_is_confirmed_and_hypothesis_only() -> None:
     record = NativeRelations(
         nodes=(a, b),
         relations=(
-            Relation(kind="reply_to", source=a, target=b, basis="same_source:x"),
+            Relation(
+                kind="reply_to", source=a, target=b, basis="same_source:reply_parent"
+            ),
         ),
     )
     result = review_relations(RelationReviewInput.from_native(record))
     check(len(result.reviews) == 1, "one review")
     check(result.reviews[0].status is SafetyStatus.CONFIRMED, "clean P3-01 record")
-    check(result.reviews[0].relation.basis == "same_source:x", "evidence kept")
+    check(
+        result.reviews[0].relation.basis == "same_source:reply_parent", "evidence kept"
+    )
     check(result.reviews[0].relation.child == a, "child is the source")
 
 
