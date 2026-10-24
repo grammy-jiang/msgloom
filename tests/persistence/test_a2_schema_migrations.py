@@ -157,13 +157,14 @@ def test_migration_takes_verified_backup_then_reaches_schema5(
     result = migrate_database(schema4, backups, confirm=True)
     check(result.status == "migrated", "status")
     check(state_of(schema4) is SchemaState.SCHEMA5, "must be schema5")
-    check(
-        result.backup_path is not None and result.backup_path.parent == backups, "dir"
-    )
-    check(result.backup_sha256 == file_sha256(result.backup_path), "digest")
-    check(snapshot(result.backup_path) == before, "backup holds schema4 dump")
-    check(state_of(result.backup_path) is SchemaState.SCHEMA4, "backup state")
-    check(result.backup_path.stat().st_mode & 0o077 == 0, "backup mode must be 0600")
+    backup = result.backup_path
+    if backup is None:
+        pytest.fail("a migration must report its backup path")
+    check(backup.parent == backups, "dir")
+    check(result.backup_sha256 == file_sha256(backup), "digest")
+    check(snapshot(backup) == before, "backup holds schema4 dump")
+    check(state_of(backup) is SchemaState.SCHEMA4, "backup state")
+    check(backup.stat().st_mode & 0o077 == 0, "backup mode must be 0600")
     check(schema4.read_bytes() != original, "source must change")
 
 
@@ -360,7 +361,8 @@ def test_injected_commit_failure_rolls_back(
     with pytest.raises(BaseException) as caught:
         migrate_database(schema4, backups, confirm=True)
     if isinstance(error, sqlite3.Error):
-        check(isinstance(caught.value, A2SchemaError), "must map to reason code")
+        if not isinstance(caught.value, A2SchemaError):
+            pytest.fail("must map to reason code")
         check(caught.value.reason == "migration-failed", "reason")
     else:
         check(caught.value is error, "the original exception must surface")
@@ -416,11 +418,13 @@ def test_old_binary_rejects_schema5_and_restore_brings_it_back(
     result = migrate_database(schema4, backups, confirm=True)
     check(not old_binary_accepts(schema4), "schema4 guard must reject schema5")
     check(state_of(schema4) is SchemaState.SCHEMA5, "refusal must not alter file")
-    check(result.backup_path is not None and result.backup_sha256 is not None, "backup")
-    restore_backup(result.backup_path, schema4, result.backup_sha256, confirm=True)
+    backup, digest = result.backup_path, result.backup_sha256
+    if backup is None or digest is None:
+        pytest.fail("a migration must report its backup")
+    restore_backup(backup, schema4, digest, confirm=True)
     check(state_of(schema4) is SchemaState.SCHEMA4, "restored to schema4")
     check(old_binary_accepts(schema4), "old binary accepts the restored file")
-    check(snapshot(schema4) == snapshot(result.backup_path), "restored dump")
+    check(snapshot(schema4) == snapshot(backup), "restored dump")
 
 
 def test_restore_checks_digest_confirmation_and_backup_state(

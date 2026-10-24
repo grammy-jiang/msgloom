@@ -11,6 +11,7 @@ import sqlite3
 import threading
 from collections.abc import Callable, Iterator
 from pathlib import Path
+from typing import Any
 
 import pytest
 
@@ -98,7 +99,7 @@ def db(path: Path) -> Iterator[sqlite3.Connection]:
 
 
 def receipt(
-    identity: StageIdentity, attempt: str = "w1", **changes: object
+    identity: StageIdentity, attempt: str = "w1", **changes: Any
 ) -> PublisherReceipt:
     return PublisherReceipt(
         result_for(identity, attempt=attempt, **changes), proof(attempt)
