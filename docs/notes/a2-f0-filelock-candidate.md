@@ -1,7 +1,6 @@
 # A2 F0 filelock repair candidate
 
-This is a candidate. It is not merged and not approved. It needs an
-independent exact-SHA review before any merge.
+This is a candidate. It is not merged and not approved.
 
 ## Result
 
@@ -79,7 +78,7 @@ Base: `895fc40a0ec889bd96f620df8c62491787218217`, uv 0.12.24.
 | `uv audit --locked ... --python-version 3.13` | 1 |
 | `uv audit --locked ... --python-version 3.14` | 1 |
 
-The audit command matches the CI step in `.github/workflows/ci.yml`,
+The `uv audit` command matches the CI step in `.github/workflows/ci.yml`,
 including its two existing scope-restricted `--ignore-until-fixed` entries.
 This change adds no ignore.
 
@@ -107,7 +106,7 @@ changes.
 
 ## Remaining risks
 
-- The CI audit step stays red until Brotli and Twisted are resolved.
+- The CI `uv audit` step stays red until Brotli and Twisted are resolved.
 - New `filelock` advisories can appear. The advisory data was read on
   2026-10-24.
 - `filelock` is in the runtime closure through `tldextract` (used by
