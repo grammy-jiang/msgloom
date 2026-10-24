@@ -89,22 +89,30 @@ Detected (raw bytes and Flate object streams):
   integer data is already in the raw scan.
 - `page_count_unverified` is set (result `INCOMPLETE`) when an object stream
   cannot be checked:
-  - no stream start follows the word within 8 KiB, the text before the word
-    has no `endobj` and no `N G obj` header, or `endstream` is missing;
+  - the place is ambiguous: no stream start within 8 KiB after the word, no
+    `N G obj` header in the 8 KiB before it (also when the window cut it
+    off), no `endobj` before that header in a cut window, a `%` in the header
+    line, unbalanced `(` and `)` between the header and the stream start, or
+    a second `>>`, white space, `stream` opener before the first `endstream`;
   - more than one `/Filter` key, a filter other than one plain
     `FlateDecode` (single name or one-item array, no comment in it), or a
     `Predictor`, `DecodeParms` or `Crypt` word;
-  - no `/Filter` and stream data that does not start with two integers;
-  - damaged or cut Flate data, or a cap hit.
+  - no `/Filter` and the stream is not a real object stream: exactly one
+    integer `/N` and `/First` (at most 64 KiB), and exactly `N` pairs of
+    integers with strictly increasing offsets in the first `/First` bytes. A
+    stream that passes is plain bytes and the raw scan counts its leaves;
+  - `endstream` missing, damaged or cut Flate data, or a cap hit.
 
 Not detected (residual limits):
 
 - Leaf objects with no `/Type` and no `/Subtype` entry.
 - A comment (`%`) between `/Type` and `/Page` of a leaf.
 - Leaves in an object stream whose dictionary has no `ObjStm` word.
-- A dictionary longer than 8 KiB that holds the `/Filter` key more than 8 KiB
-  before the word `ObjStm`, together with a fake `endobj` and `N G obj` in
-  the last 8 KiB. The scan does not parse PDF strings.
+- A dictionary that is well formed in every check above but hides its
+  `/Filter` before the last `N G obj` header or more than 8 KiB before the
+  word, by a trick other than a string with unbalanced parentheses or a
+  `%` comment in the header line. The scan does not parse PDF syntax.
+- A non-Flate filter is seen only when it is inside the 8 KiB window.
 - Leaves in an object stream with an encrypted body are reported as
   `page_count_unverified`, not counted.
 - False positives (all `INCOMPLETE`): old page revisions (incremental

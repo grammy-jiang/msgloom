@@ -116,3 +116,48 @@ def test_escape_budget_is_a_limitation(monkeypatch: pytest.MonkeyPatch) -> None:
     check(check_page_count(data, 1) is OK, "one escape fits")
     monkeypatch.setattr(pdf_pagecheck, "MAX_ESCAPES", 1)
     check(check_page_count(data, 1) is PageCountVerdict.UNVERIFIED, "budget hit")
+
+
+def _with_prefix(prefix: bytes) -> bytes:
+    data = hidden()
+    mark = b"/Type /ObjStm"
+    check(mark in data, "marker exists")
+    return data.replace(mark, mark + b" " + prefix, 1)
+
+
+@pytest.mark.parametrize(
+    "prefix",
+    [
+        b"/S (>>\nstream\n0 0) /Filter /FlateDecode",
+        b"/S (>>\r\nstream\r\n1 2 3) /Filter /FlateDecode",
+    ],
+)
+def test_fake_opener_in_string_before_filter_is_unverified(prefix: bytes) -> None:
+    data = _with_prefix(prefix)
+    check(b"/S (>>" in data, "fake opener is in place")
+    check(check_page_count(data, 1) is PageCountVerdict.UNVERIFIED, "unverified")
+    result = parse_pdf(data)
+    check(result.status is not TerminalStatus.COMPLETE, "never complete")
+
+
+def test_far_filter_with_fake_header_in_string_is_unverified() -> None:
+    far = b"/Filter /ASCIIHexDecode /Pad (" + b"x" * 9000 + b" endobj 1 0 obj) "
+    data = hidden(stm_filter=b"", payload=b"32 20 30 20 3e")
+    data = data.replace(b"<< /Type /ObjStm", b"<< " + far + b"/Type /ObjStm", 1)
+    check(check_page_count(data, 1) is PageCountVerdict.UNVERIFIED, "unverified")
+    plain = hidden(stm_filter=b"", payload=b"32 20 30 20 3e")
+    check(check_page_count(plain, 1) is PageCountVerdict.UNVERIFIED, "not a header")
+
+
+def test_comment_with_fake_header_is_unverified() -> None:
+    far = b"/Filter /ASCIIHexDecode\n" + b"%" + b"x" * 9000 + b"\n% endobj 1 0 obj\n"
+    data = hidden(stm_filter=b"", payload=b"10 0 11 5 3e")
+    data = data.replace(b"<< /Type /ObjStm", b"<< " + far + b"/Type /ObjStm", 1)
+    check(check_page_count(data, 1) is PageCountVerdict.UNVERIFIED, "unverified")
+
+
+def test_unfiltered_stream_needs_increasing_offsets() -> None:
+    bad = b"3 0 obj\n<< /Type /ObjStm /N 2 /First 8 >>\nstream\n1 5 2 5 \nendstream"
+    good = b"3 0 obj\n<< /Type /ObjStm /N 2 /First 8 >>\nstream\n1 0 2 5 \nendstream"
+    check(check_page_count(bad, 1) is PageCountVerdict.UNVERIFIED, "equal offsets")
+    check(check_page_count(good, 1) is OK, "increasing offsets")

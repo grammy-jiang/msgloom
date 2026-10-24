@@ -46,7 +46,11 @@ filter other than Flate) gives ``PAGE_COUNT_UNVERIFIED``. Neither result is
 the names, the ``/Subtype /Page`` form and ``#xx`` name escapes, in the raw
 bytes and in Flate object streams. It does not find leaves with no
 ``/Type`` entry, a comment between key and value, or leaves in an object
-stream that has no ``/Type /ObjStm``. A result without a mismatch
+stream that has no ``/Type /ObjStm``. An ambiguous object stream (more
+than one stream opener, unbalanced parentheses or a ``%`` near the header,
+a missing ``N G obj`` header, or an unfiltered stream with no real
+object stream header) gives ``PAGE_COUNT_UNVERIFIED``. A filter hidden by a
+trick the scan does not recognize is not found. A result without a mismatch
 limitation is therefore not proof that the page count is right. The scan
 can flag a file with old page revisions or with the token in stream data.
 See ``pdf_pagecheck.py`` for the exact rules.
