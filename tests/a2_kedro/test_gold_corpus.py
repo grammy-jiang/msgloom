@@ -85,10 +85,41 @@ NON_HOST_TOKENS = frozenset(
         "preparation-semantics.md",
         "report.pdf",
         "secret.json",
+        "socket.getaddrinfo",
+        "socket.socket.connect",
         "task15-final-qualification-20261016.md",
         "todo-sync.md",
         "u0000.txt",
     }
+)
+# Token-like strings are allowed only when they are one of these exact fake
+# canaries or one of the pinned SHA-256 digests of T0-08. Every other match
+# of ``SECRET_RES`` fails ``test_no_token_like_strings``. The allowlist is
+# exact and ``test_secret_allowlist_is_exact_and_used`` rejects stale entries.
+FAKE_SECRETS = frozenset({"CANARY-PII-7731-ZQ", "FAKE-TOKEN-0000", "FAKE-TOKEN-0001"})
+PINNED_DIGESTS = frozenset(
+    {
+        "758c90cb56df8dd1071dbf258d612075a8820a10439d57094ce329049a20e7e4",
+        "a98bc1d2108bc72b07d1608e2774c91adbd86ca24705e0bdf137fc4a0314f4db",
+        "ab" * 32,
+    }
+)
+_QUERY_KEYS = (
+    "access_token|refresh_token|id_token|token|sig|signature|client_secret|"
+    "api_key|apikey|password|secret|code"
+)
+SECRET_RES = (
+    # Authorization header value: ``Bearer <value>``. Prose such as "bearer
+    # token" has no digit and is short, so it does not match.
+    re.compile(r"(?i)\bbearer\s+((?=[^\s\"',;]*\d|[^\s\"',;]{20})[^\s\"',;]+)"),
+    # URL query or form parameter that carries a secret.
+    re.compile(rf"(?i)(?:^|[?&;\s\"])(?:{_QUERY_KEYS})=([^&\s\"',;]+)"),
+    # JSON Web Token: two or three base64url segments that start with eyJ.
+    re.compile(r"\beyJ[A-Za-z0-9_-]{8,}\.[A-Za-z0-9_-]{8,}(?:\.[A-Za-z0-9_-]*)?"),
+    # GUID.
+    re.compile(r"(?i)\b[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\b"),
+    # Long opaque run of base64 or hex characters without separators.
+    re.compile(r"(?<![A-Za-z0-9+/_=.-])[A-Za-z0-9+/]{40,}={0,2}(?![A-Za-z0-9+/_=.-])"),
 )
 HOST_RE = re.compile(
     r"(?<![A-Za-z0-9_-])((?:[A-Za-z0-9-]+\.)+[A-Za-z]{2,})(?![A-Za-z0-9_-])"
@@ -135,6 +166,29 @@ def is_reserved_host(host: str) -> bool:
     if host.rsplit(".", 1)[-1] in RESERVED_TLDS:
         return True
     return any(host == d or host.endswith("." + d) for d in RESERVED_SECOND_LEVEL)
+
+
+def bad_secrets(text: str) -> list[str]:
+    """Return token-like strings that are not an allowed fake canary or digest."""
+    found = []
+    for pattern in SECRET_RES:
+        for match in pattern.finditer(text):
+            value = match.group(1) if pattern.groups else match.group(0)
+            if value in FAKE_SECRETS or value in PINNED_DIGESTS:
+                continue
+            found.append(value)
+    return found
+
+
+def _json_strings(node: Any) -> list[str]:
+    """Return every key and string value of a decoded JSON document."""
+    if isinstance(node, str):
+        return [node]
+    if isinstance(node, dict):
+        return [s for k, v in node.items() for s in [k, *_json_strings(v)]]
+    if isinstance(node, list):
+        return [s for item in node for s in _json_strings(item)]
+    return []
 
 
 def _corpus_files() -> list[Path]:
@@ -247,6 +301,14 @@ def test_only_synthetic_domains(path: Path) -> None:
             pytest.fail(f"{path.name} has non-synthetic email domain {email}")
 
 
+@pytest.mark.parametrize("path", _corpus_files(), ids=lambda p: p.name)
+def test_no_token_like_strings(path: Path) -> None:
+    text = "\n".join(_json_strings(load_strict(path)))
+    found = bad_secrets(text)
+    if found:
+        pytest.fail(f"{path.name} has token-like strings: {sorted(set(found))}")
+
+
 def test_manifest_matches_files() -> None:
     entries: dict[str, str] = {}
     for line in MANIFEST.read_text(encoding="utf-8").splitlines():
@@ -326,3 +388,38 @@ def test_non_host_allowlist_is_exact_and_used() -> None:
             pytest.fail(f"allowlist entry {name} is not an exact lowercase name")
         if name not in corpus.lower():
             pytest.fail(f"allowlist entry {name} is unused; remove it")
+
+
+def test_secret_scan_flags_token_like_strings() -> None:
+    samples = (
+        "Authorization: Bearer abc123def456",
+        "GET /v1.0/me?access_token=abc123def456&top=1",
+        "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ4In0.c2ln",
+        "id 123e4567-e89b-12d3-a456-426614174000",
+        "blob QUJDREVGR0hJSktMTU5PUFFSU1RVVldYWVowMTIzNDU2Nzg5",
+        "Bearer FAKE-TOKEN-0000x",
+    )
+    for text in samples:
+        if not bad_secrets(text):
+            pytest.fail(f"secret scan missed {text!r}")
+
+
+def test_secret_scan_accepts_fake_canaries() -> None:
+    samples = (
+        "Authorization: Bearer FAKE-TOKEN-0000",
+        "GET /v1.0/me?access_token=FAKE-TOKEN-0001&top=1",
+        "note CANARY-PII-7731-ZQ",
+        "a bearer token value must never reach a log",
+    )
+    for text in samples:
+        if bad_secrets(text):
+            pytest.fail(f"secret scan flagged {text!r}")
+
+
+def test_secret_allowlist_is_exact_and_used() -> None:
+    corpus = "\n".join(
+        "\n".join(_json_strings(load_strict(p))) for p in _corpus_files()
+    )
+    for value in sorted(FAKE_SECRETS | PINNED_DIGESTS):
+        if value not in corpus:
+            pytest.fail(f"secret allowlist entry {value} is unused; remove it")

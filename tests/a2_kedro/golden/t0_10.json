@@ -6,6 +6,7 @@
   "independence_statement": "PROPOSED POLICY: the Dataset path verdicts in this file are not derived from any cited A1 rule and need owner sign-off. Each hostile path and each leak scenario was chosen by hand from common attack lists. Verdicts (accept or reject) are the plain security answer. No path validator, logger or A2 code was run or imported. The NUL character is written as a JSON escape.",
   "provenance": {
     "sources": [
+      "ADDED CASES P06, P07, N14 to N17 (independent follow-up for review finding M3): hand-written by a language model (Claude Sonnet 5.5 worker). No program produced any value. P06, P07, N16 and N17 are PROPOSED: no cited text defines a loopback exception or a network observable. N14 and N15 are task-goal decisions that extend the A1 rule 'never log the Graph URL or payload' (docs/microsoft-graph-error-handling.md) to A2. Token strings are the fake canaries FAKE-TOKEN-0000 and FAKE-TOKEN-0001.",
       "docs/microsoft-graph-error-handling.md: non-propagating safe logger with bounded purpose/reason/count replacements",
       "docs/dependency-vulnerability-policy.md and msgloom-security-review.md (privacy and dependency stance)",
       "docs/notes/parser-isolation.md (isolated worker, no network)",
@@ -55,6 +56,48 @@
       "title": "Percent-encoded dots are a literal directory name and are never decoded",
       "input": {"kind": "dataset_path", "root": "<tmp>/data", "path": "02_intermediate/%2e%2e/inside.json"},
       "expected": {"accepted": true, "decoded_before_check": false, "resolved_inside_root": true}
+    },
+    {
+      "case_id": "T0-10-P06",
+      "polarity": "positive",
+      "policy_status": "proposed_owner_signoff_needed",
+      "provenance": "PROPOSED POLICY requiring owner sign-off; the cited A1 and blueprint text is silent on this verdict",
+      "title": "Loopback-only network use is allowed; non-loopback outbound connections stay at 0",
+      "input": {
+        "kind": "network_probe",
+        "run": "offline synthetic pipeline run",
+        "connections_made": [{"host": "127.0.0.1", "port": 0, "note": "local test peer"}],
+        "dns_lookups": [{"host": "localhost"}]
+      },
+      "expected": {
+        "loopback_connections_allowed": true,
+        "non_loopback_outbound_connections": 0,
+        "dns_lookups_to_non_loopback": 0,
+        "run_failed": false
+      },
+      "rationale": "PROPOSED. The blueprint (section on Kedro hooks and datasets, architecture line 282) forbids network and Kedro telemetry but does not name a loopback exception. The case proposes that 127.0.0.1, ::1 and localhost are allowed and that every other address counts."
+    },
+    {
+      "case_id": "T0-10-P07",
+      "polarity": "positive",
+      "policy_status": "proposed_owner_signoff_needed",
+      "provenance": "PROPOSED POLICY requiring owner sign-off; the cited A1 and blueprint text is silent on this verdict",
+      "title": "Observable for N13: recording guards on socket.create_connection and socket.getaddrinfo",
+      "input": {
+        "kind": "network_observer",
+        "applies_to": ["T0-10-P03", "T0-10-P06", "T0-10-N13", "T0-10-N16", "T0-10-N17"]
+      },
+      "expected": {
+        "guards_installed": ["socket.create_connection", "socket.getaddrinfo", "socket.socket.connect"],
+        "guard_installed_before_run_starts_and_removed_after_it": true,
+        "guard_behavior": "append the call arguments to a list, then raise OSError so that no packet leaves the host",
+        "outbound_connections_means": "recorded create_connection and connect calls whose address is not 127.0.0.1, ::1 or localhost",
+        "dns_lookups_to_non_loopback_means": "recorded getaddrinfo calls whose host is not 127.0.0.1, ::1 or localhost",
+        "pass_when": {"outbound_connections": 0, "dns_lookups_to_non_loopback": 0},
+        "guard_self_check": "before the run, one getaddrinfo call to a name under example.invalid must be recorded exactly once, then the list is cleared",
+        "known_limit": "the observer sees Python-level calls only; a subprocess or a C extension that opens its own socket is outside it"
+      },
+      "rationale": "PROPOSED. T0-10-N13 states counts of 0 but not how a test sees them. The execution plan (F0-04) asks for socket and real-network deny controls but names no observable. This case fixes one observable so that a consuming test cannot pass because the guard was never installed."
     },
     {
       "case_id": "T0-10-N01",
@@ -172,6 +215,81 @@
       "title": "Kedro usage telemetry or any outbound call during a run is a failure",
       "input": {"kind": "network_probe", "run": "offline synthetic pipeline run"},
       "expected": {"outbound_connections": 0, "dns_lookups_to_non_loopback": 0, "telemetry_consent_prompt": false}
+    },
+    {
+      "case_id": "T0-10-N14",
+      "polarity": "negative",
+      "policy_status": "task_goal_decision",
+      "provenance": "TASK-GOAL DECISION (T0-10 security and privacy). A1 text for A1 logging: docs/microsoft-graph-error-handling.md says arbitrary exception text is not printed. The A2 blueprint (architecture line 282) says user content must not enter names or exception text. No A1 text names the Authorization header for A2.",
+      "title": "An Authorization header or bearer value never reaches a log or a stored error",
+      "input": {
+        "kind": "request_failure",
+        "request_headers": {"Authorization": "Bearer FAKE-TOKEN-0000"},
+        "exception_message": "401 Unauthorized for request with Authorization: Bearer FAKE-TOKEN-0000"
+      },
+      "expected": {
+        "log_contains_bearer_value": false,
+        "stored_error_contains_bearer_value": false,
+        "log_contains_authorization_header_value": false,
+        "stored_status_contains_bearer_value": false
+      },
+      "rationale": "FAKE-TOKEN-0000 is an obviously fake canary. The case checks the value only. It does not fix the replacement text."
+    },
+    {
+      "case_id": "T0-10-N15",
+      "polarity": "negative",
+      "policy_status": "task_goal_decision",
+      "provenance": "TASK-GOAL DECISION (T0-10 security and privacy). A1 text: docs/microsoft-graph-error-handling.md says the Graph diagnostics middleware 'never logs the Graph URL or payload' and that opaque URLs and arbitrary exception text are not printed. The same rule for A2 exceptions is the task goal.",
+      "title": "A Graph-style URL with a query token inside an exception message is redacted before logging",
+      "input": {
+        "kind": "exception",
+        "message": "GET https://graph.example.invalid/v1.0/me/messages?access_token=FAKE-TOKEN-0001&$top=1 failed"
+      },
+      "expected": {
+        "redacted_before_logging": true,
+        "log_contains_token": false,
+        "log_contains_query_string": false,
+        "log_contains_graph_url": false,
+        "stored_status_contains_token": false
+      },
+      "rationale": "FAKE-TOKEN-0001 is an obviously fake canary. The order matters: redaction runs before any log handler sees the text, so a handler that is added later cannot leak it."
+    },
+    {
+      "case_id": "T0-10-N16",
+      "polarity": "negative",
+      "policy_status": "proposed_owner_signoff_needed",
+      "provenance": "PROPOSED POLICY requiring owner sign-off; the cited A1 and blueprint text is silent on this verdict",
+      "title": "One non-loopback outbound connection fails the run",
+      "input": {
+        "kind": "network_probe",
+        "run": "offline synthetic pipeline run",
+        "connections_made": [{"host": "graph.example.invalid", "port": 443}]
+      },
+      "expected": {
+        "run_failed": true,
+        "reason": "non_loopback_outbound_connection",
+        "recorded_non_loopback_connections": 1,
+        "allowed_non_loopback_connections": 0
+      }
+    },
+    {
+      "case_id": "T0-10-N17",
+      "polarity": "negative",
+      "policy_status": "proposed_owner_signoff_needed",
+      "provenance": "PROPOSED POLICY requiring owner sign-off; the cited A1 and blueprint text is silent on this verdict",
+      "title": "A DNS lookup of a non-loopback name fails the run even when no connection follows",
+      "input": {
+        "kind": "network_probe",
+        "run": "offline synthetic pipeline run",
+        "connections_made": [],
+        "dns_lookups": [{"host": "files.example.invalid"}]
+      },
+      "expected": {
+        "run_failed": true,
+        "reason": "non_loopback_dns_lookup",
+        "recorded_dns_lookups_to_non_loopback": 1,
+        "allowed_dns_lookups_to_non_loopback": 0
+      }
     }
   ]
 }

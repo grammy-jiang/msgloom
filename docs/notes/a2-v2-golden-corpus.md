@@ -18,13 +18,21 @@ The supervisor changed the path to `golden/`.
 | `t0_07.json` | Crash, restart, late write, cancel: accepted prefix, replay | 10 | 7 |
 | `t0_08.json` | Historical prepared@1 reader, prepared@2 mapping, no lossy projection | 13 | 38 |
 | `t0_09.json` | Prefect lost, duplicate hint, partial A1 finish | 6 | 8 |
-| `t0_10.json` | Node.run logger, PII canary, telemetry, illegal paths | 5 | 13 |
+| `t0_10.json` | Node.run logger, PII canary, telemetry, illegal paths, token and URL redaction, loopback allowance, network observable | 7 | 17 |
 
 Cases T0-02-P06 to P09, N07, N08, T0-03-P06 to P08, N07 to N09 and
 T0-04-P06 to P08, N06, N07 were added after the T0-11 review (finding M2).
 A language model wrote them by hand from the cited A1 notes. No program
 produced any value. Six of them carry a `policy_status` marker because the
 A1 text is silent.
+
+Cases T0-10-P06, P07 and N14 to N17 were added after the T0-11 review
+(finding M3). A language model wrote them by hand. All six carry a
+`policy_status` marker. N14 and N15 use the fake canaries `FAKE-TOKEN-0000`
+and `FAKE-TOKEN-0001`. T0-10-P07 states how a consuming test observes "0
+outbound connections, 0 DNS lookups": recording guards on
+`socket.create_connection`, `socket.getaddrinfo` and `socket.socket.connect`,
+installed before the run, with a self-check call before the run.
 
 ## Independence rules
 
@@ -34,7 +42,7 @@ A1 text is silent.
    exception exists: the two pinned digests (SHA-256 and byte count) in
    T0-08-P01 and T0-08-P02 were computed with `json` and `hashlib` from the
    base payload in the file and compared with the A1 v1 codec output. No human
-   has reviewed the corpus. The 29 cases that carry a `policy_status` marker
+   has reviewed the corpus. The 35 cases that carry a `policy_status` marker
    need owner sign-off (see `a2-v2-golden-decisions.md`). Do not describe the
    corpus as human-annotated or human-reviewed.
 2. The author reads only A1 code names, A1 docs, the A1 spec and A1 tests. The
@@ -135,8 +143,11 @@ The cases name the status in their provenance or rationale.
 `tests/a2_kedro/test_gold_corpus.py` checks structure and the manifest only. It
 checks strict JSON (duplicate keys fail), required fields, unique case IDs,
 both polarities per file, positive cases before negative cases, non-empty
-provenance and independence text, and reserved synthetic hosts only. It does
-not check behavior.
+provenance and independence text, and reserved synthetic hosts only. It also
+rejects token-like strings (bearer values, secret query parameters, JSON Web
+Tokens, GUIDs, long opaque runs) unless they are on an exact allowlist of
+fake canaries (`CANARY-PII-7731-ZQ`, `FAKE-TOKEN-0000`, `FAKE-TOKEN-0001`)
+or the three pinned T0-08 digests. It does not check behavior.
 
 ## How implementation tests consume the oracle
 

@@ -22,7 +22,13 @@ TASK_GOAL = "task_goal_decision"
 EXPECTED_STATUS = {
     "T0-10-P01": PROPOSED,
     "T0-10-P05": PROPOSED,
+    "T0-10-P06": PROPOSED,
+    "T0-10-P07": PROPOSED,
     **{f"T0-10-N{n:02d}": PROPOSED for n in range(1, 11)},
+    "T0-10-N14": TASK_GOAL,
+    "T0-10-N15": TASK_GOAL,
+    "T0-10-N16": PROPOSED,
+    "T0-10-N17": PROPOSED,
     "T0-09-N08": PROPOSED,
     "T0-08-N37": PROPOSED,
     "T0-07-P05": TASK_GOAL,

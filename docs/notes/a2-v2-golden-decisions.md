@@ -94,6 +94,29 @@ a hand derivation. The `provenance` and `rationale` fields give the source.
   quarantine state for a truncated record. Then the cases must change, with a
   new reviewer and a new manifest line.
 
+### 7. T0-10 network allowance and observable: PROPOSED, owner sign-off needed
+
+- Cases: T0-10-P06, T0-10-P07, T0-10-N16, T0-10-N17.
+- Status: `proposed_owner_signoff_needed`.
+- Rationale: The blueprint forbids network use and Kedro telemetry but names
+  no loopback exception and no observable. The cases propose that 127.0.0.1,
+  ::1 and localhost are allowed, that any other connection or DNS lookup
+  fails the run, and that a consuming test sees them through recording
+  guards on `socket.create_connection`, `socket.getaddrinfo` and
+  `socket.socket.connect`.
+- Risk if wrong: The owner may want no loopback exception, or a different
+  observer such as a network namespace. Then the cases must change, with a
+  new reviewer and a new manifest line.
+
+### 8. T0-10 token and URL redaction: task-goal decision
+
+- Cases: T0-10-N14, T0-10-N15.
+- Status: `task_goal_decision`.
+- Rationale: The A1 Graph error note says the A1 diagnostics middleware never
+  logs the Graph URL or payload and prints no arbitrary exception text. The
+  A2 task goal extends that rule to an Authorization header value and to a
+  query token inside an exception message. No A1 text states it for A2.
+
 ## T0-07 decisions
 
 The full text is in `a2-v2-golden-t0-07.md`.
