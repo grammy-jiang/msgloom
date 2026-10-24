@@ -24,8 +24,7 @@ from __future__ import annotations
 
 import hashlib
 import json
-from collections.abc import Callable
-from dataclasses import dataclass
+from dataclasses import asdict, dataclass
 from typing import Annotated, Any, Literal, Protocol
 
 from pydantic import Field, model_validator
@@ -42,7 +41,10 @@ from msgloom.preparation_pipeline.intake_models import (
     IntakeSelection,
     PreparationIntakeWorkset,
 )
+from msgloom.sources._snapshot import CollectedSelectionCodec
 from msgloom.sources.handoff_models import ReleaseEntryRef
+from msgloom.sources.models import CollectedSelection
+from msgloom.sources.release_models import ReleasedInput
 
 Index = Annotated[int, Field(ge=0, le=1023)]
 
@@ -107,26 +109,31 @@ class ReleaseReader(Protocol):
         ...
 
 
-def evidence_from_released(
-    released: Any, encode: Callable[[Any], bytes]
-) -> OccurrenceEvidence:
+def evidence_from_released(released: ReleasedInput) -> OccurrenceEvidence:
     """
-    Project a released input into :class:`OccurrenceEvidence`.
+    Project a real :class:`ReleasedInput` into :class:`OccurrenceEvidence`.
 
-    ``released`` needs ``reference``, ``facts`` (with ``fact_id`` and
-    ``role``), ``selection`` and ``components``. ``encode`` is the
-    canonical selection encoder, for example
-    ``CollectedSelectionCodec().encode``. The function mutates nothing.
+    The projection always uses the A1 ``CollectedSelectionCodec``. A caller
+    cannot supply an encoder, so a caller cannot choose the bytes that are
+    hashed. A value that is not a ``ReleasedInput`` raises
+    :exc:`A2ContractError`. Two equal occurrence digests are ambiguous and
+    also raise. The function mutates nothing.
     """
+    if not isinstance(released, ReleasedInput):
+        raise A2ContractError("released input is not an A1 ReleasedInput")
+    codec = CollectedSelectionCodec()
     values = tuple(
         value
         for value in (released.selection, *released.components)
         if value is not None
     )
+    digests = tuple(sha256_hex(codec.encode(value)) for value in values)
+    if len(set(digests)) != len(digests):
+        raise A2ContractError("release repeats one selection occurrence")
     return OccurrenceEvidence(
         reference=released.reference,
         members=tuple((fact.fact_id, fact.role) for fact in released.facts),
-        occurrence_sha256=tuple(sha256_hex(encode(value)) for value in values),
+        occurrence_sha256=digests,
         has_primary=released.selection is not None,
     )
 
@@ -134,18 +141,23 @@ def evidence_from_released(
 class ReadOnlyOccurrenceAdapter:
     """Read exact occurrence evidence through an injected A1 reader."""
 
-    def __init__(self, reader: ReleaseReader, encode: Callable[[Any], bytes]) -> None:
+    def __init__(self, reader: ReleaseReader) -> None:
         self._reader = reader
-        self._encode = encode
 
     async def evidence(self, entry: ReleaseEntryRef) -> OccurrenceEvidence:
         """
         Re-read ``entry`` and return its evidence snapshot.
 
+        The reader must return a real ``ReleasedInput`` whose reference
+        equals ``entry``. Any other answer raises :exc:`A2ContractError`.
+
         CANDIDATE/RESEARCH: read-only, not production-ready.
         """
         released = await self._reader.read_entry(entry)
-        return evidence_from_released(released, self._encode)
+        evidence = evidence_from_released(released)
+        if evidence.reference != entry:
+            raise A2ContractError("reader answered a different release entry")
+        return evidence
 
 
 def _ordinal_identity(
@@ -240,4 +252,42 @@ def baseline_root(
         selection_sha256=selection_sha256,
         baseline_source=workset.baseline_sources[index],
         baseline_approval=approval,
+    )
+
+
+def verify_baseline_selection(
+    workset: PreparationIntakeWorkset, index: int, value: CollectedSelection
+) -> FrozenRoot:
+    """
+    Build a baseline root only from a real :class:`CollectedSelection`.
+
+    The digest comes from the A1 ``CollectedSelectionCodec``, never from the
+    caller. The value must name the approved source at ``index`` and must
+    reproduce the saved baseline selection identity.
+
+    CANDIDATE/RESEARCH: the identity formula mirrors the historical
+    baseline admission code. A public A1 verifier is still missing.
+    """
+    if not isinstance(value, CollectedSelection):
+        raise A2ContractError("baseline value is not a CollectedSelection")
+    if workset.baseline_approval is None:
+        raise A2ContractError("workset is not an approved baseline")
+    if not 0 <= index < len(workset.baseline_sources):
+        raise A2ContractError("baseline index is outside the frozen scope")
+    if value.source != workset.baseline_sources[index]:
+        raise A2ContractError("baseline selection names another source")
+    expected = "intake-baseline-selection:" + _plain_digest(
+        [
+            workset.scope.claim_key(),
+            asdict(value.selection),
+            workset.configuration_version,
+            workset.code_version,
+        ]
+    )
+    if workset.baseline_selections[index].result_id != expected:
+        raise A2ContractError("baseline selection identity does not match")
+    return baseline_root(
+        workset,
+        index,
+        selection_sha256=sha256_hex(CollectedSelectionCodec().encode(value)),
     )

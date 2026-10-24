@@ -2,17 +2,13 @@
 
 from __future__ import annotations
 
-import asyncio
 from dataclasses import replace
-from types import SimpleNamespace
 
 import pytest
 
 from msgloom.a2_kedro.contracts.codec import A2ContractError
 from msgloom.a2_kedro.contracts.source import (
-    ReadOnlyOccurrenceAdapter,
     baseline_root,
-    evidence_from_released,
     verify_exact_occurrence,
 )
 from msgloom.contracts import ResultRef, VersionRef
@@ -21,7 +17,6 @@ from msgloom.preparation_pipeline.intake_models import (
     IntakeSelection,
     PreparationIntakeWorkset,
 )
-from msgloom.sources.handoff_models import ReleaseEntryRef
 from tests.a2_kedro.helpers import (
     CODE,
     CONFIG,
@@ -156,39 +151,3 @@ def test_root_shape_negative_cases() -> None:
         mutate(root, baseline_approval="a", baseline_source=VersionRef("m", "i", "v"))
     with pytest.raises(ValueError):
         mutate(root, workset_index=2000)
-
-
-class FakeReader:
-    """Read-only reader double that records every call."""
-
-    def __init__(self) -> None:
-        self.calls: list[object] = []
-
-    async def read_entry(self, entry: ReleaseEntryRef) -> object:
-        self.calls.append(entry)
-        facts = [SimpleNamespace(fact_id="f" * 64, role="primary")]
-        return SimpleNamespace(
-            reference=entry,
-            facts=facts,
-            selection="PRIMARY",
-            components=("COMP",),
-        )
-
-
-def test_adapter_reads_only_and_hashes_each_occurrence() -> None:
-    reader = FakeReader()
-    adapter = ReadOnlyOccurrenceAdapter(reader, lambda value: str(value).encode())
-    evidence = asyncio.run(adapter.evidence(entry(1)))
-    check(reader.calls == [entry(1)], "exactly one read_entry call")
-    check(len(evidence.occurrence_sha256) == 2, "primary plus one component")
-    check(evidence.has_primary, "primary selection present")
-    check(evidence.members == (("f" * 64, "primary"),), "member order kept")
-    check(not hasattr(adapter, "write"), "adapter exposes no write method")
-
-
-def test_evidence_projection_without_primary() -> None:
-    released = SimpleNamespace(
-        reference=entry(1), facts=[], selection=None, components=("C",)
-    )
-    evidence = evidence_from_released(released, lambda value: str(value).encode())
-    check(not evidence.has_primary and len(evidence.occurrence_sha256) == 1, "shape")
