@@ -15,8 +15,10 @@ legitimate writers racing on one key produce one accepted row. Conflict
 attempts are committed before the conflict is raised, so the attempt row
 survives while the original accepted row stays unchanged.
 
-Failure handling: any exception inside a transaction rolls it back. A
-replay by the same execution and attempt is idempotent.
+Failure handling: any exception inside a transaction, including a failed
+``COMMIT`` and a ``BaseException``, rolls it back on a best-effort basis
+(:func:`msgloom.persistence.a2_txn.rollback_quietly`). A secondary rollback
+error never masks the original exception. A replay by the same execution and attempt is idempotent.
 
 Not covered here (future guarded hooks, see the C0 v2 note): live claim
 checks, ``required_inputs`` plan checks, stored semantic-data byte checks,
@@ -46,6 +48,7 @@ from msgloom.persistence.a2_acceptance_models import (
     decide_append_or_verify,
 )
 from msgloom.persistence.a2_sqlite_ddl import MARKER, STATEMENTS
+from msgloom.persistence.a2_txn import rollback_quietly
 
 MAX_RECEIPT_BYTES = 1024 * 1024
 BUSY_TIMEOUT_SECONDS = 10.0
@@ -78,6 +81,7 @@ class A2ResearchStore:
             )
             connection.execute("COMMIT")
         except BaseException:
+            rollback_quietly(connection)
             connection.close()
             path.unlink(missing_ok=True)
             raise
@@ -124,10 +128,10 @@ class A2ResearchStore:
         self._db.execute("BEGIN IMMEDIATE")
         try:
             yield
+            self._db.execute("COMMIT")
         except BaseException:
-            self._db.execute("ROLLBACK")
+            rollback_quietly(self._db)
             raise
-        self._db.execute("COMMIT")
 
     def _load(self, logical_key: str) -> AcceptedStage | None:
         row = self._db.execute(

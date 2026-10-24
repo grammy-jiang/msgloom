@@ -9,14 +9,20 @@ table names, constraints and migration belong to the database owner
 
 Constraints enforce the shape the Python models already check, so a direct
 SQL write cannot store a malformed key, digest or status either.
+
+Relation to :mod:`msgloom.persistence.a2_schema` (C0-11b): that module owns
+the candidate production DDL (``phase1_a2_*``, schema 5 migration). This
+module stays the scratch-file DDL of the research store, kept separate so the
+existing research store and its tests do not depend on schema 4. The two
+share the digest CHECK fragment so the hex rule has one definition.
 """
 
 from __future__ import annotations
 
+from msgloom.persistence.a2_schema import hex64_check
+
 #: Marker value stored in ``a2c0_meta`` so a file is recognizably ours.
 MARKER = "a2-c0-research-store@1"
-
-_HEX64 = "length({col}) = 64 AND {col} NOT GLOB '*[^0-9a-f]*'"
 
 STATEMENTS: tuple[str, ...] = (
     "CREATE TABLE a2c0_meta (key TEXT PRIMARY KEY, value TEXT NOT NULL)",
@@ -28,7 +34,7 @@ STATEMENTS: tuple[str, ...] = (
         kind TEXT NOT NULL,
         schema_version TEXT NOT NULL,
         status TEXT NOT NULL CHECK (status IN ('complete', 'incomplete')),
-        record_sha256 TEXT NOT NULL CHECK ({_HEX64.format(col="record_sha256")}),
+        record_sha256 TEXT NOT NULL CHECK ({hex64_check("record_sha256")}),
         record_json TEXT NOT NULL CHECK (length(record_json) <= 16384),
         CHECK (result_id = logical_key)
     )""",
@@ -48,7 +54,7 @@ STATEMENTS: tuple[str, ...] = (
         workset_id TEXT NOT NULL,
         policy_version TEXT NOT NULL,
         status TEXT NOT NULL CHECK (status IN ('complete', 'incomplete')),
-        receipt_sha256 TEXT NOT NULL CHECK ({_HEX64.format(col="receipt_sha256")}),
+        receipt_sha256 TEXT NOT NULL CHECK ({hex64_check("receipt_sha256")}),
         receipt_json TEXT NOT NULL CHECK (length(receipt_json) <= 1048576),
         PRIMARY KEY (workset_id, policy_version)
     )""",
