@@ -1,0 +1,80 @@
+DECISION: REVISE
+REVIEWED_SHA: d2f02feeef6f15e7f898575a19ffe9d69b527f08
+
+I used Read, Grep and Glob only. I wrote nothing and ran no commands. I checked the Kedro/CVE/bridge items only as stated Q0 gates, not as defects. Two blockers remain, and both are doc-only fixes.
+
+## R4 A–D closure matrix
+
+| R4 | Status | Evidence |
+|---|---|---|
+| A. Acceptance key used output digest | **CLOSED** | corrections:133-171 and design:175-181 make the key input-lineage only. It explicitly excludes output digest, timestamp, node name and attempt. The digest is stored separately and a conflict is rejected (item 2). Append-or-verify must be atomic (item 4). Restart skips already-accepted stages (item 5). Plan C0.12 and AUTO-23 test it. Source supports the pattern (`intake.py:363-366`, deterministic selection conflict at `:323`). Residual: see P2-1. |
+| B. Source/cursor anchor errors not classifiable | **OPEN, one contradiction** | The wrapper approach is viable (details below). But design §9 contradicts the corrections note (P1-1). |
+| C. No durable disposition for A2-held selections | **CLOSED at design level** | `a2_input_disposition@1` and `a2_completion_receipt@2` are mandatory (corrections:178-222; design:183-189, 236-242). Exact one-disposition coverage and replay as a new append-only attempt are stated. Source shows why: `intake_completion.py:174-179` requires `prepared` per root, `:262` pins schema_version "1", `:331` requires coverage. Corrections:221, 253-256 and design:17-20 say this is proposed, not in master, and needs a separate migration and review. |
+| D. AUTO-15..22 not in the gate | **CLOSED for gate and table, stale residue elsewhere** | AUTO-01..25 sit in one contiguous table (handoff:137-165). V16 (impl:246) and impl:12 cite AUTO-01–AUTO-25. Stale references remain (P1-2). |
+
+## P1 blocking findings
+
+**P1-1. Contradictory SourceReferenceError mapping.**
+- corrections:66, 72-81, impl C0.13 (`:138`) and handoff:101-108 say all escaped `SourceReferenceError` map to BLOCKED under one code. They say no subclass is needed and no exception-text parsing is allowed.
+- design:223-234 (§9) says the translator must distinguish typed "catalog-identity/anchor/behind-cursor trust errors from ordinary missing evidence or malformed source associations", with only the former BLOCKED. It then says a "narrow typed subclass of SourceReferenceError at the existing accepted intake validation points… is a separately reviewed C0 task". It also forbids "treating every SourceReferenceError as an anchor mismatch".
+- design:13-22 repeats the "distinguish" framing.
+- These are incompatible rules, and the subclass would edit `intake.py`, which design §3 and the ADR treat as frozen. A coder cannot tell whether to add a subclass or map everything to one code.
+- Source evidence for the conservative approach:
+  - Escaping plain `SourceReferenceError` sites in `intake.py` are `:105`, `:116`, `:119`, `:253`, `:264`, `:323` and `:325`.
+  - Sites at `:189` and `:412` are caught at `:190` and become held `materialization_failed`, so they never escape.
+  - `ClaimUnavailableError` (`errors.py:24`) and `StaleClaimError` (`errors.py:28`) are separate classes.
+  - The pin mismatch is a wrapper-owned `ValueError` (`scheduled.py:76`), so it can be a preflight.
+  - So the single-code wrapper is implementable without touching intake.
+- Fix: rewrite design §9 and the lines 13-22 header to match the corrections note. State that a subclass is not required, and either delete the subclass sentence or mark it a separate future refinement.
+- Also state that escaped `:253`, `:264`, `:323` and `:325` (invariant failures) are intentionally BLOCKED. Row 68 of the table says invariant failure maps to FAILED, which overlaps.
+
+**P1-2. Stale and non-existent AUTO range in cited docs.**
+- `a2-kedro-readiness-audit-20261023.md:111` says "AUTO-01 to AUTO-26 gates".
+- `a1-kedro-handoff-activation-20261023.md:9` says "AUTO-01 through AUTO-26 acceptance gates".
+- There is no AUTO-26. The gate is AUTO-01..25 (handoff:165, V16). Both docs are linked from the design (`design:11`, `design:10`). A coder can't tell whether a 26th gate is missing.
+- Fix: change both to AUTO-01..25. Also change corrections:226 ("AUTO-01 through AUTO-22 are in the companion plan") to say all 25 are there.
+
+## P2 recommendations
+
+1. **Output-digest conflict.**
+   - The conflict outcome is not in the status table.
+   - A nondeterministic parser would conflict on every automatic retry and spin.
+   - Assign it a terminal code, either FAILED `scheduled-persistence-failed` with no automatic retry or an A2-held reason.
+2. **Reader errors during Kedro processing.**
+   - State that the dataset adapter must catch `SourceReaderError`, including `SourceReferenceError`, from `read_entry`. It should turn these into `a2_input_disposition@1` (`source_evidence_unavailable`), not let them escape as BLOCKED.
+   - Only errors escaping from intake or the preflight should map to `source-reference-invalid`. Corrections:66 says "from accepted intake/reader", which is ambiguous.
+3. **Intake-held coverage in the receipt.**
+   - Legacy `validate_completion` accepts a held-only workset with no frozen selections (`:252`, `:331`). `completion_receipts` skips the status check when no proofs exist (`:183`).
+   - Corrections:201-203 requires INCOMPLETE for held entries, but the §5 receipt bullet and design:183-189 don't list it.
+   - Make the rule part of the `a2_completion_receipt@2` contract: if `workset.held` is non-empty, the receipt requires INCOMPLETE.
+4. **Scope-status "blocking code" source.**
+   - Nothing in master persists BLOCKED outcomes.
+   - Say whether the read-only command recomputes the anchor and pin checks or reads a new record. A new record would no longer be read-only.
+5. **Replay target.**
+   - Corrections:211-217 allows "original workset (or derived workset)". C0.14 should choose one, because the store has a single terminal finalization per workset.
+6. **Mid-pending upgrade (item 6).**
+   - Name the migration mechanism for AUTO-25.
+   - Drain-before-cutover on the old engine is consistent with "one production path". "Approved versioned migration" is not defined.
+7. **Doc cleanup.**
+   - The handoff table has duplicated header rows at 137-140.
+   - AUTO-24 does not itself list the held-only case that corrections:239-240 says to cover. AUTO-20 does cover it.
+
+## What I verified
+- **A:** The input-only key, separate digest, conflict rejection and restart-skip are all in corrections, design and plan C0.12.
+- **B:** The raise sites above, plus the distinct claim exceptions and the pin preflight.
+- **C:** The held reasons emitted are only `byte_limit` and `materialization_failed` (the `query_limit` emission wasn't checked). `materialization_failed` is coarse (corrections:41-46 matches `intake.py:190-199`). Teams `context_refresh` is emitted even when a primary exists (`intake.py:162-177`, matching corrections:23). Saved-selection ordinal identity is recomputable (corrections:28-38).
+- **ETL ownership:** The design (§4-5) has a nine-node DAG with parse and save via `AbstractDataset`. Controller-side parse is prohibited (`design:101`). A decorative DAG is an automatic NO-GO (`design:292`). The intake, cursor and reader stay A1-owned. This is a coherent main-ETL architecture.
+- **Prefect wake and recovery:** The wake is advisory and the ledger plus cursor are authoritative (handoff:53). There is periodic reconciliation (`:63`), claim-based dedup (`:97`), and no backfill (`:131`, AUTO-09). There is no A1 hook. Capped backoff and no-progress tracking appear at corrections:105.
+- **Claims and lease:**
+  - Config enforces L > E+1s (`models.py:271`).
+  - The `E+(L−E)/2` outer bound is at `scheduled.py:187-191`.
+  - Four claim scopes are defined, and the partition key excludes attempt.
+  - The Kedro worker is NO-GO if bounded drain can't be proven.
+  - This is realistic, with the proof deferred to Q0 (impl Q0.5-Q0.7, P1.8).
+- **Failure states:** Terminal INCOMPLETE is not re-selected (`intake_store.py:244-245`). Finalization accepts only COMPLETE or INCOMPLETE (`:348`). The new held and replay semantics are consistent with that.
+
+## D4 design verdict
+**NO-GO (REVISE).** Fix P1-1 and P1-2, which are doc edits only. No re-architecture is needed. A short re-review of the new exact SHA should be able to ACCEPT.
+
+## Q0 and runtime implementation gate (separate)
+**NO-GO.** This does not count against D4. Open items are Kedro 1.7.0 wheel and API verification, the CVE-2026-3840 vs CVE-2026-35167 reconciliation, the async bridge and bounded-drain PoC (Q0.5-Q0.7), and Pi/Python 3.12-3.14 validation. Also open are the C0 persistence migrations (result uniqueness and acceptance store, `a2_input_disposition@1`, `a2_completion_receipt@2`, the A3 adapter), the scope-status CLI, and the Prefect wrapper. None exists in master, and the docs say so honestly.

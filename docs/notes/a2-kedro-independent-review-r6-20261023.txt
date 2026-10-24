@@ -1,0 +1,36 @@
+DECISION: ACCEPT
+REVIEWED_SHA: 878121fa9ab7ca35754b36d824440a77e92f5f4d
+
+I read the documents only. I did not run tests or any runtime. I spot-checked the raise sites in `intake.py` by grep.
+
+## R5 blockers
+
+**P1-1 (SourceReferenceError mapping): CLOSED.**
+- Design lines 228–235 now say every escaped `SourceReferenceError` from intake/preflight is BLOCKED/source-reference-invalid. They list raise sites 105, 116, 119, 253, 264, 323 and 325, and say no new subclass, cursor probe or text matching is needed. The "narrow typed subclass" and "don't treat every error as an anchor mismatch" text from R5 is gone. The only "subclass" hits in the A2 docs are the explicit no-subclass statements (design:234, impl:23, corrections:76 and :91).
+- Design lines 240–245 send post-intake Dataset re-read errors (`SourceReaderError`, including `SourceReferenceError`) to an A2-held disposition, with no fallback to current A1 projections. This matches corrections:73–81.
+- Four documents agree: corrections:66 and :83–92, handoff:101–106, impl C0.13 (line 142) and impl:20–24.
+- Unexpected storage failures are FAILED (design:238–239, corrections:68). Claim busy is INCOMPLETE and stale claim is FAILED.
+
+**P1-2 (stale AUTO-26): CLOSED.**
+- The handoff table has exactly 25 `| AUTO-nn |` rows (grep count 25, one file), AUTO-01 to AUTO-25.
+- V16 (impl:250) and impl:12 cite 25. The activation note (:9), the audit (:112) and corrections:257 also say 25.
+- A grep for AUTO-26 and the stale ranges in non-review docs finds nothing. The audit's line 22 mention of "AUTO-26" is its own description of R5, which is fine.
+
+## Other contract items
+- **Receipt:** it requires exactly one prepared@2 or A2-held disposition per root, plus scoped transitions (corrections:216–221). Nonempty `workset.held` forces INCOMPLETE (:222–228), which covers intake-held-only. A2-held-only is covered at :242 and in AUTO-20 and AUTO-24. Terminal INCOMPLETE is not re-selected from the pending index, and replay appends new records (:236–248).
+- **Result key:** the key is input-only and excludes the output digest and attempt ID (:158–169). A conflicting digest is rejected, accepted stages are skipped on restart, and the AUTO-23 gate covers it.
+- **Sequence gaps:** global gaps are valid (corrections:39–41, impl C0.9 and C0.13, AUTO-17).
+- **Boundaries:** Kedro owns the ETL DAG and Prefect is an external finite-CLI wakeup (design:60, :64, :99, :276). A1 ledger, reader and intake stay untouched.
+
+## New P1 blockers
+None.
+
+## P2 (nonblocking)
+1. The BLOCKED row at corrections:66 lists "invariant violation" while the FAILED row at :68 says "persistence/invariant failure". Design:233 and :238 resolve this: a `SourceReferenceError` invariant is BLOCKED, any other is FAILED. Add one clarifying phrase to :68.
+2. Corrections:273 says "typed `SourceReferenceError` catch". It means a catch by exception class. Reword it to avoid reviving the typed-subclass idea.
+3. `intake.py:189` ("Release has no intake disposition") and `:412` (unsupported transition reason) also raise `SourceReferenceError`. They are not in the design's site list, but the "every escaped" rule covers them. Add them to the list or soften it to "e.g.".
+4. Whether `scheduled.py` can distinguish preflight-escaped errors from post-intake Dataset errors is an implementation detail for C0.13, not a design defect.
+
+## Verdicts
+- **D4 architecture/spec design: ACCEPT.** The two R5 blockers are fixed and I found no new contradictions.
+- **Q0 / implementation: still NOT cleared.** The pinned Kedro 1.7.0 runtime, wheel hash, CVE-2026-3840 vs CVE-2026-35167 reconciliation, and async-bridge PoC are unrun. They block implementation, not this design acceptance, and no implementation or runtime claim is made.

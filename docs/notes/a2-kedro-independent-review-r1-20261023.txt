@@ -1,0 +1,110 @@
+DECISION: REVISE
+REVIEWED_SHA: 37f588676404a92b5d4e521a25d513070df42efc
+
+I read the documents and code listed below. I ran no tests, used no network and edited nothing. I could not check the two Kedro CVE records, so every advisory claim below is unverified.
+
+The ownership split (A1/intake outside Kedro, a pure DAG inside, claims and persistence outside) is sound. The 20-spider count and the 13-scenario list are correct. No P0 findings. There are 9 P1 findings that block code implementation, and 8 P2 improvements.
+
+## P1 findings (block code implementation unless noted)
+
+**1. Workset scope contradicts the legacy batching, so group scopes and duplicate handling are undefined.**
+- Evidence: design.md:68 says "one frozen workset is the outer unit". Legacy `scheduled.py:236-250` splits a workset into separate `PreparationHandler.run` calls at `max_records` (default 100, `configuration/models.py:229`). It also splits wherever the same source version repeats across release entries. `group_records` raises on duplicate source versions (`grouping.py:426-428`). Each batch gets its own claim (`handler.py:277-287`).
+- Risk: grouping the whole workset in one DAG run changes group membership, because legacy groups never cross a batch. It also breaks design.md:171 ("zero unreviewed differences"). An implementer would have to invent duplicate-version handling.
+- Fix: state the batch rule, the duplicate-version rule and the group-scope rule. Either keep the legacy batch boundaries or declare the change as an explicit policy change with oracle expectations.
+
+**2. The parse-planning half of the legacy code has no home, so building `A2ExecutionInput` is unspecified.**
+- Evidence: `record_steps.py:112-275` decides which bodies and attachments are parsed. It captures derived bytes (including the metadata JSON artifact), attributes limitations per record, and enforces cumulative derived-byte and parser-output budgets (`:381-386`, `:457-459`). The design says only "parser boundary" (design.md:41) and "do not copy RecordSteps".
+- Risk: this is most of the 460 lines, and it is effectful. After it is moved to the controller, `assemble_prepared_records` is little more than a combiner.
+- Fix: add a design section for a controller-side "parse planning and execution" step. It needs inputs, outputs, limitation codes and budget semantics. Say which legacy behaviours are preserved verbatim.
+
+**3. Component-only, context-only and transition-only handling is asserted but not defined, and `A2SourceCut` duplicates an existing type.**
+- Evidence:
+  - design.md:54-55 and :64 say these shapes "must have defined handling", and plan:105 (C0.5) says "define transition/context-only output path", but neither document specifies it.
+  - `PreparationIntakeWorkset` (`intake_models.py:138-245`) already holds entries, selections, transitions and held entries.
+  - Legacy intake turns `released.selection` plus `released.components` into selections (`intake.py:180-187`). `released.contexts` are never stored in the workset (`release_models.py:47-48`). Only `control_context` facts become `context_refresh` transitions (`intake.py:157-177`).
+  - Teams component facts become parent `context_refresh` transitions (`intake.py:159-177`).
+  - `prepared_transitions@1` is a pass-through of `workset.transitions` (`transitions.py:96`) under its own separate claim (`:104`). No DAG work exists there, yet design.md:60 puts "transition preparations" in `A2ExecutionOutput`.
+- Risk: "supporting context references" in `A2ExecutionInput` (design.md:55) have no source in the workset. Components are prepared as independent records, which sits uneasily with "a component-only release cannot manufacture a parent".
+- Fix: add a table with these columns: ReleasedInput field, then workset field, then A2 input, then A2 output. Reuse `PreparationIntakeWorkset` instead of a new `A2SourceCut`. State that transitions bypass the DAG, or justify routing them through it.
+
+**4. Partial and INCOMPLETE results are incompatible with single-shot DAG publication.**
+- Evidence: design.md:151 keeps "INCOMPLETE with inspectable accepted partial refs". Legacy saves each prepared record durably before the next one (`record_steps.py:95-106`). `test_lifecycle.py:225` (`test_execution_timeout_retains_partial_results_without_success`) and preparation-pipeline-api.md:109-113 require partial prepared, filter and group results to remain. Under the new design the DAG output is published only after the whole DAG finishes.
+- Risk: a timeout or parse-phase failure leaves no prepared results. A DAG exception leaves nothing, where legacy kept prepared and filter results from before the failing step.
+- Fix: state the new partial-result contract. Either run the DAG on the parsed prefix, or declare the narrower guarantee as a policy change and add oracle expectations for it.
+
+**5. The cancellation and deadline story has no late effects but no real deadline, and it loses granularity.**
+- What works: with a pure DAG in a worker thread and publication only from the outer controller, no late publication is possible. Per-write claim fencing and the "reject output after cancel" rule cover that.
+- What does not:
+  - `asyncio.timeout` cannot preempt the thread. The drain (`stage_steps.py:211-224`, as adopted at design.md:106) waits for the whole DAG, so `execution_timeout_seconds` becomes advisory.
+  - Legacy drained at per-record and per-step granularity. Cancellation latency was one step. Now it is the whole batch, on a Raspberry Pi.
+  - The claim lease (`scheduled.py:187-190` reserves margin for cleanup) may expire during the drain. That produces FAILED/stale-claim, not the intended INCOMPLETE.
+  - Nothing says what happens to output computed after the deadline but before cancellation propagates.
+  - "If bounds cannot be proved, use a process" (design.md:106) has no decision rule. P0.8 (plan:121) would pass with a sleeping node and does not prove anything for CPU-bound work.
+- Fix: choose now between cooperative cancellation and a process boundary. Cooperative cancellation would be a stop-flag check inside node wrappers and per-record loops. Set a hard drain-time budget below the lease margin. Say which outcome is returned (INCOMPLETE, discarding the output) when the deadline passes. Make P0.8 use a CPU-bound node, expiry both before and during the run, and a measured drain time.
+
+**6. The `RelationshipGraph` / `form_groups` split is not grounded in the existing code and its signature is incoherent.**
+- Evidence:
+  - design.md:92-98 gives `form_groups(graph)` with no records or filters. `GroupResult` requires an exact `FilterResult` tuple per member and heavy validators (`grouping.py:82-173`).
+  - `group_records` (`grouping.py:419-458`) is one function, and `_partition_direct` mixes analysis with union-find (`:232-314`).
+  - The diagram (design.md:76-79) lists six nodes but §5 gives five signatures. `canonicalize_records` has no signature.
+- Risk: splitting this is a refactor of the semantic oracle. The graph must carry filters, scopes and ambiguity state. The result is a linear chain, where Kedro adds little over composing functions.
+- Fix: either wrap `apply_filters` and `group_records` as-is (design.md:100 already allows this) and say honestly that the DAG is linear. Or specify `RelationshipGraph` fields and add a differential test against `group_records`. Reconcile the node list.
+
+**7. Semantic-version and identity assumptions are not wired to anything.**
+- Evidence: `code_version` is an operator-set string (`configuration/models.py:397`). A prepared version is `hash(config, code, canonical payload)` (`stage_steps.py:169-184`). design.md:152 and :154 promise "a new internally versioned implementation identifier" and "new code meaning changes produce new versions".
+- Risk: nothing derives an identifier from the code. If the Kedro path reuses the same strings, legacy and Kedro versions are equal for equal output, which is good for the oracle but gives no protection when logic changes. If it uses new strings, every version differs and F0.8 (plan:138) cannot compare versions. Either way there is cutover duplicate-work risk for A3/A5.
+- Fix: specify the implementation identifier, which hashes it enters, and the cutover rule. The rule should say whether equal output keeps equal versions across legacy and Kedro. `parsed_version` stays pre-DAG.
+
+**8. Q0 is fail-closed in intent but under-specified.** Q0.1 to Q0.4 are read-only investigation. Q0.5 to Q0.6 edit the lock and install.
+- Decision authority has no criteria: design.md:112 and plan:93 allow "request an explicit security acceptance decision" with no owner or standard. The repo already has an exception precedent (`dependency-vulnerability-policy.md:45-90`, `--ignore-until-fixed`).
+- No machine gate: CI audits via `uv audit` (OSV). A Snyk-only record (CVE-2026-3840) may never fail CI, so "fail-closed" depends on a manual record. Require a written per-database status (OSV, GitHub, GitLab, Snyk) and a repo-visible note with the date.
+- Unreachability is proved only on a scratch pipeline. The guard that makes it true in production (MemoryDataset only, no `versioned`, no `from_config`, no `load_obj`) is scheduled as P0.9 (plan:122), after Q0. Move it into C0 and make it an architecture test.
+- Safe handling of downloaded artifacts is not specified for Q0.2: no running of sdist build scripts, an empty directory per artifact, hash-pin against PyPI and `uv.lock`, and `python -I` for any inspection script.
+- The transitive footprint is unreviewed. Q0.5 says "no unintended pin changes" but needs an explicit list of new packages with audit results on all of 3.12, 3.13 and 3.14. Also check wheel availability for 3.14 and aarch64.
+- Ordering: lock edits (Q0.5) must wait for the Q0.3 and Q0.4 dispositions. The plan table does not state this.
+- Plan:13 and :236 require D4 acceptance before any code. Q0.5 touching `pyproject.toml` and `uv.lock` needs owner authorization recorded first.
+
+**9. V13 (maintainability) is a NO-GO criterion that cannot be evaluated.**
+- Evidence: plan:192 says "demonstrable net reduction" and design.md:178 says "reject Kedro adoption if complexity is not reduced". Design.md:22 disowns the old 25% threshold, so no threshold remains. The 1,115 lines (368 + 460 + 287; counts match the files) include async claim, persistence and publication code that E0 must re-create.
+- Risk: the gate is unfalsifiable or gameable.
+- Fix: define now the baseline SHA, counted files, branch-count tool, whether tests and new contracts count, and a numeric pass line. Count the controller, adapters and contracts together with the DAG.
+
+## P2 findings (improvements; can be fixed during revision)
+
+**10. The D1 "matrix" is documentary.** Plan:68 promises a source-to-entry/ReleasedInput matrix. Audit:38-62 restates the checklist and does not map spider to stream to ReleasedInput shape to `PreparedSourceType`. The counts are correct: 20 spiders, 7 `PreparedSourceType` members (`records.py:20-29`), and the 7 streams coincide. Notification reconcile feeds two Teams streams (spec:239). Deliver the actual matrix.
+
+**11. 13-scenario handling.** Scenarios 4, 5, 9 and 12 are A1/intake-only and unaffected by a new producer. V06 (plan:185) says "adapted to new candidate", which risks editing the accepted runner. State that `scripts/qualify_a1_a2_handoff.py` is reused unchanged. Say which scenarios (e.g. 1, 8, 10, 11, 13) must be re-run through the new producer. Keep the "never relabel 34057c6" rule.
+
+**12. SHA discipline.** The distinction between 34057c6 (qualified) and 895fc40 (master) is correct. But the parity oracle is the current code, which includes later dependency and test changes (checklist:11-17). Pin the oracle corpus to an exact SHA. Handoff spec:1541 says "PreparationHandler remains the producer". Record that the new design supersedes this, or amend the spec through review.
+
+**13. Teams chat grouping wording.** Legacy lets an explicit, resolvable `teams_chat_reply_to` confirm a group (`grouping.py:38,181-182`; preparation-semantics.md:89,103-104). Design.md:137 and F0.4 (plan:133) describe chat as independent. Align the text so nobody removes or invents behaviour.
+
+**14. Kedro logging and copy semantics.** These need Q0 verification; I did not confirm them.
+- Kedro may log node names and exception text on failure, and pydantic validation errors embed input values. That could leak private content despite design.md:62. Test a forged-input failure with logging captured.
+- The default `MemoryDataset` copy mode may deepcopy large inputs. Selection data can reach 512 MiB (`configuration/models.py:230`). Pin `copy_mode` explicitly and measure RSS on the Pi.
+
+**15. Oracle tests missing from V-gates.** Add `test_lifecycle.py`, `test_timeout_boundary_controls.py`, `test_completion_bounds.py`, `test_r2_regressions.py`, `test_contracts.py`, `test_historical_baseline_calendar.py` and `test_teams_historical_baseline_scope.py`. All exist.
+
+**16. Claim topology unspecified.** Legacy uses a workset claim (`scheduled.py:205`), a per-plan PREPARE claim (`handler.py:82`) and a transitions claim (`transitions.py:104`). E0.2 says "existing claim". State which of these the controller keeps and how it passes `accepted_preparation_results`.
+
+**17. Publication details.** Specify result-ID derivation, how "ordered publication recipe" refers to refs that do not exist until earlier writes complete, and idempotent retry (`stage_steps.py:131`, `:186-197`). Time targets (20-25 min per Q0 step) are unrealistic for 3-interpreter audits and installs.
+
+## Scope and evidence
+
+| Item | Result |
+| --- | --- |
+| Read | AGENTS.md; design; plan; audit; handoff spec; Task 15 report; checklist; `handler`, `scheduled`, `stage_steps`, `record_steps`, `transitions`, `intake` (to :260), `intake_models`, `release_models`, `release_reader`, `grouping`, `preparation-pipeline-api.md`, the dependency policy; existence of plan-cited test files |
+| Verified | 1,115-line total; 7 source categories; 20 spiders and the 13-scenario list match the checklist; no Kedro in `pyproject.toml` or lock; cited paths exist |
+| Not verified | Kedro behaviour; both CVE records; Kedro 3.14/aarch64 support; any test result; `filtering.py` and parser internals beyond signatures; `historical_baseline.py` |
+
+## Final gate verdict
+
+- Design acceptance (D4): REVISE.
+- GO for C0/P0 code: NO, blocked by P1 findings 1-7 and 9. They would force an implementer to invent behaviour.
+- Security qualification only: not as-is, because plan:13 requires D4 acceptance first.
+  - Q0.1-Q0.4 (read-only advisory and source analysis) depend on none of the P1 design findings. The owner could waive this and run them as a bounded, no-lock, no-production-change investigation. That waiver is the owner's call.
+  - Q0.5-Q0.6 (lock edit and install) should wait for finding 8's fixes and explicit authorization.
+
+## Recommended next action
+
+Revise the documents to cover findings 1-9. Do the Q0 specification fixes first (finding 8), then the batch/scope rule, the input/output table, the partial-result contract and the cancellation decision. Then request a narrow re-review of the changed sections against the new SHA. Meanwhile the owner may authorize Q0.1-Q0.4 as a read-only note.

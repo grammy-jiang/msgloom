@@ -1,0 +1,96 @@
+DECISION: REVISE
+REVIEWED_SHA: 467ca23f8b2d753d217589b3466b97ae7da91fd0
+
+I used Read, Grep and Glob only. I ran no tests, no commands and no network, and I wrote no files. I did not re-run the activation note's "1 passed in 6.93s". I did not read `intake_completion.py` past line 179, `ReleaseEvidence`, or `_release_assemble.reconstruct`. I checked no Kedro API, no CVE and no wheel. Those are Q0 items, not defects.
+
+The R3 problems are mostly fixed. Three narrow gaps remain in how the corrective contract is specified, plus one stale-gate defect. A short doc-only revision should close them.
+
+## P1 blocking issues
+
+**P1-A. The deterministic result key contradicts its own fail-closed rule.**
+- `docs/notes/a1-kedro-handoff-r3-corrections-20261023.md:127-132` puts "canonical output digest" inside the SHA-256 key. Lines 133-136 then say a conflicting byte digest at the same key fails closed.
+- If the output digest is part of the key, a nondeterministic parser produces a different key. It becomes a second accepted result, which is the duplicate the section is meant to prevent.
+- A key that depends on the output also cannot be assigned before the output exists.
+- The key should hold input lineage only: workset ref, selection ref, entry ref and ordinal/role, stage and schema, versions, and upstream accepted refs. The output digest should be the verified payload field.
+- The repo already has this pattern, and the note doesn't cite it. `intake.py:363-366` hashes lineage "without attempt-specific state". `intake.py:305-327` is a get-then-verify that raises "Deterministic intake selection conflicts".
+- The legacy facts the note cites are correct. `stage_steps.py:192-197` and `transitions.py:113-121` include execution and attempt in the ID.
+- The note also does not say whether a replay skips already-accepted stages or recomputes them. The existing outer bound is `E+(L−E)/2` for the whole workset (`scheduled.py:187-191`), so a replay that recomputes everything may never make progress on a large workset.
+
+**P1-B. The mechanism for BLOCKED vs INCOMPLETE is proven for some causes and missing for others.**
+- **Catalog pin mismatch: implementable.** It is a wrapper-owned `ValueError` at `scheduled.py:76`. A new wrapper can classify it before intake runs.
+- **Consumer busy: implementable.** `ClaimUnavailableError` (`persistence/store.py:268`) is a distinct class from `StaleClaimError` (`persistence/errors.py:24-28`).
+- **Anchor mismatch and ledger behind cursor: no mechanism.** `intake.py:116` ("cursor anchor mismatch") and `:119` ("ledger moved behind cursor") are both plain `SourceReferenceError`. So is `:105` (catalog identity mismatch). The same class is used for invariant failures at `:253`, `:264` and `:323`.
+- `intake.py:191-193` says exception text is not a classification contract. The note (`:61`, AUTO-17) still requires `scheduled-anchor-mismatch` and distinct codes.
+- The note forbids changing the intake cursor/workset schema. It never says whether a behavior-compatible typed exception subclass in `intake.py` is allowed. It also doesn't say whether the alternative is a wrapper pre-check, which would duplicate the anchor read and have a race.
+- Pick one and write it down, then add the test.
+
+**P1-C. A hold decided at A2 run time has no durable form and would spin.**
+- The note's `:38-44` has Kedro "hold" or mark INCOMPLETE a selection whose role is ambiguous or whose re-read fails.
+- `workset.held` is immutable. The held index is written only at intake finalization (`intake_store.py:185-192`).
+- `completion_receipts` requires a `prepared` output for every frozen root: `intake_completion.py:174-179`, "plan does not prepare its complete frozen inputs".
+- Finalization accepts only COMPLETE or INCOMPLETE (`intake_store.py:348`), and anything else stays pending.
+- So a selection Kedro cannot prepare for role reasons can't be finalized and can't be marked held. The workset stays pending, which is the spin the note's `:73-75` forbids.
+- C0.10 needs an explicit new disposition or receipt kind for "selection not prepared, reason X". AUTO-19 and AUTO-20 need to assert it.
+
+**P1-D. The acceptance gates still cite AUTO-01..14.**
+- `implementation-plan.md:242` (V16, the activation gate) says "AUTO-01–AUTO-14". The same stale range is at `implementation-plan.md:12`, `a1-kedro-handoff-activation-20261023.md:9`, and `a2-kedro-readiness-audit-20261023.md:110`.
+- A candidate could pass V16 without AUTO-15..22.
+- In the handoff plan, a blank line at `:146` splits the table. The AUTO-15..22 rows at `:147-154` have no header, so they render as plain text.
+
+## P2 improvements
+
+- **Role recovery is sound, but equality-plus-hold is weaker than needed.**
+  - The match against `released.selection` and `released.components` is safe. It fails closed on drift, and `read_entry` is keyed by exact seq and digest (`release_reader.py:51-54`).
+  - The ordinal is recoverable without equality. Recompute `_identity("selection", [scope.claim_key(), entry, entry_members, cfg, code, ordinal])` (`intake.py:205-219`) from the workset's own `configuration_version` and `code_version`, and match `result_id`. That removes the "hold on duplicates" case. It needs an exported helper in `intake.py`, which ties to P1-B.
+  - Saved selection order within one entry equals the `values` order (`intake.py:180-187`, `:201-221`). That is a free cross-check.
+- **The Teams description is imprecise.** `context_refresh` is emitted for every non-proof Teams `component_observation` fact, not only component-only entries (`intake.py:162-177`). The note's `:21` and the design's `:53` say "component-only".
+- **`materialization_failed` is overloaded.** An unsupported transition reason (`intake.py:411-412`) and "no intake disposition" (`:189`) are raised inside the try. They are caught at `:190` and committed as a durable held `materialization_failed`, indistinguishable from lost evidence. The note should warn about this.
+- **The held and emitted-reason claims are correct.**
+  - Only `byte_limit`, `query_limit` and `materialization_failed` are emitted (`intake.py:194-199`, `:238-239`, `_bounded_workset`).
+  - Global sequence gaps are legal (`intake_models.py:142`). Entries need only be strictly increasing (`:198-202`).
+- **Terminal INCOMPLETE is not retried.** Only `state == "pending"` worksets are selected (`intake_store.py:244-245`). After a terminal finalize the next run sees nothing. The corrections table's "next finite … retry" for `scheduled-preparation-incomplete` is really an operator replay. A held signal also disappears after finalization unless `list_preparation_intake_held_entries` (`async_store.py:296`) is consulted each run. Define how long the signal lasts.
+- **External observability.**
+  - The CLI payload carries only status, result refs, `limitation_codes` and `failure_codes` (`runner.py:232-248`).
+  - Exit 4 covers INCOMPLETE, FAILED and CANCELLED (`:249-254`).
+  - Prefect runs in a separate environment (`phase-1/architecture.md:9`). It can't observe the "accepted cursor, workset states" the note wants tracked (`:73-75`).
+  - Specify a progress digest in the outcome or a read-only status command.
+- **The completion proof is legacy-shaped.** The output bound is `4 + body + alternates` per selection (`intake_completion.py:90-99`). The proof requires kind `"prepared"` for each root (`:168-179`). The note's "may require a new receipt" (`:88`) should be "requires". Plan §1 lists "saved workset/cursor/held" as frozen. State explicitly that the completion proof is A2-owned and changeable under C0.
+- **Partition claim key.** Derive it from workset ref, partition ordinal and policy version. The legacy key is a plan hash without the attempt (`handler.py:277-287`).
+- **Mid-pending upgrade.** State what happens when `code_version` changes while a workset is pending. The key includes `code_version`, so two accepted versions of one stage could result.
+- **Test additions.**
+  - AUTO-17 lists "global sequence gaps" among error cases. A gap should be a normal-pass test with no code.
+  - AUTO-19 needs the ambiguity case and the re-read-failure case.
+  - Add a nondeterministic-parser test showing a conflicting digest fails closed.
+- **Plan hygiene.**
+  - E0.1 (`implementation-plan.md:189`) still says "per-attempt" claims.
+  - E0.10 (`:198`), E0.13 (`:201`) and E0.14 (`:202`) overlap on the Prefect wake-up and reconciliation.
+  - Design lines 9 and 12 link the same plan twice. This is still unfixed from R3.
+
+## Answers to the key questions
+
+1. **Role recovery (Q1).** Re-reading the exact `ReleaseEntryRef` and matching the saved `CollectedSelection` is a safe recovery strategy. It needs no A1 schema change and assumes no role, context or transition in the workset. The held reasons, the emitted subset and the global sequence gaps are described correctly. The unresolved part is where an A2-time hold is stored (P1-C).
+2. **Status taxonomy (Q2).** The note explicitly contrasts the new taxonomy with the current handler (`:46-65`). That contrast is accurate: `scheduled.py:76`, `:147-152` and `:179-195` collapse everything to INCOMPLETE or FAILED-as-pending. Pin mismatch and busy can be separated without touching frozen A1 release/intake persistence. Anchor and ledger mismatch cannot yet (P1-B).
+3. **Claims, deadlines, identity (Q3).**
+   - The four claim scopes are explicit and match source: intake `intake.py:76`, workset `scheduled.py:205`, transitions `transitions.py:104`, and a partition claim as successor to `handler.py:82`.
+   - The note does not claim current persistence supports the new design. It correctly says that A2 result IDs include attempt, that the proof is legacy, and that the Q0 and C0 items are unverified.
+   - The deadline rule is explicit enough: take the minimum remaining time, reserve cleanup, and treat an unbounded CPU node as NO-GO.
+   - The deterministic ID contradicts itself (P1-A). A needed migration is understated (P2).
+4. **AUTO list and architecture (Q4).**
+   - AUTO-01..22 now cover wakeup and catch-up (15), partial A1 failure (16), backlog (18), and held-only and context-only worksets (20). They are not yet sufficient (P1-C, P1-D, P2 test additions).
+   - The architecture is genuinely main ETL, not a two-node decorative DAG. The design lists nine nodes with typed datasets in dependency order, a transition lane, and claim-fenced saves (`design:80-98`). It forbids controller-side parsing and calling filter and group separately (`:105`). It makes a decorative DAG an automatic NO-GO (`:245`, `:248`).
+   - The remaining ETL-ownership risk: parser execution happens inside `IsolatedParseDataset.save`, so the parse node only builds the request. V01 and V14 need a mutation test showing the graph breaks if that dataset is bypassed.
+5. **Contradictions and false claims (Q5).** I found no claim that Prefect or Kedro is deployed. The design says so honestly at `design:225-228` and `:250`, and `phase-1/architecture.md:246` agrees. The cited files exist. The stale AUTO ranges and the doc-hygiene items above are the remaining inconsistencies.
+6. **Design vs Q0 (Q6).** Q0 is explicit and blocks code: `implementation-plan.md:29` and `:258`, Q0.5-Q0.7, and the stop conditions at `:250`. I did not penalize the design for the unrun Kedro, bridge, CVE or Raspberry Pi proofs.
+
+## Closure matrix for R3 P1
+
+| R3 finding | Status | Why |
+| --- | --- | --- |
+| P1 #1: lossy role, context and transition mapping | **CLOSED** at the design level | The table at `corrections:15-23` and the re-read rule are accurate. Residuals are P1-C and the P2 role-recovery items. |
+| P1 #2: collapsed scheduled status | **OPEN, narrow** | The taxonomy and its contrast with current behavior are good. The anchor and ledger classification mechanism is missing (P1-B). |
+| P1 #3: vague claim, deadline and idempotence | **OPEN, narrow** | The claim and deadline tables are good. The ID key is self-contradictory (P1-A), and replay-resume is unspecified. |
+
+## Verdicts
+
+- **Design D4: REVISE.** Fix P1-A to P1-D in the docs, then do a short re-review. No re-architecture is needed.
+- **Runtime or code implementation: NO-GO.** Q0 (bridge, API, security, Raspberry Pi), F0 and C0.9/C0.10 are all unrun, and D4 acceptance does not exist yet.
