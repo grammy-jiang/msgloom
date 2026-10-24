@@ -1,16 +1,15 @@
-"""P2-02 hostile JSON input: linear time and depth-scan verdicts."""
+"""P2-02 hostile JSON input: linear scan steps and depth-scan verdicts."""
 
 from __future__ import annotations
 
-import time
-
 import pytest
 
+from msgloom.a2_kedro.parsers import json_scan
 from msgloom.a2_kedro.parsers.json_scan import exceeds_depth
 from msgloom.a2_kedro.parsers.plain_json import Outcome, parse_json
 from tests.a2_kedro.helpers import check
 
-# --- hostile input: linear time -----------------------------------------
+# --- hostile input: linear scan steps -----------------------------------------
 
 #: name -> (prefix, repeated unit, suffix)
 SHAPES = {
@@ -29,22 +28,31 @@ def hostile(kind: str, size: int) -> bytes:
     return prefix + unit * (size // len(unit)) + suffix
 
 
-def best_time(data: bytes) -> float:
-    times = []
-    for _ in range(2):
-        begin = time.perf_counter()
-        parse_json(data)
-        times.append(time.perf_counter() - begin)
-    return min(times)
+class CountingSearch:
+    """Wrap a compiled pattern. Record every ``search`` start position."""
+
+    def __init__(self, pattern) -> None:
+        self.pattern = pattern
+        self.starts: list[int] = []
+
+    def search(self, text, pos=0):
+        self.starts.append(pos)
+        return self.pattern.search(text, pos)
 
 
 @pytest.mark.parametrize("kind", sorted(SHAPES))
-def test_hostile_one_megabyte_body_parses_fast_and_linear(kind) -> None:
-    check(parse_json(hostile(kind, 10**6)).outcome is Outcome.INCOMPLETE, "incomplete")
-    small = best_time(hostile(kind, 250_000))
-    large = best_time(hostile(kind, 10**6))
-    check(large < 2.0, f"1 MB took too long: {large:.2f}s")
-    check(large < max(small, 0.02) * 12, "time grows faster than linear")
+def test_hostile_one_megabyte_body_scans_in_linear_steps(kind, monkeypatch) -> None:
+    data = hostile(kind, 10**6)
+    check(parse_json(data).outcome is Outcome.INCOMPLETE, "incomplete")
+    outside = CountingSearch(json_scan._OUTSIDE)
+    inside = CountingSearch(json_scan._INSIDE)
+    monkeypatch.setattr(json_scan, "_OUTSIDE", outside)
+    monkeypatch.setattr(json_scan, "_INSIDE", inside)
+    json_scan.exceeds_depth(data.decode(), 64)
+    for name, scan in (("outside", outside), ("inside", inside)):
+        starts = scan.starts
+        check(len(starts) <= len(data) + 1, f"{name}: more steps than bytes")
+        check(starts == sorted(set(starts)), f"{name}: scan went backward")
 
 
 DEPTH_CASES = [

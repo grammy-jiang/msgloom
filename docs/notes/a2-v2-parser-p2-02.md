@@ -1,7 +1,16 @@
 # A2 v2 parser P2-02: JSON and plain-text parser (PROVISIONAL)
 
-Code: `msgloom/a2_kedro/parsers/plain_json.py`.
-Tests: `tests/a2_kedro/test_p2_02.py`.
+Code: `msgloom/a2_kedro/parsers/plain_json.py`, with helpers
+`parsers/json_scan.py` (depth scan) and `parsers/json_fields.py` (bounded
+leaf collection).
+Tests: `tests/a2_kedro/test_p2_02.py`, `test_p2_02_hostile.py` (scan
+steps, depth verdicts) and `test_p2_02_memory.py` (pointer memory bounds,
+surrogate keys).
+
+Manifest approval needed: `json_scan.py`, `json_fields.py`, the hostile and
+memory test modules and this note are new files. They exist because
+`plain_json.py` and `test_p2_02.py` are at the 500-line module limit. The
+file manifest must list them.
 
 All names and bounds below are PROVISIONAL. The parser reuses the C0 models
 (`ParserReceipt`, `ParsedParts`) and adds no wire name.
@@ -34,12 +43,16 @@ reason lives only in `ParseResult.limitations`.
 `empty_body`, `size_limit`, `unsupported_encoding` (UTF-16/32 BOM),
 `invalid_utf8`, `nul_bytes`, `line_limit`, `truncated_json`,
 `invalid_json`, `depth_limit`, `duplicate_key`, `non_finite_number`,
-`huge_integer`, `lone_surrogate`, `field_limit`, `paging_marker`.
+`huge_integer`, `lone_surrogate`, `field_limit`, `pointer_limit`,
+`paging_marker`.
 
 ## Bounds
 
 `MAX_BODY_BYTES` 8 MiB, `MAX_JSON_DEPTH` 64, `MAX_INT_DIGITS` 64,
-`MAX_JSON_FIELDS` 10 000, `MAX_LINES` 200 000.
+`MAX_JSON_FIELDS` 10 000, `MAX_LINES` 200 000, `MAX_POINTER_BYTES` 4096
+(one JSON Pointer, UTF-8) and `MAX_POINTER_BYTES_TOTAL` 2 MiB (all kept
+pointers). The walk stops at the first bound it hits. `pointer_limit` and
+`field_limit` are separate. `pointer_limit` is a provisional wire name.
 
 ## Plain text
 
@@ -61,13 +74,17 @@ characters; invalid UTF-8 and NUL bytes set a limitation.
 - Integers longer than `MAX_INT_DIGITS` become a placeholder and set
   `huge_integer`. Text fields are still listed.
 - Fields: every string, empty string and `null` leaf, in document order,
-  with its JSON Pointer.
+  with its JSON Pointer. The walk is lazy: each open container keeps one
+  iterator and a linked path. A pointer string is built only for a kept
+  leaf, so cost does not grow with children times path length. The field
+  bound is checked before any key or index work for a leaf.
 - `null`, `""` and a missing key are `FieldState.NULL`, `EMPTY` and
   `MISSING`. `lookup` answers `MISSING` only when a document was parsed
-  and absence is proven. With `paging_marker`, `field_limit` or
+  and absence is proven. With `paging_marker`, `field_limit`, `pointer_limit` or
   `huge_integer` an absent key is `FieldState.UNPROVEN`.
-- Lone surrogates become `?` in both `fields` and `lookup`, and set
-  `lone_surrogate`.
+- Lone surrogates in values and object keys become `?` in both `fields`
+  and `lookup`, and set `lone_surrogate`. `lookup` accepts the raw key and
+  the cleaned key.
 - Truncation: a decode error at the end of the text, or an unterminated
   string, is `truncated_json`. Any other decode error is `invalid_json`.
 - Paging: a non-empty root `@odata.nextLink` or `nextPageToken`, or a root

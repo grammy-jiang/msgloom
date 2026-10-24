@@ -23,7 +23,9 @@ with replacement characters (:meth:`ByteSpan.text`).
 JSON: ``json.loads`` with a duplicate-key hook, hooks that reject ``NaN``
 and ``Infinity`` and a digit bound on integers. A scan bounds nesting
 depth before the decoder runs. The result lists each string, empty string
-and ``null`` leaf with its JSON Pointer (RFC 6901). ``null``, an empty
+and ``null`` leaf with its JSON Pointer (RFC 6901). Pointer size is
+bounded per pointer and in total (``json_fields``), so a huge key cannot
+cost memory in proportion to its children. ``null``, an empty
 string and a missing key are three outcomes (:class:`FieldState`). A byte
 position is not available for JSON; the pointer is the position. A body
 that fails at its end is ``TRUNCATED_JSON``. A non-empty root
@@ -49,6 +51,7 @@ from typing import Any, Literal
 
 from msgloom.a2_kedro.contracts.codec import A2ContractError, sha256_hex
 from msgloom.a2_kedro.contracts.parse import ParserReceipt
+from msgloom.a2_kedro.parsers.json_fields import collect_leaves, find_key
 from msgloom.a2_kedro.parsers.json_scan import clean_surrogates, exceeds_depth
 
 WORKER = "msgloom.a2_kedro.parsers.plain_json"
@@ -58,6 +61,8 @@ MAX_BODY_BYTES = 8 * 1024 * 1024
 MAX_JSON_DEPTH = 64
 MAX_INT_DIGITS = 64
 MAX_JSON_FIELDS = 10_000
+MAX_POINTER_BYTES = 4096  # UTF-8 size of one JSON Pointer
+MAX_POINTER_BYTES_TOTAL = 2 * 1024 * 1024  # all kept pointers together
 MAX_LINES = 200_000
 
 #: Root keys that mark a page of a larger response.
@@ -99,6 +104,7 @@ class Limitation(StrEnum):
     HUGE_INTEGER = "huge_integer"
     LONE_SURROGATE = "lone_surrogate"
     FIELD_LIMIT = "field_limit"
+    POINTER_LIMIT = "pointer_limit"
     PAGING_MARKER = "paging_marker"
 
 
@@ -209,9 +215,10 @@ class ParseResult:
         Raise :exc:`PlainJsonInputError` when the pointer is malformed or
         when no JSON document was parsed. A missing key is answered only
         when a document exists. An absent key is ``MISSING`` only when
-        absence is proven. With ``PAGING_MARKER``, ``FIELD_LIMIT`` or
-        ``HUGE_INTEGER`` it is ``UNPROVEN``. Strings are cleaned as in
-        :attr:`fields`.
+        absence is proven. With ``PAGING_MARKER``, ``FIELD_LIMIT``,
+        ``POINTER_LIMIT`` or ``HUGE_INTEGER`` it is ``UNPROVEN``. Strings
+        and keys are cleaned as in :attr:`fields`, so a cleaned pointer
+        and a raw pointer both find a key with a lone surrogate.
         """
         if self.format != "json" or not self.parsed:
             raise PlainJsonInputError("no parsed JSON document")
@@ -221,8 +228,8 @@ class ParseResult:
         node: Any = self.document
         for raw in pointer.split("/")[1:] if pointer else ():
             token = raw.replace("~1", "/").replace("~0", "~")
-            if isinstance(node, dict) and token in node:
-                node = node[token]
+            if isinstance(node, dict) and (key := find_key(node, token)) is not None:
+                node = node[key]
             elif isinstance(node, list) and _INDEX.fullmatch(token):
                 if int(token) >= len(node):
                     return gone
@@ -258,7 +265,12 @@ class ParseResult:
 
 #: Limitations after which a missing key is not proof of absence.
 _UNPROVEN_ABSENCE = frozenset(
-    {Limitation.PAGING_MARKER, Limitation.FIELD_LIMIT, Limitation.HUGE_INTEGER}
+    {
+        Limitation.PAGING_MARKER,
+        Limitation.FIELD_LIMIT,
+        Limitation.POINTER_LIMIT,
+        Limitation.HUGE_INTEGER,
+    }
 )
 
 
@@ -451,11 +463,20 @@ def parse_json(data: bytes) -> ParseResult:
         found.add(Limitation.HUGE_INTEGER)
     if _has_paging_marker(document):
         found.add(Limitation.PAGING_MARKER)
-    fields, overflow, surrogate = _collect_fields(document)
-    if overflow:
-        found.add(Limitation.FIELD_LIMIT)
-    if surrogate:
-        found.add(Limitation.LONE_SURROGATE)
+    leaves = collect_leaves(
+        document, MAX_JSON_FIELDS, MAX_POINTER_BYTES, MAX_POINTER_BYTES_TOTAL
+    )
+    for hit, limit in (
+        (leaves.field_limit, Limitation.FIELD_LIMIT),
+        (leaves.pointer_limit, Limitation.POINTER_LIMIT),
+        (leaves.surrogate, Limitation.LONE_SURROGATE),
+    ):
+        if hit:
+            found.add(limit)
+    fields = tuple(
+        JsonField(pointer, _classify(value).state, value)
+        for pointer, value in leaves.items
+    )
     return _finish("json", raw, found, fields=fields, parsed=True, document=document)
 
 
@@ -466,34 +487,3 @@ def _has_paging_marker(document: Any) -> bool:
     return document.get(TRUNCATED_KEY) is True or any(
         isinstance(mark, str) and mark for mark in marks
     )
-
-
-def _escape(key: str) -> str:
-    return key.replace("~", "~0").replace("/", "~1")
-
-
-def _collect_fields(document: Any) -> tuple[tuple[JsonField, ...], bool, bool]:
-    fields: list[JsonField] = []
-    surrogate = False
-    stack: list[tuple[str, Any]] = [("", document)]
-    while stack:
-        pointer, node = stack.pop()
-        if isinstance(node, dict):
-            stack.extend(
-                (f"{pointer}/{_escape(key)}", node[key]) for key in reversed(list(node))
-            )
-            continue
-        if isinstance(node, list):
-            stack.extend(
-                (f"{pointer}/{index}", node[index])
-                for index in range(len(node) - 1, -1, -1)
-            )
-            continue
-        if node is not None and not isinstance(node, str):
-            continue
-        if len(fields) >= MAX_JSON_FIELDS:
-            return tuple(fields), True, surrogate
-        value = clean_surrogates(node)
-        surrogate = surrogate or value != node
-        fields.append(JsonField(pointer, _classify(value).state, value))
-    return tuple(fields), False, surrogate
