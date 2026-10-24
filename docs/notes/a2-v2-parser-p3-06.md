@@ -1,7 +1,8 @@
 # A2 v2 P3-06: typed, scoped context for non-communication sources (PROVISIONAL)
 
 Code: `msgloom/a2_kedro/semantics/context_types.py`.
-Tests: `tests/a2_kedro/test_p3_06.py`.
+Tests: `tests/a2_kedro/test_p3_06.py`, `test_p3_06_scope.py`,
+`test_p3_06_binding.py`. Helper: `p3_06_bound.py`.
 
 Status: PROVISIONAL, CANDIDATE/RESEARCH. The function layer is pure. It reads
 no provider, network, file, clock or database. It depends only on the typed
@@ -9,7 +10,8 @@ contracts at base `95a9eeb`.
 
 ## Result
 
-`publish_context(selection, grant, target)` takes one `CollectedSelection`,
+`publish_context(frozen, grant, target)` takes one `FrozenSelection`
+(a `CollectedSelection` plus the Intake scope and workset that froze it),
 one `ContextGrant` and one `PublicationTarget`. It returns one
 `ContextPublication` or raises `ContextRefusal`.
 
@@ -30,7 +32,9 @@ may list conversations. The guard `_check_scope` allows a target only if:
 
 1. the grant stream is the stream of the context type;
 2. the target scope and workset equal the grant exactly;
-3. the target conversation, if any, is listed in the grant.
+3. the target conversation, if any, is listed in the grant;
+4. the grant scope and workset equal the scope and workset of the
+   `FrozenSelection` (F4 fix, see below).
 
 Conversation kinds are the existing `ScopeKind` values (`mailbox`,
 `thread`, `channel`). The same ID under another kind is another scope.
@@ -105,3 +109,30 @@ body, party, attachment, metadata value or location is published.
   `Literal` types for the type checker only. Dataclasses do not check them
   at run time. `ConversationScope.kind` is still checked at run time.
 - Still open: the guard trusts the grant (see Limitations).
+
+## Review fix F4: grant bound to the frozen record workset
+
+`CollectedSelection` and `CollectedRecord` live outside this task and have
+no workset field. A new frozen dataclass `FrozenSelection(selection, scope,
+workset)` in `context_types.py` carries the binding. `publish_context` now
+takes it as the first argument. A bare `CollectedSelection` gives
+`wrong_type`. `_check_scope` compares the grant scope and workset to the
+binding. A different value gives `binding_mismatch`. A missing, `None` or
+malformed value (also a workset of another kind) gives `wrong_type`. The
+binding check runs after the source check, so earlier codes are unchanged.
+The new tests are in `test_p3_06_binding.py`. The older tests call
+`p3_06_bound.publish_context`, a wrapper that freezes the selection under
+the grant binding so that they keep testing their own rule.
+
+What remains trusted (owner decision needed):
+
+- The `FrozenSelection` binding is made by the caller. This module cannot
+  prove that the freezing stage made it. A caller that builds both the
+  binding and the grant for workset B still publishes a record that was
+  frozen under workset A.
+- The grant, and its `conversations` list, is still caller-supplied.
+- Closing both gaps needs a signed or stored binding (for example a
+  workset-owner signature over scope, workset and selection ref, or a
+  lookup in the Intake store). That needs a contract outside this task.
+  Decision for the owner: is a signature or store lookup required before
+  wiring, or is a binding made by the trusted freezing stage enough?

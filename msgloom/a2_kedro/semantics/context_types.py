@@ -28,14 +28,20 @@ subject, a name or a metadata value.
 Scope
 =====
 
-A :class:`ContextGrant` is the authority of the workset owner. It names the
-Intake scope and the workset under which the record was frozen. It may also
-list the conversations that accept context. A :class:`PublicationTarget`
-asks for one destination. The scope guard allows the request only when:
+A :class:`FrozenSelection` binds one ``CollectedSelection`` to the Intake
+scope and the workset under which it was frozen. The selection contract
+has no workset, so this wrapper holds the binding. A bare selection is
+refused. A :class:`ContextGrant` is the authority of the workset owner. It
+names the Intake scope and the workset that it covers. It may also list
+the conversations that accept context. A :class:`PublicationTarget` asks
+for one destination. The scope guard allows the request only when:
 
 * the target scope and the target workset equal the grant exactly;
 * the grant source ID equals the identity of the record source scope;
 * the grant stream is the stream of the context type;
+* the grant scope and workset equal the scope and workset of the frozen
+  selection. A missing or malformed binding is ``wrong_type``; a
+  different one is ``binding_mismatch``;
 * the target conversation, if any, is listed in the grant.
 
 Two scopes that share a source ID or a consumer ID but differ in any other
@@ -155,6 +161,7 @@ _MESSAGES: dict[str, str] = {
     "stream_mismatch": "grant stream does not carry this context type",
     "out_of_scope": "publication target is outside the granted scope",
     "source_mismatch": "grant source does not match the record source scope",
+    "binding_mismatch": "grant scope or workset does not match the frozen record",
     "oversized": "context input exceeds a bound",
     "unsafe_text": "context text is empty, unencodable or has a control character",
     "inconsistent_record": "selection and record disagree",
@@ -180,6 +187,22 @@ class ConversationScope:
 
     kind: ScopeKind
     scope_id: str
+
+
+@dataclass(frozen=True, slots=True)
+class FrozenSelection:
+    """
+    One selection bound to the scope and workset that froze it.
+
+    The freezing stage makes this value. ``scope`` and ``workset`` are
+    required and have no default. The guard refuses a missing or
+    malformed value, and a grant that names other values. This module
+    cannot prove that the stage made the binding; see the P3-06 note.
+    """
+
+    selection: CollectedSelection
+    scope: IntakeScope
+    workset: ResultRef
 
 
 @dataclass(frozen=True, slots=True)
@@ -299,6 +322,7 @@ def _check_scope(
     grant: ContextGrant,
     target: PublicationTarget,
     record_scope: VersionRef,
+    frozen: FrozenSelection,
 ) -> None:
     """
     Refuse every target that the grant does not allow. The only guard.
@@ -306,6 +330,8 @@ def _check_scope(
     The grant ``source_id`` must equal the identity of the record
     ``source_scope`` (kind ``source_scope``). Equal stream and kind are not
     enough: a record of source A never publishes under a grant for source B.
+    The grant scope and workset must also equal the binding of ``frozen``,
+    so a grant for workset B never publishes a record frozen under A.
     """
     if _intake_scope(grant.scope).stream != STREAM_OF_TYPE[context_type]:
         raise ContextRefusal("stream_mismatch")
@@ -319,6 +345,11 @@ def _check_scope(
         or record_scope.identity != grant.scope.source_id
     ):
         raise ContextRefusal("source_mismatch")
+    if (
+        _intake_scope(frozen.scope) != grant.scope
+        or _result_ref(frozen.workset) != grant.workset
+    ):
+        raise ContextRefusal("binding_mismatch")
     if target.conversation is None:
         return
     if not isinstance(grant.conversations, tuple):
@@ -377,22 +408,25 @@ def _has_body(record: CollectedRecord) -> bool:
 
 
 def publish_context(
-    selection: CollectedSelection,
+    frozen: FrozenSelection,
     grant: ContextGrant,
     target: PublicationTarget,
 ) -> ContextPublication:
     """
-    Classify one source record and publish its context into ``target``.
+    Classify one frozen source record and publish its context into ``target``.
 
     The result depends only on the arguments. Raise :exc:`ContextRefusal`
-    for a communication or unknown source, a target outside the grant, an
-    oversized input, unsafe text or a wrong type. Nothing is partly built.
+    for a communication or unknown source, a target outside the grant, a
+    grant that does not match the frozen binding, an oversized input,
+    unsafe text or a wrong type. Nothing is partly built.
     """
     if not isinstance(grant, ContextGrant) or not isinstance(target, PublicationTarget):
         raise ContextRefusal("wrong_type")
-    record = _record_of(selection)
+    if not isinstance(frozen, FrozenSelection):
+        raise ContextRefusal("wrong_type")
+    record = _record_of(frozen.selection)
     context_type = context_type_of(record.source_type)
-    _check_scope(context_type, grant, target, record.source_scope)
+    _check_scope(context_type, grant, target, record.source_scope, frozen)
     identity = _text(record.semantic_identity)
     attachments = _count(record.attachments)
     metadata = _count(record.metadata)

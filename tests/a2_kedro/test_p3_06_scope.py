@@ -11,12 +11,12 @@ from msgloom.a2_kedro.semantics.context_types import (
     ContextGrant,
     ContextRefusal,
     PublicationTarget,
-    publish_context,
 )
 from msgloom.preparation.records import PreparedSourceType
 from msgloom.preparation_pipeline.intake_models import IntakeScope
 from msgloom.sources.handoff_models import A1CatalogIdentity
 from tests.a2_kedro.helpers import check
+from tests.a2_kedro.p3_06_bound import publish_context
 from tests.a2_kedro.test_p3_06 import CASES, WORKSET, scope_for, selection_of
 
 SENTINEL = "SENTINEL-PII-123"

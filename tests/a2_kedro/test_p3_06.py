@@ -22,7 +22,6 @@ from msgloom.a2_kedro.semantics.context_types import (
     ConversationScope,
     PublicationTarget,
     context_type_of,
-    publish_context,
 )
 from msgloom.contracts import Limitation, ResultRef, VersionRef
 from msgloom.preparation.contracts import PageLocation
@@ -37,6 +36,7 @@ from msgloom.sources.models import (
     SourceMetadata,
 )
 from tests.a2_kedro.helpers import check
+from tests.a2_kedro.p3_06_bound import publish_context
 
 PII = "alice.secret@example.test"
 WHEN = datetime(2026, 1, 1, 12, 30, 45, 999999, tzinfo=UTC)
