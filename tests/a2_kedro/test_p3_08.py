@@ -266,6 +266,24 @@ def test_foreign_catalog_entry_is_rejected() -> None:
     check(err.value.code == "cross_scope", "foreign catalog")
 
 
+def test_foreign_catalog_scope_entry_is_rejected() -> None:
+    foreign = A1CatalogIdentity(catalog_identity="cat-2", schema_version=1)
+    bad_entry = entry(9).model_copy(update={"catalog": foreign})
+    for role, ref in (("content", STREAM), ("membership", FOLDER)):
+        scope = obs(ref, role).model_copy(update={"entry": bad_entry})
+        with pytest.raises(TransitionSemanticsError) as err:
+            derive_transitions(scope, (prev("m1", None, ref),), ())
+        check(err.value.code == "cross_scope", "foreign scope entry")
+
+
+def test_plain_state_record_in_observed_is_rejected() -> None:
+    plain: Any = prev("m1")
+    with pytest.raises(TransitionSemanticsError) as err:
+        derive_transitions(obs(), (prev("m1"),), (now("m2"), plain))
+    check(err.value.code == "bad_record_type", "plain record as observed")
+    check(err.value.position == 1, "position reported")
+
+
 # (6) determinism, duplicates and conflicts --------------------------------
 
 
@@ -359,6 +377,24 @@ def test_error_messages_do_not_echo_payloads() -> None:
         text = f"{err.value} {err.value!r} {err.value.args}"
         check(SECRET not in text, "error text leaks a payload")
         check(err.value.code in text, "error names its code")
+
+
+def test_construction_errors_do_not_echo_input() -> None:
+    bad: Any = {"scope": STREAM, "resource_kind": "mail", "resource_id": SECRET}
+    for model in (StateRecord, ObservedRecord):
+        with pytest.raises(ValidationError) as err:
+            model.model_validate({**bad, "fact_id": "not-a-digest"})
+        check(SECRET not in str(err.value), "construction error leaks input")
+    with pytest.raises(ValidationError) as err2:
+        ScopeRef.model_validate(
+            {"intake": SCOPE, "scope_kind": "folder", "scope_id": SECRET, "x": 1}
+        )
+    check(SECRET not in str(err2.value), "scope error leaks input")
+    with pytest.raises(ValidationError) as err3:
+        ScopeObservation.model_validate(
+            {**obs().model_dump(), "authority": SECRET, "role": "bogus"}
+        )
+    check(SECRET not in str(err3.value), "observation error leaks input")
 
 
 def test_limitation_text_does_not_echo_payloads() -> None:

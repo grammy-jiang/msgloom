@@ -72,12 +72,12 @@ Failure handling
 A bad input raises :exc:`TransitionSemanticsError`. The error holds a
 closed ``code`` and a record position. It never holds a resource ID,
 scope text, hash or authority. Cross-scope input, a duplicate record,
-a conflicting record, a role violation and a fact ID shared by two
-transitions are all rejected. The function never repairs input.
+a conflicting record, a role violation, an observed item of the wrong
+type and a fact ID shared by two transitions are all rejected. The
+scope entry must belong to the scope catalog. The function never repairs input.
 
-Model construction is separate from this layer. A caller that builds
-:class:`StateRecord` values gets pydantic errors from those models, and
-pydantic may echo input values. Build records from trusted data only.
+The record models derive from ``ResultPart``. It hides input values in
+pydantic construction errors, so a rejected payload is not echoed.
 
 CANDIDATE/RESEARCH, PROVISIONAL: names are not frozen. See
 ``docs/notes/a2-v2-semantics-p3-08.md``.
@@ -90,11 +90,11 @@ from typing import Literal
 
 from msgloom.a2_kedro.contracts.codec import (
     A2ContractError,
-    A2Model,
     Digest,
     Text,
 )
 from msgloom.a2_kedro.contracts.header import LIMITS
+from msgloom.a2_kedro.contracts.result_base import ResultPart
 from msgloom.a2_kedro.contracts.transition import (
     TransitionBatch,
     TransitionItem,
@@ -120,6 +120,7 @@ _MESSAGES = {
     "role_violation": "record does not fit the scope role",
     "fact_conflict": "one fact ID is used by two transitions",
     "too_many": "record or transition count is out of bounds",
+    "bad_record_type": "observed item is not an observed record",
 }
 
 
@@ -141,7 +142,7 @@ class TransitionSemanticsError(A2ContractError):
         super().__init__(f"{code}: {_MESSAGES[code]}{where}")
 
 
-class ScopeRef(A2Model):
+class ScopeRef(ResultPart):
     """One explicit scope: the intake scope plus a scope kind and ID."""
 
     intake: IntakeScope
@@ -149,7 +150,7 @@ class ScopeRef(A2Model):
     scope_id: Text
 
 
-class StateRecord(A2Model):
+class StateRecord(ResultPart):
     """
     One known resource of one scope in one state snapshot.
 
@@ -181,7 +182,7 @@ class ObservedRecord(StateRecord):
     deletion_authority: Text | None = None
 
 
-class ScopeObservation(A2Model):
+class ScopeObservation(ResultPart):
     """
     The scope being compared and what the observation proves about it.
 
@@ -197,7 +198,7 @@ class ScopeObservation(A2Model):
     entry: ReleaseEntryRef
 
 
-class ScopedTransition(A2Model):
+class ScopedTransition(ResultPart):
     """One derived transition, ready for :class:`TransitionItem`."""
 
     entry: ReleaseEntryRef
@@ -210,7 +211,7 @@ class ScopedTransition(A2Model):
     resource_id: Text
 
 
-class UnprovenAbsence(A2Model):
+class UnprovenAbsence(ResultPart):
     """A resource missing from a partial scope. Deletion is not proven."""
 
     scope_kind: Text
@@ -322,8 +323,13 @@ def derive_transitions(
     decision table. Raise :exc:`TransitionSemanticsError` for any
     violation.
     """
+    if scope.entry.catalog != scope.scope.intake.catalog:
+        raise TransitionSemanticsError("cross_scope")
     if any(isinstance(record, ObservedRecord) for record in previous):
         raise TransitionSemanticsError("role_violation")
+    for position, item in enumerate(observed):
+        if not isinstance(item, ObservedRecord):
+            raise TransitionSemanticsError("bad_record_type", position)
     before = _index(previous, scope)
     now = _index(observed, scope)
     transitions: list[ScopedTransition] = []

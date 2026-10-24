@@ -42,7 +42,8 @@ A marker needs no complete enumeration.
 `TransitionSemanticsError` (a subclass of `A2ContractError`) has a closed
 `code` and an optional record `position`: `cross_scope`,
 `duplicate_record`, `conflicting_record`, `role_violation`,
-`fact_conflict`, `too_many`. The message never holds resource, scope,
+`fact_conflict`, `too_many`, `bad_record_type` (an `observed` item that
+is not an `ObservedRecord`). The message never holds resource, scope,
 hash or authority text. A test checks this with a marker string.
 
 ## Determinism
@@ -56,12 +57,15 @@ and deletion use the observed fact ID and entry.
 
 - Marker records must not carry a content hash. Provider markers seen
   again produce another `deletion` (previous state holds present records
-  only), so a caller must not replay a consumed marker as new input.
+  only). Known gap: the layer does not dedupe a repeated marker. The
+  caller must dedupe, and must not replay a consumed marker as new input.
 - Two transitions with one fact ID in one scope are rejected, because
   the C0-08 batch allows one item per `(fact_id, scope_kind, scope_id)`.
 - `to_batch` fails (pydantic error) on an empty outcome. The caller
   decides what an empty transition set means.
-- Record construction errors come from pydantic and may echo input.
-  The layer assumes trusted records.
+- Record models derive from `ResultPart`, which hides input values in
+  pydantic construction errors. A test checks this with a marker string.
+- `ScopeObservation.entry` must belong to the scope catalog, like each
+  observed record entry (`cross_scope`).
 - `authority` text is opaque. The layer does not check it against A1.
 - Not wired into Kedro nodes or the stage key. Field names are not frozen.
