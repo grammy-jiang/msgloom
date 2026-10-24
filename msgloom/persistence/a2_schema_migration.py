@@ -147,15 +147,20 @@ def _write_backup(source: Path, destination: Path) -> None:
         raise A2SchemaError("backup-exists") from None
     except OSError:
         raise A2SchemaError("backup-create-failed") from None
-    reader = _read_only(source)
     try:
-        writer = sqlite3.connect(destination, isolation_level=None)
+        reader = _read_only(source)
         try:
-            _copy(reader, writer)
+            writer = sqlite3.connect(destination, isolation_level=None)
+            try:
+                _copy(reader, writer)
+            finally:
+                writer.close()
         finally:
-            writer.close()
-    finally:
-        reader.close()
+            reader.close()
+    except BaseException:
+        # The file is ours (created with O_EXCL above): remove the stub.
+        destination.unlink(missing_ok=True)
+        raise
 
 
 def create_backup(source: Path, backup_dir: Path) -> tuple[Path, str]:
@@ -251,6 +256,8 @@ def restore_backup(
         raise A2SchemaError("backup-file-missing")
     if not destination.parent.is_dir():
         raise A2SchemaError("restore-dir-missing")
+    if not destination.is_file():
+        raise A2SchemaError("restore-target-missing")
     if destination.exists() and destination.resolve() == backup.resolve():
         raise A2SchemaError("backup-is-source")
     if file_sha256(backup) != expected_sha256:
