@@ -12,7 +12,7 @@ instance per thread. Writers serialize through ``BEGIN IMMEDIATE``.
 
 Ordering: compare and insert share one immediate transaction, so two
 legitimate writers racing on one key produce one accepted row. Conflict
-attempts are committed before the conflict is raised, so the audit row
+attempts are committed before the conflict is raised, so the attempt row
 survives while the original accepted row stays unchanged.
 
 Failure handling: any exception inside a transaction rolls it back. A

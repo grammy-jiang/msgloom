@@ -135,7 +135,7 @@ def test_insert_then_equal_replay_by_a_new_attempt(store: A2ResearchStore) -> No
     )
 
 
-def test_conflict_fails_closed_keeps_original_and_audits(
+def test_conflict_fails_closed_keeps_original_and_records_attempts(
     store: A2ResearchStore,
 ) -> None:
     first = record("a1")
@@ -150,7 +150,7 @@ def test_conflict_fails_closed_keeps_original_and_audits(
     check(store.get_accepted(first.logical_key) == first, "original unchanged")
     check(store.count_accepted() == 1, "no second accepted row")
     outcomes = [row[2] for row in store.attempts(first.logical_key)]
-    check(outcomes == ["inserted", "conflict", "conflict"], f"audit rows {outcomes}")
+    check(outcomes == ["inserted", "conflict", "conflict"], f"attempt rows {outcomes}")
 
 
 def test_two_legitimate_claims_racing_produce_one_accepted_row(tmp_path: Path) -> None:
