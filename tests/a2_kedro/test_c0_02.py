@@ -410,6 +410,14 @@ def test_other_reader_exceptions_are_not_swallowed() -> None:
         case.resolve(reader=reader)
 
 
+def test_reader_cancellation_is_not_swallowed() -> None:
+    case = two_entries()
+    reader = MapReader({1: asyncio.CancelledError(), 2: case.values[1]})
+    with pytest.raises(asyncio.CancelledError):
+        case.resolve(reader=reader)
+    check(reader.calls[0].release_entry_seq == 1, "cancel hit first read")
+
+
 def test_wrong_reader_answers_are_contract_errors_without_leaks() -> None:
     case = two_entries()
     for answer in (case.values[1], "not released", None):
