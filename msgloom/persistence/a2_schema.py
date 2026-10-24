@@ -16,6 +16,15 @@ only read. :func:`migrate_schema4_to_v5` is the only writer. It needs a
 inside one ``BEGIN IMMEDIATE`` transaction. Any failure, including a
 ``BaseException``, rolls back to the unchanged schema 4 file.
 
+Deferred (see ``docs/notes/a2-v2-db-deferred.md``): the migration gate only
+shape-checks ``MigrationGate.backup_sha256``. This module never reads a
+backup file, so the digest is not proof that a backup exists. The real
+operator gate is the later C0-11c CLI, which must hash and verify the backup
+before it calls :func:`migrate_schema4_to_v5`. The old store modules
+(``schema_store.py``, ``store.py``, ``intake_store.py``, ``async_store.py``
+and ``intake_completion.py``) are not integrated yet and still accept only
+schema 4.
+
 Failure handling: every refusal raises :exc:`A2SchemaError` with a short
 reason code. Messages never contain a path, a key, a row value or SQL text
 from the file under inspection.
@@ -332,6 +341,8 @@ class MigrationGate:
     ``backup_sha256`` is the digest of the verified backup the operator
     took. ``schema4_digest`` is the pinned digest the operator read from
     the read-only verification step. The function does not read the backup.
+    The backup digest is only shape-checked (64 lowercase hex characters).
+    The C0-11c CLI must verify the real backup before it builds this gate.
     """
 
     backup_sha256: str
