@@ -5,7 +5,7 @@ C0-20c, F0_PRODUCTION_ADMISSION and the CI gate stay open.
 
 ## Result
 
-Five accepted C0 branches merge with no textual conflict. Five test files
+Four accepted C0 branches merge with no textual conflict. Four test files
 had drift that only shows after the merge. This branch fixes them. After
 the fix, 2,780 focused tests pass.
 
@@ -62,7 +62,7 @@ The +6 lines come from C0-17c. C0-17h still needs a Supervisor ruling.
 No changed Python file has 500 lines or more. No added line has a Python
 `assert`.
 
-## Verification (head before this note: `e3a51f0` plus the test fix)
+## Verification (merge head `e3a51f0` plus the test-fix commit)
 
 - `pytest` on `tests/a2_kedro tests/persistence tests/persistence_fences
   tests/persistence_reconciliation tests/phase1_foundation
