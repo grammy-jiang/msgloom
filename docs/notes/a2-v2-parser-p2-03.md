@@ -74,26 +74,47 @@ Detected (raw bytes and Flate object streams):
 - `/Subtype /Page` (invalid PDF, but counted).
 - `#xx` hex escapes in `/Type`, `/Subtype` and `/Page`, for example
   `/T#79pe /P#61ge`. The patterns match the escape; no byte is rewritten.
-- Leaves in object streams (`/Type /ObjStm`, PDF 1.5 and later). The scan
-  inflates each stream with `zlib.decompressobj` in chunks. Bounds: 256
-  streams, 16 MiB compressed input and 8 MiB inflated output over all
-  streams. A stream with no `/Filter` is already in the raw scan.
-- `page_count_unverified` is set when an object stream cannot be checked:
-  damaged or cut Flate data, a cap hit, a filter other than a single
-  `FlateDecode`, a `/Predictor`, an indirect `/Filter`, or a stream marker
-  without stream data. The result is `INCOMPLETE`.
+- Leaves in Flate object streams (PDF 1.5 and later). The scan does not
+  look for the exact key pair `/Type /ObjStm` and does not try to find the
+  start of the dictionary. It looks for the word `ObjStm` (also `Obj#53tm`;
+  a comment between `/Type` and `/ObjStm` is covered). For each word it
+  takes the 8 KiB before it up to the next `>>`, white space, `stream` and
+  CRLF or LF. It decodes the `#xx` escapes in that text. Then it checks for
+  `/Filter`, `Predictor`, `DecodeParms` and `Crypt`, so `/Fil#74er` and
+  `/Pred#69ctor` are seen. The text can hold a name such as `/xobj`, a string
+  such as `(stream)` or a fake `N G obj` token; none of them can hide a key.
+  The scan inflates each stream with `zlib.decompressobj` in chunks. Bounds:
+  256 streams, 16 MiB compressed input, 8 MiB inflated output and 65 536
+  decoded escapes over all streams. A stream with no `/Filter` and plain
+  integer data is already in the raw scan.
+- `page_count_unverified` is set (result `INCOMPLETE`) when an object stream
+  cannot be checked:
+  - no stream start follows the word within 8 KiB, the text before the word
+    has no `endobj` and no `N G obj` header, or `endstream` is missing;
+  - more than one `/Filter` key, a filter other than one plain
+    `FlateDecode` (single name or one-item array, no comment in it), or a
+    `Predictor`, `DecodeParms` or `Crypt` word;
+  - no `/Filter` and stream data that does not start with two integers;
+  - damaged or cut Flate data, or a cap hit.
 
 Not detected (residual limits):
 
 - Leaf objects with no `/Type` and no `/Subtype` entry.
-- A comment (`%`) between `/Type` and `/Page`.
-- Leaves in an object stream whose dictionary has no `/Type /ObjStm`.
+- A comment (`%`) between `/Type` and `/Page` of a leaf.
+- Leaves in an object stream whose dictionary has no `ObjStm` word.
+- A dictionary longer than 8 KiB that holds the `/Filter` key more than 8 KiB
+  before the word `ObjStm`, together with a fake `endobj` and `N G obj` in
+  the last 8 KiB. The scan does not parse PDF strings.
 - Leaves in an object stream with an encrypted body are reported as
   `page_count_unverified`, not counted.
-- False positives: old page revisions (incremental update) and the token
-  inside other stream data raise `page_count_mismatch`.
-- Cost: one pass over the file for each pattern; 30 MB of hostile repeats
-  takes about 1.5 s or less.
+- False positives (all `INCOMPLETE`): old page revisions (incremental
+  update), the token inside other stream data, and the 8 KiB text holding
+  the end of the previous object, for example the dictionary of a short
+  previous stream with its own `/Filter` or `Predictor`. A hidden page that
+  returns `COMPLETE` is not accepted; a false `INCOMPLETE` is.
+- Cost: one pass over the file for each pattern; each `ObjStm` word reads at
+  most 16 KiB and at most 256 words are read; 30 MB of hostile repeats takes
+  about 1.5 s or less.
 
 ## Encryption
 
