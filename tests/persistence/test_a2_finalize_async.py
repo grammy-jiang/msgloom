@@ -128,6 +128,37 @@ def test_identical_replay_is_replayed(env: Env, tmp_path: Path) -> None:
     check(env.rows() == [terminal_row(env)] and len(env.files()) == 1, "unchanged")
 
 
+@pytest.mark.parametrize("kind", ["success", "refusal"])
+def test_worker_connection_is_closed_on_every_path(
+    env: Env, tmp_path: Path, monkeypatch: pytest.MonkeyPatch, kind: str
+) -> None:
+    real = facade_module.connect_existing
+    opened: list[sqlite3.Connection] = []
+
+    def recording(path: Path) -> sqlite3.Connection:
+        connection = real(path)
+        opened.append(connection)
+        return connection
+
+    monkeypatch.setattr(facade_module, "connect_existing", recording)
+    request = env.request(
+        proof=hb.attempt_proof("a9", "e") if kind == "refusal" else None
+    )
+
+    async def body(persistence: Phase1Persistence) -> None:
+        facade = facade_for(persistence, env)
+        if kind == "refusal":
+            with pytest.raises(A2FinalizeError):
+                await facade.finalize(request)
+        else:
+            await facade.finalize(request)
+
+    run_with_persistence(tmp_path, body)
+    check(len(opened) == 1, "one connection per call")
+    with pytest.raises(sqlite3.ProgrammingError):
+        opened[0].execute("SELECT 1")
+
+
 def test_conflicting_terminal_values_propagate(env: Env, tmp_path: Path) -> None:
     other = env.request(proof=hb.attempt_proof("a2", "d"))
     seen: list[BaseException] = []
