@@ -1,0 +1,143 @@
+{
+  "schema": "a2-golden-case-file@1",
+  "task_id": "T0-09",
+  "title": "Prefect lost, duplicate hint and partial A1 finish: the committed release and cursor are the only authority",
+  "annotator": "claude-sonnet-5.5 worker, hand annotation on 2026-10-24 (human-style reading; no program produced any expected value)",
+  "independence_statement": "Scenarios are written as short stories with hand-chosen release numbers and cursor values. Expected outcomes follow the written rules: the scheduler is external, cursor progress means durable admission, A1 releases are atomic with authority, and hints are not evidence. No scheduler, A1 store or A2 code was run or imported.",
+  "provenance": {
+    "sources": [
+      "docs/phase-1/architecture.md: Prefect 3 is an External scheduler; package does not poll Prefect",
+      "docs/architecture.md: no scheduling loop, schedule registration or Prefect client in the package",
+      "docs/superpowers/specs/2026-10-03-a1-a2-handoff-contract-design.md: H6 (authority cannot advance without recoverable publication), H7, release groups, A2 consumer cursor, 'one global A2 cursor' rejected",
+      "docs/notes/task15-final-qualification-20261016.md: intake commits workset, pending index and consumer cursor atomically; cursor progress means durable admission, not successful preparation",
+      "docs/notes/phase1-claim-fencing.md and docs/notes/phase1-claim-reconciliation.md",
+      "PROPOSED POLICY (N08 only): the A2 reaction to a violated H6 invariant is not stated in the cited docs. See the case rationale.",
+      "tests/test_a1_handoff_scheduled_e2e.py (A1 scheduled e2e shape, read only)"
+    ]
+  },
+  "canary": "CANARY-PII-7731-ZQ",
+  "cases": [
+    {
+      "case_id": "T0-09-P01",
+      "polarity": "positive",
+      "title": "Prefect run lost after A1 committed release 7: next run still processes release 7",
+      "input": {
+        "a1_committed_releases": [5, 6, 7],
+        "consumer_cursor_before": 5,
+        "scheduler_events": ["run-started", "run-lost (no state recorded)"]
+      },
+      "expected": {"work_to_do_on_next_run": [6, 7], "cursor_after_next_run_if_admitted": 7, "scheduler_state_consulted": false}
+    },
+    {
+      "case_id": "T0-09-P02",
+      "polarity": "positive",
+      "title": "Duplicate scheduler hint for release 7 is harmless",
+      "input": {
+        "a1_committed_releases": [5, 6, 7],
+        "consumer_cursor_before": 7,
+        "scheduler_hints": ["new-release:7", "new-release:7"]
+      },
+      "expected": {"work_to_do": [], "cursor_after": 7, "duplicate_admission": false}
+    },
+    {
+      "case_id": "T0-09-P03",
+      "polarity": "positive",
+      "title": "Hint arrives before commit and is ignored until commit exists",
+      "input": {"a1_committed_releases": [5, 6], "consumer_cursor_before": 6, "scheduler_hints": ["new-release:7"]},
+      "expected": {"work_to_do": [], "cursor_after": 6, "reason": "release 7 is not committed"}
+    },
+    {
+      "case_id": "T0-09-P04",
+      "polarity": "positive",
+      "title": "A1 crashed before commit: staged facts stay invisible",
+      "input": {
+        "a1_committed_releases": [5, 6],
+        "a1_staged_uncommitted": {"release": 7, "entries": 12},
+        "consumer_cursor_before": 6
+      },
+      "expected": {"work_to_do": [], "staged_entries_visible": false, "cursor_after": 6}
+    },
+    {
+      "case_id": "T0-09-P05",
+      "polarity": "positive",
+      "title": "Cursor advanced by admission but preparation failed: pending work stays and is retried",
+      "input": {"cursor_after_admission": 7, "pending_index": [7], "preparation_result_for_7": "failed"},
+      "expected": {"cursor_value": 7, "pending_index_after": [7], "release_7_claimed_prepared": false, "next_finite_run_retries": [7]}
+    },
+    {
+      "case_id": "T0-09-P06",
+      "polarity": "positive",
+      "title": "Two streams on one source advance independently",
+      "input": {
+        "source_id": "src-example-1",
+        "committed": {"outlook_mail": [1, 2], "todo": [1]},
+        "cursor_before": {"outlook_mail": 1, "todo": 1}
+      },
+      "expected": {"work_to_do": {"outlook_mail": [2], "todo": []}, "cursor_after": {"outlook_mail": 2, "todo": 1}}
+    },
+    {
+      "case_id": "T0-09-N01",
+      "polarity": "negative",
+      "title": "Prefect says 'success' but no admission was committed: cursor must not move",
+      "input": {"prefect_final_state": "Completed", "committed_cursor": 5, "a1_committed_releases": [5, 6, 7]},
+      "expected": {"cursor_after": 5, "trust_scheduler_state": false, "work_to_do": [6, 7]}
+    },
+    {
+      "case_id": "T0-09-N02",
+      "polarity": "negative",
+      "title": "Prefect says 'failed' but admission did commit: work is not repeated",
+      "input": {"prefect_final_state": "Failed", "committed_cursor": 7, "a1_committed_releases": [5, 6, 7]},
+      "expected": {"cursor_after": 7, "work_to_do": [], "trust_scheduler_state": false}
+    },
+    {
+      "case_id": "T0-09-N03",
+      "polarity": "negative",
+      "title": "Partial A1 finish (observations written, no release group) is not consumable",
+      "input": {
+        "a1_journal_rows": 40,
+        "a1_release_groups_committed": 0,
+        "authority_advanced": false,
+        "consumer_cursor_before": 6
+      },
+      "expected": {"work_to_do": [], "rows_treated_as_consumable": false, "reason": "raw journal row is not a release"}
+    },
+    {
+      "case_id": "T0-09-N04",
+      "polarity": "negative",
+      "title": "Authority advanced but release missing is a defect, never silently skipped",
+      "input": {"authority_revision": 9, "release_group_for_revision_9": null},
+      "expected": {"work_to_do": [], "cursor_advanced": false, "release_fabricated": false, "reason": "A2 reads only committed release entries; no release entry exists for revision 9"},
+      "rationale": "Handoff spec H6 forbids this A1 state, so A1 can never present it as a release. A2 consumes only committed releases and creates none. What A2 reports about the violated invariant is not decided by the cited rules; see T0-09-N08."
+    },
+    {
+      "case_id": "T0-09-N05",
+      "polarity": "negative",
+      "title": "A2 may not mark A1 rows as consumed",
+      "input": {"a2_action": "write consumed flag on A1 release row 7"},
+      "expected": {"action_allowed": false, "a2_state_location": "separate Phase 1 store"}
+    },
+    {
+      "case_id": "T0-09-N06",
+      "polarity": "negative",
+      "title": "A hint payload carrying release content is not evidence",
+      "input": {"scheduler_hint": {"release": 7, "inline_content": "CANARY-PII-7731-ZQ"}, "a1_committed_releases": [5, 6]},
+      "expected": {"content_used": false, "work_to_do": [], "canary_persisted_anywhere": false}
+    },
+    {
+      "case_id": "T0-09-N07",
+      "polarity": "negative",
+      "title": "Package must not poll or call Prefect",
+      "input": {"proposal": "A2 node calls the Prefect API to learn the last good run"},
+      "expected": {"proposal_accepted": false, "reason": "package has no Prefect client; the scheduler stays outside"}
+    },
+    {
+      "case_id": "T0-09-N08",
+      "polarity": "negative",
+      "policy_status": "proposed_owner_signoff_needed",
+      "title": "PROPOSED POLICY: authority advanced but release missing is surfaced, never silently ignored",
+      "input": {"authority_revision": 9, "release_group_for_revision_9": null, "visible_to_a2": "authority revision and release table of the saved A1 catalog"},
+      "expected": {"silently_ignored": false, "outcome": "visible_failure", "cursor_advanced": false},
+      "rationale": "PROPOSED POLICY requiring owner sign-off. H6 and H18 do not say how A2 reacts to a violated A1 invariant. H18 covers a bad entry that exists. It does not cover a missing entry. The oracle proposes a visible failure that does not advance the cursor."
+    }
+  ]
+}

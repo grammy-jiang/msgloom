@@ -1,0 +1,143 @@
+{
+  "schema": "a2-golden-case-file@1",
+  "task_id": "T0-01",
+  "title": "A1 fixed behavior: 20 Spiders, 7 streams, original Task 15 acceptance rules",
+  "annotator": "claude-sonnet-5.5 worker, hand annotation on 2026-10-24 (human-style reading; no program produced any expected value)",
+  "independence_statement": "Every expected value below was typed by hand after reading the cited A1 files. No A2 or Kedro implementation code was imported or run. No script enumerated the Spiders; the list was read with a text search of 'name = ' lines and counted by eye, then cross-checked against two prose statements ('20 Spiders') in the A1 docs.",
+  "provenance": {
+    "sources": [
+      "message_ingest/spiders/microsoft/**: 'name = ' class attributes (read 2026-10-24)",
+      "message_ingest/acquisition/handoff.py: class AcquisitionStream (7 members)",
+      "docs/superpowers/specs/2026-10-03-a1-a2-handoff-contract-design.md: sections 'Acquisition stream', 12 'Seventeen-Spider release matrix', Teams extension table",
+      "docs/notes/task15-final-qualification-20261016.md: 'The installed scope is 20 Spiders'",
+      "docs/notes/a1-closeout.md: 'The installed inventory is 20 Spiders'"
+    ],
+    "what_was_read": "Twenty Spider name attributes were found: 1 profile, 3 contacts, 3 OneDrive, 3 Teams, 4 Outlook mail, 4 Outlook calendar, 2 To Do. Seven AcquisitionStream members were found. The original Task 15 baseline is 17 Spiders (the 20 minus 3 Teams Spiders)."
+  },
+  "cases": [
+    {
+      "case_id": "T0-01-P01",
+      "polarity": "positive",
+      "title": "Installed Spider inventory is exactly 20 names",
+      "input": {"kind": "spider_inventory_claim"},
+      "expected": {
+        "spider_count": 20,
+        "spiders": [
+          "microsoft_profile",
+          "microsoft_contacts_discover",
+          "microsoft_contacts_sync",
+          "microsoft_contacts_delta",
+          "microsoft_onedrive_discover",
+          "microsoft_onedrive_delta",
+          "microsoft_onedrive_content",
+          "microsoft_teams_chat_discover",
+          "microsoft_teams_channel_discover",
+          "microsoft_teams_notification_reconcile",
+          "outlook_discover",
+          "outlook_folder_delta",
+          "outlook_delta",
+          "outlook_full",
+          "outlook_calendar_discover",
+          "outlook_calendar_window",
+          "outlook_calendar_delta",
+          "outlook_calendar_full",
+          "microsoft_todo_discover",
+          "microsoft_todo_sync"
+        ]
+      },
+      "rationale": "Counted by eye from the 'name = ' lines. Matches the prose count in a1-closeout.md and task15-final-qualification-20261016.md."
+    },
+    {
+      "case_id": "T0-01-P02",
+      "polarity": "positive",
+      "title": "Exactly 7 acquisition streams exist",
+      "input": {"kind": "stream_inventory_claim"},
+      "expected": {
+        "stream_count": 7,
+        "streams": ["outlook_mail", "outlook_calendar", "todo", "contacts", "onedrive", "teams_chat", "teams_channel"]
+      },
+      "rationale": "AcquisitionStream in handoff.py lists these 7 values. The handoff spec lists the same 7."
+    },
+    {
+      "case_id": "T0-01-P03",
+      "polarity": "positive",
+      "title": "Teams notification reconciliation adds no eighth stream",
+      "input": {"spider": "microsoft_teams_notification_reconcile"},
+      "expected": {"contributes_to_streams": ["teams_chat", "teams_channel"], "creates_new_stream": false},
+      "rationale": "Spec text: 'Teams notification reconciliation contributes to the two Teams streams; it does not create a third stream.'"
+    },
+    {
+      "case_id": "T0-01-P04",
+      "polarity": "positive",
+      "title": "Profile Spider is operational output, not an A2 stream",
+      "input": {"spider": "microsoft_profile"},
+      "expected": {"stream": null, "handoff_spider": false, "handoff_spider_count": 19},
+      "rationale": "Spec: 'Profile output is operational output, not an A2 stream.' 20 minus profile gives 19 Spiders that can publish a release."
+    },
+    {
+      "case_id": "T0-01-P05",
+      "polarity": "positive",
+      "title": "Original Task 15 baseline is 17 Spiders; Teams adds 3 later",
+      "input": {"kind": "baseline_claim"},
+      "expected": {
+        "original_task15_spider_count": 17,
+        "teams_extension_spiders": [
+          "microsoft_teams_chat_discover",
+          "microsoft_teams_channel_discover",
+          "microsoft_teams_notification_reconcile"
+        ],
+        "extra_task15_scenarios_inferred_for_teams": 0
+      },
+      "rationale": "Spec Teams extension table: 'No additional Task 15 scenario is inferred from their presence.'"
+    },
+    {
+      "case_id": "T0-01-P06",
+      "polarity": "positive",
+      "title": "Streams advance independently even with one source ID",
+      "input": {"kind": "cursor_claim", "source_id": "src-example-1", "streams": ["outlook_mail", "todo"]},
+      "expected": {"global_cursor_allowed": false, "cursor_key_parts": ["catalog", "source_id", "stream", "consumer_identity"]},
+      "rationale": "Spec rejects 'one global A2 cursor' because one source ID can expose multiple streams. A2 consumer cursor is per catalog, source_id, stream and stable consumer identity."
+    },
+    {
+      "case_id": "T0-01-N01",
+      "polarity": "negative",
+      "title": "Claim of 17 installed Spiders is wrong",
+      "input": {"claim": "installed Spider count is 17"},
+      "expected": {"claim_accepted": false, "correct_count": 20, "reason": "17 is the original 2026-10-03 baseline, not the installed scope"}
+    },
+    {
+      "case_id": "T0-01-N02",
+      "polarity": "negative",
+      "title": "Claim of 8 streams (a Teams notification stream) is wrong",
+      "input": {"claim": "teams_notification is a stream"},
+      "expected": {"claim_accepted": false, "correct_count": 7}
+    },
+    {
+      "case_id": "T0-01-N03",
+      "polarity": "negative",
+      "title": "A2 plan may not rewrite A1 acceptance rules",
+      "input": {"proposal": "A2 Kedro author redefines the A1 release gate or the 28-gate Task 15 qualification"},
+      "expected": {
+        "proposal_accepted": false,
+        "owner_of_rule": "A1 (original Task 15 acceptance)",
+        "a2_allowed_action": "consume committed releases only",
+        "a1_rows_mutated_by_a2": false
+      },
+      "rationale": "Spec non-goals: A2 does not mutate A1 rows as consumed, and A1 does not import A2. Task 15 closeout fixes the exact-SHA 28-gate result; A2 does not transfer or restate it."
+    },
+    {
+      "case_id": "T0-01-N04",
+      "polarity": "negative",
+      "title": "Live Teams tenant support may not be claimed from local fixtures",
+      "input": {"claim": "Teams live tenant acceptance is proven"},
+      "expected": {"claim_accepted": false, "reason": "Live work/school tenant acceptance is explicitly out of scope; only local fixtures exist"}
+    },
+    {
+      "case_id": "T0-01-N05",
+      "polarity": "negative",
+      "title": "Insertion order may not imply provider chronology",
+      "input": {"claim": "A1 SQLite row order is the provider event order"},
+      "expected": {"claim_accepted": false, "reason": "Spec non-goal: do not infer provider chronology from SQLite insertion order"}
+    }
+  ]
+}

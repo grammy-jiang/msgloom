@@ -1,0 +1,221 @@
+{
+  "schema": "a2-golden-case-file@1",
+  "task_id": "T0-02",
+  "title": "Mail: multi-MIME, inline quote, duplicate Message-ID, ancestors and missing references",
+  "annotator": "claude-sonnet-5.5 worker, hand annotation on 2026-10-24 (human-style reading; no program produced any expected value)",
+  "independence_statement": "Message bodies are short synthetic texts written by hand. Contributed text, quoted text, ancestor lists and missing references were decided by reading each body as a person would. No parser, grouping code or A2 code was run or imported.",
+  "provenance": {
+    "sources": [
+      "docs/notes/preparation-semantics.md: 'Grouping relationship conventions' (in_reply_to, outlook_conversation, missing parent, cycles)",
+      "docs/notes/parser-mime-html.md: part references 1, 1.1, 1.2; inline and attachment handling",
+      "docs/notes/parser-qualification.md: MIME row (quoted-printable alternatives, multipart relationships, base64 attachment)",
+      "docs/notes/mail-provisional-authority.md (mail authority context)",
+      "tests/outlook_mail_handoff_fixtures.py (A1 accepted mail fixture shapes, read only)",
+      "A2-LEVEL DECISION, NOT FROM A1 DOCS: the split of a reply body into contributed text and quoted text (P02, P03, N04) and the oldest-first ancestor order (P03) are task-level annotations. The cited A1 docs do not define them. They need owner sign-off like any A2 rule.",
+      "Scope and parent presence in P02, P03 and P04 follow docs/notes/preparation-semantics.md 'Grouping relationship conventions': a record carries exactly one source_scope, and an exact present parent with the same scope can confirm membership."
+    ]
+  },
+  "canary": "CANARY-PII-7731-ZQ",
+  "cases": [
+    {
+      "case_id": "T0-02-P01",
+      "polarity": "positive",
+      "title": "multipart/alternative: plain and HTML alternatives are extracted independently",
+      "input": {
+        "message_id": "<m1@mail.example.invalid>",
+        "from": "Alice Example <alice@example.invalid>",
+        "parts": [
+          {"ref": "1", "type": "multipart/alternative"},
+          {"ref": "1.1", "type": "text/plain", "text": "Please review the draft by Friday."},
+          {"ref": "1.2", "type": "text/html", "text": "<p>Please review the draft by Friday.</p>"}
+        ]
+      },
+      "expected": {
+        "extracted_part_refs": ["1.1", "1.2"],
+        "text_by_part": {
+          "1.1": "Please review the draft by Friday.",
+          "1.2": "Please review the draft by Friday."
+        },
+        "alternatives_equivalence_inferred": false,
+        "preferred_alternative_inferred": false,
+        "alternatives_limitation_present": true,
+        "ancestors": [],
+        "missing_references": []
+      },
+      "rationale": "docs/notes/parser-mime-html.md: 'MIME alternatives are extracted independently and carry a limitation stating that equivalence or preferred alternatives were not inferred.' This case does not decide how A2 merges the two texts. It fixes only the A1 behavior."
+    },
+    {
+      "case_id": "T0-02-P02",
+      "polarity": "positive",
+      "policy_status": "task_goal_decision",
+      "title": "Inline quote under a reply: only the new lines are contributed",
+      "input": {
+        "message_id": "<m2@mail.example.invalid>",
+        "source_scope": "scope-mail-account-A",
+        "in_reply_to": "<m1@mail.example.invalid>",
+        "references": ["<m1@mail.example.invalid>"],
+        "present_records": [
+          {"message_id": "<m1@mail.example.invalid>", "source_scope": "scope-mail-account-A"}
+        ],
+        "text": "I reviewed it. Section 2 is unclear.\n\nOn Mon, Alice Example wrote:\n> Please review the draft by Friday."
+      },
+      "expected": {
+        "contributed_text": "I reviewed it. Section 2 is unclear.",
+        "quoted_text": "Please review the draft by Friday.",
+        "attribution_line": "On Mon, Alice Example wrote:",
+        "ancestors": ["<m1@mail.example.invalid>"],
+        "missing_references": [],
+        "grouping_status": "confirmed",
+        "group_confirmed": true
+      },
+      "rationale": "Lines marked with '>' repeat message m1. The attribution line is neither contribution nor quote body."
+    },
+    {
+      "case_id": "T0-02-P03",
+      "polarity": "positive",
+      "policy_status": "task_goal_decision",
+      "title": "Interleaved inline quote: reply text between quoted lines is contributed",
+      "input": {
+        "message_id": "<m3@mail.example.invalid>",
+        "source_scope": "scope-mail-account-A",
+        "in_reply_to": "<m2@mail.example.invalid>",
+        "references": ["<m1@mail.example.invalid>", "<m2@mail.example.invalid>"],
+        "present_records": [
+          {"message_id": "<m1@mail.example.invalid>", "source_scope": "scope-mail-account-A"},
+          {"message_id": "<m2@mail.example.invalid>", "source_scope": "scope-mail-account-A", "in_reply_to": "<m1@mail.example.invalid>"}
+        ],
+        "text": "> I reviewed it.\nThanks.\n> Section 2 is unclear.\nI will rewrite section 2 today."
+      },
+      "expected": {
+        "contributed_text": "Thanks.\nI will rewrite section 2 today.",
+        "quoted_text": "I reviewed it.\nSection 2 is unclear.",
+        "ancestors": ["<m1@mail.example.invalid>", "<m2@mail.example.invalid>"],
+        "ancestor_order": "oldest first, as listed in References",
+        "missing_references": [],
+        "grouping_status": "confirmed",
+        "group_confirmed": true
+      }
+    },
+    {
+      "case_id": "T0-02-P04",
+      "polarity": "positive",
+      "title": "References names a message that is not in the catalog",
+      "input": {
+        "message_id": "<m4@mail.example.invalid>",
+        "source_scope": "scope-mail-account-A",
+        "in_reply_to": "<m0@mail.example.invalid>",
+        "references": ["<m0@mail.example.invalid>"],
+        "present_message_ids": ["<m4@mail.example.invalid>"],
+        "text": "Following up on the budget."
+      },
+      "expected": {
+        "contributed_text": "Following up on the budget.",
+        "ancestors": [],
+        "missing_references": ["<m0@mail.example.invalid>"],
+        "grouping_status": "uncertain",
+        "group_confirmed": false
+      },
+      "rationale": "Preparation semantics: a missing parent is uncertain. The parent is not guessed."
+    },
+    {
+      "case_id": "T0-02-P05",
+      "polarity": "positive",
+      "title": "Attachment part is separate from the body contribution",
+      "input": {
+        "message_id": "<m5@mail.example.invalid>",
+        "parts": [
+          {"ref": "1", "type": "multipart/mixed"},
+          {"ref": "1.1", "type": "text/plain", "text": "Report attached."},
+          {"ref": "1.2", "type": "application/pdf", "disposition": "attachment", "filename": "report.pdf"}
+        ]
+      },
+      "expected": {
+        "contributed_text": "Report attached.",
+        "attachment_parts": ["1.2"],
+        "attachment_text_merged_into_body": false
+      }
+    },
+    {
+      "case_id": "T0-02-N01",
+      "polarity": "negative",
+      "title": "Duplicate Message-ID with different bodies must not be merged or silently deduplicated",
+      "input": {
+        "records": [
+          {"version_ref": "mail-v1", "message_id": "<dup@mail.example.invalid>", "text": "Version one body."},
+          {"version_ref": "mail-v2", "message_id": "<dup@mail.example.invalid>", "text": "A different body with the same id."}
+        ]
+      },
+      "expected": {
+        "records_kept": 2,
+        "merged": false,
+        "message_id_treated_as_unique_key": false,
+        "grouping_status_for_both": "uncertain",
+        "reason": "ambiguous identity: one Message-ID, two distinct source versions"
+      },
+      "rationale": "Records are identified by exact VersionRef, not by Message-ID. A reply that points to <dup@...> has two possible parents, which is ambiguous, not confirmed."
+    },
+    {
+      "case_id": "T0-02-N02",
+      "polarity": "negative",
+      "title": "Reply pointing at an ambiguous duplicate parent is not confirmed",
+      "input": {
+        "message_id": "<child@mail.example.invalid>",
+        "in_reply_to": "<dup@mail.example.invalid>",
+        "candidate_parents": ["mail-v1", "mail-v2"]
+      },
+      "expected": {"grouping_status": "uncertain", "group_confirmed": false, "chosen_parent": null}
+    },
+    {
+      "case_id": "T0-02-N03",
+      "polarity": "negative",
+      "title": "Equal subjects never create a group",
+      "input": {
+        "records": [
+          {"version_ref": "mail-a", "message_id": "<a@mail.example.invalid>", "subject": "Budget"},
+          {"version_ref": "mail-b", "message_id": "<b@mail.example.invalid>", "subject": "Budget"}
+        ]
+      },
+      "expected": {"grouping_status_each": "none", "same_group": false},
+      "rationale": "Preparation semantics: grouping never reads subject text."
+    },
+    {
+      "case_id": "T0-02-N04",
+      "polarity": "negative",
+      "policy_status": "task_goal_decision",
+      "title": "Quoted text must not be counted as the author's contribution",
+      "input": {
+        "message_id": "<m6@mail.example.invalid>",
+        "text": "Sounds good.\n> Send the invoice to Bob Example <bob@example.invalid>. CANARY-PII-7731-ZQ"
+      },
+      "expected": {
+        "contributed_text": "Sounds good.",
+        "quoted_text": "Send the invoice to Bob Example <bob@example.invalid>. CANARY-PII-7731-ZQ",
+        "canary_in_contributed_text": false
+      }
+    },
+    {
+      "case_id": "T0-02-N05",
+      "polarity": "negative",
+      "title": "A parent cycle is invalid, not a group",
+      "input": {
+        "records": [
+          {"message_id": "<c1@mail.example.invalid>", "in_reply_to": "<c2@mail.example.invalid>"},
+          {"message_id": "<c2@mail.example.invalid>", "in_reply_to": "<c1@mail.example.invalid>"}
+        ]
+      },
+      "expected": {"grouping_status_each": "uncertain", "group_confirmed": false, "reason": "parent cycle"}
+    },
+    {
+      "case_id": "T0-02-N06",
+      "polarity": "negative",
+      "title": "Shared Outlook conversation ID alone is support only",
+      "input": {
+        "records": [
+          {"version_ref": "mail-x", "conversation_id": "conv-1"},
+          {"version_ref": "mail-y", "conversation_id": "conv-1"}
+        ]
+      },
+      "expected": {"grouping_status_each": "uncertain", "group_confirmed": false}
+    }
+  ]
+}
