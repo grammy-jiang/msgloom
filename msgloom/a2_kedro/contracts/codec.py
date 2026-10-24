@@ -136,7 +136,9 @@ class A2Model(BaseModel):
     * A text value is at most ``MAX_TEXT_BYTES`` bytes in UTF-8.
     """
 
-    model_config = ConfigDict(frozen=True, strict=True, extra="forbid")
+    model_config = ConfigDict(
+        frozen=True, strict=True, extra="forbid", hide_input_in_errors=True
+    )
 
     @field_validator("*", mode="before")
     @classmethod

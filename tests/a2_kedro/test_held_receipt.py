@@ -5,6 +5,7 @@ from __future__ import annotations
 from typing import Any
 
 import pytest
+from pydantic import ValidationError
 
 from msgloom.a2_kedro.contracts.codec import A2ContractError
 from msgloom.a2_kedro.contracts.held import HeldReason, InputDisposition
@@ -252,3 +253,11 @@ def test_baseline_receipt_uses_ordered_source_and_selection() -> None:
         receipt((terminal(workset(1), 0, prepared_ref("1")),)).validate_against(
             bws, WORKSET_REF
         )
+
+
+@pytest.mark.parametrize("cls", [TerminalRoot, TransitionBatch, CompletionReceipt])
+def test_receipt_model_errors_never_carry_input_values(cls: Any) -> None:
+    secret = "secret-payload-sentinel"
+    with pytest.raises(ValidationError) as caught:
+        cls(extra_field=secret)
+    check(secret not in str(caught.value), "error text leaks input")
