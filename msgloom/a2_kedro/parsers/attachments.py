@@ -11,7 +11,7 @@ parses attachment content, so nothing is fetched or executed.
 Attachment-like: a part that is not a ``multipart/*`` container and that
 is one of the following. The first matching rule gives the role.
 
-- ``embedded_message``: media type ``message/rfc822``.
+- ``embedded_message``: media type ``message/rfc822`` or ``message/global``.
 - ``calendar``: media type ``text/calendar`` or ``application/ics``.
 - ``attachment``: disposition ``attachment``; or a declared filename and
   no disposition; or a non-text part with no Content-ID, outside a
@@ -183,7 +183,7 @@ def _role(
     """Return the role of a part, or ``None`` if it is not attachment-like."""
     if kind.startswith("multipart/"):
         return None
-    if kind == "message/rfc822":
+    if kind in _EMBEDDED:
         return "embedded_message"
     if kind in _CALENDAR:
         return "calendar"
@@ -234,12 +234,13 @@ def _message_path(part: MimePart, by_path: dict[str, MimePart]) -> str | None:
         ancestor = by_path.get(current)
         if ancestor is None:
             return None
-        if ancestor.content_type == "message/rfc822":
+        if ancestor.content_type in _EMBEDDED:
             return ancestor.path
         current = ancestor.parent
     return None
 
 
+_EMBEDDED = frozenset({"message/rfc822", "message/global"})
 _STATUS_CODE = {
     "empty": "attachment_empty",
     "undecodable": "attachment_undecodable",
@@ -334,6 +335,13 @@ def _check_arguments(result: object, data: object, declared_count: object) -> by
     return bytes(data)
 
 
+def _identity_encoded(data: bytes, part: MimePart) -> bool:
+    """Return whether the part body is stored without a transfer encoding."""
+    header = data[part.start : min(part.body_start, part.start + MAX_HEADER_BYTES)]
+    value = BytesHeaderParser().parsebytes(header)["content-transfer-encoding"]
+    return str(value or "7bit").strip().lower() in {"7bit", "8bit", "binary"}
+
+
 def inventory_attachments(
     result: MimeParseResult,
     data: bytes,
@@ -373,6 +381,15 @@ def inventory_attachments(
                 records.append(record)
             if code is not None:
                 limits.add((code, part.path))
+        # P2-01 expands only an identity-encoded embedded message as child
+        # ``.1``. Any other message part may hide attachments, so the gap
+        # is reported and never dropped.
+        parents = {part.parent for part in result.parts}
+        for part in result.parts:
+            if part.content_type in _EMBEDDED and (
+                part.path not in parents or not _identity_encoded(raw, part)
+            ):
+                limits.add(("attachment_nested_unexpanded", part.path))
         root = result.parts[0] if result.parts else None
         claimed = root is not None and not seen and _claims_attachments(raw, root)
         if claimed or (declared_count is not None and declared_count != seen):

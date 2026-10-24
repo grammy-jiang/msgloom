@@ -94,3 +94,20 @@ apply.
 - The hash covers the decoded payload of a leaf. For `message/rfc822` it
   covers the inner message bytes. It does not cover any decoded child.
 - The `.eml` filename of an embedded message is only a label.
+
+## Review follow-up (commit after 72fc3dd)
+
+- An embedded message part (`message/rfc822` or `message/global`) whose body
+  has a transfer encoding other than 7bit, 8bit or binary, or has no
+  expanded child, now creates the `attachment_nested_unexpanded` limitation
+  with the part path. Before this fix a nested attachment in such a part was
+  dropped and the status stayed COMPLETE. The part itself stays in the
+  inventory.
+- Known gaps, not yet reported as limitations (review notes):
+  - uuencoded attachments in a text body;
+  - attachments inside a part with an unrecognized content type;
+  - undecodable filename bytes become U+FFFD without the
+    `filename_sanitized` flag;
+  - a header cut at 64 KB can leave a leading quote in the filename.
+- Cost: a 1.5 MB input made of 30 parts with 64 KB folded headers took about
+  2.5 s in review. It is linear and bounded, but not fast.
