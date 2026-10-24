@@ -23,6 +23,28 @@ cross-scope edge, a self edge or a cycle: its validator rejects them. The
 reviewer therefore takes its own looser input. :meth:`from_native` turns a
 valid P3-01 record into this input.
 
+Recovery limits
+===============
+
+A :class:`~msgloom.a2_kedro.contracts.relations.NativeRelations` record
+does not say that its recovery was complete. P3-01 reports limitations
+(for example ``list_too_long``, ``depth_exceeded``, ``too_many_relations``,
+``conflicting_parents`` and ``ambiguous_target``) and unresolved relations
+beside the record. A caller must copy them into a
+:class:`RecoveryLimits` value. :meth:`RelationReviewInput.from_native`
+requires this value, so the P3-01 path cannot drop it by omission.
+
+The module does not know the P3-01 codes. Any limitation code, and any
+unresolved relation, makes the recovery incomplete. Then every relation of
+the call gets the reason ``recovery_incomplete`` and is never ``CONFIRMED``.
+The review keeps the sorted codes and the unresolved count, so the trace
+is not lost.
+
+The ``recovery`` field of a directly built :class:`RelationReviewInput`
+defaults to no limits. Only a caller that builds candidates itself, with no
+recovery step, may rely on this default (for example Teams grouping). A
+caller that has a P3-01 recovery must pass its limits.
+
 Review rules
 ============
 
@@ -39,6 +61,8 @@ Reason                       Condition
                              once with the same scope and ID
 ``cross_scope``              child and parent have different scopes
 ``unconfirmable_basis``      the basis is not in :data:`CONFIRMABLE_BASES`
+``recovery_incomplete``      the call has a recovery limitation code or an
+                             unresolved relation (see above)
 ===========================  ===============================================
 
 Only same-source evidence can confirm a relation. The closed set
@@ -84,7 +108,7 @@ from collections import Counter
 from enum import StrEnum
 from typing import Self
 
-from pydantic import Field, model_validator
+from pydantic import Field, field_validator, model_validator
 
 from msgloom.a2_kedro.contracts.codec import A2ContractError, Text
 from msgloom.a2_kedro.contracts.relations import (
@@ -98,6 +122,8 @@ from msgloom.a2_kedro.contracts.result_base import ResultPart
 #: Provisional bounds. They exceed the P3-01 record bounds on purpose.
 MAX_REVIEW_NODES = 65536
 MAX_REVIEW_RELATIONS = 65536
+MAX_LIMITATION_CODES = 256
+MAX_UNRESOLVED_COUNT = 1_000_000
 
 #: Closed set of basis texts that may support a ``CONFIRMED`` review. They
 #: are the same-source basis texts that P3-01 writes. Conversation-ID
@@ -125,6 +151,7 @@ class ReviewReason(StrEnum):
     CYCLE = "cycle"
     DUPLICATE_MESSAGE_ID = "duplicate_message_id"
     MISSING_PARENT = "missing_parent"
+    RECOVERY_INCOMPLETE = "recovery_incomplete"
     UNCONFIRMABLE_BASIS = "unconfirmable_basis"
 
 
@@ -141,13 +168,40 @@ class CandidateRelation(ResultPart):
         return (self.kind, self.child.sort_key(), self.parent.sort_key(), self.basis)
 
 
+class RecoveryLimits(ResultPart):
+    """
+    What the recovery of one record could not do (P3-01 limits).
+
+    ``limitation_codes`` holds the code of every P3-01 limitation. The
+    module treats a code as opaque text. ``unresolved_count`` is the number
+    of unresolved relations. Codes are stored sorted and distinct. The
+    default value means a complete recovery.
+    """
+
+    limitation_codes: tuple[Text, ...] = Field(
+        default=(), max_length=MAX_LIMITATION_CODES
+    )
+    unresolved_count: int = Field(default=0, ge=0, le=MAX_UNRESOLVED_COUNT)
+
+    @field_validator("limitation_codes")
+    @classmethod
+    def _sorted_distinct(cls, codes: tuple[str, ...]) -> tuple[str, ...]:
+        return tuple(sorted(set(codes)))
+
+    @property
+    def incomplete(self) -> bool:
+        """Return whether any limitation or unresolved relation exists."""
+        return bool(self.limitation_codes) or self.unresolved_count > 0
+
+
 class RelationReviewInput(ResultPart):
-    """Declared nodes and candidate relations of one review call."""
+    """Declared nodes, candidate relations and recovery limits of one call."""
 
     nodes: tuple[NodeRef, ...] = Field(max_length=MAX_REVIEW_NODES)
     relations: tuple[CandidateRelation, ...] = Field(
         default=(), max_length=MAX_REVIEW_RELATIONS
     )
+    recovery: RecoveryLimits = Field(default_factory=RecoveryLimits)
 
     @model_validator(mode="after")
     def _declared_children(self) -> Self:
@@ -157,9 +211,15 @@ class RelationReviewInput(ResultPart):
         return self
 
     @classmethod
-    def from_native(cls, record: NativeRelations) -> Self:
-        """Build the input from a valid P3-01 relation record."""
+    def from_native(cls, record: NativeRelations, *, recovery: RecoveryLimits) -> Self:
+        """
+        Build the input from a valid P3-01 relation record.
+
+        ``recovery`` is required. It must carry the limitations and the
+        unresolved count that P3-01 reported beside ``record``.
+        """
         return cls(
+            recovery=recovery,
             nodes=record.nodes,
             relations=tuple(
                 CandidateRelation(
@@ -194,6 +254,8 @@ class RelationSafetyReview(ResultPart):
     """All reviews of one call, sorted by relation."""
 
     reviews: tuple[RelationReview, ...] = ()
+    limitation_codes: tuple[Text, ...] = ()
+    unresolved_count: int = 0
 
     def with_status(self, status: SafetyStatus) -> tuple[RelationReview, ...]:
         """Return the reviews that have ``status``, in order."""
@@ -282,6 +344,7 @@ def review_relations(review: RelationReviewInput) -> RelationSafetyReview:
     unique = {rel.sort_key(): rel for rel in review.relations}
     candidates = [unique[key] for key in sorted(unique)]
     on_cycle = _cyclic_edges(candidates)
+    recovery = review.recovery
 
     items: list[RelationReview] = []
     for rel in candidates:
@@ -296,6 +359,8 @@ def review_relations(review: RelationReviewInput) -> RelationSafetyReview:
             reasons.add(ReviewReason.CROSS_SCOPE)
         if rel.basis not in CONFIRMABLE_BASES:
             reasons.add(ReviewReason.UNCONFIRMABLE_BASIS)
+        if recovery.incomplete:
+            reasons.add(ReviewReason.RECOVERY_INCOMPLETE)
         items.append(
             RelationReview(
                 relation=rel,
@@ -305,4 +370,8 @@ def review_relations(review: RelationReviewInput) -> RelationSafetyReview:
                 reasons=tuple(sorted(reasons)),
             )
         )
-    return RelationSafetyReview(reviews=tuple(items))
+    return RelationSafetyReview(
+        reviews=tuple(items),
+        limitation_codes=recovery.limitation_codes,
+        unresolved_count=recovery.unresolved_count,
+    )

@@ -12,6 +12,7 @@ from msgloom.a2_kedro.contracts.relations import NativeRelations, NodeRef, Relat
 from msgloom.a2_kedro.semantics.relation_safety import (
     MAX_REVIEW_NODES,
     CandidateRelation,
+    RecoveryLimits,
     RelationReview,
     RelationReviewInput,
     RelationSafetyReview,
@@ -296,7 +297,9 @@ def test_from_native_record_is_confirmed_and_hypothesis_only() -> None:
             ),
         ),
     )
-    result = review_relations(RelationReviewInput.from_native(record))
+    result = review_relations(
+        RelationReviewInput.from_native(record, recovery=RecoveryLimits())
+    )
     check(len(result.reviews) == 1, "one review")
     check(result.reviews[0].status is SafetyStatus.CONFIRMED, "clean P3-01 record")
     check(
