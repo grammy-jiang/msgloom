@@ -1,0 +1,662 @@
+{
+  "schema": "a2-golden-case-file@1",
+  "task_id": "T0-07",
+  "title": "Crash, restart, late writes and cancel: the accepted prefix is preserved and unfinished work is replayable",
+  "annotator": "claude-sonnet-5.5 worker, hand annotation on 2026-10-24 (human-style reading; no program produced any expected value)",
+  "independence_statement": "Each case is a short story with a hand-chosen frozen workset, an event timeline and hand-written outcomes. The outcomes follow the written blueprint rules: one accepted terminal per frozen occurrence, claim-fenced atomic acceptance, accepted-key reuse on replay, bridge-closed cancel with drain, and a pending workset until the finalizer commits. No msgloom store, finalizer, runner or A2 code was run or imported. The reference checker in the test file only validates the hand-written answers.",
+  "provenance": {
+    "sources": [
+      "A2 Kedro v2 architecture blueprint of 2026-10-23, section 4.2: every ordered frozen occurrence needs exactly one persisted accepted terminal; the deduplicated selection refs are not enough; COMPLETE only when everything is accepted and complete; any limitation gives terminal INCOMPLETE",
+      "same blueprint, section 4.3: the versioned finalizer re-checks the PREPARE claim and every accepted result; a failed step rolls back and the workset stays pending; a missing ref or an invalid claim cannot become a success",
+      "same blueprint, section 5.1: the logical key is deterministic and includes the frozen configuration version; the key does not include time, attempt or output digest; replay finds the key and returns the stored result; the original record stays unchanged",
+      "same blueprint, section 5.3: append_or_verify_a2_stage requires the live claim first, then reuses an accepted key or inserts one atomic record; an accepted prefix written by earlier attempts is reusable; post-COMMIT cancel is not a rollback; the next run skips accepted stages and does not rerun the parser",
+      "same blueprint, section 6.1: one owner runner worker per workset; on cancel the bridge-closed flag is set, later nodes and new saves are rejected, then in-flight work drains",
+      "same blueprint, section 8.2: outcome table (claim lost gives FAILED scheduled-claim-lost; user cancel gives CANCELLED scheduled-cancelled; trusted partial gives INCOMPLETE scheduled-preparation-incomplete)",
+      "A2 Kedro v2 execution plan of 2026-10-23, task T0-07: crash, restart, late writes and cancel; the accepted prefix is saved and unfinished work must be replayable",
+      "PROPOSED POLICY (T0-07-P10 only): the blueprint does not say whether an operator replay may run under a changed configuration. See the case rationale.",
+      "TASK GOAL (T0-07-P05 only): the task goal says cancel drains pending writes. See the case rationale."
+    ]
+  },
+  "model": {
+    "ops": "claim = a process takes the live claim token for a configuration (first run, restart or takeover; it replaces the previous live token); crash = the process dies, uncommitted work is lost; cancel = the bridge-closed flag is set; write = one occurrence result is saved with the named claim token; finalize = the finalizer tries to move the workset from pending to terminal",
+    "write_outcomes": "accepted = new atomic accepted record; reused = the key was already accepted, the stored id is returned and the parser does not run; rejected_stale_claim = the token is not the live token, checked before anything else; rejected_bridge_closed = a new save after cancel; rolled_back = the transaction did not reach COMMIT, nothing is stored",
+    "finalize_outcomes": "terminal_complete, terminal_incomplete, rejected_stale_claim, rejected_missing_accepted (some frozen occurrence has no accepted result; the workset stays pending)",
+    "accepted_prefix": "the frozen occurrences are processed in order by one owner worker, so the accepted set of one configuration is always the first k occurrences",
+    "result_ids": "res-<config>-<ordinal> are hand-chosen placeholders for the deterministic accepted result of that configuration and occurrence",
+    "snapshot": "state after the named event; accepted lists the accepted occurrence ordinals per configuration; replayable is frozen minus accepted for the active configuration"
+  },
+  "canary": "CANARY-PII-7731-ZQ",
+  "cases": [
+    {
+      "case_id": "T0-07-P01",
+      "polarity": "positive",
+      "title": "Crash before the first accept: nothing is accepted and all three occurrences are replayable",
+      "input": {
+        "workset": {"workset_id": "ws-example-1", "occurrences": [
+          {"occurrence_id": "occ-0", "source_ref": "src-example-1"},
+          {"occurrence_id": "occ-1", "source_ref": "src-example-2"},
+          {"occurrence_id": "occ-2", "source_ref": "src-example-3"}
+        ]},
+        "timeline": [
+          {"op": "claim", "claim": "claim-A", "config": "cfg-1"},
+          {"op": "crash"},
+          {"op": "claim", "claim": "claim-B", "config": "cfg-1"},
+          {"op": "write", "claim": "claim-B", "occ": 0},
+          {"op": "write", "claim": "claim-B", "occ": 1},
+          {"op": "write", "claim": "claim-B", "occ": 2},
+          {"op": "finalize", "claim": "claim-B"}
+        ]
+      },
+      "expected": {
+        "event_outcomes": [
+          null, null, null,
+          {"outcome": "accepted", "result_id": "res-cfg1-0"},
+          {"outcome": "accepted", "result_id": "res-cfg1-1"},
+          {"outcome": "accepted", "result_id": "res-cfg1-2"},
+          {"outcome": "terminal_complete", "result_id": null}
+        ],
+        "snapshots": [
+          {"after_event": 1, "active_config": "cfg-1", "accepted": {"cfg-1": []}, "replayable": [0, 1, 2], "workset_state": "pending"},
+          {"after_event": 6, "active_config": "cfg-1", "accepted": {"cfg-1": [0, 1, 2]}, "replayable": [], "workset_state": "terminal_complete"}
+        ],
+        "surviving_results": [
+          {"config": "cfg-1", "occurrence": 0, "result_id": "res-cfg1-0", "limited": false},
+          {"config": "cfg-1", "occurrence": 1, "result_id": "res-cfg1-1", "limited": false},
+          {"config": "cfg-1", "occurrence": 2, "result_id": "res-cfg1-2", "limited": false}
+        ],
+        "half_accepted_results": []
+      }
+    },
+    {
+      "case_id": "T0-07-P02",
+      "polarity": "positive",
+      "title": "Crash in the middle of a batch: the first three results survive and replay reuses their ids",
+      "input": {
+        "workset": {"workset_id": "ws-example-2", "occurrences": [
+          {"occurrence_id": "occ-0", "source_ref": "src-example-1"},
+          {"occurrence_id": "occ-1", "source_ref": "src-example-2"},
+          {"occurrence_id": "occ-2", "source_ref": "src-example-3"},
+          {"occurrence_id": "occ-3", "source_ref": "src-example-4"},
+          {"occurrence_id": "occ-4", "source_ref": "src-example-5"}
+        ]},
+        "timeline": [
+          {"op": "claim", "claim": "claim-A", "config": "cfg-1"},
+          {"op": "write", "claim": "claim-A", "occ": 0},
+          {"op": "write", "claim": "claim-A", "occ": 1},
+          {"op": "write", "claim": "claim-A", "occ": 2},
+          {"op": "crash"},
+          {"op": "claim", "claim": "claim-B", "config": "cfg-1"},
+          {"op": "write", "claim": "claim-B", "occ": 0},
+          {"op": "write", "claim": "claim-B", "occ": 1},
+          {"op": "write", "claim": "claim-B", "occ": 2},
+          {"op": "write", "claim": "claim-B", "occ": 3},
+          {"op": "write", "claim": "claim-B", "occ": 4},
+          {"op": "finalize", "claim": "claim-B"}
+        ]
+      },
+      "expected": {
+        "event_outcomes": [
+          null,
+          {"outcome": "accepted", "result_id": "res-cfg1-0"},
+          {"outcome": "accepted", "result_id": "res-cfg1-1"},
+          {"outcome": "accepted", "result_id": "res-cfg1-2"},
+          null, null,
+          {"outcome": "reused", "result_id": "res-cfg1-0"},
+          {"outcome": "reused", "result_id": "res-cfg1-1"},
+          {"outcome": "reused", "result_id": "res-cfg1-2"},
+          {"outcome": "accepted", "result_id": "res-cfg1-3"},
+          {"outcome": "accepted", "result_id": "res-cfg1-4"},
+          {"outcome": "terminal_complete", "result_id": null}
+        ],
+        "snapshots": [
+          {"after_event": 4, "active_config": "cfg-1", "accepted": {"cfg-1": [0, 1, 2]}, "replayable": [3, 4], "workset_state": "pending"},
+          {"after_event": 11, "active_config": "cfg-1", "accepted": {"cfg-1": [0, 1, 2, 3, 4]}, "replayable": [], "workset_state": "terminal_complete"}
+        ],
+        "surviving_results": [
+          {"config": "cfg-1", "occurrence": 0, "result_id": "res-cfg1-0", "limited": false},
+          {"config": "cfg-1", "occurrence": 1, "result_id": "res-cfg1-1", "limited": false},
+          {"config": "cfg-1", "occurrence": 2, "result_id": "res-cfg1-2", "limited": false},
+          {"config": "cfg-1", "occurrence": 3, "result_id": "res-cfg1-3", "limited": false},
+          {"config": "cfg-1", "occurrence": 4, "result_id": "res-cfg1-4", "limited": false}
+        ],
+        "half_accepted_results": []
+      }
+    },
+    {
+      "case_id": "T0-07-P03",
+      "polarity": "positive",
+      "title": "Write interrupted before COMMIT: nothing is stored and that occurrence is replayable",
+      "input": {
+        "workset": {"workset_id": "ws-example-3", "occurrences": [
+          {"occurrence_id": "occ-0", "source_ref": "src-example-1"},
+          {"occurrence_id": "occ-1", "source_ref": "src-example-2"},
+          {"occurrence_id": "occ-2", "source_ref": "src-example-3"}
+        ]},
+        "timeline": [
+          {"op": "claim", "claim": "claim-A", "config": "cfg-1"},
+          {"op": "write", "claim": "claim-A", "occ": 0},
+          {"op": "write", "claim": "claim-A", "occ": 1, "interrupted": "before_commit"},
+          {"op": "crash"},
+          {"op": "claim", "claim": "claim-B", "config": "cfg-1"},
+          {"op": "write", "claim": "claim-B", "occ": 0},
+          {"op": "write", "claim": "claim-B", "occ": 1},
+          {"op": "write", "claim": "claim-B", "occ": 2},
+          {"op": "finalize", "claim": "claim-B"}
+        ]
+      },
+      "expected": {
+        "event_outcomes": [
+          null,
+          {"outcome": "accepted", "result_id": "res-cfg1-0"},
+          {"outcome": "rolled_back", "result_id": null},
+          null, null,
+          {"outcome": "reused", "result_id": "res-cfg1-0"},
+          {"outcome": "accepted", "result_id": "res-cfg1-1"},
+          {"outcome": "accepted", "result_id": "res-cfg1-2"},
+          {"outcome": "terminal_complete", "result_id": null}
+        ],
+        "snapshots": [
+          {"after_event": 3, "active_config": "cfg-1", "accepted": {"cfg-1": [0]}, "replayable": [1, 2], "workset_state": "pending"},
+          {"after_event": 8, "active_config": "cfg-1", "accepted": {"cfg-1": [0, 1, 2]}, "replayable": [], "workset_state": "terminal_complete"}
+        ],
+        "surviving_results": [
+          {"config": "cfg-1", "occurrence": 0, "result_id": "res-cfg1-0", "limited": false},
+          {"config": "cfg-1", "occurrence": 1, "result_id": "res-cfg1-1", "limited": false},
+          {"config": "cfg-1", "occurrence": 2, "result_id": "res-cfg1-2", "limited": false}
+        ],
+        "half_accepted_results": []
+      }
+    },
+    {
+      "case_id": "T0-07-P04",
+      "polarity": "positive",
+      "title": "Crash after the last accept but before the finalizer: all results survive, the workset is still pending, restart only finalizes",
+      "input": {
+        "workset": {"workset_id": "ws-example-4", "occurrences": [
+          {"occurrence_id": "occ-0", "source_ref": "src-example-1"},
+          {"occurrence_id": "occ-1", "source_ref": "src-example-2"},
+          {"occurrence_id": "occ-2", "source_ref": "src-example-3"}
+        ]},
+        "timeline": [
+          {"op": "claim", "claim": "claim-A", "config": "cfg-1"},
+          {"op": "write", "claim": "claim-A", "occ": 0},
+          {"op": "write", "claim": "claim-A", "occ": 1},
+          {"op": "write", "claim": "claim-A", "occ": 2},
+          {"op": "crash"},
+          {"op": "claim", "claim": "claim-B", "config": "cfg-1"},
+          {"op": "write", "claim": "claim-B", "occ": 0},
+          {"op": "write", "claim": "claim-B", "occ": 1},
+          {"op": "write", "claim": "claim-B", "occ": 2},
+          {"op": "finalize", "claim": "claim-B"}
+        ]
+      },
+      "expected": {
+        "event_outcomes": [
+          null,
+          {"outcome": "accepted", "result_id": "res-cfg1-0"},
+          {"outcome": "accepted", "result_id": "res-cfg1-1"},
+          {"outcome": "accepted", "result_id": "res-cfg1-2"},
+          null, null,
+          {"outcome": "reused", "result_id": "res-cfg1-0"},
+          {"outcome": "reused", "result_id": "res-cfg1-1"},
+          {"outcome": "reused", "result_id": "res-cfg1-2"},
+          {"outcome": "terminal_complete", "result_id": null}
+        ],
+        "snapshots": [
+          {"after_event": 4, "active_config": "cfg-1", "accepted": {"cfg-1": [0, 1, 2]}, "replayable": [], "workset_state": "pending"},
+          {"after_event": 9, "active_config": "cfg-1", "accepted": {"cfg-1": [0, 1, 2]}, "replayable": [], "workset_state": "terminal_complete"}
+        ],
+        "surviving_results": [
+          {"config": "cfg-1", "occurrence": 0, "result_id": "res-cfg1-0", "limited": false},
+          {"config": "cfg-1", "occurrence": 1, "result_id": "res-cfg1-1", "limited": false},
+          {"config": "cfg-1", "occurrence": 2, "result_id": "res-cfg1-2", "limited": false}
+        ],
+        "half_accepted_results": []
+      },
+      "rationale": "Without a committed finalizer the workset row is still pending (blueprint 4.3). Replay finds every accepted key, so no parser runs and no id changes (blueprint 5.3)."
+    },
+    {
+      "case_id": "T0-07-P05",
+      "polarity": "positive",
+      "policy_status": "task_goal_decision",
+      "title": "Cancel while a write is in flight: the in-flight write drains whole, a later save is refused",
+      "input": {
+        "workset": {"workset_id": "ws-example-5", "occurrences": [
+          {"occurrence_id": "occ-0", "source_ref": "src-example-1"},
+          {"occurrence_id": "occ-1", "source_ref": "src-example-2"},
+          {"occurrence_id": "occ-2", "source_ref": "src-example-3"},
+          {"occurrence_id": "occ-3", "source_ref": "src-example-4"}
+        ]},
+        "timeline": [
+          {"op": "claim", "claim": "claim-A", "config": "cfg-1"},
+          {"op": "write", "claim": "claim-A", "occ": 0},
+          {"op": "write", "claim": "claim-A", "occ": 1},
+          {"op": "cancel"},
+          {"op": "write", "claim": "claim-A", "occ": 2, "in_flight_at_cancel": true},
+          {"op": "write", "claim": "claim-A", "occ": 3},
+          {"op": "claim", "claim": "claim-B", "config": "cfg-1"},
+          {"op": "write", "claim": "claim-B", "occ": 0},
+          {"op": "write", "claim": "claim-B", "occ": 1},
+          {"op": "write", "claim": "claim-B", "occ": 2},
+          {"op": "write", "claim": "claim-B", "occ": 3},
+          {"op": "finalize", "claim": "claim-B"}
+        ]
+      },
+      "expected": {
+        "event_outcomes": [
+          null,
+          {"outcome": "accepted", "result_id": "res-cfg1-0"},
+          {"outcome": "accepted", "result_id": "res-cfg1-1"},
+          null,
+          {"outcome": "accepted", "result_id": "res-cfg1-2"},
+          {"outcome": "rejected_bridge_closed", "result_id": null},
+          null,
+          {"outcome": "reused", "result_id": "res-cfg1-0"},
+          {"outcome": "reused", "result_id": "res-cfg1-1"},
+          {"outcome": "reused", "result_id": "res-cfg1-2"},
+          {"outcome": "accepted", "result_id": "res-cfg1-3"},
+          {"outcome": "terminal_complete", "result_id": null}
+        ],
+        "snapshots": [
+          {"after_event": 5, "active_config": "cfg-1", "accepted": {"cfg-1": [0, 1, 2]}, "replayable": [3], "workset_state": "pending", "scheduled_outcome": {"status": "CANCELLED", "code": "scheduled-cancelled"}},
+          {"after_event": 11, "active_config": "cfg-1", "accepted": {"cfg-1": [0, 1, 2, 3]}, "replayable": [], "workset_state": "terminal_complete"}
+        ],
+        "surviving_results": [
+          {"config": "cfg-1", "occurrence": 0, "result_id": "res-cfg1-0", "limited": false},
+          {"config": "cfg-1", "occurrence": 1, "result_id": "res-cfg1-1", "limited": false},
+          {"config": "cfg-1", "occurrence": 2, "result_id": "res-cfg1-2", "limited": false},
+          {"config": "cfg-1", "occurrence": 3, "result_id": "res-cfg1-3", "limited": false}
+        ],
+        "half_accepted_results": []
+      },
+      "rationale": "TASK GOAL decision. Blueprint 6.1 says the bridge-closed flag rejects new saves and in-flight work drains. It does not say that a draining save must commit. The task goal says cancel drains pending writes and leaves no half result. The oracle reads this as: a draining save finishes its own atomic transaction and is then fully accepted. P05 shows the committed case. N02 shows the rolled-back case."
+    },
+    {
+      "case_id": "T0-07-P06",
+      "polarity": "positive",
+      "title": "Cancel after COMMIT: the caller saw a cancel, the data is accepted, and the next run reuses it",
+      "input": {
+        "workset": {"workset_id": "ws-example-6", "occurrences": [
+          {"occurrence_id": "occ-0", "source_ref": "src-example-1"},
+          {"occurrence_id": "occ-1", "source_ref": "src-example-2"}
+        ]},
+        "timeline": [
+          {"op": "claim", "claim": "claim-A", "config": "cfg-1"},
+          {"op": "write", "claim": "claim-A", "occ": 0},
+          {"op": "write", "claim": "claim-A", "occ": 1, "caller_cancelled_after_commit": true},
+          {"op": "cancel"},
+          {"op": "claim", "claim": "claim-B", "config": "cfg-1"},
+          {"op": "write", "claim": "claim-B", "occ": 0},
+          {"op": "write", "claim": "claim-B", "occ": 1},
+          {"op": "finalize", "claim": "claim-B"}
+        ]
+      },
+      "expected": {
+        "event_outcomes": [
+          null,
+          {"outcome": "accepted", "result_id": "res-cfg1-0"},
+          {"outcome": "accepted", "result_id": "res-cfg1-1"},
+          null, null,
+          {"outcome": "reused", "result_id": "res-cfg1-0"},
+          {"outcome": "reused", "result_id": "res-cfg1-1"},
+          {"outcome": "terminal_complete", "result_id": null}
+        ],
+        "snapshots": [
+          {"after_event": 3, "active_config": "cfg-1", "accepted": {"cfg-1": [0, 1]}, "replayable": [], "workset_state": "pending", "scheduled_outcome": {"status": "CANCELLED", "code": "scheduled-cancelled"}},
+          {"after_event": 7, "active_config": "cfg-1", "accepted": {"cfg-1": [0, 1]}, "replayable": [], "workset_state": "terminal_complete"}
+        ],
+        "surviving_results": [
+          {"config": "cfg-1", "occurrence": 0, "result_id": "res-cfg1-0", "limited": false},
+          {"config": "cfg-1", "occurrence": 1, "result_id": "res-cfg1-1", "limited": false}
+        ],
+        "half_accepted_results": []
+      },
+      "rationale": "Blueprint 5.3: post-COMMIT cancel is not a rollback. The next run reads by key and skips the accepted stage. The parser does not run again."
+    },
+    {
+      "case_id": "T0-07-P07",
+      "polarity": "positive",
+      "title": "Double restart: every restart sees the same prefix and the same ids, and only the missing tail is written",
+      "input": {
+        "workset": {"workset_id": "ws-example-7", "occurrences": [
+          {"occurrence_id": "occ-0", "source_ref": "src-example-1"},
+          {"occurrence_id": "occ-1", "source_ref": "src-example-2"},
+          {"occurrence_id": "occ-2", "source_ref": "src-example-3"},
+          {"occurrence_id": "occ-3", "source_ref": "src-example-4"}
+        ]},
+        "timeline": [
+          {"op": "claim", "claim": "claim-A", "config": "cfg-1"},
+          {"op": "write", "claim": "claim-A", "occ": 0},
+          {"op": "write", "claim": "claim-A", "occ": 1},
+          {"op": "crash"},
+          {"op": "claim", "claim": "claim-B", "config": "cfg-1"},
+          {"op": "write", "claim": "claim-B", "occ": 0},
+          {"op": "write", "claim": "claim-B", "occ": 1},
+          {"op": "write", "claim": "claim-B", "occ": 2},
+          {"op": "crash"},
+          {"op": "claim", "claim": "claim-C", "config": "cfg-1"},
+          {"op": "write", "claim": "claim-C", "occ": 0},
+          {"op": "write", "claim": "claim-C", "occ": 1},
+          {"op": "write", "claim": "claim-C", "occ": 2},
+          {"op": "write", "claim": "claim-C", "occ": 3},
+          {"op": "finalize", "claim": "claim-C"}
+        ]
+      },
+      "expected": {
+        "event_outcomes": [
+          null,
+          {"outcome": "accepted", "result_id": "res-cfg1-0"},
+          {"outcome": "accepted", "result_id": "res-cfg1-1"},
+          null, null,
+          {"outcome": "reused", "result_id": "res-cfg1-0"},
+          {"outcome": "reused", "result_id": "res-cfg1-1"},
+          {"outcome": "accepted", "result_id": "res-cfg1-2"},
+          null, null,
+          {"outcome": "reused", "result_id": "res-cfg1-0"},
+          {"outcome": "reused", "result_id": "res-cfg1-1"},
+          {"outcome": "reused", "result_id": "res-cfg1-2"},
+          {"outcome": "accepted", "result_id": "res-cfg1-3"},
+          {"outcome": "terminal_complete", "result_id": null}
+        ],
+        "snapshots": [
+          {"after_event": 3, "active_config": "cfg-1", "accepted": {"cfg-1": [0, 1]}, "replayable": [2, 3], "workset_state": "pending"},
+          {"after_event": 8, "active_config": "cfg-1", "accepted": {"cfg-1": [0, 1, 2]}, "replayable": [3], "workset_state": "pending"},
+          {"after_event": 14, "active_config": "cfg-1", "accepted": {"cfg-1": [0, 1, 2, 3]}, "replayable": [], "workset_state": "terminal_complete"}
+        ],
+        "surviving_results": [
+          {"config": "cfg-1", "occurrence": 0, "result_id": "res-cfg1-0", "limited": false},
+          {"config": "cfg-1", "occurrence": 1, "result_id": "res-cfg1-1", "limited": false},
+          {"config": "cfg-1", "occurrence": 2, "result_id": "res-cfg1-2", "limited": false},
+          {"config": "cfg-1", "occurrence": 3, "result_id": "res-cfg1-3", "limited": false}
+        ],
+        "half_accepted_results": []
+      }
+    },
+    {
+      "case_id": "T0-07-P08",
+      "polarity": "positive",
+      "title": "An accepted result with a limitation is accepted, not replayable; the workset ends terminal INCOMPLETE",
+      "input": {
+        "workset": {"workset_id": "ws-example-8", "occurrences": [
+          {"occurrence_id": "occ-0", "source_ref": "src-example-1"},
+          {"occurrence_id": "occ-1", "source_ref": "src-example-2"},
+          {"occurrence_id": "occ-2", "source_ref": "src-example-3"}
+        ]},
+        "timeline": [
+          {"op": "claim", "claim": "claim-A", "config": "cfg-1"},
+          {"op": "write", "claim": "claim-A", "occ": 0},
+          {"op": "write", "claim": "claim-A", "occ": 1, "limited": true},
+          {"op": "write", "claim": "claim-A", "occ": 2},
+          {"op": "crash"},
+          {"op": "claim", "claim": "claim-B", "config": "cfg-1"},
+          {"op": "write", "claim": "claim-B", "occ": 0},
+          {"op": "write", "claim": "claim-B", "occ": 1, "limited": true},
+          {"op": "write", "claim": "claim-B", "occ": 2},
+          {"op": "finalize", "claim": "claim-B"}
+        ]
+      },
+      "expected": {
+        "event_outcomes": [
+          null,
+          {"outcome": "accepted", "result_id": "res-cfg1-0"},
+          {"outcome": "accepted", "result_id": "res-cfg1-1"},
+          {"outcome": "accepted", "result_id": "res-cfg1-2"},
+          null, null,
+          {"outcome": "reused", "result_id": "res-cfg1-0"},
+          {"outcome": "reused", "result_id": "res-cfg1-1"},
+          {"outcome": "reused", "result_id": "res-cfg1-2"},
+          {"outcome": "terminal_incomplete", "result_id": null}
+        ],
+        "snapshots": [
+          {"after_event": 4, "active_config": "cfg-1", "accepted": {"cfg-1": [0, 1, 2]}, "replayable": [], "workset_state": "pending"},
+          {"after_event": 9, "active_config": "cfg-1", "accepted": {"cfg-1": [0, 1, 2]}, "replayable": [], "workset_state": "terminal_incomplete", "scheduled_outcome": {"status": "INCOMPLETE", "code": "scheduled-preparation-incomplete"}}
+        ],
+        "surviving_results": [
+          {"config": "cfg-1", "occurrence": 0, "result_id": "res-cfg1-0", "limited": false},
+          {"config": "cfg-1", "occurrence": 1, "result_id": "res-cfg1-1", "limited": true},
+          {"config": "cfg-1", "occurrence": 2, "result_id": "res-cfg1-2", "limited": false}
+        ],
+        "half_accepted_results": []
+      },
+      "rationale": "Blueprint 4.2: prepared@2 with an explicit limitation is a valid accepted terminal. Any limitation gives terminal INCOMPLETE. The limited occurrence is not replayed and not pending."
+    },
+    {
+      "case_id": "T0-07-P09",
+      "polarity": "positive",
+      "title": "Two occurrences share one source ref: the accepted result of the first never satisfies the second",
+      "input": {
+        "workset": {"workset_id": "ws-example-9", "occurrences": [
+          {"occurrence_id": "occ-0", "source_ref": "src-example-1"},
+          {"occurrence_id": "occ-1", "source_ref": "src-example-2"},
+          {"occurrence_id": "occ-2", "source_ref": "src-example-1"}
+        ]},
+        "timeline": [
+          {"op": "claim", "claim": "claim-A", "config": "cfg-1"},
+          {"op": "write", "claim": "claim-A", "occ": 0},
+          {"op": "crash"},
+          {"op": "claim", "claim": "claim-B", "config": "cfg-1"},
+          {"op": "write", "claim": "claim-B", "occ": 0},
+          {"op": "write", "claim": "claim-B", "occ": 1},
+          {"op": "write", "claim": "claim-B", "occ": 2},
+          {"op": "finalize", "claim": "claim-B"}
+        ]
+      },
+      "expected": {
+        "event_outcomes": [
+          null,
+          {"outcome": "accepted", "result_id": "res-cfg1-0"},
+          null, null,
+          {"outcome": "reused", "result_id": "res-cfg1-0"},
+          {"outcome": "accepted", "result_id": "res-cfg1-1"},
+          {"outcome": "accepted", "result_id": "res-cfg1-2"},
+          {"outcome": "terminal_complete", "result_id": null}
+        ],
+        "snapshots": [
+          {"after_event": 2, "active_config": "cfg-1", "accepted": {"cfg-1": [0]}, "replayable": [1, 2], "workset_state": "pending"},
+          {"after_event": 7, "active_config": "cfg-1", "accepted": {"cfg-1": [0, 1, 2]}, "replayable": [], "workset_state": "terminal_complete"}
+        ],
+        "surviving_results": [
+          {"config": "cfg-1", "occurrence": 0, "result_id": "res-cfg1-0", "limited": false},
+          {"config": "cfg-1", "occurrence": 1, "result_id": "res-cfg1-1", "limited": false},
+          {"config": "cfg-1", "occurrence": 2, "result_id": "res-cfg1-2", "limited": false}
+        ],
+        "half_accepted_results": []
+      },
+      "rationale": "Blueprint 4.2: each ordered frozen occurrence needs its own accepted terminal. The deduplicated source refs are not enough. The logical key includes the partition ordinal, so occurrence 2 gets its own result id."
+    },
+    {
+      "case_id": "T0-07-P10",
+      "polarity": "positive",
+      "policy_status": "proposed_owner_signoff_needed",
+      "title": "PROPOSED POLICY: operator replay under a changed configuration creates a new key and new ids; the old accepted records stay unchanged",
+      "input": {
+        "workset": {"workset_id": "ws-example-10", "occurrences": [
+          {"occurrence_id": "occ-0", "source_ref": "src-example-1"},
+          {"occurrence_id": "occ-1", "source_ref": "src-example-2"},
+          {"occurrence_id": "occ-2", "source_ref": "src-example-3"}
+        ]},
+        "timeline": [
+          {"op": "claim", "claim": "claim-A", "config": "cfg-1"},
+          {"op": "write", "claim": "claim-A", "occ": 0},
+          {"op": "write", "claim": "claim-A", "occ": 1},
+          {"op": "crash"},
+          {"op": "claim", "claim": "claim-B", "config": "cfg-2"},
+          {"op": "write", "claim": "claim-B", "occ": 0},
+          {"op": "write", "claim": "claim-B", "occ": 1},
+          {"op": "write", "claim": "claim-B", "occ": 2},
+          {"op": "finalize", "claim": "claim-B"}
+        ]
+      },
+      "expected": {
+        "event_outcomes": [
+          null,
+          {"outcome": "accepted", "result_id": "res-cfg1-0"},
+          {"outcome": "accepted", "result_id": "res-cfg1-1"},
+          null, null,
+          {"outcome": "accepted", "result_id": "res-cfg2-0"},
+          {"outcome": "accepted", "result_id": "res-cfg2-1"},
+          {"outcome": "accepted", "result_id": "res-cfg2-2"},
+          {"outcome": "terminal_complete", "result_id": null}
+        ],
+        "snapshots": [
+          {"after_event": 3, "active_config": "cfg-1", "accepted": {"cfg-1": [0, 1]}, "replayable": [2], "workset_state": "pending"},
+          {"after_event": 4, "active_config": "cfg-2", "accepted": {"cfg-1": [0, 1], "cfg-2": []}, "replayable": [0, 1, 2], "workset_state": "pending"},
+          {"after_event": 8, "active_config": "cfg-2", "accepted": {"cfg-1": [0, 1], "cfg-2": [0, 1, 2]}, "replayable": [], "workset_state": "terminal_complete"}
+        ],
+        "surviving_results": [
+          {"config": "cfg-1", "occurrence": 0, "result_id": "res-cfg1-0", "limited": false},
+          {"config": "cfg-1", "occurrence": 1, "result_id": "res-cfg1-1", "limited": false},
+          {"config": "cfg-2", "occurrence": 0, "result_id": "res-cfg2-0", "limited": false},
+          {"config": "cfg-2", "occurrence": 1, "result_id": "res-cfg2-1", "limited": false},
+          {"config": "cfg-2", "occurrence": 2, "result_id": "res-cfg2-2", "limited": false}
+        ],
+        "half_accepted_results": []
+      },
+      "rationale": "PROPOSED POLICY requiring owner sign-off. Blueprint 5.1 puts the frozen configuration version in the logical key, so a different configuration gives different keys and different ids. Blueprint 4.3 says an operator replay appends and never overwrites an old record. The blueprint does not say that a workset frozen under cfg-1 may be replayed under cfg-2, who may approve it, or how the terminal receipt names the configuration. The oracle proposes: the replay is allowed, the cfg-1 records stay, and the cfg-2 records are new."
+    },
+    {
+      "case_id": "T0-07-N01",
+      "polarity": "negative",
+      "title": "Late writes and a late finalize from a lost claim are rejected, even for an occurrence that is already accepted",
+      "input": {
+        "workset": {"workset_id": "ws-example-11", "occurrences": [
+          {"occurrence_id": "occ-0", "source_ref": "src-example-1"},
+          {"occurrence_id": "occ-1", "source_ref": "src-example-2"},
+          {"occurrence_id": "occ-2", "source_ref": "src-example-3"}
+        ]},
+        "timeline": [
+          {"op": "claim", "claim": "claim-A", "config": "cfg-1"},
+          {"op": "write", "claim": "claim-A", "occ": 0},
+          {"op": "claim", "claim": "claim-B", "config": "cfg-1"},
+          {"op": "write", "claim": "claim-B", "occ": 0},
+          {"op": "write", "claim": "claim-B", "occ": 1},
+          {"op": "write", "claim": "claim-A", "occ": 2},
+          {"op": "write", "claim": "claim-A", "occ": 1},
+          {"op": "finalize", "claim": "claim-A"},
+          {"op": "write", "claim": "claim-B", "occ": 2},
+          {"op": "finalize", "claim": "claim-B"}
+        ]
+      },
+      "expected": {
+        "event_outcomes": [
+          null,
+          {"outcome": "accepted", "result_id": "res-cfg1-0"},
+          null,
+          {"outcome": "reused", "result_id": "res-cfg1-0"},
+          {"outcome": "accepted", "result_id": "res-cfg1-1"},
+          {"outcome": "rejected_stale_claim", "result_id": null},
+          {"outcome": "rejected_stale_claim", "result_id": null},
+          {"outcome": "rejected_stale_claim", "result_id": null},
+          {"outcome": "accepted", "result_id": "res-cfg1-2"},
+          {"outcome": "terminal_complete", "result_id": null}
+        ],
+        "snapshots": [
+          {"after_event": 7, "active_config": "cfg-1", "accepted": {"cfg-1": [0, 1]}, "replayable": [2], "workset_state": "pending", "scheduled_outcome": {"status": "FAILED", "code": "scheduled-claim-lost"}},
+          {"after_event": 9, "active_config": "cfg-1", "accepted": {"cfg-1": [0, 1, 2]}, "replayable": [], "workset_state": "terminal_complete"}
+        ],
+        "surviving_results": [
+          {"config": "cfg-1", "occurrence": 0, "result_id": "res-cfg1-0", "limited": false},
+          {"config": "cfg-1", "occurrence": 1, "result_id": "res-cfg1-1", "limited": false},
+          {"config": "cfg-1", "occurrence": 2, "result_id": "res-cfg1-2", "limited": false}
+        ],
+        "half_accepted_results": []
+      },
+      "rationale": "Blueprint 5.3 checks the live claim before it looks up the accepted key, so a stale writer cannot even reuse. Blueprint 4.3 re-checks the PREPARE claim in the finalizer. Blueprint 8.2 maps a lost claim to FAILED scheduled-claim-lost."
+    },
+    {
+      "case_id": "T0-07-N02",
+      "polarity": "negative",
+      "title": "Cancel with an in-flight write that does not reach COMMIT: no half result, later saves refused, the tail stays replayable",
+      "input": {
+        "workset": {"workset_id": "ws-example-12", "occurrences": [
+          {"occurrence_id": "occ-0", "source_ref": "src-example-1"},
+          {"occurrence_id": "occ-1", "source_ref": "src-example-2"},
+          {"occurrence_id": "occ-2", "source_ref": "src-example-3"}
+        ]},
+        "timeline": [
+          {"op": "claim", "claim": "claim-A", "config": "cfg-1"},
+          {"op": "write", "claim": "claim-A", "occ": 0},
+          {"op": "cancel"},
+          {"op": "write", "claim": "claim-A", "occ": 1, "in_flight_at_cancel": true, "interrupted": "before_commit"},
+          {"op": "write", "claim": "claim-A", "occ": 2},
+          {"op": "claim", "claim": "claim-B", "config": "cfg-1"},
+          {"op": "write", "claim": "claim-B", "occ": 0},
+          {"op": "write", "claim": "claim-B", "occ": 1},
+          {"op": "write", "claim": "claim-B", "occ": 2},
+          {"op": "finalize", "claim": "claim-B"}
+        ]
+      },
+      "expected": {
+        "event_outcomes": [
+          null,
+          {"outcome": "accepted", "result_id": "res-cfg1-0"},
+          null,
+          {"outcome": "rolled_back", "result_id": null},
+          {"outcome": "rejected_bridge_closed", "result_id": null},
+          null,
+          {"outcome": "reused", "result_id": "res-cfg1-0"},
+          {"outcome": "accepted", "result_id": "res-cfg1-1"},
+          {"outcome": "accepted", "result_id": "res-cfg1-2"},
+          {"outcome": "terminal_complete", "result_id": null}
+        ],
+        "snapshots": [
+          {"after_event": 4, "active_config": "cfg-1", "accepted": {"cfg-1": [0]}, "replayable": [1, 2], "workset_state": "pending", "scheduled_outcome": {"status": "CANCELLED", "code": "scheduled-cancelled"}},
+          {"after_event": 9, "active_config": "cfg-1", "accepted": {"cfg-1": [0, 1, 2]}, "replayable": [], "workset_state": "terminal_complete"}
+        ],
+        "surviving_results": [
+          {"config": "cfg-1", "occurrence": 0, "result_id": "res-cfg1-0", "limited": false},
+          {"config": "cfg-1", "occurrence": 1, "result_id": "res-cfg1-1", "limited": false},
+          {"config": "cfg-1", "occurrence": 2, "result_id": "res-cfg1-2", "limited": false}
+        ],
+        "half_accepted_results": []
+      },
+      "rationale": "A save is one BEGIN IMMEDIATE transaction (blueprint 5.3). It is accepted whole or not at all. The occurrence that was in flight has no result after the rollback and is replayable."
+    },
+    {
+      "case_id": "T0-07-N03",
+      "polarity": "negative",
+      "title": "The finalizer refuses to finish while a frozen occurrence has no accepted result; the workset stays pending",
+      "input": {
+        "workset": {"workset_id": "ws-example-13", "occurrences": [
+          {"occurrence_id": "occ-0", "source_ref": "src-example-1"},
+          {"occurrence_id": "occ-1", "source_ref": "src-example-2"},
+          {"occurrence_id": "occ-2", "source_ref": "src-example-3"}
+        ]},
+        "timeline": [
+          {"op": "claim", "claim": "claim-A", "config": "cfg-1"},
+          {"op": "write", "claim": "claim-A", "occ": 0},
+          {"op": "finalize", "claim": "claim-A"},
+          {"op": "crash"},
+          {"op": "claim", "claim": "claim-B", "config": "cfg-1"},
+          {"op": "write", "claim": "claim-B", "occ": 0},
+          {"op": "write", "claim": "claim-B", "occ": 1},
+          {"op": "write", "claim": "claim-B", "occ": 2},
+          {"op": "finalize", "claim": "claim-B"}
+        ]
+      },
+      "expected": {
+        "event_outcomes": [
+          null,
+          {"outcome": "accepted", "result_id": "res-cfg1-0"},
+          {"outcome": "rejected_missing_accepted", "result_id": null},
+          null, null,
+          {"outcome": "reused", "result_id": "res-cfg1-0"},
+          {"outcome": "accepted", "result_id": "res-cfg1-1"},
+          {"outcome": "accepted", "result_id": "res-cfg1-2"},
+          {"outcome": "terminal_complete", "result_id": null}
+        ],
+        "snapshots": [
+          {"after_event": 2, "active_config": "cfg-1", "accepted": {"cfg-1": [0]}, "replayable": [1, 2], "workset_state": "pending"},
+          {"after_event": 8, "active_config": "cfg-1", "accepted": {"cfg-1": [0, 1, 2]}, "replayable": [], "workset_state": "terminal_complete"}
+        ],
+        "surviving_results": [
+          {"config": "cfg-1", "occurrence": 0, "result_id": "res-cfg1-0", "limited": false},
+          {"config": "cfg-1", "occurrence": 1, "result_id": "res-cfg1-1", "limited": false},
+          {"config": "cfg-1", "occurrence": 2, "result_id": "res-cfg1-2", "limited": false}
+        ],
+        "half_accepted_results": []
+      },
+      "rationale": "Blueprint 4.2 and 4.3: every ordered frozen occurrence needs an accepted terminal, the finalizer verifies each one, a missing ref cannot become a success, and a failed step rolls back to pending."
+    }
+  ]
+}
