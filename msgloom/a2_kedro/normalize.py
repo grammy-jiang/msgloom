@@ -47,12 +47,25 @@ truncated in silence. Messages are fixed text and never carry content.
 Bounds are checked in this order: input size, then marker count, then
 segment count. All three fail closed.
 
+Cost: the cluster scan makes one pass and decides each boundary from a
+bounded window (see :func:`_clusters`). It never re-normalizes a whole
+growing cluster. Measured on a Raspberry Pi 5 at 1,000,000 characters:
+``normalize_text`` takes 1.2 to 1.6 s for runs of U+0958, U+F900, U+212A
+or U+2126 and for combining marks, 1.8 s for ASCII and 4.2 s for a run of
+Hangul V jamo (1,000,000 clusters). The validator rebuilds the text and
+re-normalizes each ``transformed`` segment, so it takes 2 to 3 s for the
+mark and U+0958 runs, 1.8 s for ASCII and 3.4 s for the V jamo run. 333,333
+Hangul LVT clusters take 3.6 s and 7.6 s. No quadratic input is known,
+and the fuzz and perf tests found none. Strict worst-case O(n) is not
+proven.
+
 CANDIDATE/RESEARCH, PROVISIONAL: names and bounds are not frozen. See
 ``docs/notes/a2-v2-p2-07-normalize.md``.
 """
 
 from __future__ import annotations
 
+import functools
 import re
 import unicodedata
 from dataclasses import dataclass, field
@@ -215,26 +228,92 @@ def _collapse(
     return out, kept, marks
 
 
-def _starts_cluster(prev_text: str, char: str) -> bool:
-    """Return True when ``char`` cannot interact with ``prev_text`` in NFC."""
-    if ord(char) < 0x300:
-        return True
+@functools.cache
+def _composing_seconds() -> frozenset[int]:
+    """
+    Return every code point that may compose with a character before it.
+
+    These are the second characters of canonical pairs (read from the
+    ``unicodedata`` decompositions) plus the Hangul V and T jamo, which
+    compose by algorithm. The set may be too large, never too small.
+    """
+    seconds = set(range(0x1161, 0x1176)) | set(range(0x11A7, 0x11C3))
+    for point in range(0xC0, 0x20000):
+        parts = unicodedata.decomposition(chr(point)).split()
+        if len(parts) == 2 and not parts[0].startswith("<"):
+            seconds.add(int(parts[1], 16))
+    return frozenset(seconds)
+
+
+@functools.lru_cache(maxsize=1 << 14)
+def _classify(char: str) -> tuple[bool, bool]:
+    """
+    Return ``(always_joins, anchor)`` for one character of at least U+0300.
+
+    ``always_joins``: the character has a combining class, or NFC changes it
+    alone. NFC never outputs such a character, so it never starts a cluster.
+
+    ``anchor``: the character has class 0 and neither it nor the first
+    character of its NFD form can compose with a character before it. The
+    NFC of the text up to an anchor and the NFC of the text from the anchor
+    on are then independent.
+    """
+    seconds = _composing_seconds()
+    changes = unicodedata.normalize("NFC", char) != char
     if unicodedata.combining(char):
+        return True, False
+    head = unicodedata.normalize("NFD", char)[0]
+    anchor = (
+        ord(char) not in seconds
+        and unicodedata.combining(head) == 0
+        and ord(head) not in seconds
+    )
+    return changes, anchor
+
+
+def _joins(window: list[str], char: str) -> bool:
+    """
+    Return True when ``char`` joins the open cluster whose tail is ``window``.
+
+    ``window`` is the cluster text since its last anchor (or its start).
+    NFC of the whole cluster ends with the same character as NFC of the
+    window, so the cost depends on the window only. The window is joined
+    and normalized only for a character that could compose with the last
+    character: class 0, stable, and not an anchor.
+    """
+    if ord(char) < 0x300:
         return False
-    last = unicodedata.normalize("NFC", prev_text)[-1]
-    return unicodedata.normalize("NFC", last + char) == last + char
+    always, anchor = _classify(char)
+    if always:
+        return True
+    if anchor:
+        return False
+    last = unicodedata.normalize("NFC", "".join(window))[-1]
+    return unicodedata.normalize("NFC", last + char) != last + char
 
 
 def _clusters(units: list[_Unit]) -> list[list[_Unit]]:
+    """
+    Group units into NFC clusters in one pass.
+
+    A unit starts a new cluster unless :func:`_joins` says it joins. The
+    result is the same as normalizing the whole cluster text to find its
+    last character, but the work is linear in the input, except for a
+    window that is normalized once per non-anchor candidate.
+    """
     groups: list[list[_Unit]] = []
-    text = ""
+    window: list[str] = []
     for unit in units:
-        if groups and not _starts_cluster(text, unit[0][0]):
+        char = unit[0][0]
+        if groups and _joins(window, char):
             groups[-1].append(unit)
-            text += unit[0]
+            if ord(char) >= 0x300 and _classify(char)[1]:
+                window = [unit[0]]
+            else:
+                window.append(unit[0])
             continue
         groups.append([unit])
-        text = unit[0]
+        window = [unit[0]]
     return groups
 
 
@@ -250,31 +329,43 @@ def _build(raw: str, max_segments: int, max_markers: int) -> NormalizedContent:
     segments: list[Segment] = []
     parts: list[str] = []
     cursor = 0
+    # The open segment is kept as plain numbers and turned into a Segment
+    # only when the next cluster cannot merge into it. The tuple holds the
+    # normalized start, source start, source end and mode.
+    open_seg: tuple[int, int, int, SegmentMode] | None = None
     for group in _clusters(units):
-        joined = "".join(u[0] for u in group)
+        if len(group) == 1:
+            joined = group[0][0]
+        else:
+            joined = "".join(u[0] for u in group)
         norm = joined if joined.isascii() else unicodedata.normalize("NFC", joined)
         start, end = group[0][1], group[-1][2]
         mode: SegmentMode = "identity" if raw[start:end] == norm else "transformed"
-        prev = segments[-1] if segments else None
         if (
-            prev
+            open_seg
             and mode == "identity"
-            and prev.mode == mode
-            and prev.original_end == start
+            and open_seg[3] == mode
+            and open_seg[2] == start
         ):
-            segments[-1] = Segment(
-                Span(prev.normalized.start, cursor + len(norm)),
-                prev.original_start,
-                end,
-                mode,
-            )
-        else:
-            segments.append(Segment(Span(cursor, cursor + len(norm)), start, end, mode))
-        if len(segments) > max_segments:
+            open_seg = (open_seg[0], open_seg[1], end, mode)
+            parts.append(norm)
+            cursor += len(norm)
+            continue
+        if open_seg:
+            segments.append(_segment(open_seg, cursor))
+        if len(segments) + 1 > max_segments:
             raise NormalizeError("segment bound exceeded")
+        open_seg = (cursor, start, end, mode)
         parts.append(norm)
         cursor += len(norm)
+    if open_seg:
+        segments.append(_segment(open_seg, cursor))
     return NormalizedContent("".join(parts), len(raw), tuple(segments), tuple(markers))
+
+
+def _segment(open_seg: tuple[int, int, int, SegmentMode], cursor: int) -> Segment:
+    """Close the open segment, which ends at normalized offset ``cursor``."""
+    return Segment(Span(open_seg[0], cursor), open_seg[1], open_seg[2], open_seg[3])
 
 
 def normalize_text(

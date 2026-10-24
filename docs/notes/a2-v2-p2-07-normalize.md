@@ -1,7 +1,9 @@
 # A2 v2 P2-07: normalized content with a strict offset map (PROVISIONAL)
 
 Code: `msgloom/a2_kedro/normalize.py`.
-Tests: `tests/a2_kedro/test_p2_07.py`.
+Tests: `tests/a2_kedro/test_p2_07.py` (behavior),
+`tests/a2_kedro/test_p2_07_perf.py` (cost and cluster differential),
+`tests/a2_kedro/test_p2_07_guards.py` (one hostile map per validator guard).
 
 All names and bounds are PROVISIONAL. The module is self-contained. It
 imports only the standard library. It does not import the C0-05 contract.
@@ -54,6 +56,53 @@ differs in three ways:
    (`e` + U+0301), grow it (U+0958) or join three characters into one
    (Hangul jamo).
 
+## Cost
+
+The first version was quadratic. A run of characters that NFC changes but
+that are not combining marks (U+0958, U+212A, U+2126, U+F900) re-normalized
+the whole growing cluster for each character. U+0958 x 20,000 took 45 s.
+
+The cluster scan is now one pass. A character joins the open cluster when
+it has a combining class, or when NFC changes it alone. Such a character
+can never start a cluster. A character with class 0 that is stable starts
+a new cluster, unless it can compose with the character before it (a
+second character of a canonical pair, or a Hangul V or T jamo). Only for
+that rare case does the scan normalize a window. The window is the text
+since the last "anchor": a class-0 character that cannot compose backward
+(and whose NFD head cannot either). NFC of the text before an anchor and
+NFC of the text from it on are independent, so the last character of the
+cluster NFC is the last character of the window NFC. The result is the
+same cluster list as the first version. This was checked by a differential
+run against the old scanner: random strings over about 3,400 characters
+that have a decomposition or combining class, and every code point up to
+U+2FFFF appended to many prefixes. There were no differences. The test
+module `test_p2_07_perf.py` keeps literal expectations from the old
+scanner and compares the text with whole-text NFC for 2,000 random strings.
+
+Measured on a Raspberry Pi 5, Python 3.13, 1,000,000 characters (seconds
+for `normalize_text` / `validate_offset_map`):
+
+| Input                         | normalize | validate |
+|-------------------------------|-----------|----------|
+| U+0958 x 1,000,000            | 1.6       | 3.0      |
+| U+F900 x 1,000,000            | 1.5       | 2.9      |
+| U+212A x 1,000,000            | 1.3       | 2.5      |
+| U+2126 x 1,000,000            | 1.3       | 2.6      |
+| a + 999,999 U+0301            | 1.3       | 2.6      |
+| ASCII text with spaces        | 1.8       | 1.8      |
+| Hangul V jamo run             | 4.2       | 3.4      |
+| 333,333 Hangul LVT clusters   | 3.6       | 7.6      |
+
+The ASCII case is one cluster per character, merged into one segment. The
+Hangul V run is 1,000,000 clusters. The validator
+costs more because it rebuilds the text and re-normalizes each
+`transformed` segment. A cheaper validator would need to drop one of those
+two checks. The note keeps both. No quadratic input is known. The fuzz and
+perf tests found none. Strict worst-case O(n) is not proven. The window is
+normalized only for a stable class-0 candidate that is not an anchor. A
+join then needs a real composition with a class-0 last character, which a
+long run of marks prevents.
+
 ## Map invariants (all checked by the validator)
 
 - Normalized ranges are non-empty, start at 0, are contiguous and end at
@@ -87,7 +136,8 @@ source ranges touch.
 
 - The marker cap is checked after the scan, not during it. Work is still
   bounded by `max_chars`.
-- The validator rebuilds the text, so it costs O(n) like `normalize_text`.
+- The validator rebuilds the text and re-normalizes each `transformed`
+  segment. It costs 2 to 3 times as much as `normalize_text`. See Cost.
 - Collapse rules do not treat whitespace-only lines specially.
 - No Unicode version pin. NFC results follow the Python `unicodedata`
   version.
