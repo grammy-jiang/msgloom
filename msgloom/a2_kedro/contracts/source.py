@@ -14,6 +14,19 @@ read first, then the proof is computed, then the root is built.
 Failure handling: any mismatch raises :exc:`A2ContractError`. The messages
 never carry source bytes or provider identifiers.
 
+``FrozenSourceSelection`` is the ``frozen_source_selection@1`` payload (C0-01).
+It holds the ordered roots of one workset under one scope. Exactly one of
+``incremental_roots`` and ``baseline_roots`` is set. It never mixes them.
+The model recomputes ``selection_set_sha256`` from its canonical content.
+A supplied value that differs fails validation, so a forged root, role or
+index is detected. ``verify_against`` compares the roots with the frozen
+Intake workset. Re-reading A1 bytes stays with the adapter below.
+
+PROVISIONAL wire names (not frozen by the plan): ``header``, ``workset``,
+``scope``, ``incremental_roots``, ``baseline_roots``,
+``selection_set_sha256`` and the digest domain
+``a2-frozen-source-selection@1``. See ``docs/notes/a2-v2-contract-c0-01.md``.
+
 CANDIDATE/RESEARCH: the ordinal formula mirrors the one used by
 ``msgloom.preparation_pipeline.intake`` today. A production verifier must
 come from a public A1 API before cutover. If Intake changes the formula,
@@ -25,6 +38,7 @@ from __future__ import annotations
 import hashlib
 import json
 from dataclasses import asdict, dataclass
+from itertools import pairwise
 from typing import Annotated, Any, Literal, Protocol
 
 from pydantic import Field, model_validator
@@ -34,10 +48,15 @@ from msgloom.a2_kedro.contracts.codec import (
     A2Model,
     Digest,
     Text,
+    canonical_model_bytes,
+    decode_model_bytes,
+    domain_sha256,
     sha256_hex,
 )
+from msgloom.a2_kedro.contracts.header import LIMITS, StageHeader
 from msgloom.contracts import ResultRef, VersionRef
 from msgloom.preparation_pipeline.intake_models import (
+    IntakeScope,
     IntakeSelection,
     PreparationIntakeWorkset,
 )
@@ -47,6 +66,11 @@ from msgloom.sources.models import CollectedSelection
 from msgloom.sources.release_models import ReleasedInput
 
 Index = Annotated[int, Field(ge=0, le=1023)]
+
+KIND = "frozen_source_selection"
+VERSION = "1"
+SELECTION_DOMAIN = "a2-frozen-source-selection@1"
+_PROOF_PREFIX = "intake-selection:"
 
 
 def _is_selection(ref: ResultRef) -> bool:
@@ -83,6 +107,157 @@ class FrozenRoot(A2Model):
         if any(v is not None for v in baseline):
             raise A2ContractError("incremental root cannot carry baseline")
         return self
+
+
+Roots = tuple[FrozenRoot, ...]
+
+
+def _check_incremental(roots: Roots, scope: IntakeScope) -> None:
+    indexes = [root.workset_index for root in roots]
+    if any(a >= b for a, b in pairwise(indexes)):
+        raise A2ContractError("workset indexes must be unique and ascending")
+    seen: set[tuple[ReleaseEntryRef, int]] = set()
+    primaries: set[ReleaseEntryRef] = set()
+    for root in roots:
+        entry, ordinal = root.entry, root.ordinal
+        if root.role == "baseline" or entry is None or ordinal is None:
+            raise A2ContractError("incremental selection holds a baseline root")
+        if entry.catalog != scope.catalog:
+            raise A2ContractError("root entry is outside the selection scope")
+        if (entry, ordinal) in seen:
+            raise A2ContractError("duplicate entry ordinal occurrence")
+        seen.add((entry, ordinal))
+        if root.role == "primary":
+            if ordinal != 0 or entry in primaries:
+                raise A2ContractError("primary role needs the only ordinal 0")
+            primaries.add(entry)
+        proof = root.selected.result_id.removeprefix(_PROOF_PREFIX)
+        if not root.selected.result_id.startswith(_PROOF_PREFIX) or (
+            proof != root.a1_ordinal_proof
+        ):
+            raise A2ContractError("ordinal proof differs from selection id")
+
+
+def _check_baseline(roots: Roots) -> None:
+    indexes = [root.workset_index for root in roots]
+    if any(a >= b for a, b in pairwise(indexes)):
+        raise A2ContractError("workset indexes must be unique and ascending")
+    if any(root.role != "baseline" for root in roots):
+        raise A2ContractError("baseline selection holds a non-baseline root")
+    if len({root.baseline_approval for root in roots}) != 1:
+        raise A2ContractError("baseline roots need one approval")
+
+
+class FrozenSourceSelection(A2Model):
+    """
+    ``frozen_source_selection@1``: the ordered roots of one frozen workset.
+
+    Exactly one of ``incremental_roots`` and ``baseline_roots`` is set and
+    non-empty. Use :meth:`build` to compute ``selection_set_sha256``.
+    """
+
+    header: StageHeader = Field(
+        default_factory=lambda: StageHeader(kind=KIND, version=VERSION)
+    )
+    workset: ResultRef
+    scope: IntakeScope
+    incremental_roots: Roots | None = None
+    baseline_roots: Roots | None = None
+    selection_set_sha256: Digest
+
+    @model_validator(mode="after")
+    def _closed(self) -> FrozenSourceSelection:
+        if (self.header.kind, self.header.version) != (KIND, VERSION):
+            raise A2ContractError("header is not frozen_source_selection@1")
+        if (self.workset.kind, self.workset.schema_version) != (
+            "preparation_intake_workset",
+            "1",
+        ):
+            raise A2ContractError("selection workset schema mismatch")
+        chosen = [r for r in (self.incremental_roots, self.baseline_roots) if r]
+        both = self.incremental_roots is not None and self.baseline_roots is not None
+        if both or len(chosen) != 1:
+            raise A2ContractError("need exactly one non-empty root set")
+        if len(chosen[0]) > LIMITS["max_roots"]:
+            raise A2ContractError("root count exceeds the workset bound")
+        if self.incremental_roots:
+            _check_incremental(self.incremental_roots, self.scope)
+        elif self.baseline_roots:
+            _check_baseline(self.baseline_roots)
+        if self.selection_set_sha256 != self.content_sha256():
+            raise A2ContractError("selection digest does not match content")
+        return self
+
+    def content_sha256(self) -> str:
+        """Return the digest of every field except the stored digest."""
+        content = self.model_dump(mode="json", exclude={"selection_set_sha256"})
+        return domain_sha256(SELECTION_DOMAIN, content)
+
+    @classmethod
+    def build(
+        cls,
+        workset: ResultRef,
+        scope: IntakeScope,
+        *,
+        incremental_roots: Roots | None = None,
+        baseline_roots: Roots | None = None,
+    ) -> FrozenSourceSelection:
+        """Build a selection and compute its digest; never accept one."""
+        values = {
+            "workset": workset,
+            "scope": scope,
+            "incremental_roots": incremental_roots,
+            "baseline_roots": baseline_roots,
+        }
+        draft = cls.model_construct(
+            header=StageHeader(kind=KIND, version=VERSION),
+            selection_set_sha256="0" * 64,
+            **values,
+        )
+        digest = draft.content_sha256()
+        return cls(selection_set_sha256=digest, **values)
+
+    def roots(self) -> Roots:
+        """Return the set roots in workset order."""
+        return self.incremental_roots or self.baseline_roots or ()
+
+    def verify_against(self, workset: PreparationIntakeWorkset) -> None:
+        """
+        Prove that every root equals the frozen Intake workset content.
+
+        Raise :exc:`A2ContractError` for another scope, a baseline
+        mismatch, or a root that is not the workset item at its index.
+        """
+        if workset.scope != self.scope:
+            raise A2ContractError("selection scope differs from workset")
+        if (workset.baseline_approval is not None) != bool(self.baseline_roots):
+            raise A2ContractError("selection mode differs from workset")
+        for root in self.roots():
+            index = root.workset_index
+            if root.role == "baseline":
+                same = (
+                    index < len(workset.baseline_sources)
+                    and workset.baseline_selections[index] == root.selected
+                    and workset.baseline_sources[index] == root.baseline_source
+                    and workset.baseline_approval == root.baseline_approval
+                )
+            else:
+                same = (
+                    index < len(workset.selections)
+                    and workset.selections[index].result == root.selected
+                    and workset.selections[index].entry == root.entry
+                )
+            if not same:
+                raise A2ContractError("root differs from the frozen workset")
+
+    def encode(self) -> bytes:
+        """Return the bounded canonical bytes of this record."""
+        return canonical_model_bytes(self)
+
+    @classmethod
+    def decode(cls, data: bytes) -> FrozenSourceSelection:
+        """Strictly decode canonical bytes; reject anything else."""
+        return decode_model_bytes(cls, data)
 
 
 @dataclass(frozen=True, slots=True)
