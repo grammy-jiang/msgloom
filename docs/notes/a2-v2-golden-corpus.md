@@ -15,7 +15,7 @@ The supervisor changed the path to `golden/`.
 | `t0_04.json` | Calendar, To Do, OneDrive, Contacts stay contextual | 5 | 5 |
 | `t0_05.json` | PDF, Word, Excel, malformed, large, partial | 7 | 7 |
 | `t0_06.json` | Held, intake-held, transition-only: one terminal per item | 11 | 20 |
-| `t0_07.json` | Crash, restart, late write, cancel: accepted prefix, replay | 10 | 3 |
+| `t0_07.json` | Crash, restart, late write, cancel: accepted prefix, replay | 10 | 7 |
 | `t0_08.json` | Historical prepared@1 reader, prepared@2 mapping, no lossy projection | 13 | 38 |
 | `t0_09.json` | Prefect lost, duplicate hint, partial A1 finish | 6 | 8 |
 | `t0_10.json` | Node.run logger, PII canary, telemetry, illegal paths | 5 | 13 |

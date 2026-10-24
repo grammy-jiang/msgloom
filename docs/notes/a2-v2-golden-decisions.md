@@ -83,6 +83,14 @@ The full text is in `a2-v2-golden-t0-07.md`.
 - T0-07-P10 replay under a changed configuration:
   `proposed_owner_signoff_needed`. The blueprint does not say whether a
   workset frozen under one configuration may replay under another.
+- T0-07-N07 write by the live claim after its workset is terminal:
+  `proposed_owner_signoff_needed`. The oracle proposes a rejection. The
+  blueprint rejects a second finalize (4.3 step 4) but does not say what a
+  later save by the live claim does. T0-07-N04, N05 and N06 follow blueprint
+  text and carry no marker.
+- Follow-up: the T0-06 and T0-08 files and notes and the independence rules in
+  `a2-v2-golden-corpus.md` still say "a person" wrote the values. A Claude
+  worker annotated them. Reword in a later change.
 
 ## T0-08 decisions
 

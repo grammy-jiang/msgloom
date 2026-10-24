@@ -1,11 +1,14 @@
 """Validate the hand-written T0-07 crash, restart, late-write and cancel oracle.
 
-A person wrote every expected outcome in ``golden/t0_07.json`` from the A2
-Kedro v2 blueprint. A small pure-Python reference checker only tests that the
-answers agree with each other and with these invariants: the accepted set is
-a contiguous prefix; a stale claim leaves no result; no half result exists;
-replayable == frozen minus accepted; replay keeps the same result id. The
-module never imports ``msgloom`` code. Negative tests mutate the fixture.
+A Claude language-model worker wrote every expected outcome in
+``golden/t0_07.json`` from the A2 Kedro v2 blueprint. No human has reviewed it
+yet. A small pure-Python reference checker only tests that the answers agree
+with each other and with these invariants: the accepted set is a contiguous
+prefix; a stale claim leaves no result; no half result exists;
+replayable == frozen minus accepted; replay keeps the same result id; a
+terminal workset rejects a second finalize and any later write and does not
+change. The module never imports ``msgloom`` code. Mutation tests are in
+``test_gold_t0_07_more.py``.
 """
 
 from __future__ import annotations
@@ -14,7 +17,6 @@ import copy
 import hashlib
 import json
 import re
-from collections.abc import Iterator
 from pathlib import Path
 from typing import Any
 
@@ -26,9 +28,9 @@ MANIFEST = GOLDEN / "MANIFEST.sha256"
 NOTE = Path(__file__).resolve().parents[2] / "docs/notes/a2-v2-golden-t0-07.md"
 
 WRITE_OUT = ("accepted", "reused", "rejected_stale_claim", "rejected_bridge_closed")
-WRITE_OUT += ("rolled_back",)
+WRITE_OUT += ("rolled_back", "rejected_already_terminal")
 FINAL_OUT = ("terminal_complete", "terminal_incomplete", "rejected_stale_claim")
-FINAL_OUT += ("rejected_missing_accepted",)
+FINAL_OUT += ("rejected_missing_accepted", "rejected_already_terminal")
 VOCAB = {"write": WRITE_OUT, "finalize": FINAL_OUT}
 FLAGS = {"limited", "in_flight_at_cancel", "caller_cancelled_after_commit"}
 FIELDS = {
@@ -49,13 +51,15 @@ SCHEDULED = [
 POLICY = {
     "T0-07-P05": "task_goal_decision",
     "T0-07-P10": "proposed_owner_signoff_needed",
+    "T0-07-N07": "proposed_owner_signoff_needed",
 }
 # Required case ids, in the order of the task list: crash before first accept,
 # mid-batch, inside a write, before the finalizer; cancel in flight and after
 # COMMIT; double restart; limited result; duplicate source; config change;
-# stale claim; cancel with rollback; finalizer refusal.
+# stale claim; cancel with rollback; finalizer refusal; duplicate finalize;
+# late write after terminal (stale claim N06, live claim N07).
 COVERAGE = [f"T0-07-P{n:02d}" for n in range(1, 11)]
-COVERAGE += [f"T0-07-N{n:02d}" for n in range(1, 4)]
+COVERAGE += [f"T0-07-N{n:02d}" for n in range(1, 8)]
 
 
 def _no_duplicates(pairs: list[tuple[str, Any]]) -> dict[str, Any]:
@@ -196,8 +200,10 @@ class _Run:
         """Blueprint order: live claim, bridge flag, COMMIT, accepted key."""
         done = self.done[self.config_of[event["claim"]]]
         if event["claim"] != self.live:
-            self.stale_seen = True
+            self.stale_seen = self.stale_seen or self.state == "pending"
             return "rejected_stale_claim"
+        if self.state != "pending":  # blueprint 4.3 steps 4 and 5
+            return "rejected_already_terminal"
         if event["op"] == "finalize":
             if set(done) != set(range(self.size)):
                 return "rejected_missing_accepted"
@@ -250,8 +256,8 @@ def _step(run: _Run, event: dict[str, Any], out: dict[str, Any] | None) -> list[
         return ["unknown claim token"]
     if event.get("in_flight_at_cancel") and not run.closed:
         return ["in_flight_at_cancel before any cancel"]
-    if op == "finalize" and run.state != "pending":
-        return ["finalize after terminal"]
+    if op == "finalize" and run.state != "pending" and event["claim"] != run.live:
+        return ["stale finalize after terminal: the check order is undefined"]
     derived = run.derive(event)
     if out["outcome"] != derived:
         return [f"outcome {out['outcome']} but the rules give {derived}"]
@@ -281,14 +287,28 @@ def _snapshot_problems(run: _Run, snap: dict[str, Any], n: int) -> list[str]:
         bad.append("accepted differs from the timeline result")
     if snap["workset_state"] != run.state:
         bad.append("workset_state differs from the finalizer outcomes")
+    return bad + _scheduled_problems(run, snap)
+
+
+def _scheduled_problems(run: _Run, snap: dict[str, Any]) -> list[str]:
+    """Blueprint 8.2: the public outcome must be present exactly when it applies."""
+    allowed = {
+        "pending": [
+            s
+            for s, seen in (("CANCELLED", run.cancel_seen), ("FAILED", run.stale_seen))
+            if seen
+        ],
+        "terminal_incomplete": ["INCOMPLETE"],
+        "terminal_complete": [],
+    }[snap["workset_state"]]
     status = snap.get("scheduled_outcome", {}).get("status")
-    ok = {
-        None: True,
-        "CANCELLED": run.cancel_seen,
-        "FAILED": run.stale_seen,
-        "INCOMPLETE": snap["workset_state"] == "terminal_incomplete",
-    }
-    return bad + ([] if ok[status] else ["scheduled_outcome has no matching event"])
+    if status is None:
+        return (
+            [f"scheduled_outcome is missing, one of {allowed} applies"]
+            if allowed
+            else []
+        )
+    return [] if status in allowed else [f"scheduled_outcome {status} does not apply"]
 
 
 def _survivor_problems(run: _Run, exp: dict[str, Any]) -> list[str]:
@@ -412,53 +432,6 @@ def test_case_is_valid_and_consistent(case_id: str) -> None:
 
 
 # ------------------------------------------------------- negative tests ----
-
-
-def _mutants(case: dict[str, Any]) -> Iterator[tuple[str, dict[str, Any]]]:
-    """Yield single-point mutations of the hand-written answers."""
-    exp, timeline = case["expected"], case["input"]["timeline"]
-    for i, out in enumerate(exp["event_outcomes"]):
-        if out is None:
-            continue
-        for other in VOCAB[timeline[i]["op"]]:
-            if other != out["outcome"]:
-                mutant = copy.deepcopy(case)
-                mutant["expected"]["event_outcomes"][i]["outcome"] = other
-                yield f"event {i} -> {other}", mutant
-    last = {"replayable": [9], "workset_state": "x", "accepted": {"cfg-1": [0, 7]}}
-    last["replayable"] = [*exp["snapshots"][-1]["replayable"], 9]
-    for key, value in last.items():
-        mutant = copy.deepcopy(case)
-        mutant["expected"]["snapshots"][-1][key] = value
-        yield f"snapshot {key}", mutant
-    extra = {
-        "config": "cfg-1",
-        "occurrence": 0,
-        "result_id": "res-late",
-        "limited": False,
-    }
-    for label, edit in {
-        "extra survivor": lambda r: r.append(extra),
-        "dropped survivor": lambda r: r.pop(),
-        "changed id": lambda r: r[0].update(result_id="res-other"),
-    }.items():
-        mutant = copy.deepcopy(case)
-        edit(mutant["expected"]["surviving_results"])
-        yield label, mutant
-    mutant = copy.deepcopy(case)
-    mutant["expected"]["half_accepted_results"] = [{"occurrence": 0}]
-    yield "half result listed", mutant
-
-
-@pytest.mark.parametrize("case_id", _ids())
-def test_every_mutation_is_detected(case_id: str) -> None:
-    count = 0
-    for label, mutant in _mutants(_case(case_id)):
-        count += 1
-        if not check_case(mutant):
-            pytest.fail(f"{case_id}: mutation {label!r} went unnoticed")
-    if count < 8:
-        pytest.fail(f"{case_id}: only {count} mutations were tried")
 
 
 def test_named_violations_are_detected() -> None:
