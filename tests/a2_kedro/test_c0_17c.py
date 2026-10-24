@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import asyncio
 import json
-from dataclasses import replace
+from dataclasses import dataclass, replace
 from pathlib import Path
 from typing import Any
 
@@ -348,11 +348,22 @@ class _OnlyResults:
         pytest.fail(f"unexpected persistence call: {name}")
 
 
+@dataclass(frozen=True)
+class V2Case:
+    """One v2 handler fixture. ``request`` is the exact admitted request."""
+
+    triage: TriageHandler
+    runner: Any
+    saved: dict[str, StageResult]
+    plan: TriageReplayPlan
+    request: Any
+
+
 def v2_handler(
     results: dict[str, StageResult] | None = None,
     *,
     versions: tuple[str, str, str] = ("2", "2", "2"),
-) -> tuple[TriageHandler, Any, dict[str, StageResult], TriageReplayPlan]:
+) -> V2Case:
     _selected, producer, _candidate = setup()
     plan = producer.plan
     renamed = tuple(
@@ -380,23 +391,24 @@ def v2_handler(
         else {r.result_id: stage(r) for group in renamed for r in group}
     )
     runner = type("Runner", (), {"calls": 0})()
-    return TriageHandler(_OnlyResults(saved), producer, runner), runner, saved, plan  # type: ignore[arg-type]
+    triage = TriageHandler(_OnlyResults(saved), producer, runner)  # type: ignore[arg-type]
+    return V2Case(triage, runner, saved, plan, request(producer))
 
 
 def test_handler_holds_v2_upstream_with_limitations_and_no_effects() -> None:
     limit = Limitation("body_missing", "synthetic")
-    _handler, _runner, saved, plan = v2_handler()
-    prepared = plan.prepared_results[0]
-    saved[prepared.result_id] = stage(
+    first = v2_handler()
+    prepared = first.plan.prepared_results[0]
+    first.saved[prepared.result_id] = stage(
         prepared, status=TerminalStatus.INCOMPLETE, limitations=(limit,)
     )
-    triage, runner, _saved, plan = v2_handler(saved)
-    outcome = asyncio.run(triage.run(request(triage._config)))
+    case = v2_handler(first.saved)
+    outcome = asyncio.run(case.triage.run(case.request))
     check(outcome.status is TerminalStatus.INCOMPLETE, "incomplete, not complete")
     check(limit in outcome.limitations, "upstream limitation carried")
     check(outcome.limitations[-1].code == adapter.HOLD_CODE, "hold marker last")
     check(outcome.result_refs == () and outcome.failures == (), "no result, no failure")
-    check(runner.calls == 0, "no provider call")
+    check(case.runner.calls == 0, "no provider call")
 
 
 def test_handler_fails_closed_on_bad_v2_upstream() -> None:
@@ -405,16 +417,16 @@ def test_handler_fails_closed_on_bad_v2_upstream() -> None:
         (("2", "9", "2"), UnsupportedVersionError),
     )
     for versions, error in cases:
-        triage, _runner, _saved, _plan = v2_handler(versions=versions)
-        outcome = asyncio.run(triage.run(request(triage._config)))
+        case = v2_handler(versions=versions)
+        outcome = asyncio.run(case.triage.run(case.request))
         check(outcome.status is TerminalStatus.FAILED, "failed")
         check(outcome.failures[0].code == "triage_input_invalid", "typed failure")
         check(outcome.failures[0].detail == error.__name__, "typed error name only")
         check(SECRET not in repr(outcome), "no input value in outcome")
-    triage, _runner, saved, plan = v2_handler()
-    prepared = plan.prepared_results[0]
-    saved[prepared.result_id] = stage(prepared, status=TerminalStatus.INCOMPLETE)
-    outcome = asyncio.run(triage.run(request(triage._config)))
+    case = v2_handler()
+    prepared = case.plan.prepared_results[0]
+    case.saved[prepared.result_id] = stage(prepared, status=TerminalStatus.INCOMPLETE)
+    outcome = asyncio.run(case.triage.run(case.request))
     check(outcome.status is TerminalStatus.FAILED, "silent incomplete is refused")
     check(outcome.failures[0].detail == UpstreamStateError.__name__, "state error")
     check(SECRET not in repr(outcome), "no input value in outcome")

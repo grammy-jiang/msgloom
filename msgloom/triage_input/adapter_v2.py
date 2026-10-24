@@ -213,7 +213,12 @@ def project_to_v1(snapshot: V2Snapshot) -> NoReturn:
 
 
 def classify_upstream(refs: Iterable[ResultRef]) -> Version | None:
-    """Return the one version of the family refs, or ``None`` if none."""
+    """Return the one version of the family refs, or ``None`` if none.
+
+    A family ref with an unknown version (for example ``prepared@3``) raises
+    :exc:`UnsupportedVersionError`, also next to v1 refs. The handler fails
+    closed at preflight. Before C0-17c it did not check the version.
+    """
     pairs = {(r.kind, r.schema_version) for r in refs if r.kind in FAMILY_KINDS}
     if not pairs:
         return None
