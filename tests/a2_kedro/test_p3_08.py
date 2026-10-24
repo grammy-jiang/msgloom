@@ -222,11 +222,13 @@ def test_marker_in_partial_scope_still_deletes() -> None:
     check(kinds(out) == [("m1", "deletion")], "marker needs no enumeration")
 
 
-def test_membership_marker_is_a_deletion() -> None:
+def test_membership_marker_is_refused_not_a_deletion() -> None:
+    # Review fix F2: this test used to expect ``deletion``.
     scope = obs(FOLDER, "membership")
     gone = now("m1", None, FOLDER, marker="content-src")
-    out = derive_transitions(scope, (prev("m1", None, FOLDER),), (gone,))
-    check(kinds(out) == [("m1", "deletion")], "marker wins over removal")
+    with pytest.raises(TransitionSemanticsError) as err:
+        derive_transitions(scope, (prev("m1", None, FOLDER),), (gone,))
+    check(err.value.code == "membership_marker", "membership marker code")
 
 
 def test_marker_with_other_authority_is_refused() -> None:
@@ -240,7 +242,8 @@ def test_marker_with_other_authority_is_refused() -> None:
     member = obs(FOLDER, "membership")
     with pytest.raises(TransitionSemanticsError) as err2:
         derive_transitions(member, (), (now("m1", None, FOLDER, marker="x"),))
-    check(err2.value.code == "authority_mismatch", "membership scope")
+    # Review fix F2: the role check now runs first and refuses the marker.
+    check(err2.value.code == "membership_marker", "membership scope")
 
 
 def test_blank_marker_authority_is_refused() -> None:

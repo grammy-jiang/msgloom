@@ -32,8 +32,9 @@ For one resource key (resource kind plus resource ID):
 ======================  =====================  ===========================
 previous / observed     condition              result
 ======================  =====================  ===========================
-any / provider marker   marker has authority   ``deletion`` (marker
-                                               authority)
+any / provider marker   content role,          ``deletion`` (marker
+                        marker has authority   authority)
+any / provider marker   membership role        refused (``membership_marker``)
 absent / present        none                   ``presence``
 present / present       content hash differs   ``context_refresh``
                         (content role only)
@@ -49,8 +50,22 @@ absent / absent         none                   no transition
 ======================  =====================  ===========================
 
 A resource that leaves a membership scope is not deleted. Only an
-explicit provider marker produces ``deletion``. A marker needs no
-complete enumeration, because the provider states the deletion.
+explicit provider marker in a content scope produces ``deletion``. A
+marker needs no complete enumeration, because the provider states the
+deletion. A marker in a membership scope is refused with
+``membership_marker``: the scope cannot say whether the deletion applies
+to the container or to the content. The producer must run the marker
+through a content scope. The owner may change this rule.
+
+Partial enumeration
+===================
+
+A partial scope yields :class:`UnprovenAbsence` values and one
+``absence_not_proven`` limitation. :func:`to_batch` refuses such an
+outcome with ``partial_scope``, because :class:`TransitionBatch` has no
+field for a limitation and the batch would look complete. A caller that
+accepts a partial outcome must use :func:`to_items` and keep the
+limitations beside the items.
 
 Authority
 =========
@@ -125,6 +140,8 @@ _MESSAGES = {
     "too_many": "record or transition count is out of bounds",
     "bad_record_type": "observed item is not an observed record",
     "authority_mismatch": "deletion authority differs from scope authority",
+    "membership_marker": "deletion marker is not allowed in a membership scope",
+    "partial_scope": "outcome is partial and cannot form a complete batch",
 }
 
 
@@ -276,6 +293,10 @@ def _check_role(record: StateRecord, role: Role, position: int) -> None:
         isinstance(record, ObservedRecord) and record.deletion_authority is not None
     )
     has_hash = record.content_sha256 is not None
+    if role == "membership" and marker:
+        # Leaving membership is not deletion. Refuse the marker, whatever
+        # its authority or hash, instead of guessing its meaning.
+        raise TransitionSemanticsError("membership_marker", position)
     if role == "membership" and has_hash:
         raise TransitionSemanticsError("role_violation", position)
     if role == "content" and has_hash == marker:
@@ -428,8 +449,12 @@ def to_batch(
     """
     Build a :class:`TransitionBatch` from the decided transitions.
 
-    Unproven absences are not batch items. An outcome with no transition
-    cannot form a batch, because a batch needs at least one item.
+    Raise ``partial_scope`` for an outcome with unproven absences. The
+    batch has no limitation field, so it would look complete. An outcome
+    with no transition cannot form a batch, because a batch needs at
+    least one item.
     """
+    if not outcome.complete or outcome.limitations:
+        raise TransitionSemanticsError("partial_scope")
     items = to_items(outcome.transitions)
     return TransitionBatch.build(workset, code_version, policy_version, items)
