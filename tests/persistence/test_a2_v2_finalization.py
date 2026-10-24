@@ -24,7 +24,7 @@ from msgloom.a2_kedro.contracts.receipt import (
     CompletionReceipt,
     TerminalRoot,
 )
-from msgloom.contracts import ResultRef, TerminalStatus
+from msgloom.contracts import Limitation, ResultRef, TerminalStatus
 from msgloom.persistence.a2_producer_binding import (
     A2ProducerFenceError,
     finalize_a2_workset_fenced,
@@ -90,7 +90,7 @@ def make_held_world(tmp_path: Path, path: Path, store: Any) -> World:
         pytest.fail("v2 claim must be acquired")
     db.close()
     (tmp_path / "proofs").mkdir()
-    receipt = CompletionReceipt(
+    receipt = CompletionReceipt.build(
         workset=ref,
         status=INCOMPLETE,
         policy_version="policy-1",
@@ -180,9 +180,13 @@ def test_all_roots_held_finalizes_incomplete(env: Env) -> None:
     for index, char in enumerate("cd"):
         ref = accepted_ref(str(index + 3), "a2_input_disposition", "1")
         writer = hb.attempt_proof()
-        stage = hb.stage_for(ref, char, writer, INCOMPLETE)
+        held = (Limitation("held", "intake held the source"),)
+        stage = hb.stage_for(ref, char, writer, INCOMPLETE, held)
         hb.publish(
-            env.db, stage, env.claim_seq, hb.saved_result(ref, char, writer, INCOMPLETE)
+            env.db,
+            stage,
+            env.claim_seq,
+            hb.saved_result(ref, char, writer, INCOMPLETE, held),
         )
         roots.append(
             TerminalRoot(
@@ -190,10 +194,11 @@ def test_all_roots_held_finalizes_incomplete(env: Env) -> None:
                 result=ref,
                 disposition="held",
                 status=INCOMPLETE,
+                limitations=held,
                 selection=env.ws.selections[index],
             )
         )
-    receipt = CompletionReceipt(
+    receipt = CompletionReceipt.build(
         workset=WORKSET_REF,
         status=INCOMPLETE,
         policy_version="policy-1",
@@ -311,7 +316,7 @@ def test_v1_v2_race_has_one_terminal_winner(tmp_path: Path, round_number: int) -
 
 
 def covering(env: Env, roots: tuple[TerminalRoot, ...]) -> CompletionReceipt:
-    return CompletionReceipt(
+    return CompletionReceipt.build(
         workset=WORKSET_REF,
         status=COMPLETE,
         policy_version="policy-1",

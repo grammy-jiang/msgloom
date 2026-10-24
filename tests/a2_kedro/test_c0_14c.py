@@ -361,7 +361,7 @@ def make_world(tmp_path: Path) -> World:
         )
     db.close()
     (tmp_path / "proofs").mkdir()
-    receipt = CompletionReceipt(
+    receipt = CompletionReceipt.build(
         workset=ref,
         status=TerminalStatus.COMPLETE,
         policy_version="policy-1",

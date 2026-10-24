@@ -200,7 +200,7 @@ def make_receipt(
     batch = TransitionBatch(
         transitions=ws.transitions, result=BATCH_REF, status=COMPLETE
     )
-    return CompletionReceipt(
+    return CompletionReceipt.build(
         workset=WORKSET_REF,
         status=COMPLETE,
         policy_version=policy,

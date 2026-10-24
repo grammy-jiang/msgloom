@@ -86,7 +86,7 @@ def incomplete_request(env: Env) -> FinalizeRequest:
     if batch is None:
         pytest.fail("fixture receipt has a batch")
     replace(env, BATCH_REF, attempt_proof(), env.claim_seq, INCOMPLETE, LIMIT)
-    receipt = CompletionReceipt(
+    receipt = CompletionReceipt.build(
         workset=WORKSET_REF,
         status=INCOMPLETE,
         policy_version=env.receipt.policy_version,
