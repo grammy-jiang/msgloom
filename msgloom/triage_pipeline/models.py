@@ -8,6 +8,7 @@ from dataclasses import dataclass
 from datetime import datetime
 from enum import StrEnum
 from hashlib import sha256
+from typing import Literal
 
 from pydantic import BaseModel, ValidationError
 
@@ -20,7 +21,15 @@ from msgloom.triage_input import (
     TriageInputConfig,
     TrustedInputVersions,
 )
+from msgloom.triage_input.adapter_v2 import (
+    MixedVersionsError,
+    UnsupportedVersionError,
+    classify_upstream,
+)
 from msgloom.working_context import WorkingContextConfig
+
+#: Source family version that selects the ``triage_input`` reader.
+SourceVersion = Literal["1", "2"]
 
 
 class TriageMode(StrEnum):
@@ -94,6 +103,40 @@ class TriageReplayPlan:
             raise ValueError("replay requires an exact saved context result")
         if self.mode is TriageMode.LIVE and self.replay_context_result is not None:
             raise ValueError("live mode cannot name a replay context result")
+
+    def source_version(self) -> SourceVersion:
+        """Return the one source family version, ``"1"`` or ``"2"``.
+
+        ``"1"`` selects ``prepared@1``, ``filter_result@1`` and
+        ``group_result@1`` with ``triage_input@1``. ``"2"`` selects the
+        ``@2`` family with ``triage_input@2``. The plan never converts one
+        into the other. Each family list must hold only its own kind. A mix
+        of ``@1`` and ``@2``, or any other version, raises
+        :exc:`ValueError` with a fixed message and no ref value.
+
+        This check is explicit and is not run by ``__post_init__`` or
+        :meth:`validated`. The handler keeps its own preflight failure
+        (``triage_input_invalid``) for bad upstream versions, so plans with
+        bad versions can still be built and reach that failure.
+        """
+        for refs, kind in (
+            (self.prepared_results, "prepared"),
+            (self.filter_results, "filter_result"),
+            (self.group_results, "group_result"),
+        ):
+            if any(item.kind != kind for item in refs):
+                raise ValueError("triage plan source result kind is invalid")
+        try:
+            version = classify_upstream(
+                (*self.prepared_results, *self.filter_results, *self.group_results)
+            )
+        except MixedVersionsError:
+            raise ValueError("triage plan source versions must not be mixed") from None
+        except UnsupportedVersionError:
+            raise ValueError("triage plan source version is unsupported") from None
+        if version is None:
+            raise ValueError("triage plan requires source result versions")
+        return version
 
     def validated(self) -> TriageReplayPlan:
         """Reconstruct all nested strict models at the operation boundary."""
