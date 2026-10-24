@@ -162,17 +162,25 @@ def test_bad_grid_span_is_flagged_not_trusted() -> None:
 # --- linear time ----------------------------------------------------------
 
 
-def best_time(data: bytes) -> float:
-    times = []
-    for _ in range(2):
-        begin = time.perf_counter()
-        parse_docx(data)
-        times.append(time.perf_counter() - begin)
-    return min(times)
+def count_visits(monkeypatch: pytest.MonkeyPatch, data: bytes) -> int:
+    """Count element-name lookups; each parser step makes a bounded number."""
+    calls = 0
+    original = dx._qname
+
+    def counting(tag: str) -> str:
+        nonlocal calls
+        calls += 1
+        return original(tag)
+
+    monkeypatch.setattr(dx, "_qname", counting)
+    parse_docx(data)
+    return calls
 
 
 @pytest.mark.parametrize("shape", ["paragraphs", "runs", "drawings", "members"])
-def test_large_hostile_documents_parse_in_linear_time(shape: str) -> None:
+def test_large_hostile_documents_parse_in_linear_time(
+    shape: str, monkeypatch: pytest.MonkeyPatch
+) -> None:
     def make(n: int) -> bytes:
         if shape == "paragraphs":
             return build(para("x") * n)
@@ -184,9 +192,12 @@ def test_large_hostile_documents_parse_in_linear_time(shape: str) -> None:
             )
         return build(para("x"), {f"x/{i}.txt": b"" for i in range(n // 20)})
 
-    small, large = best_time(make(5_000)), best_time(make(40_000))
-    check(large < 5.0, f"large input took too long: {large:.2f}s")
-    check(large < max(small, 0.02) * 20, "time grows faster than linear")
+    small_n, large_n = 5_000, 40_000
+    small = count_visits(monkeypatch, make(small_n))
+    large = count_visits(monkeypatch, make(large_n))
+    # The size ratio is 8. A quadratic parser would show a ratio near 64.
+    check(large <= small * 10 + 100, f"visits grow faster than linear: {small}/{large}")
+    check(large <= large_n * 20, f"too many visits per element: {large}")
 
 
 def test_unsupported_item_overflow_is_bounded_and_recorded() -> None:

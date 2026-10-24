@@ -77,6 +77,14 @@ The parser reads the final view. It reads text in `w:ins` and `w:moveTo`.
 It skips `w:del` and `w:moveFrom` and records `tracked_deletion` with the
 block ID. The result is `INCOMPLETE`. Formatting changes are ignored.
 
+A table row marked `w:trPr/w:del` and a cell marked `w:tcPr/w:cellDel` are
+skipped and recorded the same way (block ID `b{i}/r{row}` or the cell ID).
+A skipped row or cell keeps its row or column index.
+
+Inline `w:sym` and `w:ptab`, and unknown children of `w:tbl` or `w:tr`, are
+recorded as `unknown_block`. Known markers (`w:trPr`, `w:tblPr`,
+`w:tblGrid`, `w:tcPr`, bookmarks, `w:proofErr`) stay silent.
+
 ## Unsupported content
 
 Skipped and recorded with kind and, in the body, the block ID:

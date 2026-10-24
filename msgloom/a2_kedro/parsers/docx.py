@@ -19,7 +19,10 @@ their cell. IDs depend on structure only: ``b{i}``, ``b{i}/r{row}c{col}``
 and ``b{i}/r{row}c{col}/{k}/r{row}c{col}``.
 
 Tracked changes: the parser reads the final view. Inserted text is read.
-Deleted text is skipped and recorded as ``tracked_deletion``. Skipped
+Deleted text, rows (``w:trPr/w:del``) and cells (``w:tcPr/w:cellDel``)
+are skipped and recorded as ``tracked_deletion``. Inline ``w:sym`` and
+``w:ptab`` and unknown table children are recorded as ``unknown_block``.
+Helpers live in ``docx_rows``; enums and records in ``docx_model``. Skipped
 content is recorded as :class:`UnsupportedItem`. Hyperlink targets and
 field codes are not read and not recorded. Bounds keep work linear. XML is
 parsed with ``forbid_dtd``, so entities never expand. ``repr`` shows
@@ -33,16 +36,27 @@ import re
 import zipfile
 from collections.abc import Iterator
 from dataclasses import dataclass, field
-from enum import StrEnum
-from functools import lru_cache
-from typing import Literal
 from xml.etree.ElementTree import Element, ParseError
 
 from defusedxml import ElementTree as safe_et
 from defusedxml.common import DefusedXmlException
 
-from msgloom.a2_kedro.contracts.codec import A2ContractError, sha256_hex
+from msgloom.a2_kedro.contracts.codec import sha256_hex
 from msgloom.a2_kedro.contracts.parse import LimitHit, ParserReceipt
+from msgloom.a2_kedro.parsers.docx_model import (
+    Block,
+    DocxInputError,
+    DocxLimit,
+    UnsupportedItem,
+    UnsupportedKind,
+)
+from msgloom.a2_kedro.parsers.docx_rows import (
+    cell_deleted,
+    grid_span,
+    is_marker,
+    row_deleted,
+)
+from msgloom.a2_kedro.parsers.docx_rows import qname as _qname
 from msgloom.contracts import Limitation, TerminalStatus
 
 WORKER = "msgloom.a2_kedro.parsers.docx"
@@ -53,38 +67,11 @@ MIB = 1024 * 1024
 MAX_INPUT_BYTES, MAX_MEMBER_BYTES, MAX_TOTAL_BYTES = 32 * MIB, 16 * MIB, 64 * MIB
 MAX_MEMBERS, MAX_XML_DEPTH, MAX_XML_ELEMENTS = 1000, 128, 1_000_000
 MAX_PARAGRAPHS, MAX_TEXT_CHARS, MAX_TABLE_DEPTH = 100_000, 5_000_000, 4
-MAX_GRID_SPAN, MAX_UNSUPPORTED_ITEMS = 1000, 1000
+MAX_UNSUPPORTED_ITEMS = 1000
 
 _OLE_MAGIC = b"\xd0\xcf\x11\xe0\xa1\xb1\x1a\xe1"
-_NS = {
-    "http://schemas.openxmlformats.org/wordprocessingml/2006/main": "w",
-    "http://purl.oclc.org/ooxml/wordprocessingml/main": "w",
-    "http://schemas.openxmlformats.org/officeDocument/2006/math": "m",
-    "http://schemas.openxmlformats.org/markup-compatibility/2006": "mc",
-}
 
 
-class DocxInputError(A2ContractError):
-    """Raised for caller misuse. The message is fixed and has no content."""
-
-
-#: Closed, content-free reasons that a result is not complete. Each value
-#: is the lower-case member name. The first nine members fail the parse.
-DocxLimit = StrEnum(
-    "DocxLimit",
-    "EMPTY_INPUT NOT_A_ZIP ENCRYPTED_OR_OLE ENCRYPTED_MEMBER CORRUPT_PACKAGE "
-    "DUPLICATE_MEMBER NOT_DOCX XML_FORBIDDEN INVALID_XML SIZE_LIMIT MEMBER_LIMIT "
-    "MEMBER_SIZE_LIMIT TOTAL_SIZE_LIMIT XML_LIMIT PARAGRAPH_LIMIT TEXT_LIMIT "
-    "TABLE_DEPTH_LIMIT MALFORMED_TABLE EMPTY_DOCUMENT UNSUPPORTED_CONTENT "
-    "UNSUPPORTED_OVERFLOW",
-)
-#: Closed kinds of content that the parser skips (lower-case values).
-UnsupportedKind = StrEnum(
-    "UnsupportedKind",
-    "IMAGE CHART DIAGRAM TEXTBOX DRAWING OLE_OBJECT FORM_CONTROL MACRO "
-    "EQUATION COMMENT HEADER FOOTER FOOTNOTE ENDNOTE ALT_CHUNK "
-    "TRACKED_DELETION UNKNOWN_BLOCK",
-)
 _FAILED = frozenset(list(DocxLimit)[:9])  # the first nine members
 _LIMIT_HIT: dict[DocxLimit, LimitHit] = {
     DocxLimit.MEMBER_LIMIT: "parts",
@@ -93,26 +80,6 @@ _LIMIT_HIT: dict[DocxLimit, LimitHit] = {
     DocxLimit.PARAGRAPH_LIMIT: "cells",
 }
 _DETAIL = "The DOCX result is not complete. See the limitation code."
-
-
-@dataclass(frozen=True, slots=True)
-class Block:
-    """One paragraph or table cell. ``repr`` hides the text."""
-
-    source_block_id: str
-    kind: Literal["paragraph", "table_cell"]
-    body_index: int
-    text: str = field(repr=False)
-    row: int | None = None
-    col: int | None = None
-
-
-@dataclass(frozen=True, slots=True)
-class UnsupportedItem:
-    """Skipped content. ``source_block_id`` is ``None`` for package members."""
-
-    kind: UnsupportedKind
-    source_block_id: str | None = None
 
 
 @dataclass(frozen=True, slots=True)
@@ -165,12 +132,6 @@ class DocxResult:
         )
 
 
-@lru_cache(maxsize=4096)
-def _qname(tag: str) -> str:
-    uri, _, local = tag[1:].partition("}") if tag.startswith("{") else ("", "", tag)
-    return f"{_NS.get(uri, 'x')}:{local}"
-
-
 _TEXT = {"w:tab": "\t", "w:br": "\n", "w:cr": "\n", "w:noBreakHyphen": "-"}
 _DROPPED = {
     "w:del": UnsupportedKind.TRACKED_DELETION,
@@ -182,13 +143,11 @@ _DROPPED = {
     "w:control": UnsupportedKind.FORM_CONTROL,
     "m:oMath": UnsupportedKind.EQUATION,
     "m:oMathPara": UnsupportedKind.EQUATION,
+    "w:sym": UnsupportedKind.UNKNOWN_BLOCK,
+    "w:ptab": UnsupportedKind.UNKNOWN_BLOCK,
 }
 _OPAQUE = frozenset({"w:drawing", "w:pict", "w:object", "mc:AlternateContent"})
 _PROPERTIES = frozenset({"w:pPr", "w:rPr", "w:instrText", "w:delText", "w:sdtPr"})
-_MARKERS = frozenset(  # block-level elements that hold no content
-    "w:sectPr w:bookmarkStart w:bookmarkEnd w:proofErr w:permStart w:permEnd "  # noqa: SIM905
-    "w:tblPr w:tblGrid w:trPr w:tcPr w:tblPrEx w:sdtEndPr w:sdtPr".split()
-)
 _SCAN = {
     "x:blip": UnsupportedKind.IMAGE,
     "x:imagedata": UnsupportedKind.IMAGE,
@@ -300,22 +259,20 @@ def _walk(
             run.drop(_DROPPED[name], prefix or None)
         elif name in _OPAQUE:
             run.drop_opaque(node, prefix or None)
-        elif name not in _MARKERS and not name.endswith(("RangeStart", "RangeEnd")):
+        elif not is_marker(name):
             run.drop(UnsupportedKind.UNKNOWN_BLOCK, prefix or None)
     return blocks, texts
 
 
-def _span(cell: Element, run: _Run) -> int:
-    for props in (p for p in cell if _qname(p.tag) == "w:tcPr"):
-        for item in (i for i in props if _qname(i.tag) == "w:gridSpan"):
-            raw = item.get(item.tag.partition("}")[0] + "}val", "")
-            if raw.isascii() and raw.isdigit() and 1 <= int(raw) <= MAX_GRID_SPAN:
-                return int(raw)
-            run.found.add(DocxLimit.MALFORMED_TABLE)
-    return 1
-
-
 def _table(table: Element, table_id: str, depth: int, run: _Run) -> list[Block]:
+    """
+    Return the cell blocks of one table.
+
+    A row marked deleted (``w:trPr/w:del``) and a cell marked deleted
+    (``w:tcPr/w:cellDel``) are skipped and recorded as ``tracked_deletion``.
+    A skipped row or cell still takes its row or column index, so IDs
+    depend on structure only. Unknown children are recorded, not lost.
+    """
     if depth > MAX_TABLE_DEPTH:
         run.found.add(DocxLimit.TABLE_DEPTH_LIMIT)
         return []
@@ -323,22 +280,41 @@ def _table(table: Element, table_id: str, depth: int, run: _Run) -> list[Block]:
     row = 0
     for tr in _flatten(table):
         if _qname(tr.tag) != "w:tr":
+            if not is_marker(_qname(tr.tag)):
+                run.drop(UnsupportedKind.UNKNOWN_BLOCK, table_id)
+            continue
+        if row_deleted(tr):
+            run.drop(UnsupportedKind.TRACKED_DELETION, f"{table_id}/r{row}")
+            row += 1
             continue
         col = 0
         for cell in _flatten(tr):
-            if _qname(cell.tag) != "w:tc" or run.stop:
+            name = _qname(cell.tag)
+            if name != "w:tc":
+                if not is_marker(name):
+                    run.drop(UnsupportedKind.UNKNOWN_BLOCK, f"{table_id}/r{row}")
+                continue
+            if run.stop:
                 continue
             cell_id = f"{table_id}/r{row}c{col}"
+            span, malformed = grid_span(cell)
+            if malformed:
+                run.found.add(DocxLimit.MALFORMED_TABLE)
+            if cell_deleted(cell):
+                run.drop(UnsupportedKind.TRACKED_DELETION, cell_id)
+                col += span
+                continue
             nested, texts = _walk(cell, cell_id, depth, run)
             top = int(cell_id.split("/")[0][1:])
             blocks.append(Block(cell_id, "table_cell", top, "\n".join(texts), row, col))
             blocks.extend(nested)
-            col += _span(cell, run)
+            col += span
         row += 1
     return blocks
 
 
-_XML_ERRORS = (DefusedXmlException, ParseError, UnicodeError, LookupError)
+_PARSE_ERRORS = (ParseError, UnicodeError, LookupError)
+_XML_ERRORS = (DefusedXmlException, *_PARSE_ERRORS)
 
 
 def _events(data: bytes, found: set[DocxLimit]) -> Iterator[tuple[str, Element]]:
@@ -359,9 +335,9 @@ def _load_tree(data: bytes, run: _Run) -> Element | None:
     try:
         for _event, node in _events(data, run.found):
             root = node if root is None else root
-    except DefusedXmlException:
+    except DefusedXmlException:  # distinct from _PARSE_ERRORS: forbidden, not invalid
         run.found.add(DocxLimit.XML_FORBIDDEN)
-    except _XML_ERRORS:
+    except _PARSE_ERRORS:
         run.found.add(DocxLimit.INVALID_XML)
     return None if DocxLimit.XML_LIMIT in run.found else root
 
