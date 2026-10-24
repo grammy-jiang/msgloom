@@ -8,6 +8,7 @@
     "sources": [
       "docs/notes/preparation-semantics.md: 'To Do, OneDrive, and Contacts are contextual inputs...'",
       "docs/superpowers/specs/2026-10-03-a1-a2-handoff-contract-design.md: non-goals ('define Calendar's final A2 semantic role'), streams list",
+      "TASK-GOAL DECISION, NOT FROM preparation-semantics.md (P04, P05, N03): preparation-semantics.md names only To Do, OneDrive and Contacts as contextual inputs. Treating Calendar as contextual with a one-member None group is a task-goal decision. The handoff spec leaves Calendar's final A2 role undefined. It needs owner sign-off.",
       "docs/notes/todo-sync.md, docs/notes/contacts-sync.md, docs/notes/onedrive-resync.md",
       "tests/calendar_authority_helpers.py, tests/_contacts_authority.py, tests/_onedrive_authority.py (A1 fixture shapes, read only)"
     ]
@@ -38,16 +39,18 @@
     {
       "case_id": "T0-04-P04",
       "polarity": "positive",
-      "title": "Calendar event is kept contextual, not placed in a communication group",
+      "title": "Calendar event is kept contextual, not placed in a communication group (task-goal decision, not from preparation-semantics.md)",
       "input": {"version_ref": "cal-1", "stream": "outlook_calendar", "subject": "Planning meeting", "organizer": "alice@example.invalid"},
-      "expected": {"group_status": "none", "group_size": 1, "communication_group_member": false}
+      "expected": {"group_status": "none", "group_size": 1, "communication_group_member": false},
+      "rationale": "TASK-GOAL DECISION. preparation-semantics.md lists only To Do, OneDrive and Contacts as contextual. Calendar is treated the same by the A2 task goal. The A1 handoff spec does not define Calendar's final A2 role."
     },
     {
       "case_id": "T0-04-P05",
       "polarity": "positive",
       "title": "Contextual sources are partitioned before grouping",
       "input": {"version_refs": ["todo-1", "od-1", "ct-1", "cal-1"], "shared_scope": "scope-user-A"},
-      "expected": {"groups": [["todo-1"], ["od-1"], ["ct-1"], ["cal-1"]], "cross_source_join": false}
+      "expected": {"groups": [["todo-1"], ["od-1"], ["ct-1"], ["cal-1"]], "cross_source_join": false},
+      "rationale": "To Do, OneDrive and Contacts groups follow preparation-semantics.md (source types are partitioned before grouping). The cal-1 group is the task-goal decision of P04."
     },
     {
       "case_id": "T0-04-N01",

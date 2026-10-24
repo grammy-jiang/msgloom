@@ -11,6 +11,7 @@
       "docs/superpowers/specs/2026-10-03-a1-a2-handoff-contract-design.md: H6 (authority cannot advance without recoverable publication), H7, release groups, A2 consumer cursor, 'one global A2 cursor' rejected",
       "docs/notes/task15-final-qualification-20261016.md: intake commits workset, pending index and consumer cursor atomically; cursor progress means durable admission, not successful preparation",
       "docs/notes/phase1-claim-fencing.md and docs/notes/phase1-claim-reconciliation.md",
+      "PROPOSED POLICY (N08 only): the A2 reaction to a violated H6 invariant is not stated in the cited docs. See the case rationale.",
       "tests/test_a1_handoff_scheduled_e2e.py (A1 scheduled e2e shape, read only)"
     ]
   },
@@ -105,7 +106,8 @@
       "polarity": "negative",
       "title": "Authority advanced but release missing is a defect, never silently skipped",
       "input": {"authority_revision": 9, "release_group_for_revision_9": null},
-      "expected": {"outcome": "blocked_or_failed", "silently_skipped": false, "cursor_advanced": false, "reason": "H6: authority must not advance without recoverable publication"}
+      "expected": {"work_to_do": [], "cursor_advanced": false, "release_fabricated": false, "reason": "A2 reads only committed release entries; no release entry exists for revision 9"},
+      "rationale": "Handoff spec H6 forbids this A1 state, so A1 can never present it as a release. A2 consumes only committed releases and creates none. What A2 reports about the violated invariant is not decided by the cited rules; see T0-09-N08."
     },
     {
       "case_id": "T0-09-N05",
@@ -127,6 +129,14 @@
       "title": "Package must not poll or call Prefect",
       "input": {"proposal": "A2 node calls the Prefect API to learn the last good run"},
       "expected": {"proposal_accepted": false, "reason": "package has no Prefect client; the scheduler stays outside"}
+    },
+    {
+      "case_id": "T0-09-N08",
+      "polarity": "negative",
+      "title": "PROPOSED POLICY: authority advanced but release missing is surfaced, never silently ignored",
+      "input": {"authority_revision": 9, "release_group_for_revision_9": null, "visible_to_a2": "authority revision and release table of the saved A1 catalog"},
+      "expected": {"silently_ignored": false, "outcome": "visible_failure", "cursor_advanced": false},
+      "rationale": "PROPOSED POLICY requiring owner sign-off. H6 and H18 do not say how A2 reacts to a violated A1 invariant. H18 covers a bad entry that exists. It does not cover a missing entry. The oracle proposes a visible failure that does not advance the cursor."
     }
   ]
 }

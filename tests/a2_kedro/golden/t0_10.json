@@ -3,7 +3,7 @@
   "task_id": "T0-10",
   "title": "Security, path, privacy and network: Node.run logger, PII canary, telemetry, illegal Dataset paths",
   "annotator": "claude-sonnet-5.5 worker, hand annotation on 2026-10-24 (human-style reading; no program produced any expected value)",
-  "independence_statement": "Each hostile path and each leak scenario was chosen by hand from common attack lists. Verdicts (accept or reject) are the plain security answer. No path validator, logger or A2 code was run or imported. The NUL character is written as a JSON escape.",
+  "independence_statement": "PROPOSED POLICY: the Dataset path verdicts in this file are not derived from any cited A1 rule and need owner sign-off. Each hostile path and each leak scenario was chosen by hand from common attack lists. Verdicts (accept or reject) are the plain security answer. No path validator, logger or A2 code was run or imported. The NUL character is written as a JSON escape.",
   "provenance": {
     "sources": [
       "docs/microsoft-graph-error-handling.md: non-propagating safe logger with bounded purpose/reason/count replacements",
@@ -11,7 +11,8 @@
       "docs/notes/parser-isolation.md (isolated worker, no network)",
       "docs/notes/container-deployment.md (network and filesystem boundaries)",
       "docs/component-layout.md: logger names and safe logging",
-      "AGENTS.md: portable tests; linux_cgroup_v2 label for OS security integration tests"
+      "AGENTS.md: portable tests; linux_cgroup_v2 label for OS security integration tests",
+      "PROPOSED POLICY REQUIRING OWNER SIGN-OFF (not derived from A1): every Dataset path verdict and reason in P01, P05 and N01 to N10. No cited A1 or master document defines a Dataset path rule. The verdicts are the plain security answer from common path-attack lists. A2 authors must not treat them as A1 requirements. Canonical sources may later replace them."
     ]
   },
   "canary": "CANARY-PII-7731-ZQ",
@@ -19,6 +20,7 @@
     {
       "case_id": "T0-10-P01",
       "polarity": "positive",
+      "provenance": "PROPOSED POLICY requiring owner sign-off; no cited A1 or master rule defines this Dataset path verdict",
       "title": "Relative Dataset path inside the project data root is accepted",
       "input": {"kind": "dataset_path", "root": "<tmp>/data", "path": "02_intermediate/prepared/part-0001.json"},
       "expected": {"accepted": true}
@@ -45,8 +47,17 @@
       "expected": {"logged_contains_canary": false, "logged_contains_reason_code": true}
     },
     {
+      "case_id": "T0-10-P05",
+      "polarity": "positive",
+      "provenance": "PROPOSED POLICY requiring owner sign-off; no cited A1 or master rule defines this Dataset path verdict",
+      "title": "Percent-encoded dots are a literal directory name and are never decoded",
+      "input": {"kind": "dataset_path", "root": "<tmp>/data", "path": "02_intermediate/%2e%2e/inside.json"},
+      "expected": {"accepted": true, "decoded_before_check": false, "resolved_inside_root": true}
+    },
+    {
       "case_id": "T0-10-N01",
       "polarity": "negative",
+      "provenance": "PROPOSED POLICY requiring owner sign-off; no cited A1 or master rule defines this Dataset path verdict",
       "title": "Dataset path with parent traversal is rejected",
       "input": {"kind": "dataset_path", "root": "<tmp>/data", "path": "../outside/secret.json"},
       "expected": {"accepted": false, "reason": "traversal"}
@@ -54,6 +65,7 @@
     {
       "case_id": "T0-10-N02",
       "polarity": "negative",
+      "provenance": "PROPOSED POLICY requiring owner sign-off; no cited A1 or master rule defines this Dataset path verdict",
       "title": "Traversal hidden in the middle of a path is rejected",
       "input": {"kind": "dataset_path", "root": "<tmp>/data", "path": "02_intermediate/../../outside.json"},
       "expected": {"accepted": false, "reason": "traversal"}
@@ -61,6 +73,7 @@
     {
       "case_id": "T0-10-N03",
       "polarity": "negative",
+      "provenance": "PROPOSED POLICY requiring owner sign-off; no cited A1 or master rule defines this Dataset path verdict",
       "title": "Absolute POSIX path is rejected",
       "input": {"kind": "dataset_path", "root": "<tmp>/data", "path": "/etc/passwd"},
       "expected": {"accepted": false, "reason": "absolute"}
@@ -68,6 +81,7 @@
     {
       "case_id": "T0-10-N04",
       "polarity": "negative",
+      "provenance": "PROPOSED POLICY requiring owner sign-off; no cited A1 or master rule defines this Dataset path verdict",
       "title": "Windows drive absolute path is rejected on every host",
       "input": {"kind": "dataset_path", "root": "<tmp>/data", "path": "C:\\Users\\example\\secret.json"},
       "expected": {"accepted": false, "reason": "absolute"}
@@ -75,6 +89,7 @@
     {
       "case_id": "T0-10-N05",
       "polarity": "negative",
+      "provenance": "PROPOSED POLICY requiring owner sign-off; no cited A1 or master rule defines this Dataset path verdict",
       "title": "UNC path is rejected",
       "input": {"kind": "dataset_path", "root": "<tmp>/data", "path": "\\\\files.example.invalid\\share\\out.json"},
       "expected": {"accepted": false, "reason": "unc"}
@@ -82,13 +97,16 @@
     {
       "case_id": "T0-10-N06",
       "polarity": "negative",
+      "provenance": "PROPOSED POLICY requiring owner sign-off; no cited A1 or master rule defines this Dataset path verdict",
       "title": "Forward-slash UNC form is rejected",
       "input": {"kind": "dataset_path", "root": "<tmp>/data", "path": "//files.example.invalid/share/out.json"},
-      "expected": {"accepted": false, "reason": "unc_or_absolute"}
+      "expected": {"accepted": false, "reason": "unc"},
+      "rationale": "PROPOSED POLICY. The leading double slash with a host is a UNC form, so the exact reason is unc. It is not classed as plain absolute."
     },
     {
       "case_id": "T0-10-N07",
       "polarity": "negative",
+      "provenance": "PROPOSED POLICY requiring owner sign-off; no cited A1 or master rule defines this Dataset path verdict",
       "title": "Path containing a NUL character is rejected",
       "input": {"kind": "dataset_path", "root": "<tmp>/data", "path": "02_intermediate/ok.json\u0000.txt"},
       "expected": {"accepted": false, "reason": "nul"}
@@ -96,6 +114,7 @@
     {
       "case_id": "T0-10-N08",
       "polarity": "negative",
+      "provenance": "PROPOSED POLICY requiring owner sign-off; no cited A1 or master rule defines this Dataset path verdict",
       "title": "Symlink inside the root that points outside is rejected",
       "input": {
         "kind": "dataset_path",
@@ -108,6 +127,7 @@
     {
       "case_id": "T0-10-N09",
       "polarity": "negative",
+      "provenance": "PROPOSED POLICY requiring owner sign-off; no cited A1 or master rule defines this Dataset path verdict",
       "title": "Empty path is rejected",
       "input": {"kind": "dataset_path", "root": "<tmp>/data", "path": ""},
       "expected": {"accepted": false, "reason": "empty"}
@@ -115,6 +135,7 @@
     {
       "case_id": "T0-10-N10",
       "polarity": "negative",
+      "provenance": "PROPOSED POLICY requiring owner sign-off; no cited A1 or master rule defines this Dataset path verdict",
       "title": "Backslash traversal is rejected on every host",
       "input": {"kind": "dataset_path", "root": "<tmp>/data", "path": "..\\outside.json"},
       "expected": {"accepted": false, "reason": "traversal"}
@@ -139,13 +160,6 @@
       "title": "Kedro usage telemetry or any outbound call during a run is a failure",
       "input": {"kind": "network_probe", "run": "offline synthetic pipeline run"},
       "expected": {"outbound_connections": 0, "dns_lookups_to_non_loopback": 0, "telemetry_consent_prompt": false}
-    },
-    {
-      "case_id": "T0-10-P05",
-      "polarity": "positive",
-      "title": "Percent-encoded dots are a literal directory name and are never decoded",
-      "input": {"kind": "dataset_path", "root": "<tmp>/data", "path": "02_intermediate/%2e%2e/inside.json"},
-      "expected": {"accepted": true, "decoded_before_check": false, "resolved_inside_root": true}
     }
   ]
 }

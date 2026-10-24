@@ -10,7 +10,9 @@
       "docs/notes/parser-mime-html.md: part references 1, 1.1, 1.2; inline and attachment handling",
       "docs/notes/parser-qualification.md: MIME row (quoted-printable alternatives, multipart relationships, base64 attachment)",
       "docs/notes/mail-provisional-authority.md (mail authority context)",
-      "tests/outlook_mail_handoff_fixtures.py (A1 accepted mail fixture shapes, read only)"
+      "tests/outlook_mail_handoff_fixtures.py (A1 accepted mail fixture shapes, read only)",
+      "A2-LEVEL DECISION, NOT FROM A1 DOCS: the split of a reply body into contributed text and quoted text (P02, P03, N04) and the oldest-first ancestor order (P03) are task-level annotations. The cited A1 docs do not define them. They need owner sign-off like any A2 rule.",
+      "Scope and parent presence in P02, P03 and P04 follow docs/notes/preparation-semantics.md 'Grouping relationship conventions': a record carries exactly one source_scope, and an exact present parent with the same scope can confirm membership."
     ]
   },
   "canary": "CANARY-PII-7731-ZQ",
@@ -18,7 +20,7 @@
     {
       "case_id": "T0-02-P01",
       "polarity": "positive",
-      "title": "multipart/alternative: plain and HTML carry the same contribution",
+      "title": "multipart/alternative: plain and HTML alternatives are extracted independently",
       "input": {
         "message_id": "<m1@mail.example.invalid>",
         "from": "Alice Example <alice@example.invalid>",
@@ -29,14 +31,18 @@
         ]
       },
       "expected": {
-        "contributed_text": "Please review the draft by Friday.",
-        "quoted_text": "",
-        "contributed_text_sources": ["1.1"],
-        "html_counted_as_second_contribution": false,
+        "extracted_part_refs": ["1.1", "1.2"],
+        "text_by_part": {
+          "1.1": "Please review the draft by Friday.",
+          "1.2": "Please review the draft by Friday."
+        },
+        "alternatives_equivalence_inferred": false,
+        "preferred_alternative_inferred": false,
+        "alternatives_limitation_present": true,
         "ancestors": [],
         "missing_references": []
       },
-      "rationale": "Both alternatives say the same thing. A reader sees one sentence, so the contribution is counted once."
+      "rationale": "docs/notes/parser-mime-html.md: 'MIME alternatives are extracted independently and carry a limitation stating that equivalence or preferred alternatives were not inferred.' This case does not decide how A2 merges the two texts. It fixes only the A1 behavior."
     },
     {
       "case_id": "T0-02-P02",
@@ -44,8 +50,12 @@
       "title": "Inline quote under a reply: only the new lines are contributed",
       "input": {
         "message_id": "<m2@mail.example.invalid>",
+        "source_scope": "scope-mail-account-A",
         "in_reply_to": "<m1@mail.example.invalid>",
         "references": ["<m1@mail.example.invalid>"],
+        "present_records": [
+          {"message_id": "<m1@mail.example.invalid>", "source_scope": "scope-mail-account-A"}
+        ],
         "text": "I reviewed it. Section 2 is unclear.\n\nOn Mon, Alice Example wrote:\n> Please review the draft by Friday."
       },
       "expected": {
@@ -53,7 +63,9 @@
         "quoted_text": "Please review the draft by Friday.",
         "attribution_line": "On Mon, Alice Example wrote:",
         "ancestors": ["<m1@mail.example.invalid>"],
-        "missing_references": []
+        "missing_references": [],
+        "grouping_status": "confirmed",
+        "group_confirmed": true
       },
       "rationale": "Lines marked with '>' repeat message m1. The attribution line is neither contribution nor quote body."
     },
@@ -63,8 +75,13 @@
       "title": "Interleaved inline quote: reply text between quoted lines is contributed",
       "input": {
         "message_id": "<m3@mail.example.invalid>",
+        "source_scope": "scope-mail-account-A",
         "in_reply_to": "<m2@mail.example.invalid>",
         "references": ["<m1@mail.example.invalid>", "<m2@mail.example.invalid>"],
+        "present_records": [
+          {"message_id": "<m1@mail.example.invalid>", "source_scope": "scope-mail-account-A"},
+          {"message_id": "<m2@mail.example.invalid>", "source_scope": "scope-mail-account-A", "in_reply_to": "<m1@mail.example.invalid>"}
+        ],
         "text": "> I reviewed it.\nThanks.\n> Section 2 is unclear.\nI will rewrite section 2 today."
       },
       "expected": {
@@ -72,7 +89,9 @@
         "quoted_text": "I reviewed it.\nSection 2 is unclear.",
         "ancestors": ["<m1@mail.example.invalid>", "<m2@mail.example.invalid>"],
         "ancestor_order": "oldest first, as listed in References",
-        "missing_references": []
+        "missing_references": [],
+        "grouping_status": "confirmed",
+        "group_confirmed": true
       }
     },
     {
@@ -81,6 +100,7 @@
       "title": "References names a message that is not in the catalog",
       "input": {
         "message_id": "<m4@mail.example.invalid>",
+        "source_scope": "scope-mail-account-A",
         "in_reply_to": "<m0@mail.example.invalid>",
         "references": ["<m0@mail.example.invalid>"],
         "present_message_ids": ["<m4@mail.example.invalid>"],
