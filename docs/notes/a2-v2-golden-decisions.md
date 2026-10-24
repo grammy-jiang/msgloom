@@ -83,3 +83,9 @@ The full text is in `a2-v2-golden-t0-07.md`.
 - T0-07-P10 replay under a changed configuration:
   `proposed_owner_signoff_needed`. The blueprint does not say whether a
   workset frozen under one configuration may replay under another.
+
+## T0-08 decisions
+
+The full text is in `a2-v2-golden-t0-08.md`. No T0-08 case carries
+`policy_status`. The prepared@2 field names in the file are oracle names. C0-07
+freezes the wire names.
