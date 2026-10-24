@@ -233,8 +233,10 @@ accepted batch result. It is not the `prepared_transitions@2` record.
 | Kind | `a2_completion_receipt` |
 | Version | `2` |
 | Const RECEIPT_DOMAIN | `a2-completion-receipt@2` |
-| Fields CompletionReceipt | `workset`, `status`, `policy_version`, `roots`, `transition_batch`, `intake_held_count` |
-| Fields TerminalRoot | `workset_selection_index`, `result`, `disposition`, `status`, `selection`, `baseline_selection`, `baseline_source` |
+| Fields CompletionReceipt | `workset`, `status`, `policy_version`, `roots`, `transition_batch`, `intake_held_count`, `acceptance_index_sha256`, `claim_proofs` |
+| Fields TerminalRoot | `workset_selection_index`, `result`, `disposition`, `status`, `limitations`, `selection`, `baseline_selection`, `baseline_source` |
+| Fields ResultClaimProof | `result`, `proof` |
+| Const INDEX_DOMAIN | `a2-acceptance-index@1` |
 | Fields TransitionBatch | `transitions`, `result`, `status` |
 | Literal TerminalRoot.disposition | `prepared`, `held` |
 
@@ -262,12 +264,16 @@ unresolved field 6.
 | Const LIMITATIONS_DOMAIN | `a2-stage-status-limitations@1` |
 | Const METADATA_DOMAIN | `a2-stage-metadata@1` |
 
-### Kinds without a body contract
+### Kinds with body contracts in other modules
 
-These kinds have a header pair only. No body field is implemented:
-`parsed_parts@1`, `normalized_content@1`, `zones@1`, `prepared@2`,
-`filter_result@2`, `group_result@2`. Their body fields are unresolved
-field 1 and field 7.
+The body contracts of `parsed_parts@1`, `normalized_content@1` and
+`zones@1` live in their own modules. Their field lists are not repeated
+here.
+
+The bodies of `prepared@2`, `filter_result@2`, `group_result@2` and
+`a2_result_manifest@1` are PROVISIONAL (C0-07). See
+`docs/notes/a2-v2-contract-c0-07.md` and
+`msgloom/a2_kedro/contracts/results.py`.
 
 ## Provisional wire field decisions
 

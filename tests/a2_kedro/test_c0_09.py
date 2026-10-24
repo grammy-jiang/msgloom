@@ -14,7 +14,7 @@ from msgloom.a2_kedro.contracts.receipt import (
     TransitionBatch,
 )
 from msgloom.a2_kedro.contracts.source import FrozenRoot
-from msgloom.contracts import ResultRef, TerminalStatus, VersionRef
+from msgloom.contracts import Limitation, ResultRef, TerminalStatus, VersionRef
 from tests.a2_kedro.helpers import (
     CODE,
     CONFIG,
@@ -110,6 +110,7 @@ def test_a2_held_roots_alone_are_a_legal_terminal() -> None:
             result=held_ref(str(i + 1)),
             disposition="held",
             status=INCOMPLETE,
+            limitations=(Limitation("held", "operator_repair"),),
             selection=ws.selections[i],
         )
         for i in range(2)
@@ -145,6 +146,7 @@ def test_approved_baseline_held_has_source_and_no_release_entry() -> None:
         result=held_ref("1"),
         disposition="held",
         status=INCOMPLETE,
+        limitations=(Limitation("held", "operator_repair"),),
         baseline_selection=bws.baseline_selections[0],
         baseline_source=bws.baseline_sources[0],
     )
@@ -235,6 +237,7 @@ def test_held_cannot_pose_as_complete_or_as_a_prepared_result() -> None:
             result=accepted_ref("1", "prepared", "2"),
             disposition="held",
             status=INCOMPLETE,
+            limitations=(Limitation("held", "operator_repair"),),
             selection=ws.selections[0],
         )
     root = TerminalRoot(
@@ -242,6 +245,7 @@ def test_held_cannot_pose_as_complete_or_as_a_prepared_result() -> None:
         result=held_ref("1"),
         disposition="held",
         status=INCOMPLETE,
+        limitations=(Limitation("held", "operator_repair"),),
         selection=ws.selections[0],
     )
     with pytest.raises(ValueError, match="conflicts with coverage"):

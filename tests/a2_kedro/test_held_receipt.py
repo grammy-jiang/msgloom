@@ -13,7 +13,7 @@ from msgloom.a2_kedro.contracts.receipt import (
     TerminalRoot,
     TransitionBatch,
 )
-from msgloom.contracts import ResultRef, TerminalStatus, VersionRef
+from msgloom.contracts import Limitation, ResultRef, TerminalStatus, VersionRef
 from tests.a2_kedro.helpers import (
     CODE,
     CONFIG,
@@ -45,6 +45,7 @@ def terminal(ws: Any, index: int, ref: ResultRef, status: TerminalStatus = COMPL
         result=ref,
         disposition=disposition,
         status=status,
+        limitations=() if status is COMPLETE else (Limitation("partial", "d"),),
         selection=ws.selections[index],
     )
 

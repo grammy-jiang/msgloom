@@ -7,33 +7,57 @@ workset has transitions. This module proves structure and status only. It
 does not prove that any result was saved. A candidate finalizer must
 check each ``ResultRef`` against durable accepted-stage proofs.
 
+Occurrence rule: ``roots`` holds one terminal for each frozen
+``workset.selections`` occurrence, in frozen order. A repeated selection
+ref at two occurrences needs two terminals. The de-duplicated
+``workset.selection_refs`` is never the unit of coverage. A terminal is
+an accepted ``prepared@2`` (COMPLETE, or INCOMPLETE with explicit
+limitations) or an accepted ``a2_input_disposition@1`` (INCOMPLETE, with
+explicit limitations). One occurrence never has two terminals, and no
+terminal names an occurrence outside the frozen workset.
+
 Status rule: COMPLETE needs every root and the batch COMPLETE, no A2-held
 root and no intake-held entry. Anything held or partial is INCOMPLETE. A
 held-only workset (no roots, no batch) is a legal terminal INCOMPLETE.
 This intentionally differs from the legacy v1 completion proof, which
 could mark a held-only workset COMPLETE.
 
+Index and proof fields: ``acceptance_index_sha256`` is a digest over the
+ordered terminal coverage (index, disposition, status, result ref and
+limitations) and the batch. A caller can omit it; the model then derives
+it. A supplied value must match. ``claim_proofs`` holds one structural
+:class:`~msgloom.a2_kedro.contracts.identity.AttemptProof` per terminal
+result. They are digests of claims, never tokens. They are all or
+nothing; :meth:`CompletionReceipt.require_claim_proofs` lets a finalizer
+refuse a receipt that has none. No code here reads a database or checks
+that a claim is live.
+
 CANDIDATE/RESEARCH: no writer or finalizer uses this model yet.
 """
 
 from __future__ import annotations
 
-from typing import Annotated, Literal
+from typing import Annotated, Any, Literal
 
-from pydantic import AfterValidator, Field, model_validator
+from pydantic import Field, model_validator
 
 from msgloom.a2_kedro.contracts.codec import (
     A2ContractError,
     A2Model,
+    Digest,
     Text,
     domain_sha256,
 )
 from msgloom.a2_kedro.contracts.held import KIND as HELD_KIND
 from msgloom.a2_kedro.contracts.held import VERSION as HELD_VERSION
-from msgloom.a2_kedro.contracts.identity import ACCEPTED_STATUSES
+from msgloom.a2_kedro.contracts.identity import AttemptProof
+from msgloom.a2_kedro.contracts.result_base import (
+    Accepted,
+    check_limitations,
+)
 from msgloom.a2_kedro.contracts.schema_ids import STAGE_SCHEMAS, is_accepted_key
 from msgloom.a2_kedro.contracts.source import Index
-from msgloom.contracts import ResultRef, TerminalStatus, VersionRef
+from msgloom.contracts import Limitation, ResultRef, TerminalStatus, VersionRef
 from msgloom.preparation_pipeline.intake_models import (
     IntakeSelection,
     IntakeTransition,
@@ -41,15 +65,8 @@ from msgloom.preparation_pipeline.intake_models import (
 )
 
 RECEIPT_DOMAIN = "a2-completion-receipt@2"
-
-
-def _accepted_only(status: TerminalStatus) -> TerminalStatus:
-    if status not in ACCEPTED_STATUSES:
-        raise A2ContractError("only complete or incomplete can be accepted")
-    return status
-
-
-Accepted = Annotated[TerminalStatus, AfterValidator(_accepted_only)]
+INDEX_DOMAIN = "a2-acceptance-index@1"
+MAX_ROOTS = 1024
 
 
 def _require_accepted_result(ref: ResultRef, kind: str, version: str) -> None:
@@ -66,12 +83,14 @@ class TerminalRoot(A2Model):
     result: ResultRef
     disposition: Literal["prepared", "held"]
     status: Accepted
+    limitations: tuple[Limitation, ...] = ()
     selection: IntakeSelection | None = None
     baseline_selection: ResultRef | None = None
     baseline_source: VersionRef | None = None
 
     @model_validator(mode="after")
     def _shape(self) -> TerminalRoot:
+        check_limitations(self.status, self.limitations)
         if self.selection is not None:
             if self.baseline_selection or self.baseline_source:
                 raise A2ContractError("incremental root cannot be baseline")
@@ -117,6 +136,49 @@ def expected_status(
     return TerminalStatus.COMPLETE
 
 
+class ResultClaimProof(A2Model):
+    """Structural claim proof: one terminal result and its attempt digest."""
+
+    result: ResultRef
+    proof: AttemptProof
+
+
+def _limitation_pairs(limitations: tuple[Limitation, ...]) -> list[list[str]]:
+    return [[item.code, item.detail] for item in limitations]
+
+
+def acceptance_index(
+    roots: tuple[TerminalRoot, ...], batch: TransitionBatch | None
+) -> str:
+    """
+    Return the digest of the ordered terminal coverage.
+
+    The digest covers, for each root in order: index, disposition, status,
+    result ref and limitations; then the batch result and status. Order
+    matters, so a reordered or swapped terminal gives another digest.
+    """
+    covered: list[Any] = [
+        [
+            root.workset_selection_index,
+            root.disposition,
+            root.status.value,
+            [root.result.result_id, root.result.kind, root.result.schema_version],
+            _limitation_pairs(root.limitations),
+        ]
+        for root in roots
+    ]
+    if batch is not None:
+        ref = batch.result
+        covered.append(
+            [batch.status.value, [ref.result_id, ref.kind, ref.schema_version]]
+        )
+    return domain_sha256(INDEX_DOMAIN, covered)
+
+
+def _derived_index(data: dict[str, Any]) -> str:
+    return acceptance_index(data.get("roots", ()), data.get("transition_batch"))
+
+
 class CompletionReceipt(A2Model):
     """Structural receipt for one frozen workset."""
 
@@ -126,6 +188,8 @@ class CompletionReceipt(A2Model):
     roots: tuple[TerminalRoot, ...] = ()
     transition_batch: TransitionBatch | None = None
     intake_held_count: Annotated[int, Field(ge=0, le=1024)] = 0
+    acceptance_index_sha256: Digest = Field(default_factory=_derived_index)  # type: ignore[arg-type]
+    claim_proofs: tuple[ResultClaimProof, ...] = ()
 
     @model_validator(mode="after")
     def _structure(self) -> CompletionReceipt:
@@ -136,21 +200,48 @@ class CompletionReceipt(A2Model):
             raise A2ContractError("foreign workset kind/version")
         if not (self.roots or self.transition_batch or self.intake_held_count):
             raise A2ContractError("empty receipt without any frozen work")
-        if [r.workset_selection_index for r in self.roots] != list(
-            range(len(self.roots))
-        ):
+        if len(self.roots) > MAX_ROOTS:
+            raise A2ContractError("root count is out of bounds")
+        indexes = [r.workset_selection_index for r in self.roots]
+        if len(set(indexes)) != len(indexes):
+            raise A2ContractError("one occurrence has several terminals")
+        if indexes != list(range(len(self.roots))):
             raise A2ContractError("roots must cover frozen indexes in order")
         results = [r.result for r in self.roots]
         if self.transition_batch is not None:
             results.append(self.transition_batch.result)
         if len(set(results)) != len(results):
             raise A2ContractError("one result covers several occurrences")
+        if self.acceptance_index_sha256 != acceptance_index(
+            self.roots, self.transition_batch
+        ):
+            raise A2ContractError("acceptance index differs from coverage")
+        self._check_claim_proofs(results)
         want = expected_status(
             self.roots, self.transition_batch, self.intake_held_count
         )
         if self.status is not want:
             raise A2ContractError("receipt status conflicts with coverage")
         return self
+
+    def _check_claim_proofs(self, results: list[ResultRef]) -> None:
+        proofs = [item.result for item in self.claim_proofs]
+        if not proofs:
+            return
+        if len(set(proofs)) != len(proofs):
+            raise A2ContractError("duplicate claim proof for one result")
+        if set(proofs) != set(results):
+            raise A2ContractError("claim proofs differ from terminal results")
+
+    def require_claim_proofs(self) -> None:
+        """
+        Raise :exc:`A2ContractError` unless every terminal has a claim proof.
+
+        A finalizer calls this before it accepts the receipt. The proofs are
+        structural. This method does not check that a claim was live.
+        """
+        if not self.claim_proofs:
+            raise A2ContractError("receipt has no claim proofs")
 
     def digest(self) -> str:
         """Return the domain-separated canonical receipt digest."""
