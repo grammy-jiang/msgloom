@@ -102,3 +102,27 @@ Coverage:
 | Post-commit cancel | An exception raised after `COMMIT` still leaves the committed row. A fresh connection reads it back. A replay returns `replayed`. |
 | Rollback and crash | An error before `COMMIT`, a closed connection before `COMMIT` and a failed `COMMIT` leave no row. A second connection never sees uncommitted data. |
 | PII | A canary in limitation text, claim data and the injected database error never appears in an error message, a stored attempt row or a stored record. |
+
+### Findings
+
+Recorded while writing the tests. No other module was edited.
+
+1. Metadata SHA change is isolated. A change of only `rule_version` under
+   the same key reports exactly `stage_metadata_sha256`. A changed payload
+   SHA reports `canonical_sha256` and `stage_metadata_sha256`. A changed
+   status reports `status`, `limitations_digest` and
+   `stage_metadata_sha256`. Callers must not expect one field per cause.
+2. `A2ResearchStore.accept_stage` does not check a live claim or a plan.
+   Only `a2_store.accept_result` does. The research store is a decision
+   rule test double, not an acceptance writer.
+3. A repeat call by the same attempt does not add a second attempt row.
+   Both stores deduplicate attempt rows by key, attempt and outcome.
+4. Crash-style failure is simulated in process. A hook closes the
+   connection right before `COMMIT`. A real process kill is not tested,
+   because a portable child process needs importable test helpers. SQLite
+   rollback of a killed writer is a SQLite guarantee, not module code.
+5. The hook for C0-12c is the only missing behavior. Everything else the
+   task named exists as public functions.
+6. `tests/persistence/test_a2_acceptance.py` stays under 500 lines (497).
+   Tests that need a second Python module would add a file in the
+   allowlist.
