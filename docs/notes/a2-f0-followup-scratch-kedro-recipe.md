@@ -35,8 +35,9 @@ The venv path is required. The recipe refuses a path that is:
 --default-index https://pypi.org/simple --require-hashes --only-binary :all:
 --no-deps`. The child environment is an allowlist (`PATH`, `HOME`, locale,
 temp, uv cache and certificate variables). Tokens in the caller environment
-do not reach uv. The recipe limits the index to PyPI. It cannot block other
-traffic at the packet level.
+do not reach uv. The recipe limits the index to PyPI. It disables uv Python downloads, so
+the build needs a local Python 3.13. It cannot block other traffic at the
+packet level.
 
 `run` starts two pytest processes. Both load `a2_f0_pytest_gate`. The second
 one sets `A2_F0_KEDRO_OPT_IN=1` and `A2_F0_KEDRO_PYTHON`. `run` exits

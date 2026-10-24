@@ -47,13 +47,13 @@ Paths are relative to `site-packages`.
 | Fact | Location |
 | --- | --- |
 | Scrapy imports `Agent`, `HTTPConnectionPool`, `HTTP11ClientProtocol` and `HTTPClientParser` | `scrapy/core/downloader/handlers/http11.py:20` to `:28` |
-| The handler sets the pool factory to `_LenientHTTP11ClientFactory` | `http11.py:111` |
+| The handler sets the pool factory to `_LenientHTTP11ClientFactory` | `http11.py:108` |
 | `_LenientHTTPClientParser` extends `HTTPClientParser` and overrides `lineReceived` | `http11.py:785` to `:829` |
 | `_LenientHTTP11ClientProtocol.request` calls Twisted `request`, then sets `self._parser.__class__ = _LenientHTTPClientParser` | `http11.py:832` to `:845` |
 | Twisted `HTTP11ClientProtocol.request` builds `HTTPClientParser(request, self._finishResponse)` | `twisted/web/_newclient.py:1553` |
 | `HTTPParser.delimiter = b"\n"` (client side) | `_newclient.py:224` |
-| `HTTPChannel` extends `basic.LineReceiver`, whose delimiter is `b"\r\n"` | `twisted/web/http.py:2213`, `twisted/protocols/basic.py:421` |
-| `HTTPClientParser` docstring: "An HTTP parser which only handles HTTP responses." | `_newclient.py:340` |
+| `HTTPChannel` extends `basic.LineReceiver`, whose delimiter is `b"\r\n"` | `twisted/web/http.py:2213`, `twisted/protocols/basic.py:487` and `:508` |
+| `HTTPClientParser` docstring: "An HTTP parser which only handles HTTP responses." | `_newclient.py:342` |
 | No `HTTPChannel` reference in the handler | tested by `test_installed_sources_keep_the_claimed_structure` |
 
 ## Loopback fixture

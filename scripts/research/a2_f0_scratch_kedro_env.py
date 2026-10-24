@@ -20,8 +20,10 @@ file ``a2_f0_scratch_kedro_requirements.txt`` with ``--require-hashes``,
   caller environment never reach uv;
 * the recipe never reads or writes the project environment.
 
-Network use is limited to PyPI by these options. The recipe cannot enforce
-it at the packet level.
+Network use is limited to PyPI by these options. ``--no-python-downloads``
+stops uv from fetching an interpreter, so the build fails if no local
+Python 3.13 exists. The recipe cannot enforce the limit at the packet
+level.
 
 ``run`` starts two pytest processes with the current interpreter. The first
 runs the pure-Python controls. The second runs the Kedro-dependent controls
@@ -152,7 +154,15 @@ def requirements_sha256() -> str:
 def build_commands(venv: Path, uv: str = "uv") -> list[list[str]]:
     """Return the command lines that create and fill the venv."""
     return [
-        [uv, "venv", "--no-config", "--python", "3.13", str(venv)],
+        [
+            uv,
+            "venv",
+            "--no-config",
+            "--no-python-downloads",
+            "--python",
+            "3.13",
+            str(venv),
+        ],
         [
             uv,
             "pip",
