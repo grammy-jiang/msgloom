@@ -37,6 +37,7 @@ from msgloom.persistence.a2_acceptance_models import (
     MAX_PAYLOAD_BYTES,
     MAX_RECORD_BYTES,
 )
+from msgloom.persistence.a2_txn import rollback_quietly
 from msgloom.persistence.errors import IncompatibleSchemaError
 
 SCHEMA4_VERSION = "4"
@@ -364,7 +365,9 @@ def migrate_schema4_to_v5(connection: sqlite3.Connection, gate: MigrationGate) -
     Requires a valid :class:`MigrationGate`, an autocommit connection with
     no open transaction and an exact schema 4 file. The state is verified
     again inside the write lock and once more before ``COMMIT``. On any
-    failure the transaction rolls back and the file stays schema 4.
+    failure, including a failed ``COMMIT`` or a ``BaseException``, the
+    transaction rolls back on a best-effort basis and the file stays
+    schema 4. A secondary rollback error never masks the original one.
     """
     _check_gate(gate)
     if connection.in_transaction:
@@ -381,21 +384,13 @@ def migrate_schema4_to_v5(connection: sqlite3.Connection, gate: MigrationGate) -
         _activate(connection)
         if classify_schema(connection) is not SchemaState.SCHEMA5:
             raise A2SchemaError("post-migration-check")
-    except sqlite3.Error:
-        connection.execute("ROLLBACK")
-        raise A2SchemaError("migration-failed") from None
-    except BaseException:
-        connection.execute("ROLLBACK")
-        raise
-    try:
         connection.execute("COMMIT")
     except sqlite3.Error:
-        try:
-            if connection.in_transaction:
-                connection.execute("ROLLBACK")
-        except sqlite3.Error:
-            pass
+        rollback_quietly(connection)
         raise A2SchemaError("migration-failed") from None
+    except BaseException:
+        rollback_quietly(connection)
+        raise
 
 
 def acquire_claim(connection: sqlite3.Connection, proof: AttemptProof) -> int | None:
