@@ -1,0 +1,1283 @@
+{
+  "schema": "a2-golden-case-file@1",
+  "task_id": "T0-08",
+  "title": "Policy upgrade and A3 historical reader: old prepared@1 stays readable, new prepared@2 maps correctly",
+  "annotator": "claude-sonnet-5.5 worker, hand annotation on 2026-10-25 (hand-reading by a language model; no human review; no program produced any expected value except the two pinned digests, see provenance)",
+  "independence_statement": "Each case names a stored record (a label plus a payload built from a hand-written base and a few hand-written edits), one reader operation and a hand-written decision. The decisions follow the written blueprint rules: a closed (kind, version) allowlist, historical prepared@1 read as before, prepared@2 never forced through the prepared@1 codec, no lossy projection from prepared@2 to prepared@1, every limitation kept, and triage_input@1 and triage_input@2 bound to their own prepared version only. No A2 v2 code was run or imported. The reference reader in the test file only checks that the answers agree with each other.",
+  "provenance": {
+    "sources": [
+      "A2 Kedro v2 architecture blueprint of 2026-10-23, section 2 (responsibility table): the new prepared@2 cannot be forced through the old prepared@1 codec; A3 and A5 use an explicit version-reading adapter",
+      "same blueprint, section 4 (closed schema set): prepared@2 keeps source, selection, role, ref, zone, relation and parsed lineage, structured content, time, participants and all limitations; it does not drop body or attachment; zones separate a quote occurrence from the author of the quote; unknown relations stay unknown",
+      "same blueprint, section 4.1: strict frozen models with extra forbidden, a closed (kind, version) allowlist where prepared@2 is the new prepared result and prepared@1 is the historical read format, and old v1 results, codecs and A3 results are not migrated, overwritten or re-encoded",
+      "same blueprint, section 4.2: any limitation gives INCOMPLETE; only a fully accepted result without limitation is COMPLETE",
+      "same blueprint, section 8.1: triage_input@2 binds prepared@2, filter_result@2 and group_result@2; the historical triage_input@1 and PreparedRecord stay readable as they were; refs of version 2 must not enter the v1 codec; ignoring new zones, relations or limitations is a lossy projection and is not allowed by default",
+      "A2 Kedro v2 execution plan of 2026-10-23, task T0-08 (old prepared@1 readable, new prepared@2 mapped correctly) and tasks C0-12a, C0-17a to C0-17g (closed allowlist; C0-17a: the v1 reader cannot read @2 refs; unknown versions rejected; lossy projection never silent). C0-12a rejects prepared@1 for new acceptance results; that rule does not apply to this historical reader.",
+      "Frozen v1 contract, read as ground truth for v1 only: the PreparedRecord model in the msgloom preparation records module (fourteen required fields, strict, frozen, extra forbidden, aware source_time, pending filtering without rule, unique parsed references, attachment parsed reference must be listed, increasing source mapping range) and PreparedDataCodec in the preparation codec module (canonical sorted compact UTF-8 JSON, decode re-encodes and rejects non-canonical bytes); the v1 base values copy the A1 fixture in tests/prepared_contract_fixtures",
+      "Frozen v1 A3 contract: the triage_input codec accepts prepared, filter_result and group_result refs of schema version 1 only",
+      "The two pinned digests (P01, P02) are the SHA-256 and byte count of the canonical JSON of the v1 bases. They were computed with the standard json and hashlib modules from the base in this file and then compared once with the v1 codec output. They pin the historical bytes. They do not come from any A2 v2 code.",
+      "ORACLE VOCABULARY (not frozen by C0): the field names of prepared@2 below (selection, role, zones, relations, lineage, completeness) are oracle names built from the blueprint list in section 4. The wire names are frozen by task C0-07. A consuming test maps the names. The decisions do not depend on the wire names."
+    ]
+  },
+  "model": {
+    "stored": "A stored record is a label (kind, schema_version) and a payload. The payload is the named base after the edits. The label is compared as an exact JSON value, so the string 2 and the number 2 differ.",
+    "edits": "set replaces or adds the value at a JSON path (/a/0/b; an integer step indexes a list). delete removes the value. copy appends a deep copy of the value at from to the list at path. Edits apply in order to a deep copy of the base.",
+    "operations": "read = the version-routed historical reader; force_v1_codec = the v1 codec applied to the payload whatever the label says; project_to_v1 = ask for a v1 PreparedRecord made from a prepared@2 record; bind_triage_input = bind the record ref into the named triage_input snapshot line (target).",
+    "routing": "read, bind_triage_input and project_to_v1 route by the exact label: prepared with 1 uses the v1 reader, prepared with 2 uses the v2 reader, anything else is unknown_version.",
+    "reasons": "unknown_version, unexpected_field, missing_field, not_canonical, bad_value, naive_time, pending_with_rule, dangling_parsed_ref, duplicate_parsed_ref, bad_range, status_limitation_mismatch, lineage_kind_mismatch, lossy_projection_forbidden, ref_version_not_allowed. When a payload has more than one fault, unexpected_field wins over missing_field. Every case has one fault, except where the rationale says so.",
+    "not_canonical": "A v1 object that lacks a key that has a default in the model (for example display_name of a party) is valid for the model but the codec re-encodes it with the key and so rejects the stored bytes as not canonical.",
+    "view": "The view of an accepted read has the version of the record, the source ref, the type, the A3 line, the participants, the time, subject and body exactly as stored, the filtering disposition (v1 only), the completeness (v2 only), the ordered limitation codes (record, then attachments, then parsed content, no sort, no merge), the attachment refs, the count of preserved fields, the dropped fields and the invented fields. A v2 view adds role, selection ordinal, zone kinds and relation kinds. The parsed output of a content is outside this oracle except for its limitations.",
+    "completeness": "A v2 record says COMPLETE only when no limitation exists in the record, in any attachment or in any parsed content. It says INCOMPLETE when at least one exists.",
+    "v2_only_fields": "selection, role, zones, relations, lineage, completeness. A v2 record has no inline filtering. Filtering of version 2 is the separate filter_result@2 result."
+  },
+  "bases": {
+    "v1_full": {
+      "source": {"kind": "outlook_email", "identity": "message-1", "version": "v3"},
+      "source_type": "outlook_email",
+      "sender": {"identity": "sender-1", "display_name": "Synthetic Sender"},
+      "author": {"identity": "author-1", "display_name": "Synthetic Author"},
+      "recipients": [{"party": {"identity": "recipient-1", "display_name": null}, "role": "to"}],
+      "source_time": "2026-09-29T07:15:00Z",
+      "subject": "Synthetic budget review",
+      "body": "Please review the attached budget.",
+      "relationships": [{"kind": "in_reply_to", "target": {"kind": "outlook_email", "identity": "message-0", "version": "v2"}}],
+      "attachments": [
+        {
+          "reference": {"kind": "attachment", "identity": "attachment-1", "version": "v1"},
+          "saved_bytes": {"reference": "evidence:synthetic-attachment", "sha256": "abababababababababababababababababababababababababababababababab", "byte_count": 128},
+          "parsed_content_ref": {"kind": "parsed_content", "identity": "attachment-1", "version": "parser-v1"},
+          "limitations": []
+        }
+      ],
+      "parsed_contents": [
+        {
+          "reference": {"kind": "parsed_content", "identity": "attachment-1", "version": "parser-v1"},
+          "output": {
+            "provenance": {
+              "source": {"reference": "evidence:synthetic-attachment", "sha256": "abababababababababababababababababababababababababababababababab", "byte_count": 128},
+              "detected_format": "xlsx",
+              "parser": {"name": "python-calamine", "version": "0.8.2", "backend": "calamine"},
+              "config": {"profile": "excel-primary-v1", "settings": []}
+            },
+            "blocks": [],
+            "limitations": [{"kind": "partial", "code": "synthetic-gap", "detail": "Synthetic unsupported workbook feature.", "feature": null, "location": null}],
+            "mime_parts": []
+          }
+        }
+      ],
+      "limitations": [{"code": "synthetic", "detail": "Synthetic preparation limitation."}],
+      "source_mappings": [
+        {"source": {"kind": "outlook_email", "identity": "message-1", "version": "v3"}, "field": "body", "location": {"part": "message-body", "block_index": 0}, "start": 0, "end": 34}
+      ],
+      "filtering": {"disposition": "pending", "rule_ref": null}
+    },
+    "v1_min": {
+      "source": {"kind": "teams_chat_message", "identity": "chat-msg-1", "version": "v1"},
+      "source_type": "teams_chat_message",
+      "sender": {"identity": "sender-2", "display_name": null},
+      "author": null,
+      "recipients": [{"party": {"identity": "member-1", "display_name": null}, "role": "member"}],
+      "source_time": "2026-09-30T01:02:03Z",
+      "subject": null,
+      "body": "Synthetic chat line.",
+      "relationships": [],
+      "attachments": [],
+      "parsed_contents": [],
+      "limitations": [],
+      "source_mappings": [],
+      "filtering": {"disposition": "pending", "rule_ref": null}
+    },
+    "v2_min": {
+      "source": {"kind": "teams_chat_message", "identity": "chat-msg-2", "version": "v1"},
+      "source_type": "teams_chat_message",
+      "selection": {"workset_ref": "ws-example-1", "selection_ref": "sel-example-1", "ordinal": 0},
+      "role": "primary",
+      "sender": {"identity": "sender-2", "display_name": null},
+      "author": null,
+      "recipients": [{"party": {"identity": "member-1", "display_name": null}, "role": "member"}],
+      "source_time": "2026-09-30T01:02:03Z",
+      "subject": null,
+      "body": "Synthetic chat line.",
+      "relationships": [],
+      "attachments": [],
+      "parsed_contents": [],
+      "zones": [{"kind": "contribution", "start": 0, "end": 20}],
+      "relations": [],
+      "lineage": {
+        "extracted_components": {"result_id": "res-ec-1", "kind": "extracted_components", "schema_version": "1"},
+        "parsed_parts": {"result_id": "res-pp-1", "kind": "parsed_parts", "schema_version": "1"},
+        "zones": {"result_id": "res-zn-1", "kind": "zones", "schema_version": "1"},
+        "native_relations": {"result_id": "res-nr-1", "kind": "native_relations", "schema_version": "1"}
+      },
+      "limitations": [],
+      "source_mappings": [],
+      "completeness": "COMPLETE"
+    },
+    "v2_full": {
+      "source": {"kind": "outlook_email", "identity": "message-1", "version": "v3"},
+      "source_type": "outlook_email",
+      "selection": {"workset_ref": "ws-example-1", "selection_ref": "sel-example-2", "ordinal": 1},
+      "role": "primary",
+      "sender": {"identity": "sender-1", "display_name": "Synthetic Sender"},
+      "author": {"identity": "author-1", "display_name": "Synthetic Author"},
+      "recipients": [{"party": {"identity": "recipient-1", "display_name": null}, "role": "to"}],
+      "source_time": "2026-09-29T07:15:00Z",
+      "subject": "Synthetic budget review",
+      "body": "Please review the budget.\n> Earlier note.\n-- \nSynthetic Sender",
+      "relationships": [{"kind": "in_reply_to", "target": {"kind": "outlook_email", "identity": "message-0", "version": "v2"}}],
+      "attachments": [
+        {
+          "reference": {"kind": "attachment", "identity": "attachment-1", "version": "v1"},
+          "saved_bytes": {"reference": "evidence:synthetic-attachment", "sha256": "abababababababababababababababababababababababababababababababab", "byte_count": 128},
+          "parsed_content_ref": {"kind": "parsed_content", "identity": "attachment-1", "version": "parser-v1"},
+          "limitations": [{"code": "ocr-skipped", "detail": "Synthetic: OCR was not run."}]
+        }
+      ],
+      "parsed_contents": [
+        {
+          "reference": {"kind": "parsed_content", "identity": "attachment-1", "version": "parser-v1"},
+          "output": {
+            "provenance": {
+              "source": {"reference": "evidence:synthetic-attachment", "sha256": "abababababababababababababababababababababababababababababababab", "byte_count": 128},
+              "detected_format": "xlsx",
+              "parser": {"name": "python-calamine", "version": "0.8.2", "backend": "calamine"},
+              "config": {"profile": "excel-primary-v1", "settings": []}
+            },
+            "blocks": [],
+            "limitations": [{"kind": "partial", "code": "partial-sheet", "detail": "Synthetic unsupported sheet feature.", "feature": null, "location": null}],
+            "mime_parts": []
+          }
+        }
+      ],
+      "zones": [
+        {"kind": "contribution", "start": 0, "end": 25},
+        {"kind": "quote_occurrence", "start": 26, "end": 41},
+        {"kind": "signature", "start": 46, "end": 62}
+      ],
+      "relations": [
+        {"kind": "reply_parent", "target": {"kind": "outlook_email", "identity": "message-0", "version": "v2"}, "evidence": "in_reply_to_header", "scope": "mailbox-example-1"},
+        {"kind": "quoted_source_hypothesis", "target": {"kind": "outlook_email", "identity": "message-0", "version": "v2"}, "evidence": "quote_occurrence_zone_1", "scope": "mailbox-example-1"}
+      ],
+      "lineage": {
+        "extracted_components": {"result_id": "res-ec-2", "kind": "extracted_components", "schema_version": "1"},
+        "parsed_parts": {"result_id": "res-pp-2", "kind": "parsed_parts", "schema_version": "1"},
+        "zones": {"result_id": "res-zn-2", "kind": "zones", "schema_version": "1"},
+        "native_relations": {"result_id": "res-nr-2", "kind": "native_relations", "schema_version": "1"}
+      },
+      "limitations": [
+        {"code": "zone-unknown-quote", "detail": "Synthetic: the author of the quote is not resolved."},
+        {"code": "ocr-skipped", "detail": "Synthetic: record level note."}
+      ],
+      "source_mappings": [
+        {"source": {"kind": "outlook_email", "identity": "message-1", "version": "v3"}, "field": "body", "location": {"part": "message-body", "block_index": 0}, "start": 0, "end": 62}
+      ],
+      "completeness": "INCOMPLETE"
+    }
+  },
+  "cases": [
+    {
+      "case_id": "T0-08-P01",
+      "polarity": "positive",
+      "topic": "historical_v1",
+      "title": "A full old prepared@1 record is read unchanged by the historical reader",
+      "input": {
+        "operation": "read",
+        "stored": {"kind": "prepared", "schema_version": "1", "base": "v1_full", "edits": []}
+      },
+      "expected": {
+        "decision": "accept",
+        "reader": "v1_historical",
+        "view": {
+          "kind_version": "prepared@1",
+          "source_ref": "outlook_email/message-1/v3",
+          "source_type": "outlook_email",
+          "triage_input_line": "triage_input@1",
+          "sender_identity": "sender-1",
+          "author_identity": "author-1",
+          "recipient_roles": ["to"],
+          "source_time": "2026-09-29T07:15:00Z",
+          "subject": "Synthetic budget review",
+          "body": "Please review the attached budget.",
+          "filtering_disposition": "pending",
+          "completeness": null,
+          "limitation_codes": ["synthetic", "synthetic-gap"],
+          "attachment_refs": ["attachment/attachment-1/v1"],
+          "preserved_field_count": 14,
+          "dropped_fields": [],
+          "invented_fields": []
+        }
+      },
+      "pinned": {"canonical_sha256": "758c90cb56df8dd1071dbf258d612075a8820a10439d57094ce329049a20e7e4", "canonical_byte_count": 1828},
+      "rationale": "The payload is the A1 fixture shape. Section 4.1 says v1 results are not migrated or re-encoded, so the reader returns all 14 fields and invents no v2 field (zones, relations). The limitation codes are the record code first, then the parsed content code. A v1 record has no completeness.",
+      "source": ["BP-4.1", "BP-8.1", "V1-RECORDS", "V1-CODEC", "A1-FIXTURE"]
+    },
+    {
+      "case_id": "T0-08-P02",
+      "polarity": "positive",
+      "topic": "historical_v1",
+      "title": "A prepared@1 record with old fields only (chat, no attachment, no parsed content) stays readable",
+      "input": {
+        "operation": "read",
+        "stored": {"kind": "prepared", "schema_version": "1", "base": "v1_min", "edits": []}
+      },
+      "expected": {
+        "decision": "accept",
+        "reader": "v1_historical",
+        "view": {
+          "kind_version": "prepared@1",
+          "source_ref": "teams_chat_message/chat-msg-1/v1",
+          "source_type": "teams_chat_message",
+          "triage_input_line": "triage_input@1",
+          "sender_identity": "sender-2",
+          "author_identity": null,
+          "recipient_roles": ["member"],
+          "source_time": "2026-09-30T01:02:03Z",
+          "subject": null,
+          "body": "Synthetic chat line.",
+          "filtering_disposition": "pending",
+          "completeness": null,
+          "limitation_codes": [],
+          "attachment_refs": [],
+          "preserved_field_count": 14,
+          "dropped_fields": [],
+          "invented_fields": []
+        }
+      },
+      "pinned": {"canonical_sha256": "a98bc1d2108bc72b07d1608e2774c91adbd86ca24705e0bdf137fc4a0314f4db", "canonical_byte_count": 497},
+      "rationale": "Empty lists, a null author and a null subject are valid v1 values. An old record with no zones and no lineage must stay readable. The reader does not add empty v2 fields.",
+      "source": ["BP-8.1", "V1-RECORDS", "V1-CODEC"]
+    },
+    {
+      "case_id": "T0-08-P03",
+      "polarity": "positive",
+      "topic": "historical_v1",
+      "title": "An old To Do record with an excluded filtering decision and a rule ref keeps that decision",
+      "input": {
+        "operation": "read",
+        "stored": {
+          "kind": "prepared",
+          "schema_version": "1",
+          "base": "v1_min",
+          "edits": [
+            {"op": "set", "path": "/source_type", "value": "todo"},
+            {"op": "set", "path": "/source", "value": {"kind": "todo", "identity": "task-1", "version": "v2"}},
+            {"op": "set", "path": "/filtering", "value": {"disposition": "excluded", "rule_ref": {"kind": "filter_rule", "identity": "rule-1", "version": "r4"}}},
+            {"op": "set", "path": "/recipients", "value": []},
+            {"op": "set", "path": "/sender", "value": null}
+          ]
+        }
+      },
+      "expected": {
+        "decision": "accept",
+        "reader": "v1_historical",
+        "view": {
+          "kind_version": "prepared@1",
+          "source_ref": "todo/task-1/v2",
+          "source_type": "todo",
+          "triage_input_line": "triage_input@1",
+          "sender_identity": null,
+          "author_identity": null,
+          "recipient_roles": [],
+          "source_time": "2026-09-30T01:02:03Z",
+          "subject": null,
+          "body": "Synthetic chat line.",
+          "filtering_disposition": "excluded",
+          "completeness": null,
+          "limitation_codes": [],
+          "attachment_refs": [],
+          "preserved_field_count": 14,
+          "dropped_fields": [],
+          "invented_fields": []
+        }
+      },
+      "rationale": "Filtering lives inside a v1 record. An excluded decision with a rule ref is valid in the v1 model (only pending forbids a rule). The reader keeps the decision. A v2 record has no such field.",
+      "source": ["V1-RECORDS", "BP-4"]
+    },
+    {
+      "case_id": "T0-08-P04",
+      "polarity": "positive",
+      "topic": "limitations",
+      "title": "An old record keeps an attachment limitation after the record limitation, in stored order",
+      "input": {
+        "operation": "read",
+        "stored": {
+          "kind": "prepared",
+          "schema_version": "1",
+          "base": "v1_full",
+          "edits": [
+            {"op": "set", "path": "/attachments/0/limitations", "value": [{"code": "attachment-unsupported", "detail": "Synthetic: the attachment type is not supported."}]},
+            {"op": "set", "path": "/attachments/0/parsed_content_ref", "value": null},
+            {"op": "set", "path": "/parsed_contents", "value": []}
+          ]
+        }
+      },
+      "expected": {
+        "decision": "accept",
+        "reader": "v1_historical",
+        "view": {
+          "kind_version": "prepared@1",
+          "source_ref": "outlook_email/message-1/v3",
+          "source_type": "outlook_email",
+          "triage_input_line": "triage_input@1",
+          "sender_identity": "sender-1",
+          "author_identity": "author-1",
+          "recipient_roles": ["to"],
+          "source_time": "2026-09-29T07:15:00Z",
+          "subject": "Synthetic budget review",
+          "body": "Please review the attached budget.",
+          "filtering_disposition": "pending",
+          "completeness": null,
+          "limitation_codes": ["synthetic", "attachment-unsupported"],
+          "attachment_refs": ["attachment/attachment-1/v1"],
+          "preserved_field_count": 14,
+          "dropped_fields": [],
+          "invented_fields": []
+        }
+      },
+      "rationale": "The attachment has no parsed content, so its ref is null and parsed_contents is empty (both are required together by the v1 model). The attachment limitation stays visible after the record limitation.",
+      "source": ["V1-RECORDS", "BP-4.2"]
+    },
+    {
+      "case_id": "T0-08-P05",
+      "polarity": "positive",
+      "topic": "historical_v1",
+      "title": "Subject and body text come back exactly as stored (spaces, tab, non-ASCII, empty text)",
+      "input": {
+        "operation": "read",
+        "stored": {
+          "kind": "prepared",
+          "schema_version": "1",
+          "base": "v1_min",
+          "edits": [
+            {"op": "set", "path": "/subject", "value": "  Résumé ✓  "},
+            {"op": "set", "path": "/body", "value": "Zoë  \n\tÜber ✓ "}
+          ]
+        }
+      },
+      "expected": {
+        "decision": "accept",
+        "reader": "v1_historical",
+        "view": {
+          "kind_version": "prepared@1",
+          "source_ref": "teams_chat_message/chat-msg-1/v1",
+          "source_type": "teams_chat_message",
+          "triage_input_line": "triage_input@1",
+          "sender_identity": "sender-2",
+          "author_identity": null,
+          "recipient_roles": ["member"],
+          "source_time": "2026-09-30T01:02:03Z",
+          "subject": "  Résumé ✓  ",
+          "body": "Zoë  \n\tÜber ✓ ",
+          "filtering_disposition": "pending",
+          "completeness": null,
+          "limitation_codes": [],
+          "attachment_refs": [],
+          "preserved_field_count": 14,
+          "dropped_fields": [],
+          "invented_fields": []
+        }
+      },
+      "rationale": "Historical decoding is unchanged: the reader does not strip, normalize or re-encode text. A reader that trims the subject would change what A3 saw before.",
+      "source": ["BP-4.1", "V1-CODEC"]
+    },
+    {
+      "case_id": "T0-08-P06",
+      "polarity": "positive",
+      "topic": "historical_unchanged",
+      "title": "The v1 codec still decodes the same v1 bytes to the same view after the v2 reader exists",
+      "input": {
+        "operation": "force_v1_codec",
+        "stored": {"kind": "prepared", "schema_version": "1", "base": "v1_full", "edits": []}
+      },
+      "expected": {
+        "decision": "accept",
+        "reader": "v1_historical",
+        "view": {
+          "kind_version": "prepared@1",
+          "source_ref": "outlook_email/message-1/v3",
+          "source_type": "outlook_email",
+          "triage_input_line": "triage_input@1",
+          "sender_identity": "sender-1",
+          "author_identity": "author-1",
+          "recipient_roles": ["to"],
+          "source_time": "2026-09-29T07:15:00Z",
+          "subject": "Synthetic budget review",
+          "body": "Please review the attached budget.",
+          "filtering_disposition": "pending",
+          "completeness": null,
+          "limitation_codes": ["synthetic", "synthetic-gap"],
+          "attachment_refs": ["attachment/attachment-1/v1"],
+          "preserved_field_count": 14,
+          "dropped_fields": [],
+          "invented_fields": []
+        }
+      },
+      "links": {"same_view_as": "T0-08-P01"},
+      "rationale": "The routed reader (P01) and the direct v1 codec give the same view for the same stored record. Section 4.1: old codecs and results are not changed.",
+      "source": ["BP-4.1", "BP-8.1", "V1-CODEC"]
+    },
+    {
+      "case_id": "T0-08-P07",
+      "polarity": "positive",
+      "topic": "v2_mapping",
+      "title": "A minimal prepared@2 record maps to a COMPLETE v2 view on the triage_input@2 line",
+      "input": {
+        "operation": "read",
+        "stored": {"kind": "prepared", "schema_version": "2", "base": "v2_min", "edits": []}
+      },
+      "expected": {
+        "decision": "accept",
+        "reader": "v2",
+        "view": {
+          "kind_version": "prepared@2",
+          "source_ref": "teams_chat_message/chat-msg-2/v1",
+          "source_type": "teams_chat_message",
+          "triage_input_line": "triage_input@2",
+          "sender_identity": "sender-2",
+          "author_identity": null,
+          "recipient_roles": ["member"],
+          "source_time": "2026-09-30T01:02:03Z",
+          "subject": null,
+          "body": "Synthetic chat line.",
+          "filtering_disposition": null,
+          "completeness": "COMPLETE",
+          "limitation_codes": [],
+          "attachment_refs": [],
+          "preserved_field_count": 19,
+          "dropped_fields": [],
+          "invented_fields": [],
+          "role": "primary",
+          "selection_ordinal": 0,
+          "zone_kinds": ["contribution"],
+          "relation_kinds": []
+        }
+      },
+      "rationale": "All 19 fields are kept, including selection, role, zones and lineage. No limitation exists, so the record is COMPLETE. A v2 record has no inline filtering, so the view shows none.",
+      "source": ["BP-4", "BP-4.2", "BP-8.1"]
+    },
+    {
+      "case_id": "T0-08-P08",
+      "polarity": "positive",
+      "topic": "limitations",
+      "title": "A full prepared@2 record keeps every limitation in order, without sort or merge, and every zone and relation",
+      "input": {
+        "operation": "read",
+        "stored": {"kind": "prepared", "schema_version": "2", "base": "v2_full", "edits": []}
+      },
+      "expected": {
+        "decision": "accept",
+        "reader": "v2",
+        "view": {
+          "kind_version": "prepared@2",
+          "source_ref": "outlook_email/message-1/v3",
+          "source_type": "outlook_email",
+          "triage_input_line": "triage_input@2",
+          "sender_identity": "sender-1",
+          "author_identity": "author-1",
+          "recipient_roles": ["to"],
+          "source_time": "2026-09-29T07:15:00Z",
+          "subject": "Synthetic budget review",
+          "body": "Please review the budget.\n> Earlier note.\n-- \nSynthetic Sender",
+          "filtering_disposition": null,
+          "completeness": "INCOMPLETE",
+          "limitation_codes": ["zone-unknown-quote", "ocr-skipped", "ocr-skipped", "partial-sheet"],
+          "attachment_refs": ["attachment/attachment-1/v1"],
+          "preserved_field_count": 19,
+          "dropped_fields": [],
+          "invented_fields": [],
+          "role": "primary",
+          "selection_ordinal": 1,
+          "zone_kinds": ["contribution", "quote_occurrence", "signature"],
+          "relation_kinds": ["reply_parent", "quoted_source_hypothesis"]
+        }
+      },
+      "rationale": "Limitation order is record level (2), then attachment level (1), then parsed content (1). The code ocr-skipped appears twice because two places report it. A sorted or merged list would hide that. Any limitation gives INCOMPLETE. The source version equals the one in P01, so one source version can have a v1 and a v2 record.",
+      "source": ["BP-4", "BP-4.2", "BP-8.1"]
+    },
+    {
+      "case_id": "T0-08-P09",
+      "polarity": "positive",
+      "topic": "v2_mapping",
+      "title": "Role, selection ordinal, an unknown zone and an unknown relation are kept, not guessed",
+      "input": {
+        "operation": "read",
+        "stored": {
+          "kind": "prepared",
+          "schema_version": "2",
+          "base": "v2_full",
+          "edits": [
+            {"op": "set", "path": "/role", "value": "context"},
+            {"op": "set", "path": "/selection/ordinal", "value": 3},
+            {"op": "set", "path": "/zones", "value": [{"kind": "unknown", "start": 0, "end": 25}]},
+            {"op": "set", "path": "/relations", "value": [{"kind": "unknown", "target": {"kind": "outlook_email", "identity": "message-0", "version": "v2"}, "evidence": "parent_missing", "scope": "mailbox-example-1"}]}
+          ]
+        }
+      },
+      "expected": {
+        "decision": "accept",
+        "reader": "v2",
+        "view": {
+          "kind_version": "prepared@2",
+          "source_ref": "outlook_email/message-1/v3",
+          "source_type": "outlook_email",
+          "triage_input_line": "triage_input@2",
+          "sender_identity": "sender-1",
+          "author_identity": "author-1",
+          "recipient_roles": ["to"],
+          "source_time": "2026-09-29T07:15:00Z",
+          "subject": "Synthetic budget review",
+          "body": "Please review the budget.\n> Earlier note.\n-- \nSynthetic Sender",
+          "filtering_disposition": null,
+          "completeness": "INCOMPLETE",
+          "limitation_codes": ["zone-unknown-quote", "ocr-skipped", "ocr-skipped", "partial-sheet"],
+          "attachment_refs": ["attachment/attachment-1/v1"],
+          "preserved_field_count": 19,
+          "dropped_fields": [],
+          "invented_fields": [],
+          "role": "context",
+          "selection_ordinal": 3,
+          "zone_kinds": ["unknown"],
+          "relation_kinds": ["unknown"]
+        }
+      },
+      "rationale": "Section 4 says a missing parent or an unclear zone stays unknown. The reader reports the kinds as stored. It does not turn unknown into a contribution or a reply parent.",
+      "source": ["BP-4"]
+    },
+    {
+      "case_id": "T0-08-P10",
+      "polarity": "positive",
+      "topic": "limitations",
+      "title": "A limitation that only an attachment reports still keeps the record INCOMPLETE and visible",
+      "input": {
+        "operation": "read",
+        "stored": {
+          "kind": "prepared",
+          "schema_version": "2",
+          "base": "v2_full",
+          "edits": [
+            {"op": "set", "path": "/limitations", "value": []},
+            {"op": "set", "path": "/parsed_contents/0/output/limitations", "value": []}
+          ]
+        }
+      },
+      "expected": {
+        "decision": "accept",
+        "reader": "v2",
+        "view": {
+          "kind_version": "prepared@2",
+          "source_ref": "outlook_email/message-1/v3",
+          "source_type": "outlook_email",
+          "triage_input_line": "triage_input@2",
+          "sender_identity": "sender-1",
+          "author_identity": "author-1",
+          "recipient_roles": ["to"],
+          "source_time": "2026-09-29T07:15:00Z",
+          "subject": "Synthetic budget review",
+          "body": "Please review the budget.\n> Earlier note.\n-- \nSynthetic Sender",
+          "filtering_disposition": null,
+          "completeness": "INCOMPLETE",
+          "limitation_codes": ["ocr-skipped"],
+          "attachment_refs": ["attachment/attachment-1/v1"],
+          "preserved_field_count": 19,
+          "dropped_fields": [],
+          "invented_fields": [],
+          "role": "primary",
+          "selection_ordinal": 1,
+          "zone_kinds": ["contribution", "quote_occurrence", "signature"],
+          "relation_kinds": ["reply_parent", "quoted_source_hypothesis"]
+        }
+      },
+      "rationale": "The record level list is empty but the attachment reports ocr-skipped. The blueprint demands all limitations, so the code is listed and the record is INCOMPLETE.",
+      "source": ["BP-4", "BP-4.2"]
+    },
+    {
+      "case_id": "T0-08-P11",
+      "polarity": "positive",
+      "topic": "limitations",
+      "title": "A limitation that only the parsed content reports still keeps the record INCOMPLETE and visible",
+      "input": {
+        "operation": "read",
+        "stored": {
+          "kind": "prepared",
+          "schema_version": "2",
+          "base": "v2_full",
+          "edits": [
+            {"op": "set", "path": "/limitations", "value": []},
+            {"op": "set", "path": "/attachments/0/limitations", "value": []}
+          ]
+        }
+      },
+      "expected": {
+        "decision": "accept",
+        "reader": "v2",
+        "view": {
+          "kind_version": "prepared@2",
+          "source_ref": "outlook_email/message-1/v3",
+          "source_type": "outlook_email",
+          "triage_input_line": "triage_input@2",
+          "sender_identity": "sender-1",
+          "author_identity": "author-1",
+          "recipient_roles": ["to"],
+          "source_time": "2026-09-29T07:15:00Z",
+          "subject": "Synthetic budget review",
+          "body": "Please review the budget.\n> Earlier note.\n-- \nSynthetic Sender",
+          "filtering_disposition": null,
+          "completeness": "INCOMPLETE",
+          "limitation_codes": ["partial-sheet"],
+          "attachment_refs": ["attachment/attachment-1/v1"],
+          "preserved_field_count": 19,
+          "dropped_fields": [],
+          "invented_fields": [],
+          "role": "primary",
+          "selection_ordinal": 1,
+          "zone_kinds": ["contribution", "quote_occurrence", "signature"],
+          "relation_kinds": ["reply_parent", "quoted_source_hypothesis"]
+        }
+      },
+      "rationale": "Same rule as P10 for the parsed content level. The parsed content is lineage of the record, so its limitation counts.",
+      "source": ["BP-4", "BP-4.2"]
+    },
+    {
+      "case_id": "T0-08-P12",
+      "polarity": "positive",
+      "topic": "binding",
+      "title": "A prepared@1 ref binds into the historical triage_input@1 line",
+      "input": {
+        "operation": "bind_triage_input",
+        "target": "triage_input@1",
+        "stored": {"kind": "prepared", "schema_version": "1", "base": "v1_full", "edits": []}
+      },
+      "expected": {"decision": "accept", "reader": "v1_historical", "binding": "triage_input@1"},
+      "rationale": "The v1 A3 codec accepts prepared refs of schema version 1. The historical line stays as it was.",
+      "source": ["V1-TRIAGE-CODEC", "BP-8.1"]
+    },
+    {
+      "case_id": "T0-08-P13",
+      "polarity": "positive",
+      "topic": "binding",
+      "title": "A prepared@2 ref binds into the new triage_input@2 line",
+      "input": {
+        "operation": "bind_triage_input",
+        "target": "triage_input@2",
+        "stored": {"kind": "prepared", "schema_version": "2", "base": "v2_min", "edits": []}
+      },
+      "expected": {"decision": "accept", "reader": "v2", "binding": "triage_input@2"},
+      "rationale": "Section 8.1: triage_input@2 binds prepared@2.",
+      "source": ["BP-8.1", "PLAN-C0-17"]
+    },
+    {
+      "case_id": "T0-08-N01",
+      "polarity": "negative",
+      "topic": "version_rejection",
+      "title": "A future version 3 label is rejected even when the payload looks like prepared@2",
+      "input": {
+        "operation": "read",
+        "stored": {"kind": "prepared", "schema_version": "3", "base": "v2_min", "edits": []}
+      },
+      "expected": {"decision": "reject", "code": "unknown_version"},
+      "rationale": "The allowlist is closed over (prepared, 1) and (prepared, 2). The reader must not guess that 3 is like 2.",
+      "source": ["BP-4.1", "PLAN-C0-17"]
+    },
+    {
+      "case_id": "T0-08-N02",
+      "polarity": "negative",
+      "topic": "version_rejection",
+      "title": "Version 0 is rejected even when the payload looks like prepared@1",
+      "input": {
+        "operation": "read",
+        "stored": {"kind": "prepared", "schema_version": "0", "base": "v1_min", "edits": []}
+      },
+      "expected": {"decision": "reject", "code": "unknown_version"},
+      "rationale": "Version 0 is not in the allowlist. It is not an older name for 1.",
+      "source": ["BP-4.1"]
+    },
+    {
+      "case_id": "T0-08-N03",
+      "polarity": "negative",
+      "topic": "version_rejection",
+      "title": "The label 02 is rejected; versions are exact strings",
+      "input": {
+        "operation": "read",
+        "stored": {"kind": "prepared", "schema_version": "02", "base": "v2_min", "edits": []}
+      },
+      "expected": {"decision": "reject", "code": "unknown_version"},
+      "rationale": "The allowlist compares exact strings. A padded number is not the string 2.",
+      "source": ["BP-4.1"]
+    },
+    {
+      "case_id": "T0-08-N04",
+      "polarity": "negative",
+      "topic": "version_rejection",
+      "title": "The JSON number 2 is rejected; the version is a string",
+      "input": {
+        "operation": "read",
+        "stored": {"kind": "prepared", "schema_version": 2, "base": "v2_min", "edits": []}
+      },
+      "expected": {"decision": "reject", "code": "unknown_version"},
+      "rationale": "The schema version of a stored result is a string. A number is a different value and is not coerced.",
+      "source": ["BP-4.1", "PLAN-C0-17"]
+    },
+    {
+      "case_id": "T0-08-N05",
+      "polarity": "negative",
+      "topic": "version_rejection",
+      "title": "The kind Prepared with a capital letter is rejected",
+      "input": {
+        "operation": "read",
+        "stored": {"kind": "Prepared", "schema_version": "2", "base": "v2_min", "edits": []}
+      },
+      "expected": {"decision": "reject", "code": "unknown_version"},
+      "rationale": "The kind is part of the exact (kind, version) pair. No case folding.",
+      "source": ["BP-4.1"]
+    },
+    {
+      "case_id": "T0-08-N06",
+      "polarity": "negative",
+      "topic": "version_rejection",
+      "title": "A null version is rejected",
+      "input": {
+        "operation": "read",
+        "stored": {"kind": "prepared", "schema_version": null, "base": "v1_min", "edits": []}
+      },
+      "expected": {"decision": "reject", "code": "unknown_version"},
+      "rationale": "A missing version is not version 1. The reader must not default an old record.",
+      "source": ["BP-4.1"]
+    },
+    {
+      "case_id": "T0-08-N07",
+      "polarity": "negative",
+      "topic": "version_rejection",
+      "title": "A filter_result@2 label is not read by the prepared reader",
+      "input": {
+        "operation": "read",
+        "stored": {"kind": "filter_result", "schema_version": "2", "base": "v2_min", "edits": []}
+      },
+      "expected": {"decision": "reject", "code": "unknown_version"},
+      "rationale": "Another valid kind is still not prepared. A stage kind cannot choose 1 or 2 freely.",
+      "source": ["BP-4.1"]
+    },
+    {
+      "case_id": "T0-08-N08",
+      "polarity": "negative",
+      "topic": "tamper",
+      "title": "A prepared@2 payload forced through the v1 codec is rejected",
+      "input": {
+        "operation": "force_v1_codec",
+        "stored": {"kind": "prepared", "schema_version": "2", "base": "v2_full", "edits": []}
+      },
+      "expected": {"decision": "reject", "code": "unexpected_field"},
+      "rationale": "The v1 model forbids extra fields. selection, role, zones, relations, lineage and completeness are extra for v1 (and filtering is missing, but unexpected_field wins). The old codec never decodes a v2 record.",
+      "source": ["BP-2", "BP-8.1", "V1-RECORDS"]
+    },
+    {
+      "case_id": "T0-08-N09",
+      "polarity": "negative",
+      "topic": "tamper",
+      "title": "An old v1 payload relabeled prepared@2 is not accepted as a v2 record",
+      "input": {
+        "operation": "read",
+        "stored": {"kind": "prepared", "schema_version": "2", "base": "v1_min", "edits": []}
+      },
+      "expected": {"decision": "reject", "code": "unexpected_field"},
+      "rationale": "The v1 payload has an inline filtering field, which v2 does not have, and lacks the v2 fields. A relabel does not upgrade a record. unexpected_field wins over missing_field.",
+      "source": ["BP-4", "BP-4.1"]
+    },
+    {
+      "case_id": "T0-08-N10",
+      "polarity": "negative",
+      "topic": "tamper",
+      "title": "A v2 payload labeled prepared@1 is rejected, not read with the new fields ignored",
+      "input": {
+        "operation": "read",
+        "stored": {"kind": "prepared", "schema_version": "1", "base": "v2_min", "edits": []}
+      },
+      "expected": {"decision": "reject", "code": "unexpected_field"},
+      "rationale": "Section 8.1 forbids ignoring new zones, relations and limitations. The v1 reader rejects the extra fields.",
+      "source": ["BP-8.1", "V1-RECORDS"]
+    },
+    {
+      "case_id": "T0-08-N11",
+      "polarity": "negative",
+      "topic": "tamper",
+      "title": "A prepared@1 record with one added v2 field (zones) is rejected",
+      "input": {
+        "operation": "read",
+        "stored": {
+          "kind": "prepared",
+          "schema_version": "1",
+          "base": "v1_min",
+          "edits": [{"op": "set", "path": "/zones", "value": []}]
+        }
+      },
+      "expected": {"decision": "reject", "code": "unexpected_field"},
+      "rationale": "A half upgraded v1 record is a tamper case. The v1 model forbids the extra field, even when the value is empty.",
+      "source": ["V1-RECORDS", "BP-4.1"]
+    },
+    {
+      "case_id": "T0-08-N12",
+      "polarity": "negative",
+      "topic": "missing_field",
+      "title": "A prepared@1 record without its body key is rejected",
+      "input": {
+        "operation": "read",
+        "stored": {
+          "kind": "prepared",
+          "schema_version": "1",
+          "base": "v1_min",
+          "edits": [{"op": "delete", "path": "/body"}]
+        }
+      },
+      "expected": {"decision": "reject", "code": "missing_field"},
+      "rationale": "All 14 fields of the v1 record are required, even when the value may be null. body has no default.",
+      "source": ["V1-RECORDS"]
+    },
+    {
+      "case_id": "T0-08-N13",
+      "polarity": "negative",
+      "topic": "tamper",
+      "title": "A prepared@1 record that omits a defaulted key (display_name) is not canonical",
+      "input": {
+        "operation": "read",
+        "stored": {
+          "kind": "prepared",
+          "schema_version": "1",
+          "base": "v1_min",
+          "edits": [{"op": "delete", "path": "/sender/display_name"}]
+        }
+      },
+      "expected": {"decision": "reject", "code": "not_canonical"},
+      "rationale": "The model accepts the omission, but the codec writes display_name as null. Stored bytes must equal the re-encoded bytes, so this payload is not canonical.",
+      "source": ["V1-CODEC", "V1-RECORDS"]
+    },
+    {
+      "case_id": "T0-08-N14",
+      "polarity": "negative",
+      "topic": "tamper",
+      "title": "A prepared@1 source time without a time zone is rejected",
+      "input": {
+        "operation": "read",
+        "stored": {
+          "kind": "prepared",
+          "schema_version": "1",
+          "base": "v1_min",
+          "edits": [{"op": "set", "path": "/source_time", "value": "2026-09-30T01:02:03"}]
+        }
+      },
+      "expected": {"decision": "reject", "code": "naive_time"},
+      "rationale": "The v1 model requires an aware source_time.",
+      "source": ["V1-RECORDS"]
+    },
+    {
+      "case_id": "T0-08-N15",
+      "polarity": "negative",
+      "topic": "tamper",
+      "title": "A prepared@1 record with an unknown source type is rejected",
+      "input": {
+        "operation": "read",
+        "stored": {
+          "kind": "prepared",
+          "schema_version": "1",
+          "base": "v1_min",
+          "edits": [{"op": "set", "path": "/source_type", "value": "slack_message"}]
+        }
+      },
+      "expected": {"decision": "reject", "code": "bad_value"},
+      "rationale": "source_type is a closed enum of seven A1 streams. slack_message is not one of them.",
+      "source": ["V1-RECORDS"]
+    },
+    {
+      "case_id": "T0-08-N16",
+      "polarity": "negative",
+      "topic": "tamper",
+      "title": "A pending filtering decision that names a rule is rejected",
+      "input": {
+        "operation": "read",
+        "stored": {
+          "kind": "prepared",
+          "schema_version": "1",
+          "base": "v1_min",
+          "edits": [{"op": "set", "path": "/filtering", "value": {"disposition": "pending", "rule_ref": {"kind": "filter_rule", "identity": "rule-1", "version": "r4"}}}]
+        }
+      },
+      "expected": {"decision": "reject", "code": "pending_with_rule"},
+      "rationale": "The v1 model says pending filtering cannot claim a matched rule.",
+      "source": ["V1-RECORDS"]
+    },
+    {
+      "case_id": "T0-08-N17",
+      "polarity": "negative",
+      "topic": "tamper",
+      "title": "An attachment whose parsed content ref is not in parsed_contents is rejected",
+      "input": {
+        "operation": "read",
+        "stored": {
+          "kind": "prepared",
+          "schema_version": "1",
+          "base": "v1_full",
+          "edits": [{"op": "set", "path": "/parsed_contents", "value": []}]
+        }
+      },
+      "expected": {"decision": "reject", "code": "dangling_parsed_ref"},
+      "rationale": "The v1 model requires every attachment parsed ref to be listed. A dangling ref means content was dropped.",
+      "source": ["V1-RECORDS"]
+    },
+    {
+      "case_id": "T0-08-N18",
+      "polarity": "negative",
+      "topic": "tamper",
+      "title": "Two parsed contents with the same reference are rejected",
+      "input": {
+        "operation": "read",
+        "stored": {
+          "kind": "prepared",
+          "schema_version": "1",
+          "base": "v1_full",
+          "edits": [{"op": "copy", "from": "/parsed_contents/0", "path": "/parsed_contents"}]
+        }
+      },
+      "expected": {"decision": "reject", "code": "duplicate_parsed_ref"},
+      "rationale": "The v1 model requires unique parsed content references.",
+      "source": ["V1-RECORDS"]
+    },
+    {
+      "case_id": "T0-08-N19",
+      "polarity": "negative",
+      "topic": "tamper",
+      "title": "A source mapping range that is not increasing is rejected",
+      "input": {
+        "operation": "read",
+        "stored": {
+          "kind": "prepared",
+          "schema_version": "1",
+          "base": "v1_full",
+          "edits": [{"op": "set", "path": "/source_mappings/0/end", "value": 0}]
+        }
+      },
+      "expected": {"decision": "reject", "code": "bad_range"},
+      "rationale": "start is 0 and end is 0. The v1 model needs end greater than start.",
+      "source": ["V1-RECORDS"]
+    },
+    {
+      "case_id": "T0-08-N20",
+      "polarity": "negative",
+      "topic": "tamper",
+      "title": "A sender with a blank identity is rejected",
+      "input": {
+        "operation": "read",
+        "stored": {
+          "kind": "prepared",
+          "schema_version": "1",
+          "base": "v1_min",
+          "edits": [{"op": "set", "path": "/sender/identity", "value": "  "}]
+        }
+      },
+      "expected": {"decision": "reject", "code": "bad_value"},
+      "rationale": "The v1 model requires a non-blank party identity.",
+      "source": ["V1-RECORDS"]
+    },
+    {
+      "case_id": "T0-08-N21",
+      "polarity": "negative",
+      "topic": "tamper",
+      "title": "A limitation with an empty code is rejected",
+      "input": {
+        "operation": "read",
+        "stored": {
+          "kind": "prepared",
+          "schema_version": "1",
+          "base": "v1_full",
+          "edits": [{"op": "set", "path": "/limitations/0/code", "value": ""}]
+        }
+      },
+      "expected": {"decision": "reject", "code": "bad_value"},
+      "rationale": "A limitation needs a non-blank code and detail. A blank limitation cannot be shown to a reader.",
+      "source": ["V1-RECORDS", "BP-4.2"]
+    },
+    {
+      "case_id": "T0-08-N22",
+      "polarity": "negative",
+      "topic": "missing_field",
+      "title": "A prepared@2 record without lineage is rejected",
+      "input": {
+        "operation": "read",
+        "stored": {
+          "kind": "prepared",
+          "schema_version": "2",
+          "base": "v2_full",
+          "edits": [{"op": "delete", "path": "/lineage"}]
+        }
+      },
+      "expected": {"decision": "reject", "code": "missing_field"},
+      "rationale": "Section 4 lists zone, relation and parsed lineage as fields that cannot be omitted.",
+      "source": ["BP-4"]
+    },
+    {
+      "case_id": "T0-08-N23",
+      "polarity": "negative",
+      "topic": "missing_field",
+      "title": "A prepared@2 record without selection is rejected",
+      "input": {
+        "operation": "read",
+        "stored": {
+          "kind": "prepared",
+          "schema_version": "2",
+          "base": "v2_full",
+          "edits": [{"op": "delete", "path": "/selection"}]
+        }
+      },
+      "expected": {"decision": "reject", "code": "missing_field"},
+      "rationale": "Section 4 lists source, selection, role and ref as fields that cannot be omitted.",
+      "source": ["BP-4"]
+    },
+    {
+      "case_id": "T0-08-N24",
+      "polarity": "negative",
+      "topic": "limitations",
+      "title": "A record that says COMPLETE while an attachment reports a limitation is rejected",
+      "input": {
+        "operation": "read",
+        "stored": {
+          "kind": "prepared",
+          "schema_version": "2",
+          "base": "v2_min",
+          "edits": [
+            {"op": "set", "path": "/attachments", "value": [{"reference": {"kind": "attachment", "identity": "attachment-9", "version": "v1"}, "saved_bytes": null, "parsed_content_ref": null, "limitations": [{"code": "attachment-unsupported", "detail": "Synthetic: the attachment type is not supported."}]}]}
+          ]
+        }
+      },
+      "expected": {"decision": "reject", "code": "status_limitation_mismatch"},
+      "rationale": "The base says COMPLETE and has no record limitation. The new attachment limitation makes COMPLETE false. Any limitation gives INCOMPLETE.",
+      "source": ["BP-4.2"]
+    },
+    {
+      "case_id": "T0-08-N25",
+      "polarity": "negative",
+      "topic": "limitations",
+      "title": "A record that says INCOMPLETE without any limitation is rejected",
+      "input": {
+        "operation": "read",
+        "stored": {
+          "kind": "prepared",
+          "schema_version": "2",
+          "base": "v2_min",
+          "edits": [{"op": "set", "path": "/completeness", "value": "INCOMPLETE"}]
+        }
+      },
+      "expected": {"decision": "reject", "code": "status_limitation_mismatch"},
+      "rationale": "INCOMPLETE must be explained by a visible limitation. An unexplained INCOMPLETE hides the reason.",
+      "source": ["BP-4", "BP-4.2"]
+    },
+    {
+      "case_id": "T0-08-N26",
+      "polarity": "negative",
+      "topic": "tamper",
+      "title": "A lineage ref that names zones@2 instead of zones@1 is rejected",
+      "input": {
+        "operation": "read",
+        "stored": {
+          "kind": "prepared",
+          "schema_version": "2",
+          "base": "v2_min",
+          "edits": [{"op": "set", "path": "/lineage/zones/schema_version", "value": "2"}]
+        }
+      },
+      "expected": {"decision": "reject", "code": "lineage_kind_mismatch"},
+      "rationale": "The closed schema set has zones@1 only. A lineage ref outside the set is rejected.",
+      "source": ["BP-4", "BP-4.1"]
+    },
+    {
+      "case_id": "T0-08-N27",
+      "polarity": "negative",
+      "topic": "tamper",
+      "title": "A zone kind outside the closed set is rejected",
+      "input": {
+        "operation": "read",
+        "stored": {
+          "kind": "prepared",
+          "schema_version": "2",
+          "base": "v2_full",
+          "edits": [{"op": "set", "path": "/zones/1/kind", "value": "disclaimer"}]
+        }
+      },
+      "expected": {"decision": "reject", "code": "bad_value"},
+      "rationale": "The zone kinds are contribution, quote_occurrence, forward, signature, footer and unknown.",
+      "source": ["BP-4"]
+    },
+    {
+      "case_id": "T0-08-N28",
+      "polarity": "negative",
+      "topic": "tamper",
+      "title": "A zone that ends after the body is rejected",
+      "input": {
+        "operation": "read",
+        "stored": {
+          "kind": "prepared",
+          "schema_version": "2",
+          "base": "v2_full",
+          "edits": [{"op": "set", "path": "/zones/2/end", "value": 63}]
+        }
+      },
+      "expected": {"decision": "reject", "code": "bad_range"},
+      "rationale": "The body has 62 characters. A zone span must stay inside the body (0 <= start < end <= 62).",
+      "source": ["BP-4"]
+    },
+    {
+      "case_id": "T0-08-N29",
+      "polarity": "negative",
+      "topic": "tamper",
+      "title": "A quote zone that carries an author attribution is rejected",
+      "input": {
+        "operation": "read",
+        "stored": {
+          "kind": "prepared",
+          "schema_version": "2",
+          "base": "v2_full",
+          "edits": [{"op": "set", "path": "/zones/1/attributed_to", "value": "sender-1"}]
+        }
+      },
+      "expected": {"decision": "reject", "code": "unexpected_field"},
+      "rationale": "Section 4 separates a quote occurrence from the author of the quote. A zone has kind, start and end only.",
+      "source": ["BP-4", "BP-4.1"]
+    },
+    {
+      "case_id": "T0-08-N30",
+      "polarity": "negative",
+      "topic": "tamper",
+      "title": "A role outside primary, component, context and transition is rejected",
+      "input": {
+        "operation": "read",
+        "stored": {
+          "kind": "prepared",
+          "schema_version": "2",
+          "base": "v2_min",
+          "edits": [{"op": "set", "path": "/role", "value": "main"}]
+        }
+      },
+      "expected": {"decision": "reject", "code": "bad_value"},
+      "rationale": "The four A1 roles are primary, component, context and transition. A role is not free text.",
+      "source": ["BP-4", "PLAN-C0-17"]
+    },
+    {
+      "case_id": "T0-08-N31",
+      "polarity": "negative",
+      "topic": "tamper",
+      "title": "A negative selection ordinal is rejected",
+      "input": {
+        "operation": "read",
+        "stored": {
+          "kind": "prepared",
+          "schema_version": "2",
+          "base": "v2_min",
+          "edits": [{"op": "set", "path": "/selection/ordinal", "value": -1}]
+        }
+      },
+      "expected": {"decision": "reject", "code": "bad_value"},
+      "rationale": "An ordinal is the position of an occurrence in the frozen workset. It is an integer of zero or more.",
+      "source": ["BP-4", "BP-4.2"]
+    },
+    {
+      "case_id": "T0-08-N32",
+      "polarity": "negative",
+      "topic": "tamper",
+      "title": "A v2 limitation with an empty detail is rejected",
+      "input": {
+        "operation": "read",
+        "stored": {
+          "kind": "prepared",
+          "schema_version": "2",
+          "base": "v2_full",
+          "edits": [{"op": "set", "path": "/limitations/0/detail", "value": ""}]
+        }
+      },
+      "expected": {"decision": "reject", "code": "bad_value"},
+      "rationale": "A limitation needs a non-blank code and detail in every version.",
+      "source": ["BP-4.2", "V1-RECORDS"]
+    },
+    {
+      "case_id": "T0-08-N33",
+      "polarity": "negative",
+      "topic": "missing_field",
+      "title": "A lineage block that lacks the zones stage ref is rejected",
+      "input": {
+        "operation": "read",
+        "stored": {
+          "kind": "prepared",
+          "schema_version": "2",
+          "base": "v2_min",
+          "edits": [{"op": "delete", "path": "/lineage/zones"}]
+        }
+      },
+      "expected": {"decision": "reject", "code": "missing_field"},
+      "rationale": "Lineage names the extracted components, parsed parts, zones and native relations. A missing stage ref is a missing field.",
+      "source": ["BP-4"]
+    },
+    {
+      "case_id": "T0-08-N34",
+      "polarity": "negative",
+      "topic": "lossy_projection",
+      "title": "A full prepared@2 record is never projected to a prepared@1 record",
+      "input": {
+        "operation": "project_to_v1",
+        "stored": {"kind": "prepared", "schema_version": "2", "base": "v2_full", "edits": []}
+      },
+      "expected": {"decision": "reject", "code": "lossy_projection_forbidden"},
+      "rationale": "A v1 record has no place for selection, role, zones, relations, lineage and completeness, and it needs a filtering field that v2 does not have. Section 8.1: no lossy projection by default.",
+      "source": ["BP-8.1", "PLAN-C0-17"]
+    },
+    {
+      "case_id": "T0-08-N35",
+      "polarity": "negative",
+      "topic": "lossy_projection",
+      "title": "A prepared@2 record with no zone, relation or limitation worth keeping is still not projected",
+      "input": {
+        "operation": "project_to_v1",
+        "stored": {"kind": "prepared", "schema_version": "2", "base": "v2_min", "edits": []}
+      },
+      "expected": {"decision": "reject", "code": "lossy_projection_forbidden"},
+      "rationale": "This record looks easy to project: one contribution zone, no relation, no limitation. The rule is not to guess. The default is no projection. An exception needs separate evidence and an exact SHA review.",
+      "source": ["BP-8.1"]
+    },
+    {
+      "case_id": "T0-08-N36",
+      "polarity": "negative",
+      "topic": "binding",
+      "title": "A prepared@2 ref cannot enter the historical triage_input@1 line",
+      "input": {
+        "operation": "bind_triage_input",
+        "target": "triage_input@1",
+        "stored": {"kind": "prepared", "schema_version": "2", "base": "v2_min", "edits": []}
+      },
+      "expected": {"decision": "reject", "code": "ref_version_not_allowed"},
+      "rationale": "The v1 A3 codec accepts refs of schema version 1 only. Section 8.1: do not put v2 refs into the v1 codec.",
+      "source": ["V1-TRIAGE-CODEC", "BP-8.1"]
+    },
+    {
+      "case_id": "T0-08-N37",
+      "polarity": "negative",
+      "topic": "binding",
+      "title": "PROPOSED POLICY: a prepared@1 ref does not enter the new triage_input@2 line",
+      "policy_status": "proposed_owner_signoff_needed",
+      "input": {
+        "operation": "bind_triage_input",
+        "target": "triage_input@2",
+        "stored": {"kind": "prepared", "schema_version": "1", "base": "v1_min", "edits": []}
+      },
+      "expected": {"decision": "reject", "code": "ref_version_not_allowed"},
+      "rationale": "triage_input@2 has a kind and version allowlist of prepared, filter_result and group_result of version 2. Old v1 snapshots stay on the v1 line. This is an inference: no plan or blueprint text states it, so the verdict needs owner sign-off.",
+      "source": ["BP-8.1", "PLAN-C0-17"]
+    },
+    {
+      "case_id": "T0-08-N38",
+      "polarity": "negative",
+      "topic": "version_rejection",
+      "title": "A future version 3 ref is rejected by the bind operation before the line is compared",
+      "input": {
+        "operation": "bind_triage_input",
+        "target": "triage_input@2",
+        "stored": {"kind": "prepared", "schema_version": "3", "base": "v2_min", "edits": []}
+      },
+      "expected": {"decision": "reject", "code": "unknown_version"},
+      "rationale": "The label check comes first. An unknown version never reaches the line check.",
+      "source": ["BP-4.1", "PLAN-C0-17"]
+    }
+  ]
+}

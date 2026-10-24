@@ -1,0 +1,334 @@
+{
+  "schema": "a2-golden-case-file@1",
+  "task_id": "T0-02",
+  "title": "Mail: multi-MIME, inline quote, duplicate Message-ID, ancestors and missing references",
+  "annotator": "claude-sonnet-5.5 worker, hand annotation on 2026-10-24 (hand-reading by a language model; no human review; no program produced any expected value)",
+  "independence_statement": "Message bodies are short synthetic texts written by the language model annotator. Contributed text, quoted text, ancestor lists and missing references were decided by a language model reading each body closely. No parser, grouping code or A2 code was run or imported.",
+  "provenance": {
+    "sources": [
+      "ADDED CASES P06 to P09, N07, N08 (independent follow-up for review finding M2): hand-written by a language model (Claude Sonnet 5.5 worker) from docs/notes/parser-mime-html.md (transfer decoding, attachment subtree, structural and transfer defects become generic limitations) and docs/notes/parser-qualification.md (MIME row). No program produced any value. T0-02-P08 is PROPOSED: the A1 note is silent on an empty MIME leaf and the value needs owner sign-off.",
+      "docs/notes/preparation-semantics.md: 'Grouping relationship conventions' (in_reply_to, outlook_conversation, missing parent, cycles)",
+      "docs/notes/parser-mime-html.md: part references 1, 1.1, 1.2; inline and attachment handling",
+      "docs/notes/parser-qualification.md: MIME row (quoted-printable alternatives, multipart relationships, base64 attachment)",
+      "docs/notes/mail-provisional-authority.md (mail authority context)",
+      "tests/outlook_mail_handoff_fixtures.py (A1 accepted mail fixture shapes, read only)",
+      "A2-LEVEL DECISION, NOT FROM A1 DOCS: the split of a reply body into contributed text and quoted text (P02, P03, N04) and the oldest-first ancestor order (P03) are task-level annotations. The cited A1 docs do not define them. They need owner sign-off like any A2 rule.",
+      "Scope and parent presence in P02, P03 and P04 follow docs/notes/preparation-semantics.md 'Grouping relationship conventions': a record carries exactly one source_scope, and an exact present parent with the same scope can confirm membership."
+    ]
+  },
+  "canary": "CANARY-PII-7731-ZQ",
+  "cases": [
+    {
+      "case_id": "T0-02-P01",
+      "polarity": "positive",
+      "title": "multipart/alternative: plain and HTML alternatives are extracted independently",
+      "input": {
+        "message_id": "<m1@mail.example.invalid>",
+        "from": "Alice Example <alice@example.invalid>",
+        "parts": [
+          {"ref": "1", "type": "multipart/alternative"},
+          {"ref": "1.1", "type": "text/plain", "text": "Please review the draft by Friday."},
+          {"ref": "1.2", "type": "text/html", "text": "<p>Please review the draft by Friday.</p>"}
+        ]
+      },
+      "expected": {
+        "extracted_part_refs": ["1.1", "1.2"],
+        "text_by_part": {
+          "1.1": "Please review the draft by Friday.",
+          "1.2": "Please review the draft by Friday."
+        },
+        "alternatives_equivalence_inferred": false,
+        "preferred_alternative_inferred": false,
+        "alternatives_limitation_present": true,
+        "ancestors": [],
+        "missing_references": []
+      },
+      "rationale": "docs/notes/parser-mime-html.md: 'MIME alternatives are extracted independently and carry a limitation stating that equivalence or preferred alternatives were not inferred.' This case does not decide how A2 merges the two texts. It fixes only the A1 behavior."
+    },
+    {
+      "case_id": "T0-02-P02",
+      "polarity": "positive",
+      "policy_status": "task_goal_decision",
+      "title": "Inline quote under a reply: only the new lines are contributed",
+      "input": {
+        "message_id": "<m2@mail.example.invalid>",
+        "source_scope": "scope-mail-account-A",
+        "in_reply_to": "<m1@mail.example.invalid>",
+        "references": ["<m1@mail.example.invalid>"],
+        "present_records": [
+          {"message_id": "<m1@mail.example.invalid>", "source_scope": "scope-mail-account-A"}
+        ],
+        "text": "I reviewed it. Section 2 is unclear.\n\nOn Mon, Alice Example wrote:\n> Please review the draft by Friday."
+      },
+      "expected": {
+        "contributed_text": "I reviewed it. Section 2 is unclear.",
+        "quoted_text": "Please review the draft by Friday.",
+        "attribution_line": "On Mon, Alice Example wrote:",
+        "ancestors": ["<m1@mail.example.invalid>"],
+        "missing_references": [],
+        "grouping_status": "confirmed",
+        "group_confirmed": true
+      },
+      "rationale": "Lines marked with '>' repeat message m1. The attribution line is neither contribution nor quote body."
+    },
+    {
+      "case_id": "T0-02-P03",
+      "polarity": "positive",
+      "policy_status": "task_goal_decision",
+      "title": "Interleaved inline quote: reply text between quoted lines is contributed",
+      "input": {
+        "message_id": "<m3@mail.example.invalid>",
+        "source_scope": "scope-mail-account-A",
+        "in_reply_to": "<m2@mail.example.invalid>",
+        "references": ["<m1@mail.example.invalid>", "<m2@mail.example.invalid>"],
+        "present_records": [
+          {"message_id": "<m1@mail.example.invalid>", "source_scope": "scope-mail-account-A"},
+          {"message_id": "<m2@mail.example.invalid>", "source_scope": "scope-mail-account-A", "in_reply_to": "<m1@mail.example.invalid>"}
+        ],
+        "text": "> I reviewed it.\nThanks.\n> Section 2 is unclear.\nI will rewrite section 2 today."
+      },
+      "expected": {
+        "contributed_text": "Thanks.\nI will rewrite section 2 today.",
+        "quoted_text": "I reviewed it.\nSection 2 is unclear.",
+        "ancestors": ["<m1@mail.example.invalid>", "<m2@mail.example.invalid>"],
+        "ancestor_order": "oldest first, as listed in References",
+        "missing_references": [],
+        "grouping_status": "confirmed",
+        "group_confirmed": true
+      }
+    },
+    {
+      "case_id": "T0-02-P04",
+      "polarity": "positive",
+      "title": "References names a message that is not in the catalog",
+      "input": {
+        "message_id": "<m4@mail.example.invalid>",
+        "source_scope": "scope-mail-account-A",
+        "in_reply_to": "<m0@mail.example.invalid>",
+        "references": ["<m0@mail.example.invalid>"],
+        "present_message_ids": ["<m4@mail.example.invalid>"],
+        "text": "Following up on the budget."
+      },
+      "expected": {
+        "contributed_text": "Following up on the budget.",
+        "ancestors": [],
+        "missing_references": ["<m0@mail.example.invalid>"],
+        "grouping_status": "uncertain",
+        "group_confirmed": false
+      },
+      "rationale": "Preparation semantics: a missing parent is uncertain. The parent is not guessed."
+    },
+    {
+      "case_id": "T0-02-P05",
+      "polarity": "positive",
+      "title": "Attachment part is separate from the body contribution",
+      "input": {
+        "message_id": "<m5@mail.example.invalid>",
+        "parts": [
+          {"ref": "1", "type": "multipart/mixed"},
+          {"ref": "1.1", "type": "text/plain", "text": "Report attached."},
+          {"ref": "1.2", "type": "application/pdf", "disposition": "attachment", "filename": "report.pdf"}
+        ]
+      },
+      "expected": {
+        "contributed_text": "Report attached.",
+        "attachment_parts": ["1.2"],
+        "attachment_text_merged_into_body": false
+      }
+    },
+    {
+      "case_id": "T0-02-P06",
+      "polarity": "positive",
+      "title": "Quoted-printable UTF-8 text part is transfer-decoded, including a soft line break",
+      "input": {
+        "message_id": "<m7@mail.example.invalid>",
+        "parts": [
+          {"ref": "1", "type": "text/plain", "charset": "utf-8", "transfer_encoding": "quoted-printable", "raw": "Review the caf=C3=A9 plan to=\nday."}
+        ]
+      },
+      "expected": {
+        "extracted_part_refs": ["1"],
+        "text_by_part": {"1": "Review the caf\u00e9 plan today."},
+        "raw_encoded_text_kept": false
+      },
+      "rationale": "docs/notes/parser-mime-html.md: readable text and HTML leaves are 'transfer-decoded and decoded with their declared character set'. docs/notes/parser-qualification.md MIME row names quoted-printable UTF-8. The decoded string was derived by hand: =C3=A9 is the UTF-8 pair for the letter e with acute accent, and '=' at the end of a line joins the lines."
+    },
+    {
+      "case_id": "T0-02-P07",
+      "polarity": "positive",
+      "title": "Base64 text part is transfer-decoded and the encoded form is not kept as text",
+      "input": {
+        "message_id": "<m8@mail.example.invalid>",
+        "parts": [
+          {"ref": "1", "type": "text/plain", "charset": "utf-8", "transfer_encoding": "base64", "raw": "SGVsbG8gV29ybGQh"}
+        ]
+      },
+      "expected": {
+        "extracted_part_refs": ["1"],
+        "text_by_part": {"1": "Hello World!"},
+        "raw_encoded_text_kept": false
+      },
+      "rationale": "Same A1 sentence as P06. The base64 text SGVsbG8gV29ybGQh decodes to Hello World! (decoded manually, 12 bytes in four groups of three)."
+    },
+    {
+      "case_id": "T0-02-P08",
+      "polarity": "positive",
+      "policy_status": "proposed_owner_signoff_needed",
+      "title": "Empty plain-text body gives an empty contribution, not an error and not invented text",
+      "input": {
+        "message_id": "<m9@mail.example.invalid>",
+        "source_scope": "scope-mail-account-A",
+        "parts": [
+          {"ref": "1", "type": "text/plain", "charset": "utf-8", "raw": ""}
+        ]
+      },
+      "expected": {
+        "contributed_text": "",
+        "message_record_kept": true,
+        "placeholder_text_invented": false,
+        "parse_failed": false
+      },
+      "rationale": "PROPOSED. The A1 MIME note names an empty-content limitation only for direct TEXT, HTML and JSON inputs, not for an empty MIME leaf. The A1 text is silent here. The value is the plain safe answer: keep the record, add no text."
+    },
+    {
+      "case_id": "T0-02-P09",
+      "polarity": "positive",
+      "title": "Attached message/rfc822: the inner message is metadata, not body text",
+      "input": {
+        "message_id": "<m10@mail.example.invalid>",
+        "parts": [
+          {"ref": "1", "type": "multipart/mixed"},
+          {"ref": "1.1", "type": "text/plain", "text": "See the forwarded message."},
+          {"ref": "1.2", "type": "message/rfc822", "disposition": "attachment"},
+          {"ref": "1.2.1", "type": "text/plain", "text": "Inner message text. CANARY-PII-7731-ZQ"}
+        ]
+      },
+      "expected": {
+        "contributed_text": "See the forwarded message.",
+        "attachment_parts": ["1.2"],
+        "metadata_only_parts": ["1.2", "1.2.1"],
+        "inner_text_in_body": false,
+        "canary_in_contributed_text": false
+      },
+      "rationale": "docs/notes/parser-mime-html.md: 'Attachment disposition applies to the complete subtree ... no readable descendant is emitted as message-body text. This includes attached message/rfc822 and multipart containers.' The ref 1.2.1 follows the nested numbering rule in the same note."
+    },
+    {
+      "case_id": "T0-02-N01",
+      "polarity": "negative",
+      "title": "Duplicate Message-ID with different bodies must not be merged or silently deduplicated",
+      "input": {
+        "records": [
+          {"version_ref": "mail-v1", "message_id": "<dup@mail.example.invalid>", "text": "Version one body."},
+          {"version_ref": "mail-v2", "message_id": "<dup@mail.example.invalid>", "text": "A different body with the same id."}
+        ]
+      },
+      "expected": {
+        "records_kept": 2,
+        "merged": false,
+        "message_id_treated_as_unique_key": false,
+        "grouping_status_for_both": "uncertain",
+        "reason": "ambiguous identity: one Message-ID, two distinct source versions"
+      },
+      "rationale": "Records are identified by exact VersionRef, not by Message-ID. A reply that points to <dup@...> has two possible parents, which is ambiguous, not confirmed."
+    },
+    {
+      "case_id": "T0-02-N02",
+      "polarity": "negative",
+      "title": "Reply pointing at an ambiguous duplicate parent is not confirmed",
+      "input": {
+        "message_id": "<child@mail.example.invalid>",
+        "in_reply_to": "<dup@mail.example.invalid>",
+        "candidate_parents": ["mail-v1", "mail-v2"]
+      },
+      "expected": {"grouping_status": "uncertain", "group_confirmed": false, "chosen_parent": null}
+    },
+    {
+      "case_id": "T0-02-N03",
+      "polarity": "negative",
+      "title": "Equal subjects never create a group",
+      "input": {
+        "records": [
+          {"version_ref": "mail-a", "message_id": "<a@mail.example.invalid>", "subject": "Budget"},
+          {"version_ref": "mail-b", "message_id": "<b@mail.example.invalid>", "subject": "Budget"}
+        ]
+      },
+      "expected": {"grouping_status_each": "none", "same_group": false},
+      "rationale": "Preparation semantics: grouping never reads subject text."
+    },
+    {
+      "case_id": "T0-02-N04",
+      "polarity": "negative",
+      "policy_status": "task_goal_decision",
+      "title": "Quoted text must not be counted as the author's contribution",
+      "input": {
+        "message_id": "<m6@mail.example.invalid>",
+        "text": "Sounds good.\n> Send the invoice to Bob Example <bob@example.invalid>. CANARY-PII-7731-ZQ"
+      },
+      "expected": {
+        "contributed_text": "Sounds good.",
+        "quoted_text": "Send the invoice to Bob Example <bob@example.invalid>. CANARY-PII-7731-ZQ",
+        "canary_in_contributed_text": false
+      }
+    },
+    {
+      "case_id": "T0-02-N05",
+      "polarity": "negative",
+      "title": "A parent cycle is invalid, not a group",
+      "input": {
+        "records": [
+          {"message_id": "<c1@mail.example.invalid>", "in_reply_to": "<c2@mail.example.invalid>"},
+          {"message_id": "<c2@mail.example.invalid>", "in_reply_to": "<c1@mail.example.invalid>"}
+        ]
+      },
+      "expected": {"grouping_status_each": "uncertain", "group_confirmed": false, "reason": "parent cycle"}
+    },
+    {
+      "case_id": "T0-02-N06",
+      "polarity": "negative",
+      "title": "Shared Outlook conversation ID alone is support only",
+      "input": {
+        "records": [
+          {"version_ref": "mail-x", "conversation_id": "conv-1"},
+          {"version_ref": "mail-y", "conversation_id": "conv-1"}
+        ]
+      },
+      "expected": {"grouping_status_each": "uncertain", "group_confirmed": false}
+    },
+    {
+      "case_id": "T0-02-N07",
+      "polarity": "negative",
+      "title": "Truncated multipart: the missing closing boundary becomes a generic limitation, never a crash or a leak",
+      "input": {
+        "message_id": "<m11@mail.example.invalid>",
+        "content_type": "multipart/mixed; boundary=\"BND1\"",
+        "raw": "--BND1\nContent-Type: text/plain\n\nFirst part. CANARY-PII-7731-ZQ\n--BND1\nContent-Type: text/pla"
+      },
+      "expected": {
+        "exception_raised": false,
+        "structural_limitation_present": true,
+        "limitation_detail_contains_body_text": false,
+        "limitation_detail_contains_canary": false,
+        "reported_as_clean_complete": false
+      },
+      "rationale": "docs/notes/parser-mime-html.md: 'Unsupported character sets, invalid bytes, transfer defects, and structural defects become generic limitations. Limitation details never include source bodies, URLs, or decoder exception text.' The case fixes no extracted part list, because the A1 note does not say which parts survive."
+    },
+    {
+      "case_id": "T0-02-N08",
+      "polarity": "negative",
+      "title": "Invalid base64 text is a transfer defect: generic limitation, no raw bytes in the detail",
+      "input": {
+        "message_id": "<m12@mail.example.invalid>",
+        "parts": [
+          {"ref": "1", "type": "text/plain", "charset": "utf-8", "transfer_encoding": "base64", "raw": "!!CANARY-PII-7731-ZQ!!"}
+        ]
+      },
+      "expected": {
+        "exception_raised": false,
+        "transfer_limitation_present": true,
+        "limitation_detail_contains_canary": false,
+        "reported_as_clean_complete": false
+      },
+      "rationale": "Same A1 sentence as N07 (transfer defects become generic limitations). The case does not fix the decoded text, which the A1 note does not state."
+    }
+  ]
+}

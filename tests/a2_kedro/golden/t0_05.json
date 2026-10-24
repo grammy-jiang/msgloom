@@ -1,0 +1,120 @@
+{
+  "schema": "a2-golden-case-file@1",
+  "task_id": "T0-05",
+  "title": "PDF, Word, Excel plus malformed, large and partial input: a parse error never looks complete",
+  "annotator": "claude-sonnet-5.5 worker, hand annotation on 2026-10-24 (hand-reading by a language model; no human review; no program produced any expected value)",
+  "independence_statement": "Document contents are described in words, not generated. Expected statuses follow the limitation vocabulary in the parser docs and the rule that a failure must be visible. Oracle status mapping: failed = the parser raised or the boundary rejected the input (for PDF: PdfParseError or a failure before extraction); unsupported = the parser returned output whose only content is an unsupported limitation for the whole input (legacy .doc); partial = the parser returned output with a content-loss limitation (scanned, partial or unsupported part) while other content may remain; complete = the parser returned content with no content-loss limitation. Disclosure-only limitations that every successful parse carries (PDF reading order, word-feature-coverage) do not count as content loss. No parser, fixture builder or A2 code was run or imported. Status words are the oracle vocabulary: complete, partial, unsupported, failed.",
+  "provenance": {
+    "sources": [
+      "docs/notes/parser-pdf.md: SCANNED, image-content partial and empty-page limitations; 'Lifecycle and failures': password-protected input, malformed documents and extraction failures raise PdfParseError; a wrong signature or wrong detected format fails before extraction; the forced output-limit failure; every successful result records disclosure-only reading-order, layout and table limitations",
+      "docs/notes/parser-word.md: legacy-doc-unsupported limitation; unsupported-relationships and embedded-object limitations; a successful DOCX parse always includes word-feature-coverage; non-ZIP and malformed packages are rejected",
+      "docs/notes/parser-excel.md: ENCRYPTED limitation, metadata-pass failure is partial, non-worksheet sheets unsupported, ZIP member and byte limits fail closed",
+      "docs/notes/parser-qualification.md; docs/notes/parser-isolation.md (opaque parser failures, strict rejection of malformed output)",
+      "msgloom/preparation/contracts.py: LimitationKind (missing, unsupported, partial, encrypted, scanned)"
+    ]
+  },
+  "canary": "CANARY-PII-7731-ZQ",
+  "cases": [
+    {
+      "case_id": "T0-05-P01",
+      "polarity": "positive",
+      "title": "Text PDF with two normal pages is complete",
+      "input": {"format": "pdf", "description": "Two pages. Page 1: 'Quarterly summary'. Page 2: 'Totals follow'. No images, no encryption."},
+      "expected": {"status": "complete", "pages": 2, "text_present": ["Quarterly summary", "Totals follow"], "content_loss_limitations": []}
+    },
+    {
+      "case_id": "T0-05-P02",
+      "polarity": "positive",
+      "title": "Simple DOCX with two paragraphs is complete",
+      "input": {"format": "docx", "description": "Heading 'Notes' and two paragraphs. No tables, no comments."},
+      "expected": {"status": "complete", "text_present": ["Notes"], "content_loss_limitations": []}
+    },
+    {
+      "case_id": "T0-05-P03",
+      "polarity": "positive",
+      "title": "Simple XLSX with one worksheet is complete",
+      "input": {"format": "xlsx", "description": "One worksheet 'Sheet1', cells A1='Item', B1='Count', A2='Pens', B2=3. No formulas, no hidden sheets."},
+      "expected": {"status": "complete", "cells_present": {"A1": "Item", "B1": "Count", "A2": "Pens", "B2": "3"}, "content_loss_limitations": []}
+    },
+    {
+      "case_id": "T0-05-P04",
+      "polarity": "positive",
+      "title": "Scanned PDF page is reported partial with a scanned limitation",
+      "input": {"format": "pdf", "description": "One page that is only an image. No text layer."},
+      "expected": {"status": "partial", "limitations": ["scanned"], "ocr_attempted": false}
+    },
+    {
+      "case_id": "T0-05-P05",
+      "polarity": "positive",
+      "title": "Legacy .doc is unsupported, not empty-complete",
+      "input": {"format": "doc", "description": "Binary Word 97 file."},
+      "expected": {"status": "unsupported", "limitations": ["unsupported"], "text_present": []}
+    },
+    {
+      "case_id": "T0-05-P06",
+      "polarity": "positive",
+      "title": "Encrypted PDF fails: password-protected input raises PdfParseError",
+      "input": {"format": "pdf", "description": "Password protected, user password required."},
+      "expected": {"status": "failed", "status_is_complete": false, "error_visible": true, "a1_error_class": "PdfParseError", "text_present": []},
+      "rationale": "parser-pdf.md: 'Password-protected input ... raise PdfParseError.' The PDF lane has no ENCRYPTED limitation path. Only the Excel lane returns an ENCRYPTED limitation."
+    },
+    {
+      "case_id": "T0-05-P07",
+      "polarity": "positive",
+      "title": "Excel with a chart sheet is partial",
+      "input": {"format": "xlsx", "description": "One worksheet with data and one chart sheet."},
+      "expected": {"status": "partial", "limitations": ["unsupported"], "limitation_subject": "non-worksheet sheet", "worksheet_cells_still_present": true}
+    },
+    {
+      "case_id": "T0-05-N01",
+      "polarity": "negative",
+      "title": "Malformed PDF must not be complete",
+      "input": {"format": "pdf", "description": "File starts with the PDF header but the xref table and trailer are truncated."},
+      "expected": {"status": "failed", "status_is_complete": false, "text_present": [], "error_visible": true}
+    },
+    {
+      "case_id": "T0-05-N02",
+      "polarity": "negative",
+      "title": "Corrupt DOCX (bad ZIP) must not be complete",
+      "input": {"format": "docx", "description": "Bytes with a ZIP signature but a damaged central directory."},
+      "expected": {"status": "failed", "status_is_complete": false, "error_visible": true}
+    },
+    {
+      "case_id": "T0-05-N03",
+      "polarity": "negative",
+      "title": "Excel ZIP bomb exceeds declared byte limit and fails closed",
+      "input": {"format": "xlsx", "description": "Tiny file that declares a very large decompressed size."},
+      "expected": {"status": "failed", "status_is_complete": false, "partial_content_published_as_full": false}
+    },
+    {
+      "case_id": "T0-05-N04",
+      "polarity": "negative",
+      "title": "Very large document that hits the output limit fails and is not complete",
+      "input": {"format": "pdf", "description": "Synthetic 5000-page text document; the configured output limit stops extraction after the early pages.", "page_count_declared": 5000},
+      "expected": {"status": "failed", "status_is_complete": false, "error_visible": true, "partial_content_published_as_full": false},
+      "rationale": "parser-pdf.md: tests exercise cleanup after 'a forced output-limit failure', and returned text is bounded by output_bytes. The limit is a failure, not a partial result. Page count above container_members also fails."
+    },
+    {
+      "case_id": "T0-05-N05",
+      "polarity": "negative",
+      "title": "Parser crash in the isolated worker is not an empty complete result",
+      "input": {"format": "docx", "description": "Worker process exits without output."},
+      "expected": {"status": "failed", "status_is_complete": false, "empty_text_reported_as_complete": false}
+    },
+    {
+      "case_id": "T0-05-N06",
+      "polarity": "negative",
+      "title": "Extension and content disagree: wrong format is not accepted as complete",
+      "input": {"format": "pdf", "description": "File named 'report.pdf' whose bytes are a plain text note containing CANARY-PII-7731-ZQ."},
+      "expected": {"status": "failed", "status_is_complete": false, "error_visible": true, "reason": "detected format differs from declared format"},
+      "rationale": "parser-pdf.md: 'A wrong signature, wrong detected format ... fails before extraction.'"
+    },
+    {
+      "case_id": "T0-05-N07",
+      "polarity": "negative",
+      "title": "Word with unsupported relationships is partial, not complete",
+      "input": {"format": "docx", "description": "Body text plus an embedded OLE object relationship."},
+      "expected": {"status": "partial", "status_is_complete": false, "limitations": ["unsupported"]}
+    }
+  ]
+}

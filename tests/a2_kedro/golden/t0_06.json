@@ -1,0 +1,986 @@
+{
+  "schema": "a2-golden-case-file@1",
+  "task_id": "T0-06",
+  "title": "Every frozen item has exactly one accepted terminal: prepared@2 or a held record, never missing and never overlapping",
+  "annotator": "claude-sonnet-5.5 worker, hand annotation on 2026-10-25 (hand-reading by a language model; no human review; no program produced any expected value)",
+  "independence_statement": "Each case is a small hand-built scope with a hand-chosen durable store and a hand-written receipt claim. The coverage labels, problem codes and finalize ceiling follow the written blueprint rules: one accepted terminal per frozen occurrence, one accepted transition batch, a frozen intake-held entry that A2 never writes back, and any held or partial result forces INCOMPLETE. No msgloom store, finalizer, receipt model or A2 code was run or imported. The reference checker in the test file only validates the hand-written answers.",
+  "provenance": {
+    "sources": [
+      "A2 Kedro v2 architecture blueprint of 2026-10-23, section 3.1: the selected occurrence identity is the workset selection index plus the per-entry ordinal; the deduplicated selection refs cannot stand in for occurrences",
+      "same blueprint, section 3.2 step 6: missing evidence, an ordinal mismatch or an ambiguous association creates a durable A2-held disposition, not a prepared result",
+      "same blueprint, section 3.3: a historical baseline has its own ordered roots, no release entry ref may be invented, and baseline and incremental scopes are not mixed",
+      "same blueprint, section 4 table: prepared@2 is the new prepared result; prepared_transitions@2 is one ordered complete transition batch with no invented message; a2_input_disposition@1 names the exact workset selection occurrence or baseline and has no invented content",
+      "same blueprint, section 4.2: every frozen occurrence needs exactly one persisted accepted terminal, either prepared@2 (COMPLETE or INCOMPLETE with a limitation) or a2_input_disposition@1; a non-empty transition list needs exactly one accepted prepared_transitions@2 batch; context-only and transition-only items need no prepared body; the frozen intake-held list is never written back by A2; COMPLETE needs no intake-held, no A2-held and no partial result",
+      "same blueprint, section 4.3 and section 6: the finalizer verifies stored accepted results, not a caller-provided structure; a missing or forged ref cannot become a success",
+      "A2 Kedro v2 execution plan of 2026-10-23, tasks C0-09, C0-10 and T0-06: held-only, context-only and transition-only items need no body; one result per frozen occurrence; each item has either an accepted prepared@2 or a held record, never missing and never overlapping"
+    ]
+  },
+  "model": {
+    "scope_items": "occurrence = one ordered frozen selection (two occurrences may share one source_ref); baseline = one approved historical root; transition = one ordered transition fact; intake_held = one entry of the frozen intake-held list",
+    "store": "the durable accepted records: prepared@2 (covers exactly one item), a2_input_disposition@1 (covers exactly one item, origin a2_held), prepared_transitions@2 (covers the whole ordered transition list); accepted=false means the record was never committed",
+    "receipt": "the caller claim: one row per item with a disposition (prepared, a2_held, transition_batch, intake_held) and a ref. The intake_held row has a null ref because the frozen workset entry is the record",
+    "coverage": "prepared, a2_held, transition_batch, intake_held = exactly one valid terminal of that kind; missing = no valid terminal; overlap = more than one valid terminal",
+    "problem_codes": "missing, overlap, unlisted_terminal, duplicate_held, duplicate_prepared, duplicate_batch, fabricated_ref, unaccepted_ref, kind_mismatch, wrong_cover, wrong_origin, wrong_disposition, batch_mismatch, rewrote_intake_held, unknown_item",
+    "ceiling": "NOT_FINALIZABLE when any problem exists; else INCOMPLETE_ONLY when any held record or non-COMPLETE accepted result exists; else COMPLETE_ALLOWED"
+  },
+  "cases": [
+    {
+      "case_id": "T0-06-P01",
+      "polarity": "positive",
+      "title": "Three occurrences each have an accepted COMPLETE prepared@2",
+      "rationale": "Blueprint 4.2: one accepted terminal per frozen occurrence. The scope is closed and COMPLETE is allowed.",
+      "input": {
+        "workset": {
+          "workset_id": "ws-example-1",
+          "selections": [
+            {"item": "occ-0", "role": "primary", "source_ref": "src-example-1"},
+            {"item": "occ-1", "role": "component", "source_ref": "src-example-2"},
+            {"item": "occ-2", "role": "primary", "source_ref": "src-example-3"}
+          ],
+          "baseline_roots": [],
+          "transitions": [],
+          "intake_held": []
+        },
+        "store": [
+          {"ref": "res-p-0", "kind": "prepared@2", "accepted": true, "status": "COMPLETE", "covers": ["occ-0"]},
+          {"ref": "res-p-1", "kind": "prepared@2", "accepted": true, "status": "COMPLETE", "covers": ["occ-1"]},
+          {"ref": "res-p-2", "kind": "prepared@2", "accepted": true, "status": "COMPLETE", "covers": ["occ-2"]}
+        ],
+        "receipt": [
+          {"item": "occ-0", "disposition": "prepared", "ref": "res-p-0"},
+          {"item": "occ-1", "disposition": "prepared", "ref": "res-p-1"},
+          {"item": "occ-2", "disposition": "prepared", "ref": "res-p-2"}
+        ]
+      },
+      "expected": {
+        "coverage": {"occ-0": "prepared", "occ-1": "prepared", "occ-2": "prepared"},
+        "problems": [],
+        "ceiling": "COMPLETE_ALLOWED"
+      }
+    },
+    {
+      "case_id": "T0-06-P02",
+      "polarity": "positive",
+      "title": "A prepared@2 with a limitation is a valid terminal but only INCOMPLETE is allowed",
+      "rationale": "Blueprint 4.2: prepared@2 may be INCOMPLETE with an explicit limitation. It covers the item. Any partial result forbids COMPLETE.",
+      "input": {
+        "workset": {
+          "workset_id": "ws-example-2",
+          "selections": [
+            {"item": "occ-0", "role": "primary", "source_ref": "src-example-1"},
+            {"item": "occ-1", "role": "primary", "source_ref": "src-example-2"}
+          ],
+          "baseline_roots": [],
+          "transitions": [],
+          "intake_held": []
+        },
+        "store": [
+          {"ref": "res-p-0", "kind": "prepared@2", "accepted": true, "status": "INCOMPLETE", "covers": ["occ-0"]},
+          {"ref": "res-p-1", "kind": "prepared@2", "accepted": true, "status": "COMPLETE", "covers": ["occ-1"]}
+        ],
+        "receipt": [
+          {"item": "occ-0", "disposition": "prepared", "ref": "res-p-0"},
+          {"item": "occ-1", "disposition": "prepared", "ref": "res-p-1"}
+        ]
+      },
+      "expected": {
+        "coverage": {"occ-0": "prepared", "occ-1": "prepared"},
+        "problems": [],
+        "ceiling": "INCOMPLETE_ONLY"
+      }
+    },
+    {
+      "case_id": "T0-06-P03",
+      "polarity": "positive",
+      "title": "One occurrence is A2-held: a durable disposition covers it and COMPLETE is not allowed",
+      "rationale": "Blueprint 3.2 step 6 and 4.2: lost evidence gives an a2_input_disposition@1 instead of a prepared result. That is the one accepted terminal of the item. Any A2-held item forces INCOMPLETE.",
+      "input": {
+        "workset": {
+          "workset_id": "ws-example-3",
+          "selections": [
+            {"item": "occ-0", "role": "primary", "source_ref": "src-example-1"},
+            {"item": "occ-1", "role": "primary", "source_ref": "src-example-2"},
+            {"item": "occ-2", "role": "component", "source_ref": "src-example-3"}
+          ],
+          "baseline_roots": [],
+          "transitions": [],
+          "intake_held": []
+        },
+        "store": [
+          {"ref": "res-p-0", "kind": "prepared@2", "accepted": true, "status": "COMPLETE", "covers": ["occ-0"]},
+          {"ref": "res-h-1", "kind": "a2_input_disposition@1", "accepted": true, "status": "INCOMPLETE", "origin": "a2_held", "covers": ["occ-1"]},
+          {"ref": "res-p-2", "kind": "prepared@2", "accepted": true, "status": "COMPLETE", "covers": ["occ-2"]}
+        ],
+        "receipt": [
+          {"item": "occ-0", "disposition": "prepared", "ref": "res-p-0"},
+          {"item": "occ-1", "disposition": "a2_held", "ref": "res-h-1"},
+          {"item": "occ-2", "disposition": "prepared", "ref": "res-p-2"}
+        ]
+      },
+      "expected": {
+        "coverage": {"occ-0": "prepared", "occ-1": "a2_held", "occ-2": "prepared"},
+        "problems": [],
+        "ceiling": "INCOMPLETE_ONLY"
+      }
+    },
+    {
+      "case_id": "T0-06-P04",
+      "polarity": "positive",
+      "title": "A2-held and intake-held come from different origins and are labelled differently",
+      "rationale": "Blueprint 4.2: the frozen intake-held list is the record and A2 does not write it back. It needs no store record. The A2-held item has an A2-owned disposition. The two labels are never mixed.",
+      "input": {
+        "workset": {
+          "workset_id": "ws-example-4",
+          "selections": [
+            {"item": "occ-0", "role": "primary", "source_ref": "src-example-1"},
+            {"item": "occ-1", "role": "primary", "source_ref": "src-example-2"}
+          ],
+          "baseline_roots": [],
+          "transitions": [],
+          "intake_held": [{"item": "ih-0"}]
+        },
+        "store": [
+          {"ref": "res-p-0", "kind": "prepared@2", "accepted": true, "status": "COMPLETE", "covers": ["occ-0"]},
+          {"ref": "res-h-1", "kind": "a2_input_disposition@1", "accepted": true, "status": "INCOMPLETE", "origin": "a2_held", "covers": ["occ-1"]}
+        ],
+        "receipt": [
+          {"item": "occ-0", "disposition": "prepared", "ref": "res-p-0"},
+          {"item": "occ-1", "disposition": "a2_held", "ref": "res-h-1"},
+          {"item": "ih-0", "disposition": "intake_held", "ref": null}
+        ]
+      },
+      "expected": {
+        "coverage": {"occ-0": "prepared", "occ-1": "a2_held", "ih-0": "intake_held"},
+        "problems": [],
+        "ceiling": "INCOMPLETE_ONLY"
+      }
+    },
+    {
+      "case_id": "T0-06-P05",
+      "polarity": "positive",
+      "title": "An intake-held entry next to a fully COMPLETE selected output still forces INCOMPLETE",
+      "rationale": "Blueprint 4.2 states that the old behavior may ignore the frozen intake-held list when selected output exists, and that the new rule forces INCOMPLETE. The intake-held item is covered by the frozen entry alone.",
+      "input": {
+        "workset": {
+          "workset_id": "ws-example-5",
+          "selections": [{"item": "occ-0", "role": "primary", "source_ref": "src-example-1"}],
+          "baseline_roots": [],
+          "transitions": [],
+          "intake_held": [{"item": "ih-0"}]
+        },
+        "store": [
+          {"ref": "res-p-0", "kind": "prepared@2", "accepted": true, "status": "COMPLETE", "covers": ["occ-0"]}
+        ],
+        "receipt": [
+          {"item": "occ-0", "disposition": "prepared", "ref": "res-p-0"},
+          {"item": "ih-0", "disposition": "intake_held", "ref": null}
+        ]
+      },
+      "expected": {
+        "coverage": {"occ-0": "prepared", "ih-0": "intake_held"},
+        "problems": [],
+        "ceiling": "INCOMPLETE_ONLY"
+      }
+    },
+    {
+      "case_id": "T0-06-P06",
+      "polarity": "positive",
+      "title": "Held-only workset: two intake-held entries, no selection, no store record",
+      "rationale": "Blueprint 4.2 and 3.3: held-only needs no body and is terminal INCOMPLETE. It must not be COMPLETE.",
+      "input": {
+        "workset": {
+          "workset_id": "ws-example-6",
+          "selections": [],
+          "baseline_roots": [],
+          "transitions": [],
+          "intake_held": [{"item": "ih-0"}, {"item": "ih-1"}]
+        },
+        "store": [],
+        "receipt": [
+          {"item": "ih-0", "disposition": "intake_held", "ref": null},
+          {"item": "ih-1", "disposition": "intake_held", "ref": null}
+        ]
+      },
+      "expected": {
+        "coverage": {"ih-0": "intake_held", "ih-1": "intake_held"},
+        "problems": [],
+        "ceiling": "INCOMPLETE_ONLY"
+      }
+    },
+    {
+      "case_id": "T0-06-P07",
+      "polarity": "positive",
+      "title": "Transition-only workset: one accepted ordered batch covers both transitions and no prepared body exists",
+      "rationale": "Blueprint 4.2: a non-empty transition list needs exactly one accepted prepared_transitions@2 batch with the complete ordered facts. Transition-only needs no prepared body.",
+      "input": {
+        "workset": {
+          "workset_id": "ws-example-7",
+          "selections": [],
+          "baseline_roots": [],
+          "transitions": [
+            {"item": "trn-0", "fact_id": "fact-example-t0"},
+            {"item": "trn-1", "fact_id": "fact-example-t1"}
+          ],
+          "intake_held": []
+        },
+        "store": [
+          {"ref": "res-t-0", "kind": "prepared_transitions@2", "accepted": true, "status": "COMPLETE", "covers": ["trn-0", "trn-1"]}
+        ],
+        "receipt": [
+          {"item": "trn-0", "disposition": "transition_batch", "ref": "res-t-0"},
+          {"item": "trn-1", "disposition": "transition_batch", "ref": "res-t-0"}
+        ]
+      },
+      "expected": {
+        "coverage": {"trn-0": "transition_batch", "trn-1": "transition_batch"},
+        "problems": [],
+        "ceiling": "COMPLETE_ALLOWED"
+      }
+    },
+    {
+      "case_id": "T0-06-P08",
+      "polarity": "positive",
+      "title": "All four item kinds together: prepared, A2-held, transition batch and intake-held",
+      "rationale": "Blueprint 4.2: each kind has its own terminal rule. The held items force INCOMPLETE.",
+      "input": {
+        "workset": {
+          "workset_id": "ws-example-8",
+          "selections": [
+            {"item": "occ-0", "role": "primary", "source_ref": "src-example-1"},
+            {"item": "occ-1", "role": "component", "source_ref": "src-example-2"}
+          ],
+          "baseline_roots": [],
+          "transitions": [
+            {"item": "trn-0", "fact_id": "fact-example-t0"},
+            {"item": "trn-1", "fact_id": "fact-example-t1"}
+          ],
+          "intake_held": [{"item": "ih-0"}]
+        },
+        "store": [
+          {"ref": "res-p-0", "kind": "prepared@2", "accepted": true, "status": "COMPLETE", "covers": ["occ-0"]},
+          {"ref": "res-h-1", "kind": "a2_input_disposition@1", "accepted": true, "status": "INCOMPLETE", "origin": "a2_held", "covers": ["occ-1"]},
+          {"ref": "res-t-0", "kind": "prepared_transitions@2", "accepted": true, "status": "COMPLETE", "covers": ["trn-0", "trn-1"]}
+        ],
+        "receipt": [
+          {"item": "occ-0", "disposition": "prepared", "ref": "res-p-0"},
+          {"item": "occ-1", "disposition": "a2_held", "ref": "res-h-1"},
+          {"item": "trn-0", "disposition": "transition_batch", "ref": "res-t-0"},
+          {"item": "trn-1", "disposition": "transition_batch", "ref": "res-t-0"},
+          {"item": "ih-0", "disposition": "intake_held", "ref": null}
+        ]
+      },
+      "expected": {
+        "coverage": {"occ-0": "prepared", "occ-1": "a2_held", "trn-0": "transition_batch", "trn-1": "transition_batch", "ih-0": "intake_held"},
+        "problems": [],
+        "ceiling": "INCOMPLETE_ONLY"
+      }
+    },
+    {
+      "case_id": "T0-06-P09",
+      "polarity": "positive",
+      "title": "Historical baseline: one root has prepared@2 and the other is A2-held",
+      "rationale": "Blueprint 3.3 and 4.2: a baseline scope has no selections. Each ordered baseline root needs one accepted terminal, with the same two terminal kinds as an incremental occurrence.",
+      "input": {
+        "workset": {
+          "workset_id": "ws-example-9",
+          "selections": [],
+          "baseline_roots": [
+            {"item": "base-0", "source_ref": "src-example-1"},
+            {"item": "base-1", "source_ref": "src-example-2"}
+          ],
+          "transitions": [],
+          "intake_held": []
+        },
+        "store": [
+          {"ref": "res-p-0", "kind": "prepared@2", "accepted": true, "status": "COMPLETE", "covers": ["base-0"]},
+          {"ref": "res-h-1", "kind": "a2_input_disposition@1", "accepted": true, "status": "INCOMPLETE", "origin": "a2_held", "covers": ["base-1"]}
+        ],
+        "receipt": [
+          {"item": "base-0", "disposition": "prepared", "ref": "res-p-0"},
+          {"item": "base-1", "disposition": "a2_held", "ref": "res-h-1"}
+        ]
+      },
+      "expected": {
+        "coverage": {"base-0": "prepared", "base-1": "a2_held"},
+        "problems": [],
+        "ceiling": "INCOMPLETE_ONLY"
+      }
+    },
+    {
+      "case_id": "T0-06-P10",
+      "polarity": "positive",
+      "title": "Two occurrences share one source ref and each has its own prepared@2",
+      "rationale": "Blueprint 3.1 and 4.2: the occurrence is the unit, not the deduplicated source ref. Two occurrences need two terminals.",
+      "input": {
+        "workset": {
+          "workset_id": "ws-example-10",
+          "selections": [
+            {"item": "occ-0", "role": "primary", "source_ref": "src-example-1"},
+            {"item": "occ-1", "role": "primary", "source_ref": "src-example-1"}
+          ],
+          "baseline_roots": [],
+          "transitions": [],
+          "intake_held": []
+        },
+        "store": [
+          {"ref": "res-p-0", "kind": "prepared@2", "accepted": true, "status": "COMPLETE", "covers": ["occ-0"]},
+          {"ref": "res-p-1", "kind": "prepared@2", "accepted": true, "status": "COMPLETE", "covers": ["occ-1"]}
+        ],
+        "receipt": [
+          {"item": "occ-0", "disposition": "prepared", "ref": "res-p-0"},
+          {"item": "occ-1", "disposition": "prepared", "ref": "res-p-1"}
+        ]
+      },
+      "expected": {
+        "coverage": {"occ-0": "prepared", "occ-1": "prepared"},
+        "problems": [],
+        "ceiling": "COMPLETE_ALLOWED"
+      }
+    },
+    {
+      "case_id": "T0-06-P11",
+      "polarity": "positive",
+      "title": "Empty scope: nothing is frozen, so nothing can be missing or overlapping",
+      "rationale": "Vacuous reading of blueprint 4.2: no root, no transition and no held item. The coverage check finds no problem. The blueprint does not say whether such a workset exists. See the note.",
+      "input": {
+        "workset": {
+          "workset_id": "ws-example-11",
+          "selections": [],
+          "baseline_roots": [],
+          "transitions": [],
+          "intake_held": []
+        },
+        "store": [],
+        "receipt": []
+      },
+      "expected": {
+        "coverage": {},
+        "problems": [],
+        "ceiling": "COMPLETE_ALLOWED"
+      }
+    },
+    {
+      "case_id": "T0-06-N01",
+      "polarity": "negative",
+      "title": "Item missing from both sets: no prepared@2 and no held record for occ-1",
+      "rationale": "Blueprint 4.2: every frozen occurrence needs one accepted terminal. The workset cannot be finalized.",
+      "input": {
+        "workset": {
+          "workset_id": "ws-example-12",
+          "selections": [
+            {"item": "occ-0", "role": "primary", "source_ref": "src-example-1"},
+            {"item": "occ-1", "role": "primary", "source_ref": "src-example-2"},
+            {"item": "occ-2", "role": "primary", "source_ref": "src-example-3"}
+          ],
+          "baseline_roots": [],
+          "transitions": [],
+          "intake_held": []
+        },
+        "store": [
+          {"ref": "res-p-0", "kind": "prepared@2", "accepted": true, "status": "COMPLETE", "covers": ["occ-0"]},
+          {"ref": "res-p-2", "kind": "prepared@2", "accepted": true, "status": "COMPLETE", "covers": ["occ-2"]}
+        ],
+        "receipt": [
+          {"item": "occ-0", "disposition": "prepared", "ref": "res-p-0"},
+          {"item": "occ-2", "disposition": "prepared", "ref": "res-p-2"}
+        ]
+      },
+      "expected": {
+        "coverage": {"occ-0": "prepared", "occ-1": "missing", "occ-2": "prepared"},
+        "problems": [{"subject": "occ-1", "code": "missing"}],
+        "ceiling": "NOT_FINALIZABLE"
+      }
+    },
+    {
+      "case_id": "T0-06-N02",
+      "polarity": "negative",
+      "title": "Overlap: the receipt gives occ-0 both a prepared@2 and an A2-held disposition",
+      "rationale": "Blueprint 4.2 says exactly one terminal. Two terminals of different kinds on one item are an overlap.",
+      "input": {
+        "workset": {
+          "workset_id": "ws-example-13",
+          "selections": [
+            {"item": "occ-0", "role": "primary", "source_ref": "src-example-1"},
+            {"item": "occ-1", "role": "primary", "source_ref": "src-example-2"}
+          ],
+          "baseline_roots": [],
+          "transitions": [],
+          "intake_held": []
+        },
+        "store": [
+          {"ref": "res-p-0", "kind": "prepared@2", "accepted": true, "status": "COMPLETE", "covers": ["occ-0"]},
+          {"ref": "res-h-0", "kind": "a2_input_disposition@1", "accepted": true, "status": "INCOMPLETE", "origin": "a2_held", "covers": ["occ-0"]},
+          {"ref": "res-p-1", "kind": "prepared@2", "accepted": true, "status": "COMPLETE", "covers": ["occ-1"]}
+        ],
+        "receipt": [
+          {"item": "occ-0", "disposition": "prepared", "ref": "res-p-0"},
+          {"item": "occ-0", "disposition": "a2_held", "ref": "res-h-0"},
+          {"item": "occ-1", "disposition": "prepared", "ref": "res-p-1"}
+        ]
+      },
+      "expected": {
+        "coverage": {"occ-0": "overlap", "occ-1": "prepared"},
+        "problems": [{"subject": "occ-0", "code": "overlap"}],
+        "ceiling": "NOT_FINALIZABLE"
+      }
+    },
+    {
+      "case_id": "T0-06-N03",
+      "polarity": "negative",
+      "title": "Hidden overlap: the store holds both terminals for occ-0 but the receipt lists only the prepared@2",
+      "rationale": "Blueprint 4.3: the finalizer reads stored accepted results and not only the caller structure. An accepted disposition that the receipt omits still overlaps the prepared@2.",
+      "input": {
+        "workset": {
+          "workset_id": "ws-example-14",
+          "selections": [{"item": "occ-0", "role": "primary", "source_ref": "src-example-1"}],
+          "baseline_roots": [],
+          "transitions": [],
+          "intake_held": []
+        },
+        "store": [
+          {"ref": "res-p-0", "kind": "prepared@2", "accepted": true, "status": "COMPLETE", "covers": ["occ-0"]},
+          {"ref": "res-h-0", "kind": "a2_input_disposition@1", "accepted": true, "status": "INCOMPLETE", "origin": "a2_held", "covers": ["occ-0"]}
+        ],
+        "receipt": [
+          {"item": "occ-0", "disposition": "prepared", "ref": "res-p-0"}
+        ]
+      },
+      "expected": {
+        "coverage": {"occ-0": "overlap"},
+        "problems": [{"subject": "occ-0", "code": "unlisted_terminal"}],
+        "ceiling": "NOT_FINALIZABLE"
+      }
+    },
+    {
+      "case_id": "T0-06-N04",
+      "polarity": "negative",
+      "title": "Duplicate held records: two accepted A2 dispositions cover occ-0",
+      "rationale": "Blueprint 4.2 says exactly one terminal. A second disposition of the same kind is a duplicate, not extra safety.",
+      "input": {
+        "workset": {
+          "workset_id": "ws-example-15",
+          "selections": [{"item": "occ-0", "role": "primary", "source_ref": "src-example-1"}],
+          "baseline_roots": [],
+          "transitions": [],
+          "intake_held": []
+        },
+        "store": [
+          {"ref": "res-h-0", "kind": "a2_input_disposition@1", "accepted": true, "status": "INCOMPLETE", "origin": "a2_held", "covers": ["occ-0"]},
+          {"ref": "res-h-1", "kind": "a2_input_disposition@1", "accepted": true, "status": "INCOMPLETE", "origin": "a2_held", "covers": ["occ-0"]}
+        ],
+        "receipt": [
+          {"item": "occ-0", "disposition": "a2_held", "ref": "res-h-0"},
+          {"item": "occ-0", "disposition": "a2_held", "ref": "res-h-1"}
+        ]
+      },
+      "expected": {
+        "coverage": {"occ-0": "overlap"},
+        "problems": [{"subject": "occ-0", "code": "duplicate_held"}],
+        "ceiling": "NOT_FINALIZABLE"
+      }
+    },
+    {
+      "case_id": "T0-06-N05",
+      "polarity": "negative",
+      "title": "Duplicate prepared: two accepted prepared@2 records cover occ-0",
+      "rationale": "Blueprint 4.2 says exactly one terminal per occurrence.",
+      "input": {
+        "workset": {
+          "workset_id": "ws-example-16",
+          "selections": [{"item": "occ-0", "role": "primary", "source_ref": "src-example-1"}],
+          "baseline_roots": [],
+          "transitions": [],
+          "intake_held": []
+        },
+        "store": [
+          {"ref": "res-p-0", "kind": "prepared@2", "accepted": true, "status": "COMPLETE", "covers": ["occ-0"]},
+          {"ref": "res-p-1", "kind": "prepared@2", "accepted": true, "status": "COMPLETE", "covers": ["occ-0"]}
+        ],
+        "receipt": [
+          {"item": "occ-0", "disposition": "prepared", "ref": "res-p-0"},
+          {"item": "occ-0", "disposition": "prepared", "ref": "res-p-1"}
+        ]
+      },
+      "expected": {
+        "coverage": {"occ-0": "overlap"},
+        "problems": [{"subject": "occ-0", "code": "duplicate_prepared"}],
+        "ceiling": "NOT_FINALIZABLE"
+      }
+    },
+    {
+      "case_id": "T0-06-N06",
+      "polarity": "negative",
+      "title": "Transition-only workset with no accepted result at all: both transitions are missing",
+      "rationale": "Blueprint 4.2: transition-only needs no prepared body but still needs one accepted prepared_transitions@2 batch. With no batch, nothing covers the transitions.",
+      "input": {
+        "workset": {
+          "workset_id": "ws-example-17",
+          "selections": [],
+          "baseline_roots": [],
+          "transitions": [
+            {"item": "trn-0", "fact_id": "fact-example-t0"},
+            {"item": "trn-1", "fact_id": "fact-example-t1"}
+          ],
+          "intake_held": []
+        },
+        "store": [],
+        "receipt": []
+      },
+      "expected": {
+        "coverage": {"trn-0": "missing", "trn-1": "missing"},
+        "problems": [
+          {"subject": "trn-0", "code": "missing"},
+          {"subject": "trn-1", "code": "missing"}
+        ],
+        "ceiling": "NOT_FINALIZABLE"
+      }
+    },
+    {
+      "case_id": "T0-06-N07",
+      "polarity": "negative",
+      "title": "Transition batch exists but was never accepted: it covers nothing",
+      "rationale": "Blueprint 4.2 needs an accepted batch. A record with accepted=false is not an accepted terminal.",
+      "input": {
+        "workset": {
+          "workset_id": "ws-example-18",
+          "selections": [],
+          "baseline_roots": [],
+          "transitions": [
+            {"item": "trn-0", "fact_id": "fact-example-t0"},
+            {"item": "trn-1", "fact_id": "fact-example-t1"}
+          ],
+          "intake_held": []
+        },
+        "store": [
+          {"ref": "res-t-0", "kind": "prepared_transitions@2", "accepted": false, "status": "COMPLETE", "covers": ["trn-0", "trn-1"]}
+        ],
+        "receipt": [
+          {"item": "trn-0", "disposition": "transition_batch", "ref": "res-t-0"},
+          {"item": "trn-1", "disposition": "transition_batch", "ref": "res-t-0"}
+        ]
+      },
+      "expected": {
+        "coverage": {"trn-0": "missing", "trn-1": "missing"},
+        "problems": [
+          {"subject": "trn-0", "code": "missing"},
+          {"subject": "trn-0", "code": "unaccepted_ref"},
+          {"subject": "trn-1", "code": "missing"},
+          {"subject": "trn-1", "code": "unaccepted_ref"}
+        ],
+        "ceiling": "NOT_FINALIZABLE"
+      }
+    },
+    {
+      "case_id": "T0-06-N08",
+      "polarity": "negative",
+      "title": "Transitions cannot be covered by a prepared body or an A2-held disposition",
+      "rationale": "Blueprint 4 table: prepared_transitions@2 creates no invented message, and a2_input_disposition@1 names a selection occurrence or baseline. A transition item takes only the batch, whatever the store holds.",
+      "input": {
+        "workset": {
+          "workset_id": "ws-example-19",
+          "selections": [],
+          "baseline_roots": [],
+          "transitions": [
+            {"item": "trn-0", "fact_id": "fact-example-t0"},
+            {"item": "trn-1", "fact_id": "fact-example-t1"}
+          ],
+          "intake_held": []
+        },
+        "store": [],
+        "receipt": [
+          {"item": "trn-0", "disposition": "prepared", "ref": "res-p-0"},
+          {"item": "trn-1", "disposition": "a2_held", "ref": "res-h-1"}
+        ]
+      },
+      "expected": {
+        "coverage": {"trn-0": "missing", "trn-1": "missing"},
+        "problems": [
+          {"subject": "trn-0", "code": "missing"},
+          {"subject": "trn-0", "code": "wrong_disposition"},
+          {"subject": "trn-1", "code": "missing"},
+          {"subject": "trn-1", "code": "wrong_disposition"}
+        ],
+        "ceiling": "NOT_FINALIZABLE"
+      }
+    },
+    {
+      "case_id": "T0-06-N09",
+      "polarity": "negative",
+      "title": "Fabricated ref: the receipt names a prepared ref that the store does not hold",
+      "rationale": "Blueprint 4.3 and 6: a forged or missing ref cannot become a success. The item stays uncovered.",
+      "input": {
+        "workset": {
+          "workset_id": "ws-example-20",
+          "selections": [
+            {"item": "occ-0", "role": "primary", "source_ref": "src-example-1"},
+            {"item": "occ-1", "role": "primary", "source_ref": "src-example-2"}
+          ],
+          "baseline_roots": [],
+          "transitions": [],
+          "intake_held": []
+        },
+        "store": [
+          {"ref": "res-p-0", "kind": "prepared@2", "accepted": true, "status": "COMPLETE", "covers": ["occ-0"]}
+        ],
+        "receipt": [
+          {"item": "occ-0", "disposition": "prepared", "ref": "res-p-0"},
+          {"item": "occ-1", "disposition": "prepared", "ref": "res-p-ghost"}
+        ]
+      },
+      "expected": {
+        "coverage": {"occ-0": "prepared", "occ-1": "missing"},
+        "problems": [
+          {"subject": "occ-1", "code": "fabricated_ref"},
+          {"subject": "occ-1", "code": "missing"}
+        ],
+        "ceiling": "NOT_FINALIZABLE"
+      }
+    },
+    {
+      "case_id": "T0-06-N10",
+      "polarity": "negative",
+      "title": "A prepared@2 record that was never accepted does not cover its item",
+      "rationale": "Blueprint 4.2 asks for a persisted accepted terminal. A record without acceptance (for example a rolled-back write) is not one.",
+      "input": {
+        "workset": {
+          "workset_id": "ws-example-21",
+          "selections": [{"item": "occ-0", "role": "primary", "source_ref": "src-example-1"}],
+          "baseline_roots": [],
+          "transitions": [],
+          "intake_held": []
+        },
+        "store": [
+          {"ref": "res-p-0", "kind": "prepared@2", "accepted": false, "status": "COMPLETE", "covers": ["occ-0"]}
+        ],
+        "receipt": [
+          {"item": "occ-0", "disposition": "prepared", "ref": "res-p-0"}
+        ]
+      },
+      "expected": {
+        "coverage": {"occ-0": "missing"},
+        "problems": [
+          {"subject": "occ-0", "code": "missing"},
+          {"subject": "occ-0", "code": "unaccepted_ref"}
+        ],
+        "ceiling": "NOT_FINALIZABLE"
+      }
+    },
+    {
+      "case_id": "T0-06-N11",
+      "polarity": "negative",
+      "title": "Kind mismatch: the receipt says prepared but the ref is an A2 disposition",
+      "rationale": "Blueprint 4.1 and 4.2: the (kind, version) pair is checked. A disposition is not a prepared@2, even when it is accepted and covers the item.",
+      "input": {
+        "workset": {
+          "workset_id": "ws-example-22",
+          "selections": [{"item": "occ-0", "role": "primary", "source_ref": "src-example-1"}],
+          "baseline_roots": [],
+          "transitions": [],
+          "intake_held": []
+        },
+        "store": [
+          {"ref": "res-h-0", "kind": "a2_input_disposition@1", "accepted": true, "status": "INCOMPLETE", "origin": "a2_held", "covers": ["occ-0"]}
+        ],
+        "receipt": [
+          {"item": "occ-0", "disposition": "prepared", "ref": "res-h-0"}
+        ]
+      },
+      "expected": {
+        "coverage": {"occ-0": "missing"},
+        "problems": [
+          {"subject": "occ-0", "code": "kind_mismatch"},
+          {"subject": "occ-0", "code": "missing"}
+        ],
+        "ceiling": "NOT_FINALIZABLE"
+      }
+    },
+    {
+      "case_id": "T0-06-N12",
+      "polarity": "negative",
+      "title": "Shared source ref: the second occurrence reuses the first occurrence result",
+      "rationale": "Blueprint 3.1 and 4.2: the deduplicated source ref cannot replace the occurrence. A result that covers occ-0 does not cover occ-1.",
+      "input": {
+        "workset": {
+          "workset_id": "ws-example-23",
+          "selections": [
+            {"item": "occ-0", "role": "primary", "source_ref": "src-example-1"},
+            {"item": "occ-1", "role": "primary", "source_ref": "src-example-1"}
+          ],
+          "baseline_roots": [],
+          "transitions": [],
+          "intake_held": []
+        },
+        "store": [
+          {"ref": "res-p-0", "kind": "prepared@2", "accepted": true, "status": "COMPLETE", "covers": ["occ-0"]}
+        ],
+        "receipt": [
+          {"item": "occ-0", "disposition": "prepared", "ref": "res-p-0"},
+          {"item": "occ-1", "disposition": "prepared", "ref": "res-p-0"}
+        ]
+      },
+      "expected": {
+        "coverage": {"occ-0": "prepared", "occ-1": "missing"},
+        "problems": [
+          {"subject": "occ-1", "code": "missing"},
+          {"subject": "occ-1", "code": "wrong_cover"}
+        ],
+        "ceiling": "NOT_FINALIZABLE"
+      }
+    },
+    {
+      "case_id": "T0-06-N13",
+      "polarity": "negative",
+      "title": "Wrong origin: an A2 disposition claims the intake_held origin for an occurrence",
+      "rationale": "Blueprint 4.2: intake-held is frozen in the workset and A2 does not create it. An A2 disposition has the a2_held origin only.",
+      "input": {
+        "workset": {
+          "workset_id": "ws-example-24",
+          "selections": [{"item": "occ-0", "role": "primary", "source_ref": "src-example-1"}],
+          "baseline_roots": [],
+          "transitions": [],
+          "intake_held": []
+        },
+        "store": [
+          {"ref": "res-h-0", "kind": "a2_input_disposition@1", "accepted": true, "status": "INCOMPLETE", "origin": "intake_held", "covers": ["occ-0"]}
+        ],
+        "receipt": [
+          {"item": "occ-0", "disposition": "a2_held", "ref": "res-h-0"}
+        ]
+      },
+      "expected": {
+        "coverage": {"occ-0": "missing"},
+        "problems": [
+          {"subject": "occ-0", "code": "missing"},
+          {"subject": "occ-0", "code": "wrong_origin"}
+        ],
+        "ceiling": "NOT_FINALIZABLE"
+      }
+    },
+    {
+      "case_id": "T0-06-N14",
+      "polarity": "negative",
+      "title": "A2 wrote an accepted disposition over a frozen intake-held entry",
+      "rationale": "Blueprint 4.2: the frozen intake-held list is the record and the new A2 must not write it back. The receipt row is correct, but the store record is a forbidden rewrite.",
+      "input": {
+        "workset": {
+          "workset_id": "ws-example-25",
+          "selections": [{"item": "occ-0", "role": "primary", "source_ref": "src-example-1"}],
+          "baseline_roots": [],
+          "transitions": [],
+          "intake_held": [{"item": "ih-0"}]
+        },
+        "store": [
+          {"ref": "res-p-0", "kind": "prepared@2", "accepted": true, "status": "COMPLETE", "covers": ["occ-0"]},
+          {"ref": "res-h-9", "kind": "a2_input_disposition@1", "accepted": true, "status": "INCOMPLETE", "origin": "a2_held", "covers": ["ih-0"]}
+        ],
+        "receipt": [
+          {"item": "occ-0", "disposition": "prepared", "ref": "res-p-0"},
+          {"item": "ih-0", "disposition": "intake_held", "ref": null}
+        ]
+      },
+      "expected": {
+        "coverage": {"occ-0": "prepared", "ih-0": "intake_held"},
+        "problems": [{"subject": "ih-0", "code": "rewrote_intake_held"}],
+        "ceiling": "NOT_FINALIZABLE"
+      }
+    },
+    {
+      "case_id": "T0-06-N15",
+      "polarity": "negative",
+      "title": "Origin labels swapped in the receipt: an intake-held item says a2_held and an occurrence says intake_held",
+      "rationale": "Blueprint 4.2: an intake-held item can only be intake-held, and an occurrence can only be prepared or A2-held. Neither swapped row is a terminal.",
+      "input": {
+        "workset": {
+          "workset_id": "ws-example-26",
+          "selections": [
+            {"item": "occ-0", "role": "primary", "source_ref": "src-example-1"},
+            {"item": "occ-1", "role": "primary", "source_ref": "src-example-2"}
+          ],
+          "baseline_roots": [],
+          "transitions": [],
+          "intake_held": [{"item": "ih-0"}]
+        },
+        "store": [
+          {"ref": "res-p-0", "kind": "prepared@2", "accepted": true, "status": "COMPLETE", "covers": ["occ-0"]}
+        ],
+        "receipt": [
+          {"item": "occ-0", "disposition": "prepared", "ref": "res-p-0"},
+          {"item": "occ-1", "disposition": "intake_held", "ref": null},
+          {"item": "ih-0", "disposition": "a2_held", "ref": null}
+        ]
+      },
+      "expected": {
+        "coverage": {"occ-0": "prepared", "occ-1": "missing", "ih-0": "missing"},
+        "problems": [
+          {"subject": "ih-0", "code": "missing"},
+          {"subject": "ih-0", "code": "wrong_disposition"},
+          {"subject": "occ-1", "code": "missing"},
+          {"subject": "occ-1", "code": "wrong_disposition"}
+        ],
+        "ceiling": "NOT_FINALIZABLE"
+      }
+    },
+    {
+      "case_id": "T0-06-N16",
+      "polarity": "negative",
+      "title": "Transition batch with the right facts in the wrong order",
+      "rationale": "Blueprint 4.2: the batch keeps the ordered complete fact list. A swapped order is not the frozen list.",
+      "input": {
+        "workset": {
+          "workset_id": "ws-example-27",
+          "selections": [],
+          "baseline_roots": [],
+          "transitions": [
+            {"item": "trn-0", "fact_id": "fact-example-t0"},
+            {"item": "trn-1", "fact_id": "fact-example-t1"}
+          ],
+          "intake_held": []
+        },
+        "store": [
+          {"ref": "res-t-0", "kind": "prepared_transitions@2", "accepted": true, "status": "COMPLETE", "covers": ["trn-1", "trn-0"]}
+        ],
+        "receipt": [
+          {"item": "trn-0", "disposition": "transition_batch", "ref": "res-t-0"},
+          {"item": "trn-1", "disposition": "transition_batch", "ref": "res-t-0"}
+        ]
+      },
+      "expected": {
+        "coverage": {"trn-0": "missing", "trn-1": "missing"},
+        "problems": [
+          {"subject": "trn-0", "code": "batch_mismatch"},
+          {"subject": "trn-0", "code": "missing"},
+          {"subject": "trn-1", "code": "batch_mismatch"},
+          {"subject": "trn-1", "code": "missing"}
+        ],
+        "ceiling": "NOT_FINALIZABLE"
+      }
+    },
+    {
+      "case_id": "T0-06-N17",
+      "polarity": "negative",
+      "title": "Partial transition batch: three frozen transitions, the batch covers two",
+      "rationale": "Blueprint 4.2: all transitions must be complete. The batch is incomplete, so no transition is covered, and trn-2 has no row at all.",
+      "input": {
+        "workset": {
+          "workset_id": "ws-example-28",
+          "selections": [],
+          "baseline_roots": [],
+          "transitions": [
+            {"item": "trn-0", "fact_id": "fact-example-t0"},
+            {"item": "trn-1", "fact_id": "fact-example-t1"},
+            {"item": "trn-2", "fact_id": "fact-example-t2"}
+          ],
+          "intake_held": []
+        },
+        "store": [
+          {"ref": "res-t-0", "kind": "prepared_transitions@2", "accepted": true, "status": "COMPLETE", "covers": ["trn-0", "trn-1"]}
+        ],
+        "receipt": [
+          {"item": "trn-0", "disposition": "transition_batch", "ref": "res-t-0"},
+          {"item": "trn-1", "disposition": "transition_batch", "ref": "res-t-0"}
+        ]
+      },
+      "expected": {
+        "coverage": {"trn-0": "missing", "trn-1": "missing", "trn-2": "missing"},
+        "problems": [
+          {"subject": "trn-0", "code": "batch_mismatch"},
+          {"subject": "trn-0", "code": "missing"},
+          {"subject": "trn-1", "code": "batch_mismatch"},
+          {"subject": "trn-1", "code": "missing"},
+          {"subject": "trn-2", "code": "missing"}
+        ],
+        "ceiling": "NOT_FINALIZABLE"
+      }
+    },
+    {
+      "case_id": "T0-06-N18",
+      "polarity": "negative",
+      "title": "Two accepted transition batches both cover the same ordered list",
+      "rationale": "Blueprint 4.2: exactly one accepted prepared_transitions@2 batch. A second full batch is a duplicate.",
+      "input": {
+        "workset": {
+          "workset_id": "ws-example-29",
+          "selections": [],
+          "baseline_roots": [],
+          "transitions": [
+            {"item": "trn-0", "fact_id": "fact-example-t0"},
+            {"item": "trn-1", "fact_id": "fact-example-t1"}
+          ],
+          "intake_held": []
+        },
+        "store": [
+          {"ref": "res-t-0", "kind": "prepared_transitions@2", "accepted": true, "status": "COMPLETE", "covers": ["trn-0", "trn-1"]},
+          {"ref": "res-t-1", "kind": "prepared_transitions@2", "accepted": true, "status": "COMPLETE", "covers": ["trn-0", "trn-1"]}
+        ],
+        "receipt": [
+          {"item": "trn-0", "disposition": "transition_batch", "ref": "res-t-0"},
+          {"item": "trn-0", "disposition": "transition_batch", "ref": "res-t-1"},
+          {"item": "trn-1", "disposition": "transition_batch", "ref": "res-t-0"},
+          {"item": "trn-1", "disposition": "transition_batch", "ref": "res-t-1"}
+        ]
+      },
+      "expected": {
+        "coverage": {"trn-0": "overlap", "trn-1": "overlap"},
+        "problems": [
+          {"subject": "trn-0", "code": "duplicate_batch"},
+          {"subject": "trn-1", "code": "duplicate_batch"}
+        ],
+        "ceiling": "NOT_FINALIZABLE"
+      }
+    },
+    {
+      "case_id": "T0-06-N19",
+      "polarity": "negative",
+      "title": "Empty scope with a fabricated receipt row for an item that was never frozen",
+      "rationale": "Blueprint 4.3: the receipt must match the frozen workset. A row for an unknown item is not a terminal of anything.",
+      "input": {
+        "workset": {
+          "workset_id": "ws-example-30",
+          "selections": [],
+          "baseline_roots": [],
+          "transitions": [],
+          "intake_held": []
+        },
+        "store": [],
+        "receipt": [
+          {"item": "occ-9", "disposition": "prepared", "ref": "res-p-9"}
+        ]
+      },
+      "expected": {
+        "coverage": {},
+        "problems": [{"subject": "occ-9", "code": "unknown_item"}],
+        "ceiling": "NOT_FINALIZABLE"
+      }
+    },
+    {
+      "case_id": "T0-06-N20",
+      "polarity": "negative",
+      "title": "A held record elsewhere does not hide a missing item",
+      "rationale": "Blueprint 4.2: held gives INCOMPLETE only when every item has its terminal. A missing item blocks the finalizer, so INCOMPLETE is not allowed yet.",
+      "input": {
+        "workset": {
+          "workset_id": "ws-example-31",
+          "selections": [
+            {"item": "occ-0", "role": "primary", "source_ref": "src-example-1"},
+            {"item": "occ-1", "role": "primary", "source_ref": "src-example-2"}
+          ],
+          "baseline_roots": [],
+          "transitions": [],
+          "intake_held": [{"item": "ih-0"}]
+        },
+        "store": [
+          {"ref": "res-h-0", "kind": "a2_input_disposition@1", "accepted": true, "status": "INCOMPLETE", "origin": "a2_held", "covers": ["occ-0"]}
+        ],
+        "receipt": [
+          {"item": "occ-0", "disposition": "a2_held", "ref": "res-h-0"},
+          {"item": "ih-0", "disposition": "intake_held", "ref": null}
+        ]
+      },
+      "expected": {
+        "coverage": {"occ-0": "a2_held", "occ-1": "missing", "ih-0": "intake_held"},
+        "problems": [{"subject": "occ-1", "code": "missing"}],
+        "ceiling": "NOT_FINALIZABLE"
+      }
+    }
+  ]
+}

@@ -1,0 +1,234 @@
+{
+  "schema": "a2-golden-case-file@1",
+  "task_id": "T0-03",
+  "title": "Teams: chat, channel, component-only, scope refresh; no kinship from equal thread IDs",
+  "annotator": "claude-sonnet-5.5 worker, hand annotation on 2026-10-24 (hand-reading by a language model; no human review; no program produced any expected value)",
+  "independence_statement": "Scopes, IDs and reply links are invented by the language model annotator. Expected grouping outcomes follow the written rules in preparation-semantics.md and the Teams release rows of the handoff spec. No grouping or A2 code was run or imported.",
+  "provenance": {
+    "sources": [
+      "ADDED CASES P06 to P08, N07 to N09 (independent follow-up for review finding M2): hand-written by a language model (Claude Sonnet 5.5 worker) from preparation-semantics.md (parent edges, scope-incompatible ancestry) and the A1 Teams plan docs/plans/2026-10-03-teams-a1-readonly-acquisition-plan (observed message versions, deletion only with provider evidence). No program produced any value. T0-03-N07 is PROPOSED: no A1 text says how A2 treats a record without an id. It needs owner sign-off.",
+      "docs/notes/preparation-semantics.md: 'Grouping relationship conventions' (source_scope, teams_channel_reply_to, teams_chat_reply_to)",
+      "docs/superpowers/specs/2026-10-03-a1-a2-handoff-contract-design.md: Teams extension table (chat discover, channel discover, notification reconcile)",
+      "tests/teams_support.py and tests/teams_ordering_support.py (A1 Teams fixture shapes, read only)",
+      "message_ingest/spiders/microsoft/teams/{chat,channel,notifications}.py (Spider names)"
+    ]
+  },
+  "canary": "CANARY-PII-7731-ZQ",
+  "cases": [
+    {
+      "case_id": "T0-03-P01",
+      "polarity": "positive",
+      "title": "Channel root and reply in one scope form a confirmed group",
+      "input": {
+        "scope": "scope-channel-A",
+        "records": [
+          {"version_ref": "tch-root", "kind": "teams_channel", "scope": "scope-channel-A", "reply_to": null},
+          {"version_ref": "tch-reply", "kind": "teams_channel", "scope": "scope-channel-A", "reply_to": "tch-root"}
+        ]
+      },
+      "expected": {"group_status": "confirmed", "members": ["tch-reply", "tch-root"], "method": "teams_channel_reply_to"}
+    },
+    {
+      "case_id": "T0-03-P02",
+      "polarity": "positive",
+      "title": "Chat messages stay separate without an explicit reply link",
+      "input": {
+        "records": [
+          {"version_ref": "tct-1", "kind": "teams_chat", "scope": "scope-chat-A", "sent": "2026-01-05T09:00:00Z"},
+          {"version_ref": "tct-2", "kind": "teams_chat", "scope": "scope-chat-A", "sent": "2026-01-05T09:00:05Z"}
+        ]
+      },
+      "expected": {"group_status_each": "none", "same_group": false, "reason": "chat membership and time proximity are not grouping rules"}
+    },
+    {
+      "case_id": "T0-03-P03",
+      "polarity": "positive",
+      "title": "Chat reply with explicit resolvable teams_chat_reply_to confirms",
+      "input": {
+        "records": [
+          {"version_ref": "tct-10", "kind": "teams_chat", "scope": "scope-chat-A", "reply_to": null},
+          {"version_ref": "tct-11", "kind": "teams_chat", "scope": "scope-chat-A", "reply_to": "tct-10"}
+        ]
+      },
+      "expected": {"group_status": "confirmed", "members": ["tct-10", "tct-11"], "method": "teams_chat_reply_to"}
+    },
+    {
+      "case_id": "T0-03-P04",
+      "polarity": "positive",
+      "title": "Component-only observation does not create a message record",
+      "input": {
+        "kind": "component_observation",
+        "stream": "teams_chat",
+        "component": "chat_member_list",
+        "scope": "scope-chat-A",
+        "message_records_in_release": 0
+      },
+      "expected": {"prepared_message_records": 0, "grouping_input_records": 0, "effect_kept_as": "component_observation"},
+      "rationale": "Spec: Teams chat discovery has positive observations, topology and independent component effects. A component effect is not a message."
+    },
+    {
+      "case_id": "T0-03-P05",
+      "polarity": "positive",
+      "title": "Scope refresh keeps old versions under the old scope reference",
+      "input": {
+        "before": {"scope_ref": "scope-chat-A@gen1", "records": ["tct-1"]},
+        "refresh": {"scope_ref": "scope-chat-A@gen2", "records": ["tct-1"]}
+      },
+      "expected": {
+        "scope_ref_changed": true,
+        "old_records_rewritten": false,
+        "cross_generation_native_confirmation": false,
+        "reason": "native confirmation needs exactly the same scope reference; a changed scope reference is explicit uncertainty"
+      }
+    },
+    {
+      "case_id": "T0-03-P06",
+      "polarity": "positive",
+      "title": "Reply to a reply in one channel scope: all three records form one confirmed group",
+      "input": {
+        "records": [
+          {"version_ref": "tch-c-1", "kind": "teams_channel", "scope": "scope-channel-A", "reply_to": null},
+          {"version_ref": "tch-c-2", "kind": "teams_channel", "scope": "scope-channel-A", "reply_to": "tch-c-1"},
+          {"version_ref": "tch-c-3", "kind": "teams_channel", "scope": "scope-channel-A", "reply_to": "tch-c-2"}
+        ]
+      },
+      "expected": {"group_status": "confirmed", "members": ["tch-c-1", "tch-c-2", "tch-c-3"], "method": "teams_channel_reply_to"},
+      "rationale": "preparation-semantics.md: confirmed groups are connected components of unambiguous exact parent edges. The chain has two edges for three members."
+    },
+    {
+      "case_id": "T0-03-P07",
+      "polarity": "positive",
+      "title": "Edited channel message: both observed versions stay as separate records",
+      "input": {
+        "records": [
+          {"version_ref": "tch-e-1", "kind": "teams_channel", "scope": "scope-channel-A", "message_id": "msg-1001", "provider_version": "etag-1", "text": "First wording."},
+          {"version_ref": "tch-e-2", "kind": "teams_channel", "scope": "scope-channel-A", "message_id": "msg-1001", "provider_version": "etag-2", "text": "Edited wording."}
+        ]
+      },
+      "expected": {"records_kept": 2, "merged": false, "older_version_overwritten": false, "deletion_marked": false},
+      "rationale": "A1 plan (docs/plans/2026-10-03-teams-a1-readonly-acquisition-plan): persist every observed message version keyed by scoped identity and provider version or etag. The case fixes only that the versions stay distinct. It does not fix a group status, because the A1 text is silent on grouping between versions of one message."
+    },
+    {
+      "case_id": "T0-03-P08",
+      "polarity": "positive",
+      "title": "Message with a provider deletedDateTime is marked deleted",
+      "input": {
+        "records": [
+          {"version_ref": "tch-d-1", "kind": "teams_channel", "scope": "scope-channel-A", "deleted_date_time": "2026-01-06T10:00:00Z"},
+          {"version_ref": "tch-d-2", "kind": "teams_channel", "scope": "scope-channel-A", "deleted_date_time": null}
+        ]
+      },
+      "expected": {"deletion_marked": {"tch-d-1": true, "tch-d-2": false}, "deletion_evidence_for_tch-d-1": "provider deletedDateTime"},
+      "rationale": "A1 plan (docs/plans/2026-10-03-teams-a1-readonly-acquisition-plan): mark message deletion only when the provider exposes deletedDateTime, a proven delta tombstone, or a persisted change notification."
+    },
+    {
+      "case_id": "T0-03-N01",
+      "polarity": "negative",
+      "title": "Equal thread ID in two different channel scopes is not kinship",
+      "input": {
+        "records": [
+          {"version_ref": "tch-a-1", "kind": "teams_channel", "scope": "scope-channel-A", "thread_id": "thread-1001"},
+          {"version_ref": "tch-b-1", "kind": "teams_channel", "scope": "scope-channel-B", "thread_id": "thread-1001"}
+        ]
+      },
+      "expected": {"same_group": false, "kinship_inferred": false, "group_status_each": "none"}
+    },
+    {
+      "case_id": "T0-03-N02",
+      "polarity": "negative",
+      "title": "Equal thread ID between a chat and a channel is not kinship",
+      "input": {
+        "records": [
+          {"version_ref": "tct-z", "kind": "teams_chat", "scope": "scope-chat-A", "thread_id": "thread-1001"},
+          {"version_ref": "tch-a-1", "kind": "teams_channel", "scope": "scope-channel-A", "thread_id": "thread-1001"}
+        ]
+      },
+      "expected": {"same_group": false, "kinship_inferred": false}
+    },
+    {
+      "case_id": "T0-03-N03",
+      "polarity": "negative",
+      "title": "Reply whose parent lives in another scope is not joined",
+      "input": {
+        "records": [
+          {"version_ref": "tch-a-1", "kind": "teams_channel", "scope": "scope-channel-A", "reply_to": null},
+          {"version_ref": "tch-b-2", "kind": "teams_channel", "scope": "scope-channel-B", "reply_to": "tch-a-1"}
+        ]
+      },
+      "expected": {"same_group": false, "group_status_for_child": "uncertain", "reason": "parent has a different declared scope"}
+    },
+    {
+      "case_id": "T0-03-N04",
+      "polarity": "negative",
+      "title": "Missing source_scope relationship blocks confirmation",
+      "input": {
+        "records": [
+          {"version_ref": "tch-n-1", "kind": "teams_channel", "scope": null, "reply_to": null},
+          {"version_ref": "tch-n-2", "kind": "teams_channel", "scope": null, "reply_to": "tch-n-1"}
+        ]
+      },
+      "expected": {"group_status_each": "uncertain", "group_confirmed": false}
+    },
+    {
+      "case_id": "T0-03-N05",
+      "polarity": "negative",
+      "title": "Chat members with the same display name are not one person-thread",
+      "input": {
+        "records": [
+          {"version_ref": "tct-20", "kind": "teams_chat", "scope": "scope-chat-A", "sender": "Carol Example", "text": "CANARY-PII-7731-ZQ"},
+          {"version_ref": "tct-21", "kind": "teams_chat", "scope": "scope-chat-B", "sender": "Carol Example"}
+        ]
+      },
+      "expected": {"same_group": false}
+    },
+    {
+      "case_id": "T0-03-N06",
+      "polarity": "negative",
+      "title": "Missing channel root is uncertain, not invented",
+      "input": {
+        "records": [
+          {"version_ref": "tch-r-2", "kind": "teams_channel", "scope": "scope-channel-A", "reply_to": "tch-r-absent"}
+        ]
+      },
+      "expected": {"group_status": "uncertain", "created_root": false}
+    },
+    {
+      "case_id": "T0-03-N07",
+      "polarity": "negative",
+      "policy_status": "proposed_owner_signoff_needed",
+      "title": "Truncated record without its required id is not accepted and no id is invented",
+      "input": {
+        "records": [
+          {"version_ref": "tch-t-1", "kind": "teams_channel", "scope": "scope-channel-A", "reply_to": null},
+          {"version_ref": null, "kind": "teams_channel", "scope": "scope-channel-A", "reply_to": "tch-t-1", "truncated": true}
+        ]
+      },
+      "expected": {"truncated_record_accepted_into_grouping": false, "id_invented": false, "joined_to_tch-t-1": false, "failure_visible": true},
+      "rationale": "PROPOSED. A1 Teams discovery code requires a non-empty source id (message_ingest/spiders/microsoft/teams/_base.py), but no A1 text says what A2 does with a record that arrives without one. The value is the plain safe answer: no guess, and a visible failure."
+    },
+    {
+      "case_id": "T0-03-N08",
+      "polarity": "negative",
+      "title": "Chat reply whose parent is in another chat scope is not joined",
+      "input": {
+        "records": [
+          {"version_ref": "tct-a-1", "kind": "teams_chat", "scope": "scope-chat-A", "reply_to": null},
+          {"version_ref": "tct-b-2", "kind": "teams_chat", "scope": "scope-chat-B", "reply_to": "tct-a-1"}
+        ]
+      },
+      "expected": {"same_group": false, "group_status_for_child": "uncertain", "reason": "parent has a different declared scope"},
+      "rationale": "preparation-semantics.md: 'A parent with a different source kind or declared source scope is not joined' and scope-incompatible ancestry is an explicit uncertain disposition. T0-03-N03 covers the channel kind. This case covers the chat kind."
+    },
+    {
+      "case_id": "T0-03-N09",
+      "polarity": "negative",
+      "title": "Absence from a later list is not a deletion",
+      "input": {
+        "earlier_list": ["tch-d-3", "tch-d-4"],
+        "later_list": ["tch-d-4"]
+      },
+      "expected": {"deletion_marked_for_tch-d-3": false, "reason": "absence can come from loss of access, retention or API visibility"},
+      "rationale": "A1 plan (docs/plans/2026-10-03-teams-a1-readonly-acquisition-plan): do not mark a chat, channel, member or message deleted merely because it is absent from a later list."
+    }
+  ]
+}
