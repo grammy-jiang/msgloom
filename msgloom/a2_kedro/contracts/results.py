@@ -15,8 +15,8 @@ A participant is a digest, never an address.
 * :class:`Prepared` binds the frozen root and the accepted parsed,
   normalized, zones and relations refs. Its ``parts`` list covers every
   parsed part (body, alternate, attachment, embedded). Its ``blocks`` list
-  covers every zone. Parts are sorted by ``part_id``. A block names only
-  a body part whose status is ``present``. A body, an attachment, a time
+  covers every zone. Parts are sorted by ``part_id``. A block never names
+  a body part whose status is ``missing``. A body, an attachment, a time
   or a participant list that is missing or not usable needs a named
   limitation. A record cannot be COMPLETE and carry a limitation.
 * :class:`FilterResult` lists every rule that ran, not the best match. The
@@ -175,9 +175,9 @@ class Prepared(ResultModel):
         bodies = {p.part_id for p in self.parts if p.role == "body"}
         if any(block.part_id not in bodies for block in self.blocks):
             raise A2ContractError("block names no body part")
-        usable = {p.part_id for p in self.parts if p.status == "present"}
-        if any(block.part_id not in usable for block in self.blocks):
-            raise A2ContractError("block names a body part that is not present")
+        absent = {p.part_id for p in self.parts if p.status == "missing"}
+        if any(block.part_id in absent for block in self.blocks):
+            raise A2ContractError("block names a missing body part")
         sorted_unique([(p.role, p.identity_sha256) for p in self.participants], "p")
         check_limitations(self.status, self.limitations, self._required_limitations())
         return self

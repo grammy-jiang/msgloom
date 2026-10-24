@@ -205,27 +205,26 @@ def test_block_and_part_shape_rules() -> None:
     rejects(Prepared, prepared_data(participants=twice), "duplicate")
 
 
-def test_blocks_need_a_present_body_part() -> None:
+def test_blocks_reject_a_missing_body_part() -> None:
     data = prepared_data()
     parts, blocks = data["parts"], data["blocks"]
     check(parts[0]["role"] == "body", "fixture part 0 is the body")
     check(len(make(Prepared, data).blocks) == len(blocks), "present body passes")
-    for status in ("partial", "missing"):
-        body = {**parts[0], "status": status}
-        if status == "missing":
-            body["sha256"] = None
-        rejects(
-            Prepared,
-            prepared_data(parts=[body, *parts[1:]]),
-            "not present",
-        )
+    partial = {**parts[0], "status": "partial"}
+    kept = prepared_data(
+        parts=[partial, *parts[1:]],
+        status="incomplete",
+        limitations=[limit("body_partial")],
+    )
+    check(len(make(Prepared, kept).blocks) == len(blocks), "partial body keeps blocks")
+    missing = {**parts[0], "status": "missing", "sha256": None}
+    rejects(Prepared, prepared_data(parts=[missing, *parts[1:]]), "missing body")
 
 
 def test_every_limitation_is_required_and_status_agrees() -> None:
     parts = prepared_data()["parts"]
     cases = [
-        ({"parts": [{**parts[0], "status": "partial"}, *parts[1:]], "blocks": []},
-         "body_partial"),
+        ({"parts": [{**parts[0], "status": "partial"}, *parts[1:]]}, "body_partial"),
         ({"parts": [*parts[:2], {**parts[2], "status": "missing", "sha256": None}]},
          "attachment_missing"),
         ({"blocks": []}, "body_absent"),
@@ -234,13 +233,9 @@ def test_every_limitation_is_required_and_status_agrees() -> None:
     ]  # fmt: skip
     for changes, code in cases:
         rejects(Prepared, prepared_data(**changes), "required limitation|status")
-        extra = ["body_absent"] if code == "body_partial" else []
-        codes = sorted([code, *extra])
-        kept = prepared_data(
-            **changes, status="incomplete", limitations=[limit(c) for c in codes]
-        )
+        kept = prepared_data(**changes, status="incomplete", limitations=[limit(code)])
         value = make(Prepared, kept)
-        check(code in [x.code for x in value.limitations], "limitation kept")
+        check(value.limitations[0].code == code, "limitation kept")
         dropped = prepared_data(
             **changes, status="incomplete", limitations=[limit("x")]
         )
