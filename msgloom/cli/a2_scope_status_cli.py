@@ -118,11 +118,13 @@ def _last_receipt(path: Path, workset: str) -> tuple[CompletionReceipt, str] | N
             db.close()
         if row is None:
             return None
+        if type(row[1]) is not str:  # a BLOB is not a stored receipt
+            raise ScopeStoreError
         data = row[1].encode()
         if sha256_hex(data) != row[0]:
             raise ScopeStoreError
         return decode_model_bytes(CompletionReceipt, data, max_bytes=1 << 20), row[0]
-    except (sqlite3.Error, ValueError) as error:  # not a typed error
+    except (OSError, sqlite3.Error, ValueError) as error:  # not a typed error
         raise ScopeStoreError from error
 
 

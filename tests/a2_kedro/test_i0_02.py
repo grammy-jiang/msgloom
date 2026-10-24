@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import os
 import sqlite3
 from pathlib import Path
 from typing import Any
@@ -123,6 +124,62 @@ def test_pending_and_held_counts(db: Path, capsys: pytest.CaptureFixture[str]) -
     check(fields["state"] == "held", "held state")
     check(fields["held_count"] == 1, "held count")
     check(fields["pending_count"] == 1, "one occurrence has no root yet")
+
+
+def test_incomplete_and_intake_held_count_as_pending_and_held(
+    db: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    ws = workset(3)
+    roots = (
+        terminal(ws, 0, prepared_ref("1")),
+        open_root(ws, 1, (Limitation("partial", "d"),)),
+    )
+    add_receipt(db, receipt(roots, status=INCOMPLETE, intake_held_count=2))
+    code, out, _ = run(capsys, argv(db, 3, "--expected-intake-held", "2"))
+    fields = json.loads(out)
+    check(code == 0, "an open scope still exits 0")
+    check(fields["pending_count"] == 2, "one incomplete root plus one missing")
+    check(fields["held_count"] == 2, "intake held is counted as held")
+
+
+def test_store_marker_mismatch_exits_3(
+    db: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    add_receipt(db, complete_receipt())
+    with sqlite3.connect(db) as con:
+        con.execute("UPDATE a2c0_meta SET value = ? WHERE key = 'marker'", ("x",))
+    con.close()
+    code, out, _ = run(capsys, argv(db))
+    check(code == 3 and out == "", "a foreign marker is an unreadable store")
+
+
+def test_blob_receipt_exits_3(db: Path, capsys: pytest.CaptureFixture[str]) -> None:
+    value = complete_receipt()
+    add_receipt(db, value)
+    with sqlite3.connect(db) as con:
+        con.execute("UPDATE a2c0_receipt SET receipt_json = CAST(receipt_json AS BLOB)")
+    con.close()
+    code, out, err = run(capsys, argv(db))
+    check(code == 3 and out == "", "a BLOB receipt is an unreadable store")
+    no_canary(err)
+
+
+def test_unreadable_parent_directory_exits_3_without_path(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    sub = tmp_path / "locked"
+    sub.mkdir()
+    path = sub / "a2.sqlite"
+    A2ResearchStore.create(path).close()
+    sub.chmod(0)
+    try:
+        if os.access(sub, os.X_OK):
+            pytest.skip("directory permissions are not enforced here")
+        code, out, err = run(capsys, argv(path))
+    finally:
+        sub.chmod(0o700)
+    check(code == 3 and out == "", "exit 3")
+    check(str(tmp_path) not in err and "locked" not in err, "no path leak")
 
 
 def test_scope_without_receipt_is_all_pending(
