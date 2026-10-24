@@ -9,8 +9,9 @@ It records three facts for each advisory component:
 * whether the server-side class was instantiated.
 
 ``--telnet`` enables the Scrapy default telnet console. It is a positive
-control: it proves that the probe can see a listener and a Telnet protocol
-object. The msgloom settings module is loaded without the Graph add-on.
+control: it proves that the probe can see a listener and a telnet console
+object. It does not drive the Telnet protocol with a client. The msgloom
+settings module is loaded without the Graph add-on.
 """
 
 from __future__ import annotations

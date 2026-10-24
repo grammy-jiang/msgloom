@@ -250,7 +250,7 @@ def test_symlink_escape_is_rejected(tmp_path: Path) -> None:
     try:
         (base / "link").symlink_to(outside, target_is_directory=True)
     except (OSError, NotImplementedError) as exc:
-        pytest.skip(f"symlink creation is not available here: {exc}")
+        pytest.fail(f"symlink creation is not available here: {exc}")
     with pytest.raises(ctl.GateError, match="escapes"):
         ctl.safe_join(base, "link/secret")
 
