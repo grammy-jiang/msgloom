@@ -1,0 +1,56 @@
+DECISION: ACCEPT
+REVIEWED_SHA: 7603137a1dea39e109ea250c2c98be9f196b8e7f
+
+I used only Read, Grep and Glob. I ran no tests, Git, shell, code or network. I could not confirm the checkout is at that SHA, so every finding comes from file contents as read. The author's claims about acyclicity, parity, precommit, markdownlint and gitleaks are the author's, not mine.
+
+## R3 P1 closure
+
+The R3 P1 is closed. R3 listed three symptoms, and each one is now fixed.
+
+1. **Orphan K3/K4 and C0-16: closed.**
+   - P2-09 now depends on P2-08 (`task-manifest.json:2872`), and P2-08 depends on P2-07 (`:2835`). E0-02 already depends on P2-09, so K3/K4 now sit on its path.
+   - V0-04 depends on P2-08 (manifest `:4271`; `task-dag.md:166`; `execution-plan.md:346`).
+   - C0-20a depends on C0-16 (manifest `:1792`; `execution-plan.md:183`). P1-01 depends on C0-16 (`:1971`; `execution-plan.md:229`).
+   - E0-01 depends on C0-16 (`:3508`; `execution-plan.md:307`). C0-16 depends only on C0-00 (`:1492`).
+
+2. **P1-13 contradiction: closed.** P1-13's `depends_on` now includes P1-18, P2-08 and P3-09 (manifest `:2413-2415`; `execution-plan.md:242`; `task-dag.md:102`). P3-09 depends on P3-02 to P3-08 (`:3194-3200`), and P3-02 depends on P3-01. So K5, K7 and K8 are all covered before P1-13 and E0-01. P1-13 remains a read-only reviewer with a docs-note-only `edit_paths` (`:2422-2426`).
+
+3. **No owner for graph binding: closed.**
+   - P1-18 exists at `manifest:2575`. It owns only `msgloom/a2_kedro/graph_bindings.py` and `tests/a2_kedro/test_k3_k4_k5_k7_k8_bindings.py`, and `edit_paths` equals `delivery_files`.
+   - Its dependencies are P1-01, P1-14, P1-15, P1-16, P2-08, P2-09, P3-09 and F0-10, with the F0 and C0 gates. The plan table at `execution-plan.md:247` and the DAG row at `task-dag.md:107` match.
+   - In the manifest, `graph.py` appears only under P1-01 (`:1979, :1985`). `graph_bindings.py` appears only under P1-18.
+   - E0-02 depends on P1-18 (`:3544`) and owns only `integration/full_pipeline.py` and its test (`:3551-3552`).
+   - The rule is written down at `architecture.md:262`. P1-01 builds the static signature and allowlist, P1-18 injects the real functions through trusted node factories, and E0-02 may not rewrite `graph.py` or run business logic outside the graph. `execution-plan.md:223` says the same.
+
+**Graph integrity from what I read.**
+- The only dependents of P1-18 are P1-13 and E0-02. The only dependents of P2-08 are P2-09, P1-13, P1-18 and V0-04. None of the new edges loops back.
+- The manifest has 169 `"id":` lines. The DAG rows run from line 23 to 191, which is 169. `task_count` is 169 (`:6`).
+- The critical chain lists 46 tasks (`:9-54`) and includes P1-18 before P1-13. I did not re-sum the 955 minutes.
+- The stale "151" in the execution plan is gone, and the text at `:426` says 169.
+
+## New P0/P1
+
+None.
+
+The tasks are usable by a Task Manager. A runner would find that every task has dependencies, an owner and file permissions, and that no step is orphaned. The new edges are also consistent across the plan, DAG and manifest.
+
+## Nonblocking P2
+
+1. **Binding scope wording.**
+   - P1-18's goal and `architecture.md:262` name only K3, K4, K5, K7 and K8. Yet P1-18 also depends on P1-14, P1-15 and P1-16 (K6, K10, K11), and P1-01 does not depend on those tasks.
+   - Nothing says where K0, K1, K2, K6, K9, K10 or K11 are bound. K9's pure function in P3-08 is in the same position.
+   - I read the dependencies as meaning P1-18 binds these too, or that they are dataset-embodied. State which in P1-01 and P1-18.
+2. **P1-01 injection hook.** P1-01's deliverable (`execution-plan.md:229`) does not say it must expose the trusted injection interface that P1-18 relies on. Add one line.
+3. **P1-13 versus the full chain.**
+   - `execution-plan.md:223` says P1-13 "must execute K0–K11 with real nodes". But P1-13 is a read-only reviewer.
+   - P1-18's test is a binding test, and the end-to-end test is E0-02, which comes later.
+   - Say what P1-13 checks, or move the "real execution" wording to E0-02.
+4. **P1-18 timebox.** Twenty minutes for five bindings plus negative tests looks tight. This is a splitting hint, not a defect.
+5. **Carried over from R3 and unchanged:** missing `__init__.py` ownership with `namespaces = false`, operator replay, E0-10 default-legacy, R0-06's allowlist, stale "v5" in V0-07, "schema4" ambiguity, the 500-line check, C0-22 edges, and the `gate:F0-risk-owner` wording at handoff:54. I did not recheck them. None is a blocker.
+
+## Scope: docs-only acceptance; production NO-GO
+
+- This ACCEPT covers only the design and execution documents for discussion at SHA 7603137a. It does not approve code, any dependency, the schema migration, the Kedro runtime, a Task Manager start or a cutover.
+- It is not dependency-audit clearance. The F0 gate is still OPEN (`execution-plan.md:15`), including the Snyk CVE-2026-3840 conflict.
+- I could not see GitHub CI or advisory data. Any CI quality failure from the Brotli 1.2.0 and brotlicffi 1.2.0.2 advisories must be handled under F0 and the dependency pipeline, and this review does not clear it.
+- Production A2 remains NO-GO. F0 owner disposition, C0 final acceptance, the owner's cutover approvals and every runtime, security and performance claim are still open.

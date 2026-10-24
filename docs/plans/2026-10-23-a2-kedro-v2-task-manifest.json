@@ -1,0 +1,4997 @@
+{
+  "schema": "msgloom-a2-v2-task-manifest@3",
+  "status": "DOCS_ONLY_PROPOSAL_NOT_STARTED",
+  "source_of_truth": "docs/plans/2026-10-23-a2-kedro-v2-execution-plan.md",
+  "master_base": "895fc40a0ec889bd96f620df8c62491787218217",
+  "task_count": 169,
+  "nominal_critical_dependency_minutes_not_eta": 955,
+  "nominal_critical_dependency_tasks": [
+    "CR-02",
+    "CR-07",
+    "CR-09",
+    "CR-10",
+    "C0-00",
+    "C0-03",
+    "C0-04",
+    "C0-05",
+    "C0-07",
+    "C0-17a",
+    "C0-17b",
+    "C0-17c",
+    "C0-17e",
+    "C0-17f",
+    "C0-17g",
+    "C0-20a",
+    "C0-20b",
+    "C0-20c",
+    "P1-02",
+    "P1-06",
+    "P1-07",
+    "P1-10",
+    "P1-15",
+    "P1-16",
+    "P1-18",
+    "P1-13",
+    "E0-01",
+    "E0-02",
+    "E0-06",
+    "E0-09",
+    "E0-11",
+    "E0-12",
+    "I0-07",
+    "I0-08",
+    "I0-09",
+    "V0-14a",
+    "V0-14b",
+    "V0-14c",
+    "R0-01",
+    "R0-02",
+    "R0-03",
+    "R0-04",
+    "R0-05",
+    "R0-06",
+    "R0-07",
+    "R0-08"
+  ],
+  "delivery_semantics": "Only edit_paths/delivery_files are writable. goal is not a writable path list.",
+  "tasks": [
+    {
+      "id": "CR-01",
+      "timebox_minutes": 15,
+      "depends_on": [],
+      "required_gates": [],
+      "goal": "R1 文档审阅；`docs/plans/2026-10-23-a2-kedro-c0-contract-candidate.md` / 正确陈述旧 `intake_completion.py` 对 held-only **可能 COMPLETE** 且 aggregate 未强制纳入 `workset.held`；写清是新 v2 policy change，不能改 A1 / Sonnet High",
+      "edit_paths": [
+        "docs/plans/2026-10-23-a2-kedro-c0-contract-candidate.md"
+      ],
+      "effort": "high",
+      "read_only_review": false,
+      "delivery_files": [
+        "docs/plans/2026-10-23-a2-kedro-c0-contract-candidate.md"
+      ],
+      "model": "Claude Code Sonnet (verify installed model and effort)",
+      "owner": "c0-research-owner",
+      "verify": [
+        "Dedicated focused positive + negative case",
+        "Actual executable exit code",
+        "Ruff, Pyright when relevant, pre-commit/CI"
+      ],
+      "exclusive_resources": [
+        "path:docs/plans/2026-10-23-a2-kedro-c0-contract-candidate.md"
+      ],
+      "state": "PLANNED_NOT_STARTED"
+    },
+    {
+      "id": "CR-02",
+      "timebox_minutes": 20,
+      "depends_on": [],
+      "required_gates": [],
+      "goal": "C0 prototype tests / 修正三项由于 `model_dump()` + strict dataclass dict 导致的假阳性；用有效 instance/`model_validate_json`，逐个验证 extra field、stage XOR、policy version 等实际被测 predicate / Sonnet Medium",
+      "edit_paths": [
+        "tests/research/test_c0_contract_prototype.py"
+      ],
+      "effort": "medium",
+      "read_only_review": false,
+      "delivery_files": [
+        "tests/research/test_c0_contract_prototype.py"
+      ],
+      "model": "Claude Code Sonnet (verify installed model and effort)",
+      "owner": "c0-research-owner",
+      "verify": [
+        "Dedicated focused positive + negative case",
+        "Actual executable exit code",
+        "Ruff, Pyright when relevant, pre-commit/CI"
+      ],
+      "exclusive_resources": [
+        "path:tests/research/test_c0_contract_prototype.py"
+      ],
+      "state": "PLANNED_NOT_STARTED"
+    },
+    {
+      "id": "CR-03",
+      "timebox_minutes": 20,
+      "depends_on": [],
+      "required_gates": [],
+      "goal": "C0 fixture/test / 生成两个不同 ReleaseEntry occurrence 但指向相同 ResultRef 的结构合法 Workset，验证 `selection_refs` 去重、receipt 仍要求两个结果；注明真实 A1 hash 含 entry，正常不会生成该冲突，纯防御案例 / Sonnet Medium",
+      "edit_paths": [
+        "tests/research/test_c0_contract_prototype.py"
+      ],
+      "effort": "medium",
+      "read_only_review": false,
+      "delivery_files": [
+        "tests/research/test_c0_contract_prototype.py"
+      ],
+      "model": "Claude Code Sonnet (verify installed model and effort)",
+      "owner": "c0-research-owner",
+      "verify": [
+        "Dedicated focused positive + negative case",
+        "Actual executable exit code",
+        "Ruff, Pyright when relevant, pre-commit/CI"
+      ],
+      "exclusive_resources": [
+        "path:tests/research/test_c0_contract_prototype.py"
+      ],
+      "state": "PLANNED_NOT_STARTED"
+    },
+    {
+      "id": "CR-04",
+      "timebox_minutes": 20,
+      "depends_on": [],
+      "required_gates": [],
+      "goal": "C0 docs/security / 明确研究索引绕过旧 plan 的真因是 claim key **不以 `prepare:` 开头**；空 `required_inputs` 是另一个缺口。逐项列出未验证的 status/limitations、upstream refs、attempt vs claim、workset scope、batch transition identity、kind/version 允许表、同步 facade 绕过 / Sonnet High",
+      "edit_paths": [
+        "docs/plans/2026-10-23-a2-kedro-c0-contract-candidate.md"
+      ],
+      "effort": "high",
+      "read_only_review": false,
+      "delivery_files": [
+        "docs/plans/2026-10-23-a2-kedro-c0-contract-candidate.md"
+      ],
+      "model": "Claude Code Sonnet (verify installed model and effort)",
+      "owner": "c0-research-owner",
+      "verify": [
+        "Dedicated focused positive + negative case",
+        "Actual executable exit code",
+        "Ruff, Pyright when relevant, pre-commit/CI"
+      ],
+      "exclusive_resources": [
+        "path:docs/plans/2026-10-23-a2-kedro-c0-contract-candidate.md"
+      ],
+      "state": "PLANNED_NOT_STARTED"
+    },
+    {
+      "id": "CR-05",
+      "timebox_minutes": 15,
+      "depends_on": [],
+      "required_gates": [],
+      "goal": "Native A1 test + doc / 目前错误 candidate 只触发 `not in workset`。增加“Workset 内已选 root 但 ordinal/key 不一致”、“已保存 selection 内容不同”的真实负例，或明确降级宣称；不篡改真实 A1 / Sonnet Medium",
+      "edit_paths": [
+        "tests/research/test_c0_native_a1_exact_handoff.py"
+      ],
+      "effort": "medium",
+      "read_only_review": false,
+      "delivery_files": [
+        "tests/research/test_c0_native_a1_exact_handoff.py"
+      ],
+      "model": "Claude Code Sonnet (verify installed model and effort)",
+      "owner": "c0-research-owner",
+      "verify": [
+        "Dedicated focused positive + negative case",
+        "Actual executable exit code",
+        "Ruff, Pyright when relevant, pre-commit/CI"
+      ],
+      "exclusive_resources": [],
+      "state": "PLANNED_NOT_STARTED"
+    },
+    {
+      "id": "CR-06",
+      "timebox_minutes": 15,
+      "depends_on": [],
+      "required_gates": [],
+      "goal": "Pyright / 逐个修复 CI 9 项 可空 `SemanticDataRef` / 可选 selection/batch 访问，显式 guard + `pytest.fail`，**不能加 ignore/type: ignore 规避** / Sonnet Medium",
+      "edit_paths": [
+        "tests/research/test_c0_atomic_acceptance.py",
+        "tests/research/test_c0_phase1_storage_integration.py",
+        "tests/research/test_c0_contract_prototype.py"
+      ],
+      "effort": "medium",
+      "read_only_review": false,
+      "delivery_files": [
+        "tests/research/test_c0_atomic_acceptance.py",
+        "tests/research/test_c0_phase1_storage_integration.py",
+        "tests/research/test_c0_contract_prototype.py"
+      ],
+      "model": "Claude Code Sonnet (verify installed model and effort)",
+      "owner": "c0-research-owner",
+      "verify": [
+        "Dedicated focused positive + negative case",
+        "Actual executable exit code",
+        "Ruff, Pyright when relevant, pre-commit/CI"
+      ],
+      "exclusive_resources": [
+        "path:tests/research/test_c0_phase1_storage_integration.py",
+        "path:tests/research/test_c0_contract_prototype.py"
+      ],
+      "state": "PLANNED_NOT_STARTED"
+    },
+    {
+      "id": "CR-07",
+      "timebox_minutes": 20,
+      "depends_on": [
+        "CR-02",
+        "CR-03",
+        "CR-05"
+      ],
+      "required_gates": [],
+      "goal": "Python tests & docs / 把 “Expected C0 test condition at line N” 换为真实断言说明；避免过短 3 秒 lease 在高负载 Pi 形成 flake；准备重复测试 x3 / Sonnet Low/Medium",
+      "edit_paths": [
+        "tests/research/test_c0_contract_prototype.py",
+        "tests/research/test_c0_phase1_storage_integration.py"
+      ],
+      "effort": "medium",
+      "read_only_review": false,
+      "delivery_files": [
+        "tests/research/test_c0_contract_prototype.py",
+        "tests/research/test_c0_phase1_storage_integration.py"
+      ],
+      "model": "Claude Code Sonnet (verify installed model and effort)",
+      "owner": "c0-research-owner",
+      "verify": [
+        "Dedicated focused positive + negative case",
+        "Actual executable exit code",
+        "Ruff, Pyright when relevant, pre-commit/CI"
+      ],
+      "exclusive_resources": [
+        "path:tests/research/test_c0_contract_prototype.py",
+        "path:tests/research/test_c0_phase1_storage_integration.py"
+      ],
+      "state": "PLANNED_NOT_STARTED"
+    },
+    {
+      "id": "CR-08",
+      "timebox_minutes": 20,
+      "depends_on": [],
+      "required_gates": [],
+      "goal": "Research prototype + docs / 在文档明确 `_store` private + `asyncio.to_thread` 取消不受保护、large semantic decode 在 writer lock 内、临时 SQL `create_all` 仅供实验，不允许移植至生产；强化不相同 claim-key 的并发测试描述 / Sonnet High",
+      "edit_paths": [
+        "docs/plans/2026-10-23-a2-kedro-c0-contract-candidate.md"
+      ],
+      "effort": "high",
+      "read_only_review": false,
+      "delivery_files": [
+        "docs/plans/2026-10-23-a2-kedro-c0-contract-candidate.md"
+      ],
+      "model": "Claude Code Sonnet (verify installed model and effort)",
+      "owner": "c0-research-owner",
+      "verify": [
+        "Dedicated focused positive + negative case",
+        "Actual executable exit code",
+        "Ruff, Pyright when relevant, pre-commit/CI"
+      ],
+      "exclusive_resources": [
+        "path:docs/plans/2026-10-23-a2-kedro-c0-contract-candidate.md"
+      ],
+      "state": "PLANNED_NOT_STARTED"
+    },
+    {
+      "id": "CR-09",
+      "timebox_minutes": 20,
+      "depends_on": [
+        "CR-01",
+        "CR-02",
+        "CR-03",
+        "CR-04",
+        "CR-05",
+        "CR-06",
+        "CR-07",
+        "CR-08"
+      ],
+      "required_gates": [],
+      "goal": "单人集成 owner / 针对性 pytest、Ruff/format、Pyright（实际 CI 同命令）、pre-commit/gitleaks。只归入与 CR 相关文件；保留审查报告与变更 SHA / Sonnet Medium",
+      "edit_paths": [
+        "docs/notes/a2-kedro-c0-r2-qualification.md"
+      ],
+      "effort": "medium",
+      "read_only_review": false,
+      "delivery_files": [
+        "docs/notes/a2-kedro-c0-r2-qualification.md"
+      ],
+      "model": "Claude Code Sonnet (verify installed model and effort)",
+      "owner": "c0-research-owner",
+      "verify": [
+        "Dedicated focused positive + negative case",
+        "Actual executable exit code",
+        "Ruff, Pyright when relevant, pre-commit/CI"
+      ],
+      "exclusive_resources": [],
+      "state": "PLANNED_NOT_STARTED"
+    },
+    {
+      "id": "CR-10",
+      "timebox_minutes": 20,
+      "depends_on": [
+        "CR-09"
+      ],
+      "required_gates": [],
+      "goal": "Reviewer / 独立只读 R2 exact SHA → `ACCEPT` 才关闭研究门禁；有 REVISE 则新 CR-N 任务，不自动称 production C0 ready / Sonnet High",
+      "edit_paths": [
+        "docs/notes/a2-kedro-c0-independent-review-r2.txt"
+      ],
+      "effort": "high",
+      "read_only_review": true,
+      "delivery_files": [
+        "docs/notes/a2-kedro-c0-independent-review-r2.txt"
+      ],
+      "model": "Claude Code Sonnet (verify installed model and effort)",
+      "owner": "independent-readonly-reviewer",
+      "verify": [
+        "Exact-SHA read-only review",
+        "No source writes or test-execution claims"
+      ],
+      "exclusive_resources": [],
+      "state": "PLANNED_NOT_STARTED"
+    },
+    {
+      "id": "F0-01",
+      "timebox_minutes": 15,
+      "depends_on": [],
+      "required_gates": [],
+      "goal": "再核对 PyPI Kedro 1.7 wheel（SHA `488701a27c7d595b62a611cb23596953a9929fe5cc42a376c28abe26654c2438`）、源码版本、当前 Pi py312/313/314 环境和 Q0 矩阵 / 来源日期、可重跑 wheel hash；不能无核验更换候选版本 / Sonnet Medium",
+      "edit_paths": [
+        "docs/notes/a2-kedro-f0-version-provenance.md"
+      ],
+      "effort": "medium",
+      "read_only_review": false,
+      "delivery_files": [
+        "docs/notes/a2-kedro-f0-version-provenance.md"
+      ],
+      "model": "Claude Code Sonnet (verify installed model and effort)",
+      "owner": "security-dependency-owner",
+      "verify": [
+        "Dedicated focused positive + negative case",
+        "Actual executable exit code",
+        "Ruff, Pyright when relevant, pre-commit/CI"
+      ],
+      "exclusive_resources": [],
+      "state": "PLANNED_NOT_STARTED"
+    },
+    {
+      "id": "F0-02",
+      "timebox_minutes": 25,
+      "depends_on": [
+        "F0-01"
+      ],
+      "required_gates": [],
+      "goal": "独立看 GHSA-6326、CVE-2026-35167、CVE-2026-3840、Snyk + 当前 source `_get_versioned_path/_is_unsafe_version`，建立 method/API reachability matrix / 明确“上游报告已修复”和“Snyk 仍报告受影响”的**未决差异**；不推出无依据的安全结论 / Sonnet High",
+      "edit_paths": [
+        "docs/notes/a2-kedro-f0-cve-reachability.md"
+      ],
+      "effort": "high",
+      "read_only_review": false,
+      "delivery_files": [
+        "docs/notes/a2-kedro-f0-cve-reachability.md"
+      ],
+      "model": "Claude Code Sonnet (verify installed model and effort)",
+      "owner": "security-dependency-owner",
+      "verify": [
+        "Dedicated focused positive + negative case",
+        "Actual executable exit code",
+        "Ruff, Pyright when relevant, pre-commit/CI"
+      ],
+      "exclusive_resources": [],
+      "state": "PLANNED_NOT_STARTED"
+    },
+    {
+      "id": "F0-03",
+      "timebox_minutes": 20,
+      "depends_on": [
+        "F0-01"
+      ],
+      "required_gates": [],
+      "goal": "静态 Dataset allowlist：禁用 Kedro CLI、`DataCatalog.from_config`、`load_versions`、versioned FS datasets、动态插件；环境和代码测试 / malicious `../` / absolute、unknown dataset、untrusted import/PII 不落日志；生产代码门禁可实现 / Sonnet High",
+      "edit_paths": [
+        "docs/notes/a2-kedro-f0-dataset-security.md"
+      ],
+      "effort": "high",
+      "read_only_review": false,
+      "delivery_files": [
+        "docs/notes/a2-kedro-f0-dataset-security.md"
+      ],
+      "model": "Claude Code Sonnet (verify installed model and effort)",
+      "owner": "security-dependency-owner",
+      "verify": [
+        "Dedicated focused positive + negative case",
+        "Actual executable exit code",
+        "Ruff, Pyright when relevant, pre-commit/CI"
+      ],
+      "exclusive_resources": [],
+      "state": "PLANNED_NOT_STARTED"
+    },
+    {
+      "id": "F0-04",
+      "timebox_minutes": 20,
+      "depends_on": [
+        "F0-01"
+      ],
+      "required_gates": [],
+      "goal": "telemetry：`kedro-telemetry` 强制依赖，真实 plugin consent 与 programmatic hooks，stderr/stdout import、socket/real network deny 控制 / 不只是 null plugin 假测试；任何未预期网络/标识上传则 STOP / Sonnet High",
+      "edit_paths": [
+        "docs/notes/a2-kedro-f0-telemetry-networks.md"
+      ],
+      "effort": "high",
+      "read_only_review": false,
+      "delivery_files": [
+        "docs/notes/a2-kedro-f0-telemetry-networks.md"
+      ],
+      "model": "Claude Code Sonnet (verify installed model and effort)",
+      "owner": "security-dependency-owner",
+      "verify": [
+        "Dedicated focused positive + negative case",
+        "Actual executable exit code",
+        "Ruff, Pyright when relevant, pre-commit/CI"
+      ],
+      "exclusive_resources": [],
+      "state": "PLANNED_NOT_STARTED"
+    },
+    {
+      "id": "F0-05a",
+      "timebox_minutes": 20,
+      "depends_on": [
+        "F0-01"
+      ],
+      "required_gates": [],
+      "goal": "仅 scratch lock 包，共装完整 `msgloom+Kedro` wheel（不改生产锁） / 依赖树精确 delta、wheel SHA、版本保持；不得运行 sdists build 作为研究探测 / Sonnet Medium",
+      "edit_paths": [
+        "docs/notes/a2-kedro-f0-linux-wheel.md"
+      ],
+      "effort": "medium",
+      "read_only_review": false,
+      "delivery_files": [
+        "docs/notes/a2-kedro-f0-linux-wheel.md"
+      ],
+      "model": "Claude Code Sonnet (verify installed model and effort)",
+      "owner": "security-dependency-owner",
+      "verify": [
+        "Dedicated focused positive + negative case",
+        "Actual executable exit code",
+        "Ruff, Pyright when relevant, pre-commit/CI"
+      ],
+      "exclusive_resources": [],
+      "state": "PLANNED_NOT_STARTED"
+    },
+    {
+      "id": "F0-05b",
+      "timebox_minutes": 20,
+      "depends_on": [
+        "F0-05a"
+      ],
+      "required_gates": [],
+      "goal": "Pi aarch64 Python 3.12/3.13/3.14 scratch install / 各自 `uv pip check`、Kedro+msgloom imports、Pyright/target tests；保留原始退出码 / Sonnet Medium",
+      "edit_paths": [
+        "docs/notes/a2-kedro-f0-coinstall.md"
+      ],
+      "effort": "medium",
+      "read_only_review": false,
+      "delivery_files": [
+        "docs/notes/a2-kedro-f0-coinstall.md"
+      ],
+      "model": "Claude Code Sonnet (verify installed model and effort)",
+      "owner": "security-dependency-owner",
+      "verify": [
+        "Dedicated focused positive + negative case",
+        "Actual executable exit code",
+        "Ruff, Pyright when relevant, pre-commit/CI"
+      ],
+      "exclusive_resources": [],
+      "state": "PLANNED_NOT_STARTED"
+    },
+    {
+      "id": "F0-05c",
+      "timebox_minutes": 20,
+      "depends_on": [
+        "F0-05b"
+      ],
+      "required_gates": [],
+      "goal": "真实项目 wheel/sdist 和 source-boundary tests / 依赖、wheel、tests 可复现；若安装引入已有包升级停止并写风险报告 / Sonnet High",
+      "edit_paths": [
+        "docs/notes/a2-kedro-f0-types-tests.md"
+      ],
+      "effort": "medium",
+      "read_only_review": false,
+      "delivery_files": [
+        "docs/notes/a2-kedro-f0-types-tests.md"
+      ],
+      "model": "Claude Code Sonnet (verify installed model and effort)",
+      "owner": "security-dependency-owner",
+      "verify": [
+        "Dedicated focused positive + negative case",
+        "Actual executable exit code",
+        "Ruff, Pyright when relevant, pre-commit/CI"
+      ],
+      "exclusive_resources": [],
+      "state": "PLANNED_NOT_STARTED"
+    },
+    {
+      "id": "F0-06",
+      "timebox_minutes": 20,
+      "depends_on": [
+        "F0-05b"
+      ],
+      "required_gates": [],
+      "goal": "Linux x86_64 和 Mac/Windows portability smoke（通过 CI matrix/配置，不要求物理 GUI） / 有真实 runner 或明确 NOT TESTED；不把 Pi 验证冒充全部平台 / Sonnet Medium",
+      "edit_paths": [
+        "docs/notes/a2-kedro-f0-portability.md"
+      ],
+      "effort": "medium",
+      "read_only_review": false,
+      "delivery_files": [
+        "docs/notes/a2-kedro-f0-portability.md"
+      ],
+      "model": "Claude Code Sonnet (verify installed model and effort)",
+      "owner": "security-dependency-owner",
+      "verify": [
+        "Dedicated focused positive + negative case",
+        "Actual executable exit code",
+        "Ruff, Pyright when relevant, pre-commit/CI"
+      ],
+      "exclusive_resources": [],
+      "state": "PLANNED_NOT_STARTED"
+    },
+    {
+      "id": "F0-07",
+      "timebox_minutes": 15,
+      "depends_on": [
+        "F0-02",
+        "F0-05b"
+      ],
+      "required_gates": [],
+      "goal": "Audit 策略：记录原有 `PYSEC-2017-83`、`GHSA-8pqf-f4m5-798g` 的受审查 CI policy；新 Kedro CVE 不添加隐性 ignore / baseline 与 candidate 的新增漏洞 delta 可复现；保留 non-green 的原始无忽略审计证据 / Sonnet High",
+      "edit_paths": [
+        "docs/notes/a2-kedro-f0-audit-baselines.md"
+      ],
+      "effort": "high",
+      "read_only_review": false,
+      "delivery_files": [
+        "docs/notes/a2-kedro-f0-audit-baselines.md"
+      ],
+      "model": "Claude Code Sonnet (verify installed model and effort)",
+      "owner": "security-dependency-owner",
+      "verify": [
+        "Dedicated focused positive + negative case",
+        "Actual executable exit code",
+        "Ruff, Pyright when relevant, pre-commit/CI"
+      ],
+      "exclusive_resources": [],
+      "state": "PLANNED_NOT_STARTED"
+    },
+    {
+      "id": "F0-08",
+      "timebox_minutes": 20,
+      "depends_on": [
+        "F0-02",
+        "F0-03",
+        "F0-04",
+        "F0-05c",
+        "F0-06",
+        "F0-07"
+      ],
+      "required_gates": [],
+      "goal": "安全 reviewer 独立 R1/R2，冻结精确 SHA、真实风险适用性与操作决策候选 / reviewer ACCEPT 对象仅限可复现评估；如仍不能排除 residual risk → 用户安全决定/STOP / Sonnet High",
+      "edit_paths": [
+        "docs/notes/a2-kedro-f0-independent-review.md"
+      ],
+      "effort": "high",
+      "read_only_review": true,
+      "delivery_files": [
+        "docs/notes/a2-kedro-f0-independent-review.md"
+      ],
+      "model": "Claude Code Sonnet (verify installed model and effort)",
+      "owner": "independent-readonly-reviewer",
+      "verify": [
+        "Exact-SHA read-only review",
+        "No source writes or test-execution claims"
+      ],
+      "exclusive_resources": [],
+      "state": "PLANNED_NOT_STARTED"
+    },
+    {
+      "id": "F0-09",
+      "timebox_minutes": 20,
+      "depends_on": [
+        "F0-08"
+      ],
+      "required_gates": [
+        "F0_PRODUCTION_ADMISSION"
+      ],
+      "goal": "lock 单人 owner 制定候选生产依赖 PR（先草稿，不改 master）与门禁说明 / owner security signoff、共装跨版本 CI 和回滚计划齐备才申请合并；默认保留 Draft / Sonnet Medium",
+      "edit_paths": [
+        "docs/notes/a2-kedro-f0-dependency-admission.md"
+      ],
+      "effort": "medium",
+      "read_only_review": false,
+      "delivery_files": [
+        "docs/notes/a2-kedro-f0-dependency-admission.md"
+      ],
+      "model": "Claude Code Sonnet (verify installed model and effort)",
+      "owner": "security-dependency-owner",
+      "verify": [
+        "Dedicated focused positive + negative case",
+        "Actual executable exit code",
+        "Ruff, Pyright when relevant, pre-commit/CI"
+      ],
+      "exclusive_resources": [],
+      "state": "PLANNED_NOT_STARTED"
+    },
+    {
+      "id": "F0-10",
+      "timebox_minutes": 20,
+      "depends_on": [
+        "F0-09"
+      ],
+      "required_gates": [
+        "F0_PRODUCTION_ADMISSION"
+      ],
+      "goal": "单一依赖/锁文件 owner / 精确版本和 wheel hash、锁文件、Python/CI、owner signoff 后引入 Kedro 正式依赖；不得更改既有安全 ignore 或直接合并 master / Sonnet High",
+      "edit_paths": [
+        "pyproject.toml",
+        "uv.lock"
+      ],
+      "effort": "high",
+      "read_only_review": false,
+      "delivery_files": [
+        "pyproject.toml",
+        "uv.lock"
+      ],
+      "model": "Claude Code Sonnet (verify installed model and effort)",
+      "owner": "dependency-lock-single-owner",
+      "verify": [
+        "Dedicated focused positive + negative case",
+        "Actual executable exit code",
+        "Ruff, Pyright when relevant, pre-commit/CI"
+      ],
+      "exclusive_resources": [],
+      "state": "PLANNED_NOT_STARTED"
+    },
+    {
+      "id": "C0-00",
+      "timebox_minutes": 15,
+      "depends_on": [
+        "CR-10"
+      ],
+      "required_gates": [],
+      "goal": "`docs/decisions/a2-v2-schema-ids.md` + minimal golden (contract owner) / 冻结 provisional kind/version/field-name/size/role/transition batch/triage_input@2 header；其后 worker 不可自由自定义不兼容 wire 格式",
+      "edit_paths": [
+        "docs/decisions/a2-v2-schema-ids.md"
+      ],
+      "effort": "medium",
+      "read_only_review": false,
+      "delivery_files": [
+        "docs/decisions/a2-v2-schema-ids.md"
+      ],
+      "model": "Claude Code Sonnet (verify installed model and effort)",
+      "owner": "contract-owner",
+      "verify": [
+        "Dedicated focused positive + negative case",
+        "Actual executable exit code",
+        "Ruff, Pyright when relevant, pre-commit/CI"
+      ],
+      "exclusive_resources": [],
+      "state": "PLANNED_NOT_STARTED"
+    },
+    {
+      "id": "C0-01",
+      "timebox_minutes": 20,
+      "depends_on": [
+        "C0-00"
+      ],
+      "required_gates": [],
+      "goal": "`msgloom/a2_kedro/contracts/source.py`，A1 verifier adapter / FrozenSourceSelection：entry/workset 及 approved baseline 的互斥结构、occurrence index/ordinal/role、saved SHA、scope；拒绝 forged hash/role",
+      "edit_paths": [
+        "msgloom/a2_kedro/contracts/source.py",
+        "tests/a2_kedro/test_c0_01.py",
+        "msgloom/a2_kedro/__init__.py",
+        "msgloom/a2_kedro/contracts/__init__.py"
+      ],
+      "effort": "medium",
+      "read_only_review": false,
+      "delivery_files": [
+        "msgloom/a2_kedro/contracts/source.py",
+        "tests/a2_kedro/test_c0_01.py",
+        "msgloom/a2_kedro/__init__.py",
+        "msgloom/a2_kedro/contracts/__init__.py"
+      ],
+      "model": "Claude Code Sonnet (verify installed model and effort)",
+      "owner": "contract-owner",
+      "verify": [
+        "Dedicated focused positive + negative case",
+        "Actual executable exit code",
+        "Ruff, Pyright when relevant, pre-commit/CI"
+      ],
+      "exclusive_resources": [],
+      "state": "PLANNED_NOT_STARTED"
+    },
+    {
+      "id": "C0-02",
+      "timebox_minutes": 20,
+      "depends_on": [
+        "C0-01"
+      ],
+      "required_gates": [],
+      "goal": "`msgloom/a2_kedro/source_resolution.py` / 使用精确 ReleaseReader 重新验证 ordinal/byte equality；component/context/transition-only + global sequence gaps；源读取错误 typed A2-held",
+      "edit_paths": [
+        "msgloom/a2_kedro/source_resolution.py",
+        "tests/a2_kedro/test_c0_02.py"
+      ],
+      "effort": "medium",
+      "read_only_review": false,
+      "delivery_files": [
+        "msgloom/a2_kedro/source_resolution.py",
+        "tests/a2_kedro/test_c0_02.py"
+      ],
+      "model": "Claude Code Sonnet (verify installed model and effort)",
+      "owner": "contract-owner",
+      "verify": [
+        "Dedicated focused positive + negative case",
+        "Actual executable exit code",
+        "Ruff, Pyright when relevant, pre-commit/CI"
+      ],
+      "exclusive_resources": [],
+      "state": "PLANNED_NOT_STARTED"
+    },
+    {
+      "id": "C0-03",
+      "timebox_minutes": 20,
+      "depends_on": [
+        "C0-00"
+      ],
+      "required_gates": [],
+      "goal": "`msgloom/a2_kedro/contracts/extract.py` / ExtractedComponents：primary/alternate/attachment/embedded 保存引用、digest、missing/partial/unsupported，有限 metadata codec",
+      "edit_paths": [
+        "msgloom/a2_kedro/contracts/extract.py",
+        "tests/a2_kedro/test_c0_03.py"
+      ],
+      "effort": "medium",
+      "read_only_review": false,
+      "delivery_files": [
+        "msgloom/a2_kedro/contracts/extract.py",
+        "tests/a2_kedro/test_c0_03.py"
+      ],
+      "model": "Claude Code Sonnet (verify installed model and effort)",
+      "owner": "contract-owner",
+      "verify": [
+        "Dedicated focused positive + negative case",
+        "Actual executable exit code",
+        "Ruff, Pyright when relevant, pre-commit/CI"
+      ],
+      "exclusive_resources": [],
+      "state": "PLANNED_NOT_STARTED"
+    },
+    {
+      "id": "C0-04",
+      "timebox_minutes": 20,
+      "depends_on": [
+        "C0-03"
+      ],
+      "required_gates": [],
+      "goal": "`msgloom/a2_kedro/contracts/parse.py` / ParsedParts：part/page/sheet/cell 和 parser worker receipt，断言 actual-format 和 byte source link",
+      "edit_paths": [
+        "msgloom/a2_kedro/contracts/parse.py",
+        "tests/a2_kedro/test_c0_04.py"
+      ],
+      "effort": "medium",
+      "read_only_review": false,
+      "delivery_files": [
+        "msgloom/a2_kedro/contracts/parse.py",
+        "tests/a2_kedro/test_c0_04.py"
+      ],
+      "model": "Claude Code Sonnet (verify installed model and effort)",
+      "owner": "contract-owner",
+      "verify": [
+        "Dedicated focused positive + negative case",
+        "Actual executable exit code",
+        "Ruff, Pyright when relevant, pre-commit/CI"
+      ],
+      "exclusive_resources": [],
+      "state": "PLANNED_NOT_STARTED"
+    },
+    {
+      "id": "C0-05",
+      "timebox_minutes": 20,
+      "depends_on": [
+        "C0-04"
+      ],
+      "required_gates": [],
+      "goal": "`msgloom/a2_kedro/contracts/zones.py` / NormalizedContent / ContentZones，原始 span 精确映射及 quote-occurrence vs quote-author；不可逆限制",
+      "edit_paths": [
+        "msgloom/a2_kedro/contracts/zones.py",
+        "tests/a2_kedro/test_c0_05.py"
+      ],
+      "effort": "medium",
+      "read_only_review": false,
+      "delivery_files": [
+        "msgloom/a2_kedro/contracts/zones.py",
+        "tests/a2_kedro/test_c0_05.py"
+      ],
+      "model": "Claude Code Sonnet (verify installed model and effort)",
+      "owner": "contract-owner",
+      "verify": [
+        "Dedicated focused positive + negative case",
+        "Actual executable exit code",
+        "Ruff, Pyright when relevant, pre-commit/CI"
+      ],
+      "exclusive_resources": [],
+      "state": "PLANNED_NOT_STARTED"
+    },
+    {
+      "id": "C0-06",
+      "timebox_minutes": 20,
+      "depends_on": [
+        "C0-00"
+      ],
+      "required_gates": [],
+      "goal": "`msgloom/a2_kedro/contracts/relations.py` / NativeRelations：回复/祖先/引用假设的 typed scope；unknown/cycle/duplicate 负例",
+      "edit_paths": [
+        "msgloom/a2_kedro/contracts/relations.py",
+        "tests/a2_kedro/test_c0_06.py"
+      ],
+      "effort": "medium",
+      "read_only_review": false,
+      "delivery_files": [
+        "msgloom/a2_kedro/contracts/relations.py",
+        "tests/a2_kedro/test_c0_06.py"
+      ],
+      "model": "Claude Code Sonnet (verify installed model and effort)",
+      "owner": "contract-owner",
+      "verify": [
+        "Dedicated focused positive + negative case",
+        "Actual executable exit code",
+        "Ruff, Pyright when relevant, pre-commit/CI"
+      ],
+      "exclusive_resources": [],
+      "state": "PLANNED_NOT_STARTED"
+    },
+    {
+      "id": "C0-07",
+      "timebox_minutes": 20,
+      "depends_on": [
+        "C0-05",
+        "C0-06"
+      ],
+      "required_gates": [],
+      "goal": "`msgloom/a2_kedro/contracts/results.py` / prepared@2、filter_result@2、group_result@2 和 manifest；all-matched-rules，分组无跨作用域静默连接",
+      "edit_paths": [
+        "msgloom/a2_kedro/contracts/results.py",
+        "tests/a2_kedro/test_c0_07.py"
+      ],
+      "effort": "medium",
+      "read_only_review": false,
+      "delivery_files": [
+        "msgloom/a2_kedro/contracts/results.py",
+        "tests/a2_kedro/test_c0_07.py"
+      ],
+      "model": "Claude Code Sonnet (verify installed model and effort)",
+      "owner": "contract-owner",
+      "verify": [
+        "Dedicated focused positive + negative case",
+        "Actual executable exit code",
+        "Ruff, Pyright when relevant, pre-commit/CI"
+      ],
+      "exclusive_resources": [],
+      "state": "PLANNED_NOT_STARTED"
+    },
+    {
+      "id": "C0-08",
+      "timebox_minutes": 20,
+      "depends_on": [
+        "C0-00"
+      ],
+      "required_gates": [],
+      "goal": "`msgloom/a2_kedro/contracts/transition.py` / scoped transition batch identity 绑定 Workset Ref + **每条 exact fact ID/scope/kind/authority** 的完整有序列表及 code/policy；单项事实证明和批次身份均不可丢",
+      "edit_paths": [
+        "msgloom/a2_kedro/contracts/transition.py",
+        "tests/a2_kedro/test_c0_08.py"
+      ],
+      "effort": "medium",
+      "read_only_review": false,
+      "delivery_files": [
+        "msgloom/a2_kedro/contracts/transition.py",
+        "tests/a2_kedro/test_c0_08.py"
+      ],
+      "model": "Claude Code Sonnet (verify installed model and effort)",
+      "owner": "contract-owner",
+      "verify": [
+        "Dedicated focused positive + negative case",
+        "Actual executable exit code",
+        "Ruff, Pyright when relevant, pre-commit/CI"
+      ],
+      "exclusive_resources": [],
+      "state": "PLANNED_NOT_STARTED"
+    },
+    {
+      "id": "C0-09",
+      "timebox_minutes": 20,
+      "depends_on": [
+        "C0-01"
+      ],
+      "required_gates": [],
+      "goal": "`msgloom/a2_kedro/contracts/held.py` / a2_input_disposition@1 和显式 repair_class；held-only、context-only、approved baseline 并不强制做 body",
+      "edit_paths": [
+        "msgloom/a2_kedro/contracts/held.py",
+        "tests/a2_kedro/test_c0_09.py"
+      ],
+      "effort": "medium",
+      "read_only_review": false,
+      "delivery_files": [
+        "msgloom/a2_kedro/contracts/held.py",
+        "tests/a2_kedro/test_c0_09.py"
+      ],
+      "model": "Claude Code Sonnet (verify installed model and effort)",
+      "owner": "contract-owner",
+      "verify": [
+        "Dedicated focused positive + negative case",
+        "Actual executable exit code",
+        "Ruff, Pyright when relevant, pre-commit/CI"
+      ],
+      "exclusive_resources": [],
+      "state": "PLANNED_NOT_STARTED"
+    },
+    {
+      "id": "C0-10",
+      "timebox_minutes": 20,
+      "depends_on": [
+        "C0-07",
+        "C0-08",
+        "C0-09"
+      ],
+      "required_gates": [],
+      "goal": "`msgloom/a2_kedro/contracts/receipt.py` / a2_completion_receipt@2 **结构完整性**；同一 frozen occurrence 恰好一份结果，intake-held 强制 INCOMPLETE",
+      "edit_paths": [
+        "msgloom/a2_kedro/contracts/receipt.py",
+        "tests/a2_kedro/test_c0_10.py"
+      ],
+      "effort": "medium",
+      "read_only_review": false,
+      "delivery_files": [
+        "msgloom/a2_kedro/contracts/receipt.py",
+        "tests/a2_kedro/test_c0_10.py"
+      ],
+      "model": "Claude Code Sonnet (verify installed model and effort)",
+      "owner": "contract-owner",
+      "verify": [
+        "Dedicated focused positive + negative case",
+        "Actual executable exit code",
+        "Ruff, Pyright when relevant, pre-commit/CI"
+      ],
+      "exclusive_resources": [],
+      "state": "PLANNED_NOT_STARTED"
+    },
+    {
+      "id": "C0-11a",
+      "timebox_minutes": 20,
+      "depends_on": [
+        "C0-00"
+      ],
+      "required_gates": [],
+      "goal": "`msgloom/persistence/schema_store.py` / new schema model (DB owner) / 原 schema4 digest/revision/legacy DDL 先做 pinned 迁移方案，比较 schema-main-version vs metadata revision；显式 operator gate，不准 open 自动建表",
+      "edit_paths": [
+        "docs/decisions/a2-v2-schema-migration.md"
+      ],
+      "effort": "high",
+      "read_only_review": false,
+      "delivery_files": [
+        "docs/decisions/a2-v2-schema-migration.md"
+      ],
+      "model": "Claude Code Sonnet (verify installed model and effort)",
+      "owner": "database-single-owner",
+      "verify": [
+        "Dedicated focused positive + negative case",
+        "Actual executable exit code",
+        "Ruff, Pyright when relevant, pre-commit/CI"
+      ],
+      "exclusive_resources": [
+        "database-single-writer"
+      ],
+      "state": "PLANNED_NOT_STARTED"
+    },
+    {
+      "id": "C0-11b",
+      "timebox_minutes": 20,
+      "depends_on": [
+        "C0-11a"
+      ],
+      "required_gates": [],
+      "goal": "`msgloom/persistence/a2_schema.py` (DB owner) / 精确 A2 受约束 DDL、FK/index/unique/size bounds 与 versioned producer marker；依赖 C0-11a 审阅",
+      "edit_paths": [
+        "msgloom/persistence/a2_schema.py",
+        "tests/a2_kedro/test_c0_11b.py"
+      ],
+      "effort": "high",
+      "read_only_review": false,
+      "delivery_files": [
+        "msgloom/persistence/a2_schema.py",
+        "tests/a2_kedro/test_c0_11b.py"
+      ],
+      "model": "Claude Code Sonnet (verify installed model and effort)",
+      "owner": "database-single-owner",
+      "verify": [
+        "Dedicated focused positive + negative case",
+        "Actual executable exit code",
+        "Ruff, Pyright when relevant, pre-commit/CI"
+      ],
+      "exclusive_resources": [
+        "database-single-writer"
+      ],
+      "state": "PLANNED_NOT_STARTED"
+    },
+    {
+      "id": "C0-11c",
+      "timebox_minutes": 20,
+      "depends_on": [
+        "C0-11b"
+      ],
+      "required_gates": [],
+      "goal": "`msgloom/persistence/schema_store.py` + migration CLI (DB owner) / 普通 Phase1Store.open 同时兼容旧/新但绝不自动升级；显式 maintenance CLI + schema version activation，回滚预案",
+      "edit_paths": [
+        "msgloom/persistence/schema_store.py",
+        "msgloom/cli/a2_schema_migration.py",
+        "tests/a2_kedro/test_c0_11c.py"
+      ],
+      "effort": "high",
+      "read_only_review": false,
+      "delivery_files": [
+        "msgloom/persistence/schema_store.py",
+        "msgloom/cli/a2_schema_migration.py",
+        "tests/a2_kedro/test_c0_11c.py"
+      ],
+      "model": "Claude Code Sonnet (verify installed model and effort)",
+      "owner": "database-single-owner",
+      "verify": [
+        "Dedicated focused positive + negative case",
+        "Actual executable exit code",
+        "Ruff, Pyright when relevant, pre-commit/CI"
+      ],
+      "exclusive_resources": [
+        "database-single-writer"
+      ],
+      "state": "PLANNED_NOT_STARTED"
+    },
+    {
+      "id": "C0-11d",
+      "timebox_minutes": 20,
+      "depends_on": [
+        "C0-11c"
+      ],
+      "required_gates": [],
+      "goal": "`tests/persistence/test_a2_schema_migrations.py` / v2/v3/v4→新 revision、错误表名/索引/触发器、DDL 失败回滚、旧 binary 拒新结构时备份恢复",
+      "edit_paths": [
+        "tests/persistence/test_a2_schema_migrations.py"
+      ],
+      "effort": "medium",
+      "read_only_review": false,
+      "delivery_files": [
+        "tests/persistence/test_a2_schema_migrations.py"
+      ],
+      "model": "Claude Code Sonnet (verify installed model and effort)",
+      "owner": "database-single-owner",
+      "verify": [
+        "Dedicated focused positive + negative case",
+        "Actual executable exit code",
+        "Ruff, Pyright when relevant, pre-commit/CI"
+      ],
+      "exclusive_resources": [
+        "database-single-writer"
+      ],
+      "state": "PLANNED_NOT_STARTED"
+    },
+    {
+      "id": "C0-11e",
+      "timebox_minutes": 20,
+      "depends_on": [
+        "C0-11c"
+      ],
+      "required_gates": [],
+      "goal": "兼容阶段真实数据测试 / schema4 的现有 Phase1Store.open 不得修改表或版本；显式迁移必须有受审查命令及 A1/CLI 开库冒烟测试",
+      "edit_paths": [
+        "tests/persistence/test_a2_compat_open.py"
+      ],
+      "effort": "high",
+      "read_only_review": false,
+      "delivery_files": [
+        "tests/persistence/test_a2_compat_open.py"
+      ],
+      "model": "Claude Code Sonnet (verify installed model and effort)",
+      "owner": "database-single-owner",
+      "verify": [
+        "Dedicated focused positive + negative case",
+        "Actual executable exit code",
+        "Ruff, Pyright when relevant, pre-commit/CI"
+      ],
+      "exclusive_resources": [
+        "database-single-writer"
+      ],
+      "state": "PLANNED_NOT_STARTED"
+    },
+    {
+      "id": "C0-12a",
+      "timebox_minutes": 20,
+      "depends_on": [
+        "C0-00"
+      ],
+      "required_gates": [],
+      "goal": "`msgloom/persistence/a2_acceptance_models.py` / closed kind/version allowlist + input-only logical key / StageResult metadata SHA / payload sha 长度、旧 prepared@1 拒绝",
+      "edit_paths": [
+        "msgloom/persistence/a2_acceptance_models.py",
+        "tests/a2_kedro/test_c0_12a.py"
+      ],
+      "effort": "high",
+      "read_only_review": false,
+      "delivery_files": [
+        "msgloom/persistence/a2_acceptance_models.py",
+        "tests/a2_kedro/test_c0_12a.py"
+      ],
+      "model": "Claude Code Sonnet (verify installed model and effort)",
+      "owner": "database-single-owner",
+      "verify": [
+        "Dedicated focused positive + negative case",
+        "Actual executable exit code",
+        "Ruff, Pyright when relevant, pre-commit/CI"
+      ],
+      "exclusive_resources": [
+        "database-single-writer"
+      ],
+      "state": "PLANNED_NOT_STARTED"
+    },
+    {
+      "id": "C0-12b",
+      "timebox_minutes": 20,
+      "depends_on": [
+        "C0-11b",
+        "C0-12a"
+      ],
+      "required_gates": [],
+      "goal": "`msgloom/persistence/a2_store.py` (DB owner) / `BEGIN IMMEDIATE` 内 live claim+required_inputs+plan 验证，原始 publisher receipt 绑定，单条唯一键 insert",
+      "edit_paths": [
+        "msgloom/persistence/a2_store.py",
+        "tests/a2_kedro/test_c0_12b.py"
+      ],
+      "effort": "high",
+      "read_only_review": false,
+      "delivery_files": [
+        "msgloom/persistence/a2_store.py",
+        "tests/a2_kedro/test_c0_12b.py"
+      ],
+      "model": "Claude Code Sonnet (verify installed model and effort)",
+      "owner": "database-single-owner",
+      "verify": [
+        "Dedicated focused positive + negative case",
+        "Actual executable exit code",
+        "Ruff, Pyright when relevant, pre-commit/CI"
+      ],
+      "exclusive_resources": [
+        "database-single-writer"
+      ],
+      "state": "PLANNED_NOT_STARTED"
+    },
+    {
+      "id": "C0-12c",
+      "timebox_minutes": 20,
+      "depends_on": [
+        "C0-12b"
+      ],
+      "required_gates": [],
+      "goal": "`msgloom/persistence/a2_acceptance_async.py` (DB owner) / 公开受控 async facade：写入通过现有 semaphore、cancel drain、close 机制，禁止研究版私有 _store/to_thread 直连",
+      "edit_paths": [
+        "msgloom/persistence/a2_acceptance_async.py",
+        "tests/a2_kedro/test_c0_12c.py",
+        "msgloom/persistence/async_store.py"
+      ],
+      "effort": "high",
+      "read_only_review": false,
+      "delivery_files": [
+        "msgloom/persistence/a2_acceptance_async.py",
+        "tests/a2_kedro/test_c0_12c.py",
+        "msgloom/persistence/async_store.py"
+      ],
+      "model": "Claude Code Sonnet (verify installed model and effort)",
+      "owner": "database-single-owner",
+      "verify": [
+        "Dedicated focused positive + negative case",
+        "Actual executable exit code",
+        "Ruff, Pyright when relevant, pre-commit/CI"
+      ],
+      "exclusive_resources": [
+        "database-single-writer",
+        "path:msgloom/persistence/async_store.py"
+      ],
+      "state": "PLANNED_NOT_STARTED"
+    },
+    {
+      "id": "C0-12d",
+      "timebox_minutes": 20,
+      "depends_on": [
+        "C0-12c"
+      ],
+      "required_gates": [],
+      "goal": "`tests/persistence/test_a2_acceptance.py` / 同 key 跨 attempts 重放、不同 status/limitations/metadata sha 冲突、两个合法 claim 并发、post-commit cancel/read-back，无重复 accepted",
+      "edit_paths": [
+        "tests/persistence/test_a2_acceptance.py"
+      ],
+      "effort": "medium",
+      "read_only_review": false,
+      "delivery_files": [
+        "tests/persistence/test_a2_acceptance.py"
+      ],
+      "model": "Claude Code Sonnet (verify installed model and effort)",
+      "owner": "database-single-owner",
+      "verify": [
+        "Dedicated focused positive + negative case",
+        "Actual executable exit code",
+        "Ruff, Pyright when relevant, pre-commit/CI"
+      ],
+      "exclusive_resources": [
+        "database-single-writer"
+      ],
+      "state": "PLANNED_NOT_STARTED"
+    },
+    {
+      "id": "C0-13",
+      "timebox_minutes": 20,
+      "depends_on": [
+        "C0-11b",
+        "C0-09"
+      ],
+      "required_gates": [],
+      "goal": "`msgloom/persistence/a2_held_store.py` / 可查询 bounded A2-held index，workset-scoped，幂等冲突拒绝，用户隐私 safe status",
+      "edit_paths": [
+        "msgloom/persistence/a2_held_store.py",
+        "tests/a2_kedro/test_c0_13.py"
+      ],
+      "effort": "medium",
+      "read_only_review": false,
+      "delivery_files": [
+        "msgloom/persistence/a2_held_store.py",
+        "tests/a2_kedro/test_c0_13.py"
+      ],
+      "model": "Claude Code Sonnet (verify installed model and effort)",
+      "owner": "database-single-owner",
+      "verify": [
+        "Dedicated focused positive + negative case",
+        "Actual executable exit code",
+        "Ruff, Pyright when relevant, pre-commit/CI"
+      ],
+      "exclusive_resources": [
+        "database-single-writer"
+      ],
+      "state": "PLANNED_NOT_STARTED"
+    },
+    {
+      "id": "C0-13a",
+      "timebox_minutes": 20,
+      "depends_on": [
+        "C0-13",
+        "C0-12c"
+      ],
+      "required_gates": [],
+      "goal": "Held/receipt 受控 async facade / 新公开 adapter 通过 Phase1Persistence 的 bounded semaphore、cancel drain、close 安全路径；不用私有 _store/to_thread 直写",
+      "edit_paths": [
+        "msgloom/persistence/a2_held_receipt_async.py",
+        "tests/persistence/test_a2_held_receipt_async.py"
+      ],
+      "effort": "high",
+      "read_only_review": false,
+      "delivery_files": [
+        "msgloom/persistence/a2_held_receipt_async.py",
+        "tests/persistence/test_a2_held_receipt_async.py"
+      ],
+      "model": "Claude Code Sonnet (verify installed model and effort)",
+      "owner": "database-single-owner",
+      "verify": [
+        "Dedicated focused positive + negative case",
+        "Actual executable exit code",
+        "Ruff, Pyright when relevant, pre-commit/CI"
+      ],
+      "exclusive_resources": [
+        "database-single-writer"
+      ],
+      "state": "PLANNED_NOT_STARTED"
+    },
+    {
+      "id": "C0-14a",
+      "timebox_minutes": 20,
+      "depends_on": [
+        "C0-10",
+        "C0-12d",
+        "C0-13"
+      ],
+      "required_gates": [],
+      "goal": "`msgloom/persistence/a2_receipt_store.py` (DB owner) / SQL 外 bounded receipt/source payload proof；root/基线/transition 逐项覆盖 + publisher 原始 claim history",
+      "edit_paths": [
+        "msgloom/persistence/a2_receipt_store.py",
+        "tests/a2_kedro/test_c0_14a.py"
+      ],
+      "effort": "high",
+      "read_only_review": false,
+      "delivery_files": [
+        "msgloom/persistence/a2_receipt_store.py",
+        "tests/a2_kedro/test_c0_14a.py"
+      ],
+      "model": "Claude Code Sonnet (verify installed model and effort)",
+      "owner": "database-single-owner",
+      "verify": [
+        "Dedicated focused positive + negative case",
+        "Actual executable exit code",
+        "Ruff, Pyright when relevant, pre-commit/CI"
+      ],
+      "exclusive_resources": [
+        "database-single-writer"
+      ],
+      "state": "PLANNED_NOT_STARTED"
+    },
+    {
+      "id": "C0-14b",
+      "timebox_minutes": 20,
+      "depends_on": [
+        "C0-14a",
+        "C0-11c"
+      ],
+      "required_gates": [],
+      "goal": "`msgloom/persistence/a2_workset_finalize.py` / `intake_completion.py` (DB owner) / **新版本 v2 finalize**：从真实 pending Workset 在单事务里写新 receipt + 更新旧 intake_worksets terminal/status/refs，metadata-only recheck",
+      "edit_paths": [
+        "msgloom/persistence/a2_workset_finalize.py",
+        "msgloom/persistence/intake_completion.py",
+        "tests/a2_kedro/test_c0_14b.py"
+      ],
+      "effort": "high",
+      "read_only_review": false,
+      "delivery_files": [
+        "msgloom/persistence/a2_workset_finalize.py",
+        "msgloom/persistence/intake_completion.py",
+        "tests/a2_kedro/test_c0_14b.py"
+      ],
+      "model": "Claude Code Sonnet (verify installed model and effort)",
+      "owner": "database-single-owner",
+      "verify": [
+        "Dedicated focused positive + negative case",
+        "Actual executable exit code",
+        "Ruff, Pyright when relevant, pre-commit/CI"
+      ],
+      "exclusive_resources": [
+        "database-single-writer"
+      ],
+      "state": "PLANNED_NOT_STARTED"
+    },
+    {
+      "id": "C0-14c",
+      "timebox_minutes": 20,
+      "depends_on": [
+        "C0-14b"
+      ],
+      "required_gates": [],
+      "goal": "`msgloom/persistence/a2_producer_binding.py` (DB owner) / v1/v2 双向 writer fence；一个 Workset 不得由 legacy+Kedro 两边同时终结；混合 attempts 的 accepted-stage history 允许，但受 v2 proof 限制",
+      "edit_paths": [
+        "msgloom/persistence/a2_producer_binding.py",
+        "tests/a2_kedro/test_c0_14c.py",
+        "msgloom/persistence/intake_store.py"
+      ],
+      "effort": "high",
+      "read_only_review": false,
+      "delivery_files": [
+        "msgloom/persistence/a2_producer_binding.py",
+        "tests/a2_kedro/test_c0_14c.py",
+        "msgloom/persistence/intake_store.py"
+      ],
+      "model": "Claude Code Sonnet (verify installed model and effort)",
+      "owner": "database-single-owner",
+      "verify": [
+        "Dedicated focused positive + negative case",
+        "Actual executable exit code",
+        "Ruff, Pyright when relevant, pre-commit/CI"
+      ],
+      "exclusive_resources": [
+        "database-single-writer"
+      ],
+      "state": "PLANNED_NOT_STARTED"
+    },
+    {
+      "id": "C0-14d",
+      "timebox_minutes": 25,
+      "depends_on": [
+        "C0-14c",
+        "C0-13",
+        "C0-13a"
+      ],
+      "required_gates": [],
+      "goal": "`tests/persistence/test_a2_v2_finalization.py` / held-only→terminal INCOMPLETE、pending queue 消失、v1/v2 竞争、缺 root/伪造 refs、claim 丢失与 crash between update/receipt 原子回滚",
+      "edit_paths": [
+        "tests/persistence/test_a2_v2_finalization.py"
+      ],
+      "effort": "medium",
+      "read_only_review": false,
+      "delivery_files": [
+        "tests/persistence/test_a2_v2_finalization.py"
+      ],
+      "model": "Claude Code Sonnet (verify installed model and effort)",
+      "owner": "database-single-owner",
+      "verify": [
+        "Dedicated focused positive + negative case",
+        "Actual executable exit code",
+        "Ruff, Pyright when relevant, pre-commit/CI"
+      ],
+      "exclusive_resources": [
+        "database-single-writer"
+      ],
+      "state": "PLANNED_NOT_STARTED"
+    },
+    {
+      "id": "C0-14e",
+      "timebox_minutes": 20,
+      "depends_on": [
+        "C0-14b",
+        "C0-14c",
+        "C0-13a"
+      ],
+      "required_gates": [],
+      "goal": "v2 finalizer 的 async facade / 小型委托方法/新模块，真实 SQLite postcommit cancel 读回；原有 async_store.py 保持少于 500 行",
+      "edit_paths": [
+        "msgloom/persistence/a2_finalize_async.py",
+        "tests/persistence/test_a2_finalize_async.py",
+        "msgloom/persistence/async_store.py"
+      ],
+      "effort": "high",
+      "read_only_review": false,
+      "delivery_files": [
+        "msgloom/persistence/a2_finalize_async.py",
+        "tests/persistence/test_a2_finalize_async.py",
+        "msgloom/persistence/async_store.py"
+      ],
+      "model": "Claude Code Sonnet (verify installed model and effort)",
+      "owner": "database-single-owner",
+      "verify": [
+        "Dedicated focused positive + negative case",
+        "Actual executable exit code",
+        "Ruff, Pyright when relevant, pre-commit/CI"
+      ],
+      "exclusive_resources": [
+        "database-single-writer",
+        "path:msgloom/persistence/async_store.py"
+      ],
+      "state": "PLANNED_NOT_STARTED"
+    },
+    {
+      "id": "C0-15",
+      "timebox_minutes": 20,
+      "depends_on": [
+        "C0-00"
+      ],
+      "required_gates": [],
+      "goal": "`msgloom/a2_kedro/application_contract.py` / 公开 `async def prepare(...)`，前置输入/authority pin 检查，CancelledError/timeout/status 分类，不创建 loop",
+      "edit_paths": [
+        "msgloom/a2_kedro/application_contract.py",
+        "tests/a2_kedro/test_c0_15.py"
+      ],
+      "effort": "high",
+      "read_only_review": false,
+      "delivery_files": [
+        "msgloom/a2_kedro/application_contract.py",
+        "tests/a2_kedro/test_c0_15.py"
+      ],
+      "model": "Claude Code Sonnet (verify installed model and effort)",
+      "owner": "contract-owner",
+      "verify": [
+        "Dedicated focused positive + negative case",
+        "Actual executable exit code",
+        "Ruff, Pyright when relevant, pre-commit/CI"
+      ],
+      "exclusive_resources": [],
+      "state": "PLANNED_NOT_STARTED"
+    },
+    {
+      "id": "C0-16",
+      "timebox_minutes": 20,
+      "depends_on": [
+        "C0-00"
+      ],
+      "required_gates": [],
+      "goal": "`msgloom/a2_kedro/partition_policy.py` / 有版本、有限 partition/workset scope，避免跨 Workset 不合理 merge；资源上限由 P1/P2 profiling 修正",
+      "edit_paths": [
+        "msgloom/a2_kedro/partition_policy.py",
+        "tests/a2_kedro/test_c0_16.py"
+      ],
+      "effort": "medium",
+      "read_only_review": false,
+      "delivery_files": [
+        "msgloom/a2_kedro/partition_policy.py",
+        "tests/a2_kedro/test_c0_16.py"
+      ],
+      "model": "Claude Code Sonnet (verify installed model and effort)",
+      "owner": "contract-owner",
+      "verify": [
+        "Dedicated focused positive + negative case",
+        "Actual executable exit code",
+        "Ruff, Pyright when relevant, pre-commit/CI"
+      ],
+      "exclusive_resources": [],
+      "state": "PLANNED_NOT_STARTED"
+    },
+    {
+      "id": "C0-17a",
+      "timebox_minutes": 20,
+      "depends_on": [
+        "C0-07"
+      ],
+      "required_gates": [],
+      "goal": "`msgloom/triage_input/` models/codec (A3 owner) / **明确新 `triage_input@2`**，v1 不能读 @2 refs；设计新 selected roles、binding/snapshot digest/part state；A3 fixture 原样历史保留",
+      "edit_paths": [
+        "msgloom/triage_input/models_v2.py",
+        "tests/a2_kedro/test_c0_17a.py"
+      ],
+      "effort": "high",
+      "read_only_review": false,
+      "delivery_files": [
+        "msgloom/triage_input/models_v2.py",
+        "tests/a2_kedro/test_c0_17a.py"
+      ],
+      "model": "Claude Code Sonnet (verify installed model and effort)",
+      "owner": "a3-single-owner",
+      "verify": [
+        "Dedicated focused positive + negative case",
+        "Actual executable exit code",
+        "Ruff, Pyright when relevant, pre-commit/CI"
+      ],
+      "exclusive_resources": [],
+      "state": "PLANNED_NOT_STARTED"
+    },
+    {
+      "id": "C0-17b",
+      "timebox_minutes": 20,
+      "depends_on": [
+        "C0-17a"
+      ],
+      "required_gates": [],
+      "goal": "`msgloom/triage_input/codec_v2.py` (A3 owner) / 规范化编码、新 binding hash 和 prepared/filter/group@2 kind/version 白名单；strict canonical round-trip；未知版本拒绝",
+      "edit_paths": [
+        "msgloom/triage_input/codec_v2.py",
+        "tests/a2_kedro/test_c0_17b.py"
+      ],
+      "effort": "medium",
+      "read_only_review": false,
+      "delivery_files": [
+        "msgloom/triage_input/codec_v2.py",
+        "tests/a2_kedro/test_c0_17b.py"
+      ],
+      "model": "Claude Code Sonnet (verify installed model and effort)",
+      "owner": "a3-single-owner",
+      "verify": [
+        "Dedicated focused positive + negative case",
+        "Actual executable exit code",
+        "Ruff, Pyright when relevant, pre-commit/CI"
+      ],
+      "exclusive_resources": [],
+      "state": "PLANNED_NOT_STARTED"
+    },
+    {
+      "id": "C0-17c",
+      "timebox_minutes": 20,
+      "depends_on": [
+        "C0-17b"
+      ],
+      "required_gates": [],
+      "goal": "`msgloom/triage_pipeline/handler.py` + v2 adapter (A3 owner) / A3 runner 能处理 verified triage_input@2 和 prepared@2/limitations；旧 triage_input@1/PreparedRecord 仍可读，任何 lossy projection 不默许",
+      "edit_paths": [
+        "msgloom/triage_pipeline/handler.py",
+        "msgloom/triage_input/adapter_v2.py",
+        "tests/a2_kedro/test_c0_17c.py"
+      ],
+      "effort": "high",
+      "read_only_review": false,
+      "delivery_files": [
+        "msgloom/triage_pipeline/handler.py",
+        "msgloom/triage_input/adapter_v2.py",
+        "tests/a2_kedro/test_c0_17c.py"
+      ],
+      "model": "Claude Code Sonnet (verify installed model and effort)",
+      "owner": "a3-single-owner",
+      "verify": [
+        "Dedicated focused positive + negative case",
+        "Actual executable exit code",
+        "Ruff, Pyright when relevant, pre-commit/CI"
+      ],
+      "exclusive_resources": [],
+      "state": "PLANNED_NOT_STARTED"
+    },
+    {
+      "id": "C0-17d",
+      "timebox_minutes": 20,
+      "depends_on": [
+        "C0-17c"
+      ],
+      "required_gates": [],
+      "goal": "`tests/triage_input/test_a2_v2_compat.py` / v1/v2 digest/parts/selected roles、A3/A5 历史与新版本 golden、partial/held 不丢失",
+      "edit_paths": [
+        "tests/triage_input/test_a2_v2_compat.py"
+      ],
+      "effort": "medium",
+      "read_only_review": false,
+      "delivery_files": [
+        "tests/triage_input/test_a2_v2_compat.py"
+      ],
+      "model": "Claude Code Sonnet (verify installed model and effort)",
+      "owner": "a3-single-owner",
+      "verify": [
+        "Dedicated focused positive + negative case",
+        "Actual executable exit code",
+        "Ruff, Pyright when relevant, pre-commit/CI"
+      ],
+      "exclusive_resources": [],
+      "state": "PLANNED_NOT_STARTED"
+    },
+    {
+      "id": "C0-17e",
+      "timebox_minutes": 20,
+      "depends_on": [
+        "C0-17c"
+      ],
+      "required_gates": [],
+      "goal": "A3 io_mixin 支持 v2 / triage_pipeline/io_mixin.py 读取 prepared@2 和历史 prepared@1，以新 codec/adapter 校验来源限制",
+      "edit_paths": [
+        "msgloom/triage_pipeline/io_mixin.py",
+        "tests/triage_pipeline/test_v2_io.py"
+      ],
+      "effort": "high",
+      "read_only_review": false,
+      "delivery_files": [
+        "msgloom/triage_pipeline/io_mixin.py",
+        "tests/triage_pipeline/test_v2_io.py"
+      ],
+      "model": "Claude Code Sonnet (verify installed model and effort)",
+      "owner": "a3-single-owner",
+      "verify": [
+        "Dedicated focused positive + negative case",
+        "Actual executable exit code",
+        "Ruff, Pyright when relevant, pre-commit/CI"
+      ],
+      "exclusive_resources": [],
+      "state": "PLANNED_NOT_STARTED"
+    },
+    {
+      "id": "C0-17f",
+      "timebox_minutes": 20,
+      "depends_on": [
+        "C0-17e"
+      ],
+      "required_gates": [],
+      "goal": "A3 plan/models 来源版本 / triage_pipeline/models.py 的 typed plan 与 A3 selection binding 接收 triage_input@2、旧 @1 不变，完整 golden",
+      "edit_paths": [
+        "msgloom/triage_pipeline/models.py",
+        "tests/triage_pipeline/test_v2_plan_versions.py"
+      ],
+      "effort": "high",
+      "read_only_review": false,
+      "delivery_files": [
+        "msgloom/triage_pipeline/models.py",
+        "tests/triage_pipeline/test_v2_plan_versions.py"
+      ],
+      "model": "Claude Code Sonnet (verify installed model and effort)",
+      "owner": "a3-single-owner",
+      "verify": [
+        "Dedicated focused positive + negative case",
+        "Actual executable exit code",
+        "Ruff, Pyright when relevant, pre-commit/CI"
+      ],
+      "exclusive_resources": [],
+      "state": "PLANNED_NOT_STARTED"
+    },
+    {
+      "id": "C0-17g",
+      "timebox_minutes": 20,
+      "depends_on": [
+        "C0-17f"
+      ],
+      "required_gates": [],
+      "goal": "A3 limitations 和 terminal proof / triage_pipeline/limitations.py 与 finalize_mixin.py 传播 INCOMPLETE、held 和原始 provenance；不改历史结果",
+      "edit_paths": [
+        "msgloom/triage_pipeline/limitations.py",
+        "msgloom/triage_pipeline/finalize_mixin.py",
+        "tests/triage_pipeline/test_v2_limitations.py"
+      ],
+      "effort": "high",
+      "read_only_review": false,
+      "delivery_files": [
+        "msgloom/triage_pipeline/limitations.py",
+        "msgloom/triage_pipeline/finalize_mixin.py",
+        "tests/triage_pipeline/test_v2_limitations.py"
+      ],
+      "model": "Claude Code Sonnet (verify installed model and effort)",
+      "owner": "a3-single-owner",
+      "verify": [
+        "Dedicated focused positive + negative case",
+        "Actual executable exit code",
+        "Ruff, Pyright when relevant, pre-commit/CI"
+      ],
+      "exclusive_resources": [],
+      "state": "PLANNED_NOT_STARTED"
+    },
+    {
+      "id": "C0-18",
+      "timebox_minutes": 20,
+      "depends_on": [
+        "C0-15",
+        "C0-13"
+      ],
+      "required_gates": [],
+      "goal": "`msgloom/cli/` 只读 status 类型定义 / trusted scoped progress + typed exceptions：BLOCKED source/reference/cat、busy INCOMPLETE、claim loss FAILED、held terminal",
+      "edit_paths": [
+        "msgloom/cli/a2_scope_status.py",
+        "tests/a2_kedro/test_c0_18.py"
+      ],
+      "effort": "medium",
+      "read_only_review": false,
+      "delivery_files": [
+        "msgloom/cli/a2_scope_status.py",
+        "tests/a2_kedro/test_c0_18.py"
+      ],
+      "model": "Claude Code Sonnet (verify installed model and effort)",
+      "owner": "contract-owner",
+      "verify": [
+        "Dedicated focused positive + negative case",
+        "Actual executable exit code",
+        "Ruff, Pyright when relevant, pre-commit/CI"
+      ],
+      "exclusive_resources": [
+        "path:msgloom/cli/a2_scope_status.py"
+      ],
+      "state": "PLANNED_NOT_STARTED"
+    },
+    {
+      "id": "C0-19",
+      "timebox_minutes": 20,
+      "depends_on": [
+        "C0-00",
+        "C0-07",
+        "C0-08",
+        "C0-10",
+        "C0-17b"
+      ],
+      "required_gates": [],
+      "goal": "dedicated golden fixture/tests / 确保 wire field name、codec canonical bytes、SHA/ID、扩展缺失、max bytes、未知版本拒绝、历史解码不变",
+      "edit_paths": [
+        "tests/a2_kedro/test_c0_schema_goldens.py"
+      ],
+      "effort": "medium",
+      "read_only_review": false,
+      "delivery_files": [
+        "tests/a2_kedro/test_c0_schema_goldens.py"
+      ],
+      "model": "Claude Code Sonnet (verify installed model and effort)",
+      "owner": "contract-owner",
+      "verify": [
+        "Dedicated focused positive + negative case",
+        "Actual executable exit code",
+        "Ruff, Pyright when relevant, pre-commit/CI"
+      ],
+      "exclusive_resources": [],
+      "state": "PLANNED_NOT_STARTED"
+    },
+    {
+      "id": "C0-20a",
+      "timebox_minutes": 20,
+      "depends_on": [
+        "C0-11d",
+        "C0-12d",
+        "C0-13",
+        "C0-14d",
+        "C0-17d",
+        "C0-18",
+        "C0-19",
+        "C0-14e",
+        "C0-17g",
+        "C0-21b",
+        "C0-22",
+        "C0-11e",
+        "C0-13a",
+        "C0-16"
+      ],
+      "required_gates": [],
+      "goal": "Integration owner / 依冻结 schema 合并 C0 codecs/sql/facade/A3，核实一个 reviewer 没有同时改其它所有者文件；运行 focused SQL 回归",
+      "edit_paths": [
+        "docs/notes/a2-v2-c0-integration-audit.md"
+      ],
+      "effort": "medium",
+      "read_only_review": false,
+      "delivery_files": [
+        "docs/notes/a2-v2-c0-integration-audit.md"
+      ],
+      "model": "Claude Code Sonnet (verify installed model and effort)",
+      "owner": "contract-owner",
+      "verify": [
+        "Dedicated focused positive + negative case",
+        "Actual executable exit code",
+        "Ruff, Pyright when relevant, pre-commit/CI"
+      ],
+      "exclusive_resources": [],
+      "state": "PLANNED_NOT_STARTED"
+    },
+    {
+      "id": "C0-20b",
+      "timebox_minutes": 20,
+      "depends_on": [
+        "C0-20a",
+        "C0-02",
+        "C0-21b",
+        "C0-22"
+      ],
+      "required_gates": [],
+      "goal": "Integration owner / 真实 A1 frozen Workset→v2 accepted-stage→terminal receipt finalizer→A3 triage_input@2 的端到端 SQLite fixture；不借用研究空 required_inputs claim",
+      "edit_paths": [
+        "tests/a2_kedro/integration/test_a1_workset_v2_receipt_a3.py"
+      ],
+      "effort": "high",
+      "read_only_review": false,
+      "delivery_files": [
+        "tests/a2_kedro/integration/test_a1_workset_v2_receipt_a3.py"
+      ],
+      "model": "Claude Code Sonnet (verify installed model and effort)",
+      "owner": "contract-owner",
+      "verify": [
+        "Dedicated focused positive + negative case",
+        "Actual executable exit code",
+        "Ruff, Pyright when relevant, pre-commit/CI"
+      ],
+      "exclusive_resources": [],
+      "state": "PLANNED_NOT_STARTED"
+    },
+    {
+      "id": "C0-20c",
+      "timebox_minutes": 20,
+      "depends_on": [
+        "C0-20b",
+        "F0-08",
+        "C0-21b",
+        "C0-22"
+      ],
+      "required_gates": [
+        "F0_PRODUCTION_ADMISSION"
+      ],
+      "goal": "Independent reviewer / exact SHA C0 v2 full production contract review + required CI；此前 R2 的 research ACCEPT 不代表 final C0 ACCEPT",
+      "edit_paths": [
+        "docs/notes/a2-v2-c0-independent-acceptance.md"
+      ],
+      "effort": "high",
+      "read_only_review": true,
+      "delivery_files": [
+        "docs/notes/a2-v2-c0-independent-acceptance.md"
+      ],
+      "model": "Claude Code Sonnet (verify installed model and effort)",
+      "owner": "independent-readonly-reviewer",
+      "verify": [
+        "Exact-SHA read-only review",
+        "No source writes or test-execution claims"
+      ],
+      "exclusive_resources": [],
+      "state": "PLANNED_NOT_STARTED"
+    },
+    {
+      "id": "C0-21a",
+      "timebox_minutes": 20,
+      "depends_on": [
+        "C0-00",
+        "C0-07",
+        "C0-08",
+        "C0-09",
+        "C0-10"
+      ],
+      "required_gates": [],
+      "goal": "新 A2 v2 registry factory / new ResultSchemaRegistry/SemanticDataRegistry factory with explicit closed all kind@version allowlist；不得悄悄修改 phase1() 旧 codec",
+      "edit_paths": [
+        "msgloom/persistence/a2_registry.py",
+        "tests/persistence/test_a2_registry_schema.py",
+        "msgloom/cli/composition.py"
+      ],
+      "effort": "high",
+      "read_only_review": false,
+      "delivery_files": [
+        "msgloom/persistence/a2_registry.py",
+        "tests/persistence/test_a2_registry_schema.py",
+        "msgloom/cli/composition.py"
+      ],
+      "model": "Claude Code Sonnet (verify installed model and effort)",
+      "owner": "contract-owner",
+      "verify": [
+        "Dedicated focused positive + negative case",
+        "Actual executable exit code",
+        "Ruff, Pyright when relevant, pre-commit/CI"
+      ],
+      "exclusive_resources": [
+        "path:msgloom/cli/composition.py"
+      ],
+      "state": "PLANNED_NOT_STARTED"
+    },
+    {
+      "id": "C0-21b",
+      "timebox_minutes": 20,
+      "depends_on": [
+        "C0-21a"
+      ],
+      "required_gates": [],
+      "goal": "v2 registry golden 和负面测试 / 所有新增 kind/version 有严格 canonical round-trip、错误 payload/未知 schema 拒绝，旧 registry 行为不变",
+      "edit_paths": [
+        "tests/persistence/test_a2_registry_compat.py"
+      ],
+      "effort": "medium",
+      "read_only_review": false,
+      "delivery_files": [
+        "tests/persistence/test_a2_registry_compat.py"
+      ],
+      "model": "Claude Code Sonnet (verify installed model and effort)",
+      "owner": "contract-owner",
+      "verify": [
+        "Dedicated focused positive + negative case",
+        "Actual executable exit code",
+        "Ruff, Pyright when relevant, pre-commit/CI"
+      ],
+      "exclusive_resources": [],
+      "state": "PLANNED_NOT_STARTED"
+    },
+    {
+      "id": "C0-22",
+      "timebox_minutes": 20,
+      "depends_on": [
+        "C0-11a",
+        "C0-12a",
+        "C0-03"
+      ],
+      "required_gates": [],
+      "goal": "中间 Stage 存储预算/保留政策 / per-artifact/per-workset 有限 bytes/条目数，单写入者、备份权限、PII retention 与历史兼容；安全 reviewer 审核",
+      "edit_paths": [
+        "docs/decisions/a2-v2-storage-budgets.md",
+        "tests/persistence/test_a2_stage_budgets.py"
+      ],
+      "effort": "high",
+      "read_only_review": false,
+      "delivery_files": [
+        "docs/decisions/a2-v2-storage-budgets.md",
+        "tests/persistence/test_a2_stage_budgets.py"
+      ],
+      "model": "Claude Code Sonnet (verify installed model and effort)",
+      "owner": "contract-owner",
+      "verify": [
+        "Dedicated focused positive + negative case",
+        "Actual executable exit code",
+        "Ruff, Pyright when relevant, pre-commit/CI"
+      ],
+      "exclusive_resources": [],
+      "state": "PLANNED_NOT_STARTED"
+    },
+    {
+      "id": "P1-01",
+      "timebox_minutes": 20,
+      "depends_on": [
+        "C0-20c",
+        "F0-10",
+        "C0-16"
+      ],
+      "required_gates": [
+        "F0_PRODUCTION_ADMISSION",
+        "C0_FINAL_ACCEPTED"
+      ],
+      "goal": "`msgloom/a2_kedro/graph.py` / 完整 K0–K11 拓扑，Kedro 是全 DAG authority；不存在外部旧 Handler 绕行",
+      "edit_paths": [
+        "msgloom/a2_kedro/graph.py",
+        "tests/a2_kedro/test_p1_01.py"
+      ],
+      "effort": "medium",
+      "read_only_review": false,
+      "delivery_files": [
+        "msgloom/a2_kedro/graph.py",
+        "tests/a2_kedro/test_p1_01.py"
+      ],
+      "model": "Claude Code Sonnet (verify installed model and effort)",
+      "owner": "kedro-runtime-owner",
+      "verify": [
+        "Dedicated focused positive + negative case",
+        "Actual executable exit code",
+        "Ruff, Pyright when relevant, pre-commit/CI"
+      ],
+      "exclusive_resources": [],
+      "state": "PLANNED_NOT_STARTED"
+    },
+    {
+      "id": "P1-02",
+      "timebox_minutes": 20,
+      "depends_on": [
+        "C0-20c",
+        "F0-10"
+      ],
+      "required_gates": [
+        "F0_PRODUCTION_ADMISSION",
+        "C0_FINAL_ACCEPTED"
+      ],
+      "goal": "`catalog.py` / 编程方式 DataCatalog 明确封闭 dataset allowlist；拒绝未知 dataset 和动态 YAML 配置",
+      "edit_paths": [
+        "msgloom/a2_kedro/catalog.py",
+        "tests/a2_kedro/test_p1_02.py"
+      ],
+      "effort": "medium",
+      "read_only_review": false,
+      "delivery_files": [
+        "msgloom/a2_kedro/catalog.py",
+        "tests/a2_kedro/test_p1_02.py"
+      ],
+      "model": "Claude Code Sonnet (verify installed model and effort)",
+      "owner": "kedro-runtime-owner",
+      "verify": [
+        "Dedicated focused positive + negative case",
+        "Actual executable exit code",
+        "Ruff, Pyright when relevant, pre-commit/CI"
+      ],
+      "exclusive_resources": [],
+      "state": "PLANNED_NOT_STARTED"
+    },
+    {
+      "id": "P1-03",
+      "timebox_minutes": 20,
+      "depends_on": [
+        "P1-02",
+        "C0-02",
+        "F0-10"
+      ],
+      "required_gates": [
+        "F0_PRODUCTION_ADMISSION",
+        "C0_FINAL_ACCEPTED"
+      ],
+      "goal": "`datasets/handoff.py` / ExactHandoffDataset 只读 Workset + selection + exact A1 reread，外部 URI/path 不可接受",
+      "edit_paths": [
+        "msgloom/a2_kedro/datasets/handoff.py",
+        "tests/a2_kedro/test_p1_03.py",
+        "msgloom/a2_kedro/datasets/__init__.py"
+      ],
+      "effort": "medium",
+      "read_only_review": false,
+      "delivery_files": [
+        "msgloom/a2_kedro/datasets/handoff.py",
+        "tests/a2_kedro/test_p1_03.py",
+        "msgloom/a2_kedro/datasets/__init__.py"
+      ],
+      "model": "Claude Code Sonnet (verify installed model and effort)",
+      "owner": "kedro-runtime-owner",
+      "verify": [
+        "Dedicated focused positive + negative case",
+        "Actual executable exit code",
+        "Ruff, Pyright when relevant, pre-commit/CI"
+      ],
+      "exclusive_resources": [],
+      "state": "PLANNED_NOT_STARTED"
+    },
+    {
+      "id": "P1-04",
+      "timebox_minutes": 20,
+      "depends_on": [
+        "P1-03",
+        "F0-10"
+      ],
+      "required_gates": [
+        "F0_PRODUCTION_ADMISSION",
+        "C0_FINAL_ACCEPTED"
+      ],
+      "goal": "`datasets/evidence.py` / VerifiedEvidenceDataset 访问已签名 saved refs，SHA、边界、missing evidence 处理",
+      "edit_paths": [
+        "msgloom/a2_kedro/datasets/evidence.py",
+        "tests/a2_kedro/test_p1_04.py"
+      ],
+      "effort": "medium",
+      "read_only_review": false,
+      "delivery_files": [
+        "msgloom/a2_kedro/datasets/evidence.py",
+        "tests/a2_kedro/test_p1_04.py"
+      ],
+      "model": "Claude Code Sonnet (verify installed model and effort)",
+      "owner": "kedro-runtime-owner",
+      "verify": [
+        "Dedicated focused positive + negative case",
+        "Actual executable exit code",
+        "Ruff, Pyright when relevant, pre-commit/CI"
+      ],
+      "exclusive_resources": [],
+      "state": "PLANNED_NOT_STARTED"
+    },
+    {
+      "id": "P1-05",
+      "timebox_minutes": 25,
+      "depends_on": [
+        "P1-04",
+        "P2-11",
+        "F0-10"
+      ],
+      "required_gates": [
+        "F0_PRODUCTION_ADMISSION",
+        "C0_FINAL_ACCEPTED"
+      ],
+      "goal": "`datasets/parser.py` / Parser request save/load 走隔离 child service，真实超时、worker termination、partial 的限制",
+      "edit_paths": [
+        "msgloom/a2_kedro/datasets/parser.py",
+        "tests/a2_kedro/test_p1_05.py",
+        "msgloom/a2_kedro/parsers/registry.py"
+      ],
+      "effort": "medium",
+      "read_only_review": false,
+      "delivery_files": [
+        "msgloom/a2_kedro/datasets/parser.py",
+        "tests/a2_kedro/test_p1_05.py",
+        "msgloom/a2_kedro/parsers/registry.py"
+      ],
+      "model": "Claude Code Sonnet (verify installed model and effort)",
+      "owner": "kedro-runtime-owner",
+      "verify": [
+        "Dedicated focused positive + negative case",
+        "Actual executable exit code",
+        "Ruff, Pyright when relevant, pre-commit/CI"
+      ],
+      "exclusive_resources": [
+        "path:msgloom/a2_kedro/parsers/registry.py"
+      ],
+      "state": "PLANNED_NOT_STARTED"
+    },
+    {
+      "id": "P1-06",
+      "timebox_minutes": 20,
+      "depends_on": [
+        "P1-02",
+        "F0-10"
+      ],
+      "required_gates": [
+        "F0_PRODUCTION_ADMISSION",
+        "C0_FINAL_ACCEPTED"
+      ],
+      "goal": "`bridge.py` / 同步 worker 到 async loop 的 bounded `run_coroutine_threadsafe`：拒绝 wrong-thread/无限待",
+      "edit_paths": [
+        "msgloom/a2_kedro/bridge.py",
+        "tests/a2_kedro/test_p1_06.py"
+      ],
+      "effort": "high",
+      "read_only_review": false,
+      "delivery_files": [
+        "msgloom/a2_kedro/bridge.py",
+        "tests/a2_kedro/test_p1_06.py"
+      ],
+      "model": "Claude Code Sonnet (verify installed model and effort)",
+      "owner": "kedro-runtime-owner",
+      "verify": [
+        "Dedicated focused positive + negative case",
+        "Actual executable exit code",
+        "Ruff, Pyright when relevant, pre-commit/CI"
+      ],
+      "exclusive_resources": [],
+      "state": "PLANNED_NOT_STARTED"
+    },
+    {
+      "id": "P1-07",
+      "timebox_minutes": 20,
+      "depends_on": [
+        "P1-01",
+        "P1-06",
+        "F0-10"
+      ],
+      "required_gates": [
+        "F0_PRODUCTION_ADMISSION",
+        "C0_FINAL_ACCEPTED"
+      ],
+      "goal": "`runner.py` / 受控 `SequentialRunner(is_async=False)`，每个正在执行的线程和 coroutine 有 owner；repeated cancel drain",
+      "edit_paths": [
+        "msgloom/a2_kedro/runner.py",
+        "tests/a2_kedro/test_p1_07.py"
+      ],
+      "effort": "high",
+      "read_only_review": false,
+      "delivery_files": [
+        "msgloom/a2_kedro/runner.py",
+        "tests/a2_kedro/test_p1_07.py"
+      ],
+      "model": "Claude Code Sonnet (verify installed model and effort)",
+      "owner": "kedro-runtime-owner",
+      "verify": [
+        "Dedicated focused positive + negative case",
+        "Actual executable exit code",
+        "Ruff, Pyright when relevant, pre-commit/CI"
+      ],
+      "exclusive_resources": [],
+      "state": "PLANNED_NOT_STARTED"
+    },
+    {
+      "id": "P1-08",
+      "timebox_minutes": 20,
+      "depends_on": [
+        "P1-06",
+        "C0-12c",
+        "F0-10"
+      ],
+      "required_gates": [
+        "F0_PRODUCTION_ADMISSION",
+        "C0_FINAL_ACCEPTED"
+      ],
+      "goal": "`datasets/semantic.py` / ClaimFencedSemanticDataset，发布前后均查 live token、返回 durable ref，而非原地假结果",
+      "edit_paths": [
+        "msgloom/a2_kedro/datasets/semantic.py",
+        "tests/a2_kedro/test_p1_08.py"
+      ],
+      "effort": "high",
+      "read_only_review": false,
+      "delivery_files": [
+        "msgloom/a2_kedro/datasets/semantic.py",
+        "tests/a2_kedro/test_p1_08.py"
+      ],
+      "model": "Claude Code Sonnet (verify installed model and effort)",
+      "owner": "kedro-runtime-owner",
+      "verify": [
+        "Dedicated focused positive + negative case",
+        "Actual executable exit code",
+        "Ruff, Pyright when relevant, pre-commit/CI"
+      ],
+      "exclusive_resources": [],
+      "state": "PLANNED_NOT_STARTED"
+    },
+    {
+      "id": "P1-09",
+      "timebox_minutes": 20,
+      "depends_on": [
+        "P1-08",
+        "C0-08",
+        "F0-10"
+      ],
+      "required_gates": [
+        "F0_PRODUCTION_ADMISSION",
+        "C0_FINAL_ACCEPTED"
+      ],
+      "goal": "`datasets/transitions.py` / 单独 scoped transition claim，context refresh 不成为 message",
+      "edit_paths": [
+        "msgloom/a2_kedro/datasets/transitions.py",
+        "tests/a2_kedro/test_p1_09.py"
+      ],
+      "effort": "medium",
+      "read_only_review": false,
+      "delivery_files": [
+        "msgloom/a2_kedro/datasets/transitions.py",
+        "tests/a2_kedro/test_p1_09.py"
+      ],
+      "model": "Claude Code Sonnet (verify installed model and effort)",
+      "owner": "kedro-runtime-owner",
+      "verify": [
+        "Dedicated focused positive + negative case",
+        "Actual executable exit code",
+        "Ruff, Pyright when relevant, pre-commit/CI"
+      ],
+      "exclusive_resources": [],
+      "state": "PLANNED_NOT_STARTED"
+    },
+    {
+      "id": "P1-10",
+      "timebox_minutes": 25,
+      "depends_on": [
+        "P1-07",
+        "P1-08",
+        "F0-10"
+      ],
+      "required_gates": [
+        "F0_PRODUCTION_ADMISSION",
+        "C0_FINAL_ACCEPTED"
+      ],
+      "goal": "`resume.py` / 保存每个已接受 stage/progress；重启 read-back、跳过已验证 parse/save；冲突停机",
+      "edit_paths": [
+        "msgloom/a2_kedro/resume.py",
+        "tests/a2_kedro/test_p1_10.py"
+      ],
+      "effort": "medium",
+      "read_only_review": false,
+      "delivery_files": [
+        "msgloom/a2_kedro/resume.py",
+        "tests/a2_kedro/test_p1_10.py"
+      ],
+      "model": "Claude Code Sonnet (verify installed model and effort)",
+      "owner": "kedro-runtime-owner",
+      "verify": [
+        "Dedicated focused positive + negative case",
+        "Actual executable exit code",
+        "Ruff, Pyright when relevant, pre-commit/CI"
+      ],
+      "exclusive_resources": [],
+      "state": "PLANNED_NOT_STARTED"
+    },
+    {
+      "id": "P1-11",
+      "timebox_minutes": 20,
+      "depends_on": [
+        "P1-02",
+        "F0-10"
+      ],
+      "required_gates": [
+        "F0_PRODUCTION_ADMISSION",
+        "C0_FINAL_ACCEPTED"
+      ],
+      "goal": "`security.py` / test / 无 Kedro CLI/telemetry/network、隐私安全 logging、静态 node/dataset 名",
+      "edit_paths": [
+        "msgloom/a2_kedro/security.py",
+        "tests/a2_kedro/test_p1_11.py"
+      ],
+      "effort": "medium",
+      "read_only_review": false,
+      "delivery_files": [
+        "msgloom/a2_kedro/security.py",
+        "tests/a2_kedro/test_p1_11.py"
+      ],
+      "model": "Claude Code Sonnet (verify installed model and effort)",
+      "owner": "kedro-runtime-owner",
+      "verify": [
+        "Dedicated focused positive + negative case",
+        "Actual executable exit code",
+        "Ruff, Pyright when relevant, pre-commit/CI"
+      ],
+      "exclusive_resources": [],
+      "state": "PLANNED_NOT_STARTED"
+    },
+    {
+      "id": "P1-12a",
+      "timebox_minutes": 20,
+      "depends_on": [
+        "P1-05",
+        "P1-07",
+        "F0-10"
+      ],
+      "required_gates": [
+        "F0_PRODUCTION_ADMISSION",
+        "C0_FINAL_ACCEPTED"
+      ],
+      "goal": "Pi Linux delegated cgroup-v2 实验 / 原生 parser children 超时 kill/wait、CPU/GIL、无孤儿进程；不是 Q0 synthetic spin",
+      "edit_paths": [
+        "tests/a2_kedro/test_native_child_cgroup.py"
+      ],
+      "effort": "medium",
+      "read_only_review": false,
+      "delivery_files": [
+        "tests/a2_kedro/test_native_child_cgroup.py"
+      ],
+      "model": "Claude Code Sonnet (verify installed model and effort)",
+      "owner": "kedro-runtime-owner",
+      "verify": [
+        "Dedicated focused positive + negative case",
+        "Actual executable exit code",
+        "Ruff, Pyright when relevant, pre-commit/CI"
+      ],
+      "exclusive_resources": [],
+      "state": "PLANNED_NOT_STARTED"
+    },
+    {
+      "id": "P1-12b",
+      "timebox_minutes": 20,
+      "depends_on": [
+        "P1-12a",
+        "P2-10",
+        "F0-10"
+      ],
+      "required_gates": [
+        "F0_PRODUCTION_ADMISSION",
+        "C0_FINAL_ACCEPTED"
+      ],
+      "goal": "独占 benchmark slot / 记录真实 RSS/timing/jitter/lease E/L 与 cleanup margin，禁止并发负载污染实测",
+      "edit_paths": [
+        "docs/notes/a2-v2-p1-exclusive-benchmark.md"
+      ],
+      "effort": "high",
+      "read_only_review": false,
+      "delivery_files": [
+        "docs/notes/a2-v2-p1-exclusive-benchmark.md"
+      ],
+      "model": "Claude Code Sonnet (verify installed model and effort)",
+      "owner": "kedro-runtime-owner",
+      "verify": [
+        "Dedicated focused positive + negative case",
+        "Actual executable exit code",
+        "Ruff, Pyright when relevant, pre-commit/CI"
+      ],
+      "exclusive_resources": [
+        "pi-exclusive-benchmark-slot"
+      ],
+      "state": "PLANNED_NOT_STARTED"
+    },
+    {
+      "id": "P1-13",
+      "timebox_minutes": 25,
+      "depends_on": [
+        "P1-01",
+        "P1-03",
+        "P1-04",
+        "P1-05",
+        "P1-07",
+        "P1-08",
+        "P1-09",
+        "P1-10",
+        "P1-11",
+        "P1-12b",
+        "P1-14",
+        "P1-15",
+        "P1-16",
+        "P1-17",
+        "F0-10",
+        "P1-18",
+        "P2-08",
+        "P3-09"
+      ],
+      "required_gates": [
+        "F0_PRODUCTION_ADMISSION",
+        "C0_FINAL_ACCEPTED"
+      ],
+      "goal": "reviewer / 真实冻结 A1 selection → 完整 Kedro graph → durable v2 results，独立审查并要求 CI",
+      "edit_paths": [
+        "docs/notes/a2-v2-p1-independent-review.md"
+      ],
+      "effort": "high",
+      "read_only_review": true,
+      "delivery_files": [
+        "docs/notes/a2-v2-p1-independent-review.md"
+      ],
+      "model": "Claude Code Sonnet (verify installed model and effort)",
+      "owner": "independent-readonly-reviewer",
+      "verify": [
+        "Exact-SHA read-only review",
+        "No source writes or test-execution claims"
+      ],
+      "exclusive_resources": [],
+      "state": "PLANNED_NOT_STARTED"
+    },
+    {
+      "id": "P1-14",
+      "timebox_minutes": 20,
+      "depends_on": [
+        "P1-08",
+        "C0-07",
+        "F0-10"
+      ],
+      "required_gates": [
+        "F0_PRODUCTION_ADMISSION",
+        "C0_FINAL_ACCEPTED"
+      ],
+      "goal": "K6 prepared@2 组装节点 / 从已接受的 Parsed/Zones/Native refs 组装 verified prepared@2 和保存节点，失败/缺失仍 INCOMPLETE",
+      "edit_paths": [
+        "msgloom/a2_kedro/stages/prepare.py",
+        "tests/a2_kedro/test_k6_prepared_node.py",
+        "msgloom/a2_kedro/stages/__init__.py"
+      ],
+      "effort": "medium",
+      "read_only_review": false,
+      "delivery_files": [
+        "msgloom/a2_kedro/stages/prepare.py",
+        "tests/a2_kedro/test_k6_prepared_node.py",
+        "msgloom/a2_kedro/stages/__init__.py"
+      ],
+      "model": "Claude Code Sonnet (verify installed model and effort)",
+      "owner": "kedro-runtime-owner",
+      "verify": [
+        "Dedicated focused positive + negative case",
+        "Actual executable exit code",
+        "Ruff, Pyright when relevant, pre-commit/CI"
+      ],
+      "exclusive_resources": [],
+      "state": "PLANNED_NOT_STARTED"
+    },
+    {
+      "id": "P1-15",
+      "timebox_minutes": 20,
+      "depends_on": [
+        "P1-14",
+        "P1-09",
+        "P1-10",
+        "F0-10"
+      ],
+      "required_gates": [
+        "F0_PRODUCTION_ADMISSION",
+        "C0_FINAL_ACCEPTED"
+      ],
+      "goal": "K10 manifest 节点 / 只依赖已接受 stage refs/held/scoped transition batch 构造 immutable a2_result_manifest@1，不在外层 Handler 偷编排",
+      "edit_paths": [
+        "msgloom/a2_kedro/stages/manifest.py",
+        "tests/a2_kedro/test_k10_manifest_node.py"
+      ],
+      "effort": "medium",
+      "read_only_review": false,
+      "delivery_files": [
+        "msgloom/a2_kedro/stages/manifest.py",
+        "tests/a2_kedro/test_k10_manifest_node.py"
+      ],
+      "model": "Claude Code Sonnet (verify installed model and effort)",
+      "owner": "kedro-runtime-owner",
+      "verify": [
+        "Dedicated focused positive + negative case",
+        "Actual executable exit code",
+        "Ruff, Pyright when relevant, pre-commit/CI"
+      ],
+      "exclusive_resources": [],
+      "state": "PLANNED_NOT_STARTED"
+    },
+    {
+      "id": "P1-16",
+      "timebox_minutes": 20,
+      "depends_on": [
+        "P1-15",
+        "C0-14e",
+        "F0-10"
+      ],
+      "required_gates": [
+        "F0_PRODUCTION_ADMISSION",
+        "C0_FINAL_ACCEPTED"
+      ],
+      "goal": "K11 receipt/finalize 节点 / 从 Manifest 和 frozen roots 触发真实 v2 finalizer，claim 失效或 root 缺失不得 COMPLETE",
+      "edit_paths": [
+        "msgloom/a2_kedro/stages/finalize.py",
+        "tests/a2_kedro/test_k11_receipt_node.py"
+      ],
+      "effort": "high",
+      "read_only_review": false,
+      "delivery_files": [
+        "msgloom/a2_kedro/stages/finalize.py",
+        "tests/a2_kedro/test_k11_receipt_node.py"
+      ],
+      "model": "Claude Code Sonnet (verify installed model and effort)",
+      "owner": "kedro-runtime-owner",
+      "verify": [
+        "Dedicated focused positive + negative case",
+        "Actual executable exit code",
+        "Ruff, Pyright when relevant, pre-commit/CI"
+      ],
+      "exclusive_resources": [],
+      "state": "PLANNED_NOT_STARTED"
+    },
+    {
+      "id": "P1-17",
+      "timebox_minutes": 20,
+      "depends_on": [
+        "P1-05",
+        "P1-10",
+        "F0-10"
+      ],
+      "required_gates": [
+        "F0_PRODUCTION_ADMISSION",
+        "C0_FINAL_ACCEPTED"
+      ],
+      "goal": "Parser 子进程前 accepted-key gate / 只有无已接受输入键才 spawn parser child；读回旧 accepted StageResult/metadata SHA 后跳过重复计算",
+      "edit_paths": [
+        "msgloom/a2_kedro/stages/parse_gate.py",
+        "tests/a2_kedro/test_parser_resume_skip.py"
+      ],
+      "effort": "high",
+      "read_only_review": false,
+      "delivery_files": [
+        "msgloom/a2_kedro/stages/parse_gate.py",
+        "tests/a2_kedro/test_parser_resume_skip.py"
+      ],
+      "model": "Claude Code Sonnet (verify installed model and effort)",
+      "owner": "kedro-runtime-owner",
+      "verify": [
+        "Dedicated focused positive + negative case",
+        "Actual executable exit code",
+        "Ruff, Pyright when relevant, pre-commit/CI"
+      ],
+      "exclusive_resources": [],
+      "state": "PLANNED_NOT_STARTED"
+    },
+    {
+      "id": "P1-18",
+      "timebox_minutes": 20,
+      "depends_on": [
+        "P1-01",
+        "P1-14",
+        "P1-15",
+        "P1-16",
+        "P2-08",
+        "P2-09",
+        "P3-09",
+        "F0-10"
+      ],
+      "required_gates": [
+        "F0_PRODUCTION_ADMISSION",
+        "C0_FINAL_ACCEPTED"
+      ],
+      "goal": "K3/K4/K5/K7/K8 真实图绑定 / 在独立 graph_bindings.py 把已实现的 normalize/zones/native-relations/filter/group nodes 注入 K0–K11 的静态 Kedro graph，保存边与 accepted refs 明确、无 legacy Handler 外部执行",
+      "edit_paths": [
+        "msgloom/a2_kedro/graph_bindings.py",
+        "tests/a2_kedro/test_k3_k4_k5_k7_k8_bindings.py"
+      ],
+      "effort": "high",
+      "read_only_review": false,
+      "delivery_files": [
+        "msgloom/a2_kedro/graph_bindings.py",
+        "tests/a2_kedro/test_k3_k4_k5_k7_k8_bindings.py"
+      ],
+      "model": "Claude Code Sonnet (verify installed model and effort)",
+      "owner": "kedro-runtime-owner",
+      "verify": [
+        "Dedicated focused positive + negative case",
+        "Actual executable exit code",
+        "Ruff, Pyright when relevant, pre-commit/CI"
+      ],
+      "exclusive_resources": [],
+      "state": "PLANNED_NOT_STARTED"
+    },
+    {
+      "id": "P2-01",
+      "timebox_minutes": 20,
+      "depends_on": [
+        "C0-03",
+        "C0-04"
+      ],
+      "required_gates": [],
+      "goal": "MIME/HTML / 多 part、inline reply、编码损坏、原文位置、缺正文，原字节可追溯",
+      "edit_paths": [
+        "msgloom/a2_kedro/parsers/mime_html.py",
+        "tests/a2_kedro/test_p2_01.py",
+        "msgloom/a2_kedro/parsers/__init__.py"
+      ],
+      "effort": "medium",
+      "read_only_review": false,
+      "delivery_files": [
+        "msgloom/a2_kedro/parsers/mime_html.py",
+        "tests/a2_kedro/test_p2_01.py",
+        "msgloom/a2_kedro/parsers/__init__.py"
+      ],
+      "model": "Claude Code Sonnet (verify installed model and effort)",
+      "owner": "parser-owner",
+      "verify": [
+        "Dedicated focused positive + negative case",
+        "Actual executable exit code",
+        "Ruff, Pyright when relevant, pre-commit/CI"
+      ],
+      "exclusive_resources": [
+        "parser-registry-when-shared"
+      ],
+      "state": "PLANNED_NOT_STARTED"
+    },
+    {
+      "id": "P2-02",
+      "timebox_minutes": 20,
+      "depends_on": [
+        "C0-03",
+        "C0-04"
+      ],
+      "required_gates": [],
+      "goal": "JSON/plain / 字段/纯文本位置信息、NULL/空、exact saved body 与部分响应",
+      "edit_paths": [
+        "msgloom/a2_kedro/parsers/plain_json.py",
+        "tests/a2_kedro/test_p2_02.py"
+      ],
+      "effort": "medium",
+      "read_only_review": false,
+      "delivery_files": [
+        "msgloom/a2_kedro/parsers/plain_json.py",
+        "tests/a2_kedro/test_p2_02.py"
+      ],
+      "model": "Claude Code Sonnet (verify installed model and effort)",
+      "owner": "parser-owner",
+      "verify": [
+        "Dedicated focused positive + negative case",
+        "Actual executable exit code",
+        "Ruff, Pyright when relevant, pre-commit/CI"
+      ],
+      "exclusive_resources": [
+        "parser-registry-when-shared"
+      ],
+      "state": "PLANNED_NOT_STARTED"
+    },
+    {
+      "id": "P2-03",
+      "timebox_minutes": 20,
+      "depends_on": [
+        "C0-03",
+        "C0-04"
+      ],
+      "required_gates": [],
+      "goal": "PDF / page/text/layout、扫描/encrypted/限额，不能把空读取误判 COMPLETE",
+      "edit_paths": [
+        "msgloom/a2_kedro/parsers/pdf.py",
+        "tests/a2_kedro/test_p2_03.py"
+      ],
+      "effort": "medium",
+      "read_only_review": false,
+      "delivery_files": [
+        "msgloom/a2_kedro/parsers/pdf.py",
+        "tests/a2_kedro/test_p2_03.py"
+      ],
+      "model": "Claude Code Sonnet (verify installed model and effort)",
+      "owner": "parser-owner",
+      "verify": [
+        "Dedicated focused positive + negative case",
+        "Actual executable exit code",
+        "Ruff, Pyright when relevant, pre-commit/CI"
+      ],
+      "exclusive_resources": [
+        "parser-registry-when-shared"
+      ],
+      "state": "PLANNED_NOT_STARTED"
+    },
+    {
+      "id": "P2-04",
+      "timebox_minutes": 20,
+      "depends_on": [
+        "C0-03",
+        "C0-04"
+      ],
+      "required_gates": [],
+      "goal": "DOCX / 段落/表格顺序、unsupported embedding、source block ID",
+      "edit_paths": [
+        "msgloom/a2_kedro/parsers/docx.py",
+        "tests/a2_kedro/test_p2_04.py"
+      ],
+      "effort": "medium",
+      "read_only_review": false,
+      "delivery_files": [
+        "msgloom/a2_kedro/parsers/docx.py",
+        "tests/a2_kedro/test_p2_04.py"
+      ],
+      "model": "Claude Code Sonnet (verify installed model and effort)",
+      "owner": "parser-owner",
+      "verify": [
+        "Dedicated focused positive + negative case",
+        "Actual executable exit code",
+        "Ruff, Pyright when relevant, pre-commit/CI"
+      ],
+      "exclusive_resources": [
+        "parser-registry-when-shared"
+      ],
+      "state": "PLANNED_NOT_STARTED"
+    },
+    {
+      "id": "P2-05",
+      "timebox_minutes": 20,
+      "depends_on": [
+        "C0-03",
+        "C0-04"
+      ],
+      "required_gates": [],
+      "goal": "XLSX/XLSM/XLSB/ODS / sheet/cell/公式 vs cached 值、hidden、实际 parser 支持边界",
+      "edit_paths": [
+        "msgloom/a2_kedro/parsers/spreadsheets.py",
+        "tests/a2_kedro/test_p2_05.py"
+      ],
+      "effort": "medium",
+      "read_only_review": false,
+      "delivery_files": [
+        "msgloom/a2_kedro/parsers/spreadsheets.py",
+        "tests/a2_kedro/test_p2_05.py"
+      ],
+      "model": "Claude Code Sonnet (verify installed model and effort)",
+      "owner": "parser-owner",
+      "verify": [
+        "Dedicated focused positive + negative case",
+        "Actual executable exit code",
+        "Ruff, Pyright when relevant, pre-commit/CI"
+      ],
+      "exclusive_resources": [
+        "parser-registry-when-shared"
+      ],
+      "state": "PLANNED_NOT_STARTED"
+    },
+    {
+      "id": "P2-06",
+      "timebox_minutes": 20,
+      "depends_on": [
+        "C0-03",
+        "C0-04"
+      ],
+      "required_gates": [],
+      "goal": "额外附件/保存字节 / 附件缺失、parent/role、嵌套 MIME，不能默默丢附件",
+      "edit_paths": [
+        "msgloom/a2_kedro/parsers/attachments.py",
+        "tests/a2_kedro/test_p2_06.py"
+      ],
+      "effort": "medium",
+      "read_only_review": false,
+      "delivery_files": [
+        "msgloom/a2_kedro/parsers/attachments.py",
+        "tests/a2_kedro/test_p2_06.py"
+      ],
+      "model": "Claude Code Sonnet (verify installed model and effort)",
+      "owner": "parser-owner",
+      "verify": [
+        "Dedicated focused positive + negative case",
+        "Actual executable exit code",
+        "Ruff, Pyright when relevant, pre-commit/CI"
+      ],
+      "exclusive_resources": [
+        "parser-registry-when-shared"
+      ],
+      "state": "PLANNED_NOT_STARTED"
+    },
+    {
+      "id": "P2-07",
+      "timebox_minutes": 20,
+      "depends_on": [
+        "C0-05",
+        "P2-02"
+      ],
+      "required_gates": [],
+      "goal": "NormalizedContent / 严格 offset map、重复片段、不可逆 transform 标记限制",
+      "edit_paths": [
+        "msgloom/a2_kedro/normalize.py",
+        "tests/a2_kedro/test_p2_07.py"
+      ],
+      "effort": "medium",
+      "read_only_review": false,
+      "delivery_files": [
+        "msgloom/a2_kedro/normalize.py",
+        "tests/a2_kedro/test_p2_07.py"
+      ],
+      "model": "Claude Code Sonnet (verify installed model and effort)",
+      "owner": "parser-owner",
+      "verify": [
+        "Dedicated focused positive + negative case",
+        "Actual executable exit code",
+        "Ruff, Pyright when relevant, pre-commit/CI"
+      ],
+      "exclusive_resources": [
+        "parser-registry-when-shared"
+      ],
+      "state": "PLANNED_NOT_STARTED"
+    },
+    {
+      "id": "P2-08",
+      "timebox_minutes": 25,
+      "depends_on": [
+        "P2-07"
+      ],
+      "required_gates": [],
+      "goal": "ContentZones / 自述/引用/转发/签名/未知，重复引用与 attribution 独立测试",
+      "edit_paths": [
+        "msgloom/a2_kedro/zones.py",
+        "tests/a2_kedro/test_p2_08.py"
+      ],
+      "effort": "medium",
+      "read_only_review": false,
+      "delivery_files": [
+        "msgloom/a2_kedro/zones.py",
+        "tests/a2_kedro/test_p2_08.py"
+      ],
+      "model": "Claude Code Sonnet (verify installed model and effort)",
+      "owner": "parser-owner",
+      "verify": [
+        "Dedicated focused positive + negative case",
+        "Actual executable exit code",
+        "Ruff, Pyright when relevant, pre-commit/CI"
+      ],
+      "exclusive_resources": [
+        "parser-registry-when-shared"
+      ],
+      "state": "PLANNED_NOT_STARTED"
+    },
+    {
+      "id": "P2-09",
+      "timebox_minutes": 20,
+      "depends_on": [
+        "P2-01",
+        "P2-02",
+        "P2-03",
+        "P2-04",
+        "P2-05",
+        "P2-06",
+        "P2-11",
+        "P2-08"
+      ],
+      "required_gates": [],
+      "goal": "类型与 parser failure policy / detected MIME mismatch、unknown/partial/unsupported、闭合 reason / held",
+      "edit_paths": [
+        "msgloom/a2_kedro/parsers/failure_policy.py",
+        "tests/a2_kedro/test_p2_09.py"
+      ],
+      "effort": "medium",
+      "read_only_review": false,
+      "delivery_files": [
+        "msgloom/a2_kedro/parsers/failure_policy.py",
+        "tests/a2_kedro/test_p2_09.py"
+      ],
+      "model": "Claude Code Sonnet (verify installed model and effort)",
+      "owner": "parser-owner",
+      "verify": [
+        "Dedicated focused positive + negative case",
+        "Actual executable exit code",
+        "Ruff, Pyright when relevant, pre-commit/CI"
+      ],
+      "exclusive_resources": [
+        "parser-registry-when-shared"
+      ],
+      "state": "PLANNED_NOT_STARTED"
+    },
+    {
+      "id": "P2-10",
+      "timebox_minutes": 25,
+      "depends_on": [
+        "P2-09",
+        "P2-11"
+      ],
+      "required_gates": [],
+      "goal": "profiling / 真实 Pi child RSS/timeout/进程数，资源上限写入受审查配置而非硬编码",
+      "edit_paths": [
+        "docs/notes/a2-v2-p2-extraction-benchmarks.md"
+      ],
+      "effort": "medium",
+      "read_only_review": false,
+      "delivery_files": [
+        "docs/notes/a2-v2-p2-extraction-benchmarks.md"
+      ],
+      "model": "Claude Code Sonnet (verify installed model and effort)",
+      "owner": "parser-owner",
+      "verify": [
+        "Dedicated focused positive + negative case",
+        "Actual executable exit code",
+        "Ruff, Pyright when relevant, pre-commit/CI"
+      ],
+      "exclusive_resources": [
+        "pi-exclusive-benchmark-slot",
+        "parser-registry-when-shared"
+      ],
+      "state": "PLANNED_NOT_STARTED"
+    },
+    {
+      "id": "P2-11",
+      "timebox_minutes": 20,
+      "depends_on": [
+        "P2-01",
+        "P2-02",
+        "P2-03",
+        "P2-04",
+        "P2-05",
+        "P2-06"
+      ],
+      "required_gates": [],
+      "goal": "唯一 static parser registry owner / trusted format/profile dispatch 与 allowlist，无 provider 控制动态 import；P1-05 通过其绑定 parser",
+      "edit_paths": [
+        "msgloom/a2_kedro/parsers/registry.py",
+        "tests/a2_kedro/test_parser_registry.py"
+      ],
+      "effort": "medium",
+      "read_only_review": false,
+      "delivery_files": [
+        "msgloom/a2_kedro/parsers/registry.py",
+        "tests/a2_kedro/test_parser_registry.py"
+      ],
+      "model": "Claude Code Sonnet (verify installed model and effort)",
+      "owner": "parser-owner",
+      "verify": [
+        "Dedicated focused positive + negative case",
+        "Actual executable exit code",
+        "Ruff, Pyright when relevant, pre-commit/CI"
+      ],
+      "exclusive_resources": [
+        "parser-registry-when-shared",
+        "path:msgloom/a2_kedro/parsers/registry.py"
+      ],
+      "state": "PLANNED_NOT_STARTED"
+    },
+    {
+      "id": "P3-01",
+      "timebox_minutes": 20,
+      "depends_on": [
+        "C0-06"
+      ],
+      "required_gates": [],
+      "goal": "关系恢复 / 同源确证 reply-parent/ancestor/quote-source 各自分开记录",
+      "edit_paths": [
+        "msgloom/a2_kedro/semantics/relations.py",
+        "tests/a2_kedro/test_p3_01.py",
+        "msgloom/a2_kedro/semantics/__init__.py"
+      ],
+      "effort": "medium",
+      "read_only_review": false,
+      "delivery_files": [
+        "msgloom/a2_kedro/semantics/relations.py",
+        "tests/a2_kedro/test_p3_01.py",
+        "msgloom/a2_kedro/semantics/__init__.py"
+      ],
+      "model": "Claude Code Sonnet (verify installed model and effort)",
+      "owner": "native-relations-owner",
+      "verify": [
+        "Dedicated focused positive + negative case",
+        "Actual executable exit code",
+        "Ruff, Pyright when relevant, pre-commit/CI"
+      ],
+      "exclusive_resources": [],
+      "state": "PLANNED_NOT_STARTED"
+    },
+    {
+      "id": "P3-02",
+      "timebox_minutes": 20,
+      "depends_on": [
+        "P3-01"
+      ],
+      "required_gates": [],
+      "goal": "关系审查 / cycle、missing parent、重复 Message-ID、跨 scope 不自动确认",
+      "edit_paths": [
+        "msgloom/a2_kedro/semantics/relation_safety.py",
+        "tests/a2_kedro/test_p3_02.py"
+      ],
+      "effort": "medium",
+      "read_only_review": false,
+      "delivery_files": [
+        "msgloom/a2_kedro/semantics/relation_safety.py",
+        "tests/a2_kedro/test_p3_02.py"
+      ],
+      "model": "Claude Code Sonnet (verify installed model and effort)",
+      "owner": "native-relations-owner",
+      "verify": [
+        "Dedicated focused positive + negative case",
+        "Actual executable exit code",
+        "Ruff, Pyright when relevant, pre-commit/CI"
+      ],
+      "exclusive_resources": [],
+      "state": "PLANNED_NOT_STARTED"
+    },
+    {
+      "id": "P3-03",
+      "timebox_minutes": 20,
+      "depends_on": [
+        "C0-07"
+      ],
+      "required_gates": [],
+      "goal": "规则过滤 / all-matching rule IDs、有版本评估、include/exclude/conflict/unknown",
+      "edit_paths": [
+        "msgloom/a2_kedro/semantics/filters.py",
+        "tests/a2_kedro/test_p3_03.py"
+      ],
+      "effort": "medium",
+      "read_only_review": false,
+      "delivery_files": [
+        "msgloom/a2_kedro/semantics/filters.py",
+        "tests/a2_kedro/test_p3_03.py"
+      ],
+      "model": "Claude Code Sonnet (verify installed model and effort)",
+      "owner": "native-relations-owner",
+      "verify": [
+        "Dedicated focused positive + negative case",
+        "Actual executable exit code",
+        "Ruff, Pyright when relevant, pre-commit/CI"
+      ],
+      "exclusive_resources": [],
+      "state": "PLANNED_NOT_STARTED"
+    },
+    {
+      "id": "P3-04",
+      "timebox_minutes": 20,
+      "depends_on": [
+        "P3-02"
+      ],
+      "required_gates": [],
+      "goal": "Outlook native grouping / conversation only candidate，subject similarity 不直接合并",
+      "edit_paths": [
+        "msgloom/a2_kedro/semantics/outlook_grouping.py",
+        "tests/a2_kedro/test_p3_04.py"
+      ],
+      "effort": "medium",
+      "read_only_review": false,
+      "delivery_files": [
+        "msgloom/a2_kedro/semantics/outlook_grouping.py",
+        "tests/a2_kedro/test_p3_04.py"
+      ],
+      "model": "Claude Code Sonnet (verify installed model and effort)",
+      "owner": "native-relations-owner",
+      "verify": [
+        "Dedicated focused positive + negative case",
+        "Actual executable exit code",
+        "Ruff, Pyright when relevant, pre-commit/CI"
+      ],
+      "exclusive_resources": [],
+      "state": "PLANNED_NOT_STARTED"
+    },
+    {
+      "id": "P3-05",
+      "timebox_minutes": 20,
+      "depends_on": [
+        "P3-02"
+      ],
+      "required_gates": [],
+      "goal": "Teams grouping / Teams chat reply vs channel scope，component-only refresh 不造 body",
+      "edit_paths": [
+        "msgloom/a2_kedro/semantics/teams_grouping.py",
+        "tests/a2_kedro/test_p3_05.py"
+      ],
+      "effort": "medium",
+      "read_only_review": false,
+      "delivery_files": [
+        "msgloom/a2_kedro/semantics/teams_grouping.py",
+        "tests/a2_kedro/test_p3_05.py"
+      ],
+      "model": "Claude Code Sonnet (verify installed model and effort)",
+      "owner": "native-relations-owner",
+      "verify": [
+        "Dedicated focused positive + negative case",
+        "Actual executable exit code",
+        "Ruff, Pyright when relevant, pre-commit/CI"
+      ],
+      "exclusive_resources": [],
+      "state": "PLANNED_NOT_STARTED"
+    },
+    {
+      "id": "P3-06",
+      "timebox_minutes": 20,
+      "depends_on": [
+        "C0-07"
+      ],
+      "required_gates": [],
+      "goal": "非通信来源 / Calendar / To Do / OneDrive / Contacts 的上下文按类型/范围发布",
+      "edit_paths": [
+        "msgloom/a2_kedro/semantics/context_types.py",
+        "tests/a2_kedro/test_p3_06.py"
+      ],
+      "effort": "medium",
+      "read_only_review": false,
+      "delivery_files": [
+        "msgloom/a2_kedro/semantics/context_types.py",
+        "tests/a2_kedro/test_p3_06.py"
+      ],
+      "model": "Claude Code Sonnet (verify installed model and effort)",
+      "owner": "native-relations-owner",
+      "verify": [
+        "Dedicated focused positive + negative case",
+        "Actual executable exit code",
+        "Ruff, Pyright when relevant, pre-commit/CI"
+      ],
+      "exclusive_resources": [],
+      "state": "PLANNED_NOT_STARTED"
+    },
+    {
+      "id": "P3-07",
+      "timebox_minutes": 20,
+      "depends_on": [
+        "C0-12a"
+      ],
+      "required_gates": [],
+      "goal": "replay-policy / configuration/policy/code 变更形成明确新 key；同输入稳定 idempotency",
+      "edit_paths": [
+        "msgloom/a2_kedro/semantics/replay_policy.py",
+        "tests/a2_kedro/test_p3_07.py"
+      ],
+      "effort": "medium",
+      "read_only_review": false,
+      "delivery_files": [
+        "msgloom/a2_kedro/semantics/replay_policy.py",
+        "tests/a2_kedro/test_p3_07.py"
+      ],
+      "model": "Claude Code Sonnet (verify installed model and effort)",
+      "owner": "native-relations-owner",
+      "verify": [
+        "Dedicated focused positive + negative case",
+        "Actual executable exit code",
+        "Ruff, Pyright when relevant, pre-commit/CI"
+      ],
+      "exclusive_resources": [],
+      "state": "PLANNED_NOT_STARTED"
+    },
+    {
+      "id": "P3-08",
+      "timebox_minutes": 20,
+      "depends_on": [
+        "C0-08"
+      ],
+      "required_gates": [],
+      "goal": "scoped transitions / presence/absence/membership deletion/content refresh 保持正确 authority",
+      "edit_paths": [
+        "msgloom/a2_kedro/semantics/transitions.py",
+        "tests/a2_kedro/test_p3_08.py"
+      ],
+      "effort": "medium",
+      "read_only_review": false,
+      "delivery_files": [
+        "msgloom/a2_kedro/semantics/transitions.py",
+        "tests/a2_kedro/test_p3_08.py"
+      ],
+      "model": "Claude Code Sonnet (verify installed model and effort)",
+      "owner": "native-relations-owner",
+      "verify": [
+        "Dedicated focused positive + negative case",
+        "Actual executable exit code",
+        "Ruff, Pyright when relevant, pre-commit/CI"
+      ],
+      "exclusive_resources": [],
+      "state": "PLANNED_NOT_STARTED"
+    },
+    {
+      "id": "P3-09",
+      "timebox_minutes": 25,
+      "depends_on": [
+        "P3-02",
+        "P3-03",
+        "P3-04",
+        "P3-05",
+        "P3-06",
+        "P3-07",
+        "P3-08"
+      ],
+      "required_gates": [],
+      "goal": "reviewer / 未解释链接保留 unknown；无跨 Workset 假关联，完整限制传播",
+      "edit_paths": [
+        "docs/notes/a2-v2-p3-independent-review.md"
+      ],
+      "effort": "medium",
+      "read_only_review": true,
+      "delivery_files": [
+        "docs/notes/a2-v2-p3-independent-review.md"
+      ],
+      "model": "Claude Code Sonnet (verify installed model and effort)",
+      "owner": "independent-readonly-reviewer",
+      "verify": [
+        "Exact-SHA read-only review",
+        "No source writes or test-execution claims"
+      ],
+      "exclusive_resources": [],
+      "state": "PLANNED_NOT_STARTED"
+    },
+    {
+      "id": "T0-01",
+      "timebox_minutes": 20,
+      "depends_on": [],
+      "required_gates": [],
+      "goal": "A1 20 spider / 7 streams / 原 Task15 固定行为 / 不由新 Kedro 作者重写 A1 接受规则",
+      "edit_paths": [
+        "tests/a2_kedro/gold/t0_01.json"
+      ],
+      "effort": "medium",
+      "read_only_review": false,
+      "delivery_files": [
+        "tests/a2_kedro/gold/t0_01.json"
+      ],
+      "model": "Claude Code Sonnet (verify installed model and effort)",
+      "owner": "independent-gold-owner",
+      "verify": [
+        "Dedicated focused positive + negative case",
+        "Actual executable exit code",
+        "Ruff, Pyright when relevant, pre-commit/CI"
+      ],
+      "exclusive_resources": [],
+      "state": "PLANNED_NOT_STARTED"
+    },
+    {
+      "id": "T0-02",
+      "timebox_minutes": 20,
+      "depends_on": [],
+      "required_gates": [],
+      "goal": "Mail 多 MIME/inline quote/duplicate Message-ID / 另人独立标注贡献/引用/祖先和缺失",
+      "edit_paths": [
+        "tests/a2_kedro/gold/t0_02.json"
+      ],
+      "effort": "medium",
+      "read_only_review": false,
+      "delivery_files": [
+        "tests/a2_kedro/gold/t0_02.json"
+      ],
+      "model": "Claude Code Sonnet (verify installed model and effort)",
+      "owner": "independent-gold-owner",
+      "verify": [
+        "Dedicated focused positive + negative case",
+        "Actual executable exit code",
+        "Ruff, Pyright when relevant, pre-commit/CI"
+      ],
+      "exclusive_resources": [],
+      "state": "PLANNED_NOT_STARTED"
+    },
+    {
+      "id": "T0-03",
+      "timebox_minutes": 20,
+      "depends_on": [],
+      "required_gates": [],
+      "goal": "Teams chat/channel/component-only/scope refresh / 不能凭同 thread ID 猜亲属关系",
+      "edit_paths": [
+        "tests/a2_kedro/gold/t0_03.json"
+      ],
+      "effort": "medium",
+      "read_only_review": false,
+      "delivery_files": [
+        "tests/a2_kedro/gold/t0_03.json"
+      ],
+      "model": "Claude Code Sonnet (verify installed model and effort)",
+      "owner": "independent-gold-owner",
+      "verify": [
+        "Dedicated focused positive + negative case",
+        "Actual executable exit code",
+        "Ruff, Pyright when relevant, pre-commit/CI"
+      ],
+      "exclusive_resources": [],
+      "state": "PLANNED_NOT_STARTED"
+    },
+    {
+      "id": "T0-04",
+      "timebox_minutes": 20,
+      "depends_on": [],
+      "required_gates": [],
+      "goal": "Calendar、To Do、OneDrive、Contacts / contextual 不强行进入通信 grouping",
+      "edit_paths": [
+        "tests/a2_kedro/gold/t0_04.json"
+      ],
+      "effort": "medium",
+      "read_only_review": false,
+      "delivery_files": [
+        "tests/a2_kedro/gold/t0_04.json"
+      ],
+      "model": "Claude Code Sonnet (verify installed model and effort)",
+      "owner": "independent-gold-owner",
+      "verify": [
+        "Dedicated focused positive + negative case",
+        "Actual executable exit code",
+        "Ruff, Pyright when relevant, pre-commit/CI"
+      ],
+      "exclusive_resources": [],
+      "state": "PLANNED_NOT_STARTED"
+    },
+    {
+      "id": "T0-05",
+      "timebox_minutes": 20,
+      "depends_on": [],
+      "required_gates": [],
+      "goal": "PDF、Word、Excel + malformed/large/partial / 解析错误不得伪装完整内容",
+      "edit_paths": [
+        "tests/a2_kedro/gold/t0_05.json"
+      ],
+      "effort": "medium",
+      "read_only_review": false,
+      "delivery_files": [
+        "tests/a2_kedro/gold/t0_05.json"
+      ],
+      "model": "Claude Code Sonnet (verify installed model and effort)",
+      "owner": "independent-gold-owner",
+      "verify": [
+        "Dedicated focused positive + negative case",
+        "Actual executable exit code",
+        "Ruff, Pyright when relevant, pre-commit/CI"
+      ],
+      "exclusive_resources": [],
+      "state": "PLANNED_NOT_STARTED"
+    },
+    {
+      "id": "T0-06",
+      "timebox_minutes": 20,
+      "depends_on": [
+        "C0-09",
+        "C0-10"
+      ],
+      "required_gates": [],
+      "goal": "A2-held/intake-held/transition-only / 要么有已接受 prepared@2，要么有 held，不能 missing/overlap",
+      "edit_paths": [
+        "tests/a2_kedro/gold/t0_06.json"
+      ],
+      "effort": "medium",
+      "read_only_review": false,
+      "delivery_files": [
+        "tests/a2_kedro/gold/t0_06.json"
+      ],
+      "model": "Claude Code Sonnet (verify installed model and effort)",
+      "owner": "independent-gold-owner",
+      "verify": [
+        "Dedicated focused positive + negative case",
+        "Actual executable exit code",
+        "Ruff, Pyright when relevant, pre-commit/CI"
+      ],
+      "exclusive_resources": [],
+      "state": "PLANNED_NOT_STARTED"
+    },
+    {
+      "id": "T0-07",
+      "timebox_minutes": 20,
+      "depends_on": [
+        "C0-12b"
+      ],
+      "required_gates": [],
+      "goal": "crash/restart/late writes/cancel / accepted prefix 保存，未完成必须可重放",
+      "edit_paths": [
+        "tests/a2_kedro/gold/t0_07.json"
+      ],
+      "effort": "medium",
+      "read_only_review": false,
+      "delivery_files": [
+        "tests/a2_kedro/gold/t0_07.json"
+      ],
+      "model": "Claude Code Sonnet (verify installed model and effort)",
+      "owner": "independent-gold-owner",
+      "verify": [
+        "Dedicated focused positive + negative case",
+        "Actual executable exit code",
+        "Ruff, Pyright when relevant, pre-commit/CI"
+      ],
+      "exclusive_resources": [],
+      "state": "PLANNED_NOT_STARTED"
+    },
+    {
+      "id": "T0-08",
+      "timebox_minutes": 20,
+      "depends_on": [
+        "C0-17a"
+      ],
+      "required_gates": [],
+      "goal": "policy upgrade / A3 historical reader / 旧 prepared@1 可读、新 prepared@2 正确映射",
+      "edit_paths": [
+        "tests/a2_kedro/gold/t0_08.json"
+      ],
+      "effort": "medium",
+      "read_only_review": false,
+      "delivery_files": [
+        "tests/a2_kedro/gold/t0_08.json"
+      ],
+      "model": "Claude Code Sonnet (verify installed model and effort)",
+      "owner": "independent-gold-owner",
+      "verify": [
+        "Dedicated focused positive + negative case",
+        "Actual executable exit code",
+        "Ruff, Pyright when relevant, pre-commit/CI"
+      ],
+      "exclusive_resources": [],
+      "state": "PLANNED_NOT_STARTED"
+    },
+    {
+      "id": "T0-09",
+      "timebox_minutes": 20,
+      "depends_on": [],
+      "required_gates": [],
+      "goal": "Prefect lost/duplicate hint/partial A1 finish / 唯一 authority 是 committed release/cursor",
+      "edit_paths": [
+        "tests/a2_kedro/gold/t0_09.json"
+      ],
+      "effort": "medium",
+      "read_only_review": false,
+      "delivery_files": [
+        "tests/a2_kedro/gold/t0_09.json"
+      ],
+      "model": "Claude Code Sonnet (verify installed model and effort)",
+      "owner": "independent-gold-owner",
+      "verify": [
+        "Dedicated focused positive + negative case",
+        "Actual executable exit code",
+        "Ruff, Pyright when relevant, pre-commit/CI"
+      ],
+      "exclusive_resources": [],
+      "state": "PLANNED_NOT_STARTED"
+    },
+    {
+      "id": "T0-10",
+      "timebox_minutes": 20,
+      "depends_on": [],
+      "required_gates": [],
+      "goal": "security/path/privacy/network / Node.run logger、PII canary、telemetry、非法 Dataset path",
+      "edit_paths": [
+        "tests/a2_kedro/gold/t0_10.json"
+      ],
+      "effort": "medium",
+      "read_only_review": false,
+      "delivery_files": [
+        "tests/a2_kedro/gold/t0_10.json"
+      ],
+      "model": "Claude Code Sonnet (verify installed model and effort)",
+      "owner": "independent-gold-owner",
+      "verify": [
+        "Dedicated focused positive + negative case",
+        "Actual executable exit code",
+        "Ruff, Pyright when relevant, pre-commit/CI"
+      ],
+      "exclusive_resources": [],
+      "state": "PLANNED_NOT_STARTED"
+    },
+    {
+      "id": "T0-11",
+      "timebox_minutes": 25,
+      "depends_on": [
+        "T0-01",
+        "T0-02",
+        "T0-03",
+        "T0-04",
+        "T0-05",
+        "T0-06",
+        "T0-07",
+        "T0-08",
+        "T0-09",
+        "T0-10"
+      ],
+      "required_gates": [],
+      "goal": "independent gold author/reviewer / Oracle 数据由未写算法的人审核，不允许从算法输出自动生成 expected",
+      "edit_paths": [
+        "docs/notes/a2-v2-t0-independent-gold-review.md"
+      ],
+      "effort": "medium",
+      "read_only_review": true,
+      "delivery_files": [
+        "docs/notes/a2-v2-t0-independent-gold-review.md"
+      ],
+      "model": "Claude Code Sonnet (verify installed model and effort)",
+      "owner": "independent-readonly-reviewer",
+      "verify": [
+        "Exact-SHA read-only review",
+        "No source writes or test-execution claims"
+      ],
+      "exclusive_resources": [],
+      "state": "PLANNED_NOT_STARTED"
+    },
+    {
+      "id": "E0-01",
+      "timebox_minutes": 25,
+      "depends_on": [
+        "P1-13",
+        "C0-20c",
+        "C0-16"
+      ],
+      "required_gates": [
+        "C0_FINAL_ACCEPTED"
+      ],
+      "goal": "Workset PREPARE + partition PREPARE + transition PREPARE 真实 claim；每个 claim owner/required_inputs 清晰",
+      "edit_paths": [
+        "msgloom/a2_kedro/integration/claim_topology.py",
+        "tests/a2_kedro/test_e0_01.py",
+        "msgloom/a2_kedro/integration/__init__.py"
+      ],
+      "effort": "medium",
+      "read_only_review": false,
+      "delivery_files": [
+        "msgloom/a2_kedro/integration/claim_topology.py",
+        "tests/a2_kedro/test_e0_01.py",
+        "msgloom/a2_kedro/integration/__init__.py"
+      ],
+      "model": "Claude Code Sonnet (verify installed model and effort)",
+      "owner": "integration-owner",
+      "verify": [
+        "Dedicated focused positive + negative case",
+        "Actual executable exit code",
+        "Ruff, Pyright when relevant, pre-commit/CI"
+      ],
+      "exclusive_resources": [],
+      "state": "PLANNED_NOT_STARTED"
+    },
+    {
+      "id": "E0-02",
+      "timebox_minutes": 20,
+      "depends_on": [
+        "E0-01",
+        "P2-09",
+        "P3-09",
+        "P1-16",
+        "P1-18"
+      ],
+      "required_gates": [
+        "C0_FINAL_ACCEPTED"
+      ],
+      "goal": "Full Kedro DAG K0–K11 从 Workset@1 端到 v2 receipt；不走 legacy A2 控制环",
+      "edit_paths": [
+        "msgloom/a2_kedro/integration/full_pipeline.py",
+        "tests/a2_kedro/test_e0_02.py"
+      ],
+      "effort": "medium",
+      "read_only_review": false,
+      "delivery_files": [
+        "msgloom/a2_kedro/integration/full_pipeline.py",
+        "tests/a2_kedro/test_e0_02.py"
+      ],
+      "model": "Claude Code Sonnet (verify installed model and effort)",
+      "owner": "integration-owner",
+      "verify": [
+        "Dedicated focused positive + negative case",
+        "Actual executable exit code",
+        "Ruff, Pyright when relevant, pre-commit/CI"
+      ],
+      "exclusive_resources": [],
+      "state": "PLANNED_NOT_STARTED"
+    },
+    {
+      "id": "E0-03a",
+      "timebox_minutes": 20,
+      "depends_on": [
+        "E0-02"
+      ],
+      "required_gates": [],
+      "goal": "`tests/a2_kedro/test_save_faults.py` 预置每个 Dataset save 注入点；完成/失败/部分结果和摘要准确",
+      "edit_paths": [
+        "tests/a2_kedro/test_save_faults.py"
+      ],
+      "effort": "medium",
+      "read_only_review": false,
+      "delivery_files": [
+        "tests/a2_kedro/test_save_faults.py"
+      ],
+      "model": "Claude Code Sonnet (verify installed model and effort)",
+      "owner": "integration-owner",
+      "verify": [
+        "Dedicated focused positive + negative case",
+        "Actual executable exit code",
+        "Ruff, Pyright when relevant, pre-commit/CI"
+      ],
+      "exclusive_resources": [],
+      "state": "PLANNED_NOT_STARTED"
+    },
+    {
+      "id": "E0-03b",
+      "timebox_minutes": 20,
+      "depends_on": [
+        "E0-03a"
+      ],
+      "required_gates": [],
+      "goal": "`tests/a2_kedro/test_crash_recovery.py` 真实 restart/read-back；首段 accepted prefix 不丢、没有重复",
+      "edit_paths": [
+        "tests/a2_kedro/test_crash_recovery.py"
+      ],
+      "effort": "medium",
+      "read_only_review": false,
+      "delivery_files": [
+        "tests/a2_kedro/test_crash_recovery.py"
+      ],
+      "model": "Claude Code Sonnet (verify installed model and effort)",
+      "owner": "integration-owner",
+      "verify": [
+        "Dedicated focused positive + negative case",
+        "Actual executable exit code",
+        "Ruff, Pyright when relevant, pre-commit/CI"
+      ],
+      "exclusive_resources": [],
+      "state": "PLANNED_NOT_STARTED"
+    },
+    {
+      "id": "E0-04",
+      "timebox_minutes": 25,
+      "depends_on": [
+        "E0-01"
+      ],
+      "required_gates": [],
+      "goal": "两合法 claim 键碰撞、过期/替换、并发前后 start barrier；数据库只有一个 logical output",
+      "edit_paths": [
+        "tests/a2_kedro/integration/test_claim_concurrency.py"
+      ],
+      "effort": "high",
+      "read_only_review": false,
+      "delivery_files": [
+        "tests/a2_kedro/integration/test_claim_concurrency.py"
+      ],
+      "model": "Claude Code Sonnet (verify installed model and effort)",
+      "owner": "integration-owner",
+      "verify": [
+        "Dedicated focused positive + negative case",
+        "Actual executable exit code",
+        "Ruff, Pyright when relevant, pre-commit/CI"
+      ],
+      "exclusive_resources": [],
+      "state": "PLANNED_NOT_STARTED"
+    },
+    {
+      "id": "E0-05",
+      "timebox_minutes": 20,
+      "depends_on": [
+        "E0-03b"
+      ],
+      "required_gates": [],
+      "goal": "Postcommit cancellation：返回 CancelledError 而数据已存，下一轮 query/reconcile 不重复 parser",
+      "edit_paths": [
+        "tests/a2_kedro/integration/test_postcommit_cancel.py"
+      ],
+      "effort": "high",
+      "read_only_review": false,
+      "delivery_files": [
+        "tests/a2_kedro/integration/test_postcommit_cancel.py"
+      ],
+      "model": "Claude Code Sonnet (verify installed model and effort)",
+      "owner": "integration-owner",
+      "verify": [
+        "Dedicated focused positive + negative case",
+        "Actual executable exit code",
+        "Ruff, Pyright when relevant, pre-commit/CI"
+      ],
+      "exclusive_resources": [],
+      "state": "PLANNED_NOT_STARTED"
+    },
+    {
+      "id": "E0-06",
+      "timebox_minutes": 25,
+      "depends_on": [
+        "E0-02",
+        "P1-16"
+      ],
+      "required_gates": [],
+      "goal": "Workset-aggregate v2 receipt：一个选中 occurrence 一个 outcome + transition batch + intake-held",
+      "edit_paths": [
+        "msgloom/a2_kedro/integration/workset_completion.py",
+        "tests/a2_kedro/test_e0_06.py"
+      ],
+      "effort": "medium",
+      "read_only_review": false,
+      "delivery_files": [
+        "msgloom/a2_kedro/integration/workset_completion.py",
+        "tests/a2_kedro/test_e0_06.py"
+      ],
+      "model": "Claude Code Sonnet (verify installed model and effort)",
+      "owner": "integration-owner",
+      "verify": [
+        "Dedicated focused positive + negative case",
+        "Actual executable exit code",
+        "Ruff, Pyright when relevant, pre-commit/CI"
+      ],
+      "exclusive_resources": [],
+      "state": "PLANNED_NOT_STARTED"
+    },
+    {
+      "id": "E0-07",
+      "timebox_minutes": 20,
+      "depends_on": [
+        "E0-06"
+      ],
+      "required_gates": [],
+      "goal": "Held-only 被标记 terminal INCOMPLETE；pending index 无永续 spin；operator replay append-only",
+      "edit_paths": [
+        "tests/a2_kedro/integration/test_held_pending.py"
+      ],
+      "effort": "medium",
+      "read_only_review": false,
+      "delivery_files": [
+        "tests/a2_kedro/integration/test_held_pending.py"
+      ],
+      "model": "Claude Code Sonnet (verify installed model and effort)",
+      "owner": "integration-owner",
+      "verify": [
+        "Dedicated focused positive + negative case",
+        "Actual executable exit code",
+        "Ruff, Pyright when relevant, pre-commit/CI"
+      ],
+      "exclusive_resources": [],
+      "state": "PLANNED_NOT_STARTED"
+    },
+    {
+      "id": "E0-08",
+      "timebox_minutes": 20,
+      "depends_on": [
+        "E0-02"
+      ],
+      "required_gates": [],
+      "goal": "Wrong role/ambiguous release re-read → A2-held，A1 原结果/cursor 字节不变",
+      "edit_paths": [
+        "tests/a2_kedro/integration/test_unverifiable_role.py"
+      ],
+      "effort": "medium",
+      "read_only_review": false,
+      "delivery_files": [
+        "tests/a2_kedro/integration/test_unverifiable_role.py"
+      ],
+      "model": "Claude Code Sonnet (verify installed model and effort)",
+      "owner": "integration-owner",
+      "verify": [
+        "Dedicated focused positive + negative case",
+        "Actual executable exit code",
+        "Ruff, Pyright when relevant, pre-commit/CI"
+      ],
+      "exclusive_resources": [],
+      "state": "PLANNED_NOT_STARTED"
+    },
+    {
+      "id": "E0-09",
+      "timebox_minutes": 20,
+      "depends_on": [
+        "E0-06",
+        "C0-17d"
+      ],
+      "required_gates": [],
+      "goal": "A3 所有 typed prepared@2 +历史 prepared@1 与 limitation，A5 仍读取恰当 triage output",
+      "edit_paths": [
+        "tests/a2_kedro/integration/test_a3_v2_lineage.py"
+      ],
+      "effort": "medium",
+      "read_only_review": false,
+      "delivery_files": [
+        "tests/a2_kedro/integration/test_a3_v2_lineage.py"
+      ],
+      "model": "Claude Code Sonnet (verify installed model and effort)",
+      "owner": "integration-owner",
+      "verify": [
+        "Dedicated focused positive + negative case",
+        "Actual executable exit code",
+        "Ruff, Pyright when relevant, pre-commit/CI"
+      ],
+      "exclusive_resources": [],
+      "state": "PLANNED_NOT_STARTED"
+    },
+    {
+      "id": "E0-10",
+      "timebox_minutes": 20,
+      "depends_on": [
+        "E0-02"
+      ],
+      "required_gates": [
+        "C0_FINAL_ACCEPTED"
+      ],
+      "goal": "按现有 Application async invocation 和 CLI `prepare-scheduled` 做一条真正 release→prepare 流",
+      "edit_paths": [
+        "msgloom/cli/composition.py",
+        "tests/a2_kedro/test_e0_10.py"
+      ],
+      "effort": "medium",
+      "read_only_review": false,
+      "delivery_files": [
+        "msgloom/cli/composition.py",
+        "tests/a2_kedro/test_e0_10.py"
+      ],
+      "model": "Claude Code Sonnet (verify installed model and effort)",
+      "owner": "integration-owner",
+      "verify": [
+        "Dedicated focused positive + negative case",
+        "Actual executable exit code",
+        "Ruff, Pyright when relevant, pre-commit/CI"
+      ],
+      "exclusive_resources": [
+        "path:msgloom/cli/composition.py"
+      ],
+      "state": "PLANNED_NOT_STARTED"
+    },
+    {
+      "id": "E0-11",
+      "timebox_minutes": 25,
+      "depends_on": [
+        "E0-09",
+        "E0-10",
+        "T0-11"
+      ],
+      "required_gates": [],
+      "goal": "格式 × 来源 × scope 集成，断流后重放、无已提交 entry 时 no-op、跨源全局序列 gap",
+      "edit_paths": [
+        "tests/a2_kedro/integration/test_multi_stream_e2e.py"
+      ],
+      "effort": "medium",
+      "read_only_review": false,
+      "delivery_files": [
+        "tests/a2_kedro/integration/test_multi_stream_e2e.py"
+      ],
+      "model": "Claude Code Sonnet (verify installed model and effort)",
+      "owner": "integration-owner",
+      "verify": [
+        "Dedicated focused positive + negative case",
+        "Actual executable exit code",
+        "Ruff, Pyright when relevant, pre-commit/CI"
+      ],
+      "exclusive_resources": [],
+      "state": "PLANNED_NOT_STARTED"
+    },
+    {
+      "id": "E0-12",
+      "timebox_minutes": 25,
+      "depends_on": [
+        "E0-03b",
+        "E0-04",
+        "E0-05",
+        "E0-07",
+        "E0-08",
+        "E0-11"
+      ],
+      "required_gates": [],
+      "goal": "失效清单、可追溯完整引用和清理边界；独立 reviewer 只读 exact SHA",
+      "edit_paths": [
+        "docs/notes/a2-v2-e0-independent-review.md"
+      ],
+      "effort": "high",
+      "read_only_review": true,
+      "delivery_files": [
+        "docs/notes/a2-v2-e0-independent-review.md"
+      ],
+      "model": "Claude Code Sonnet (verify installed model and effort)",
+      "owner": "independent-readonly-reviewer",
+      "verify": [
+        "Exact-SHA read-only review",
+        "No source writes or test-execution claims"
+      ],
+      "exclusive_resources": [],
+      "state": "PLANNED_NOT_STARTED"
+    },
+    {
+      "id": "I0-01",
+      "timebox_minutes": 20,
+      "depends_on": [
+        "C0-18"
+      ],
+      "required_gates": [],
+      "goal": "独立纯逻辑 scheduler 状态机：pending/busy/held/BLOCKED/FAILED/CANCELLED 不混淆",
+      "edit_paths": [
+        "msgloom/a2_kedro/activation/status_policy.py",
+        "tests/a2_kedro/test_i0_01.py",
+        "msgloom/a2_kedro/activation/__init__.py"
+      ],
+      "effort": "medium",
+      "read_only_review": false,
+      "delivery_files": [
+        "msgloom/a2_kedro/activation/status_policy.py",
+        "tests/a2_kedro/test_i0_01.py",
+        "msgloom/a2_kedro/activation/__init__.py"
+      ],
+      "model": "Claude Code Sonnet (verify installed model and effort)",
+      "owner": "activation-owner",
+      "verify": [
+        "Dedicated focused positive + negative case",
+        "Actual executable exit code",
+        "Ruff, Pyright when relevant, pre-commit/CI"
+      ],
+      "exclusive_resources": [],
+      "state": "PLANNED_NOT_STARTED"
+    },
+    {
+      "id": "I0-02",
+      "timebox_minutes": 20,
+      "depends_on": [
+        "C0-18"
+      ],
+      "required_gates": [],
+      "goal": "`scope-status` allowlisted CLI，scope hash / cursor digest / pending/held counts / last receipt，不含 PII",
+      "edit_paths": [
+        "msgloom/cli/a2_scope_status.py",
+        "tests/a2_kedro/test_i0_02.py"
+      ],
+      "effort": "medium",
+      "read_only_review": false,
+      "delivery_files": [
+        "msgloom/cli/a2_scope_status.py",
+        "tests/a2_kedro/test_i0_02.py"
+      ],
+      "model": "Claude Code Sonnet (verify installed model and effort)",
+      "owner": "activation-owner",
+      "verify": [
+        "Dedicated focused positive + negative case",
+        "Actual executable exit code",
+        "Ruff, Pyright when relevant, pre-commit/CI"
+      ],
+      "exclusive_resources": [
+        "path:msgloom/cli/a2_scope_status.py"
+      ],
+      "state": "PLANNED_NOT_STARTED"
+    },
+    {
+      "id": "I0-03",
+      "timebox_minutes": 20,
+      "depends_on": [
+        "I0-01"
+      ],
+      "required_gates": [],
+      "goal": "Prefect（或外部启动器）无 payload finite wakeup 定义，只发提示不修改 A1",
+      "edit_paths": [
+        "msgloom/a2_kedro/activation/prefect_flow.py",
+        "tests/a2_kedro/test_i0_03.py"
+      ],
+      "effort": "medium",
+      "read_only_review": false,
+      "delivery_files": [
+        "msgloom/a2_kedro/activation/prefect_flow.py",
+        "tests/a2_kedro/test_i0_03.py"
+      ],
+      "model": "Claude Code Sonnet (verify installed model and effort)",
+      "owner": "activation-owner",
+      "verify": [
+        "Dedicated focused positive + negative case",
+        "Actual executable exit code",
+        "Ruff, Pyright when relevant, pre-commit/CI"
+      ],
+      "exclusive_resources": [],
+      "state": "PLANNED_NOT_STARTED"
+    },
+    {
+      "id": "I0-04",
+      "timebox_minutes": 20,
+      "depends_on": [
+        "I0-02",
+        "I0-03"
+      ],
+      "required_gates": [],
+      "goal": "real command wrapper 调用既有 `prepare-scheduled`，锁定稳定 consumer/catalog pin，不读私有 SQL",
+      "edit_paths": [
+        "msgloom/a2_kedro/activation/launcher.py",
+        "tests/a2_kedro/test_i0_04.py"
+      ],
+      "effort": "medium",
+      "read_only_review": false,
+      "delivery_files": [
+        "msgloom/a2_kedro/activation/launcher.py",
+        "tests/a2_kedro/test_i0_04.py"
+      ],
+      "model": "Claude Code Sonnet (verify installed model and effort)",
+      "owner": "activation-owner",
+      "verify": [
+        "Dedicated focused positive + negative case",
+        "Actual executable exit code",
+        "Ruff, Pyright when relevant, pre-commit/CI"
+      ],
+      "exclusive_resources": [],
+      "state": "PLANNED_NOT_STARTED"
+    },
+    {
+      "id": "I0-05",
+      "timebox_minutes": 20,
+      "depends_on": [
+        "I0-04"
+      ],
+      "required_gates": [],
+      "goal": "A1 完成/部分失败/重复通知/失联提醒后，依照 committed release 和 durable cursor 恢复",
+      "edit_paths": [
+        "msgloom/a2_kedro/activation/catchup.py",
+        "tests/a2_kedro/test_i0_05.py"
+      ],
+      "effort": "medium",
+      "read_only_review": false,
+      "delivery_files": [
+        "msgloom/a2_kedro/activation/catchup.py",
+        "tests/a2_kedro/test_i0_05.py"
+      ],
+      "model": "Claude Code Sonnet (verify installed model and effort)",
+      "owner": "activation-owner",
+      "verify": [
+        "Dedicated focused positive + negative case",
+        "Actual executable exit code",
+        "Ruff, Pyright when relevant, pre-commit/CI"
+      ],
+      "exclusive_resources": [],
+      "state": "PLANNED_NOT_STARTED"
+    },
+    {
+      "id": "I0-06",
+      "timebox_minutes": 20,
+      "depends_on": [
+        "I0-05"
+      ],
+      "required_gates": [],
+      "goal": "同 scope 重叠 invocation coalesce、claim-busy 退避、no-progress 上限，无无限循环",
+      "edit_paths": [
+        "msgloom/a2_kedro/activation/coalesce.py",
+        "tests/a2_kedro/test_i0_06.py"
+      ],
+      "effort": "medium",
+      "read_only_review": false,
+      "delivery_files": [
+        "msgloom/a2_kedro/activation/coalesce.py",
+        "tests/a2_kedro/test_i0_06.py"
+      ],
+      "model": "Claude Code Sonnet (verify installed model and effort)",
+      "owner": "activation-owner",
+      "verify": [
+        "Dedicated focused positive + negative case",
+        "Actual executable exit code",
+        "Ruff, Pyright when relevant, pre-commit/CI"
+      ],
+      "exclusive_resources": [],
+      "state": "PLANNED_NOT_STARTED"
+    },
+    {
+      "id": "I0-07",
+      "timebox_minutes": 25,
+      "depends_on": [
+        "E0-12",
+        "I0-06"
+      ],
+      "required_gates": [
+        "F0_PRODUCTION_ADMISSION"
+      ],
+      "goal": "Disabled/staging 部署验证及一条真实 A1→Kedro A2 流，先不放大并发",
+      "edit_paths": [
+        "tests/a2_kedro/activation/test_staging_autowakeup.py"
+      ],
+      "effort": "high",
+      "read_only_review": false,
+      "delivery_files": [
+        "tests/a2_kedro/activation/test_staging_autowakeup.py"
+      ],
+      "model": "Claude Code Sonnet (verify installed model and effort)",
+      "owner": "activation-owner",
+      "verify": [
+        "Dedicated focused positive + negative case",
+        "Actual executable exit code",
+        "Ruff, Pyright when relevant, pre-commit/CI"
+      ],
+      "exclusive_resources": [],
+      "state": "PLANNED_NOT_STARTED"
+    },
+    {
+      "id": "I0-08",
+      "timebox_minutes": 25,
+      "depends_on": [
+        "I0-07"
+      ],
+      "required_gates": [],
+      "goal": "旧 pending workset 清零核查、旧 engine 过渡与稳定回滚 anchor、历史 A3 读路径",
+      "edit_paths": [
+        "docs/notes/a2-v2-i0-cutover-audit.md"
+      ],
+      "effort": "medium",
+      "read_only_review": false,
+      "delivery_files": [
+        "docs/notes/a2-v2-i0-cutover-audit.md"
+      ],
+      "model": "Claude Code Sonnet (verify installed model and effort)",
+      "owner": "activation-owner",
+      "verify": [
+        "Dedicated focused positive + negative case",
+        "Actual executable exit code",
+        "Ruff, Pyright when relevant, pre-commit/CI"
+      ],
+      "exclusive_resources": [],
+      "state": "PLANNED_NOT_STARTED"
+    },
+    {
+      "id": "I0-09",
+      "timebox_minutes": 20,
+      "depends_on": [
+        "I0-08"
+      ],
+      "required_gates": [],
+      "goal": "生产启动 runbook、停止/恢复/报警分支、消除双引擎自动 fallback",
+      "edit_paths": [
+        "docs/runbooks/a2-v2-activation.md"
+      ],
+      "effort": "medium",
+      "read_only_review": false,
+      "delivery_files": [
+        "docs/runbooks/a2-v2-activation.md"
+      ],
+      "model": "Claude Code Sonnet (verify installed model and effort)",
+      "owner": "activation-owner",
+      "verify": [
+        "Dedicated focused positive + negative case",
+        "Actual executable exit code",
+        "Ruff, Pyright when relevant, pre-commit/CI"
+      ],
+      "exclusive_resources": [],
+      "state": "PLANNED_NOT_STARTED"
+    },
+    {
+      "id": "I0-10",
+      "timebox_minutes": 20,
+      "depends_on": [
+        "I0-09",
+        "V0-14c",
+        "I0-11"
+      ],
+      "required_gates": [
+        "OWNER_EXPLICIT_CUTOVER_APPROVAL"
+      ],
+      "goal": "用户明确确认后才可启用生产 Prefect、执行 DB schema migration 或正式 switch",
+      "edit_paths": [
+        "docs/notes/a2-v2-i0-owner-approval.md"
+      ],
+      "effort": "high",
+      "read_only_review": false,
+      "delivery_files": [
+        "docs/notes/a2-v2-i0-owner-approval.md"
+      ],
+      "model": "Claude Code Sonnet (verify installed model and effort)",
+      "owner": "activation-owner",
+      "verify": [
+        "Dedicated focused positive + negative case",
+        "Actual executable exit code",
+        "Ruff, Pyright when relevant, pre-commit/CI"
+      ],
+      "exclusive_resources": [],
+      "state": "PLANNED_NOT_STARTED"
+    },
+    {
+      "id": "I0-11",
+      "timebox_minutes": 20,
+      "depends_on": [
+        "C0-11e",
+        "E0-12"
+      ],
+      "required_gates": [
+        "OWNER_EXPLICIT_COMPAT_DEPLOY_APPROVAL"
+      ],
+      "goal": "兼容二进制部署前验证 —— 在 staging 以新兼容 binary 打开旧 schema4 不创建表/不写入；现场 rollout 需用户独立批准且仍旧 A2 dispatch",
+      "edit_paths": [
+        "docs/runbooks/a2-v2-compatible-open.md",
+        "tests/a2_kedro/test_compat_deploy.py"
+      ],
+      "effort": "high",
+      "read_only_review": false,
+      "delivery_files": [
+        "docs/runbooks/a2-v2-compatible-open.md",
+        "tests/a2_kedro/test_compat_deploy.py"
+      ],
+      "model": "Claude Code Sonnet (verify installed model and effort)",
+      "owner": "activation-owner",
+      "verify": [
+        "Dedicated focused positive + negative case",
+        "Actual executable exit code",
+        "Ruff, Pyright when relevant, pre-commit/CI"
+      ],
+      "exclusive_resources": [],
+      "state": "PLANNED_NOT_STARTED"
+    },
+    {
+      "id": "V0-01",
+      "timebox_minutes": 20,
+      "depends_on": [
+        "E0-02"
+      ],
+      "required_gates": [],
+      "goal": "DAG Graph 测试：验证 extract/parse/normalize/zone/native/filter/group/semantic save 全由 Kedro 依赖连接",
+      "edit_paths": [
+        "tests/a2_kedro/acceptance/test_v0_01.py"
+      ],
+      "effort": "medium",
+      "read_only_review": false,
+      "delivery_files": [
+        "tests/a2_kedro/acceptance/test_v0_01.py"
+      ],
+      "model": "Claude Code Sonnet (verify installed model and effort)",
+      "owner": "independent-qa-owner",
+      "verify": [
+        "Dedicated focused positive + negative case",
+        "Actual executable exit code",
+        "Ruff, Pyright when relevant, pre-commit/CI"
+      ],
+      "exclusive_resources": [],
+      "state": "PLANNED_NOT_STARTED"
+    },
+    {
+      "id": "V0-02",
+      "timebox_minutes": 20,
+      "depends_on": [
+        "C0-00"
+      ],
+      "required_gates": [],
+      "goal": "原 A1 20 Spider/13 Task15 scenarios/28 gates 的源代码不动，单独跑只读兼容检查",
+      "edit_paths": [
+        "tests/a2_kedro/acceptance/test_v0_02.py"
+      ],
+      "effort": "medium",
+      "read_only_review": false,
+      "delivery_files": [
+        "tests/a2_kedro/acceptance/test_v0_02.py"
+      ],
+      "model": "Claude Code Sonnet (verify installed model and effort)",
+      "owner": "independent-qa-owner",
+      "verify": [
+        "Dedicated focused positive + negative case",
+        "Actual executable exit code",
+        "Ruff, Pyright when relevant, pre-commit/CI"
+      ],
+      "exclusive_resources": [],
+      "state": "PLANNED_NOT_STARTED"
+    },
+    {
+      "id": "V0-03",
+      "timebox_minutes": 20,
+      "depends_on": [
+        "E0-11"
+      ],
+      "required_gates": [],
+      "goal": "A1 release/selection/ordinal/role/byte digest：七 stream、历史 baseline 和多 occurrence",
+      "edit_paths": [
+        "tests/a2_kedro/acceptance/test_v0_03.py"
+      ],
+      "effort": "medium",
+      "read_only_review": false,
+      "delivery_files": [
+        "tests/a2_kedro/acceptance/test_v0_03.py"
+      ],
+      "model": "Claude Code Sonnet (verify installed model and effort)",
+      "owner": "independent-qa-owner",
+      "verify": [
+        "Dedicated focused positive + negative case",
+        "Actual executable exit code",
+        "Ruff, Pyright when relevant, pre-commit/CI"
+      ],
+      "exclusive_resources": [],
+      "state": "PLANNED_NOT_STARTED"
+    },
+    {
+      "id": "V0-04",
+      "timebox_minutes": 20,
+      "depends_on": [
+        "P2-09",
+        "T0-11",
+        "P2-08"
+      ],
+      "required_gates": [],
+      "goal": "MIME/PDF/Word/Excel/JSON/HTML 和 span/limitation golden，独立 gold reviewer",
+      "edit_paths": [
+        "tests/a2_kedro/acceptance/test_v0_04.py"
+      ],
+      "effort": "medium",
+      "read_only_review": false,
+      "delivery_files": [
+        "tests/a2_kedro/acceptance/test_v0_04.py"
+      ],
+      "model": "Claude Code Sonnet (verify installed model and effort)",
+      "owner": "independent-qa-owner",
+      "verify": [
+        "Dedicated focused positive + negative case",
+        "Actual executable exit code",
+        "Ruff, Pyright when relevant, pre-commit/CI"
+      ],
+      "exclusive_resources": [],
+      "state": "PLANNED_NOT_STARTED"
+    },
+    {
+      "id": "V0-05",
+      "timebox_minutes": 20,
+      "depends_on": [
+        "P3-09",
+        "T0-11"
+      ],
+      "required_gates": [],
+      "goal": "关系/规则/分组异常：无法归属、跨 scope、重复 ID、source-native context",
+      "edit_paths": [
+        "tests/a2_kedro/acceptance/test_v0_05.py"
+      ],
+      "effort": "medium",
+      "read_only_review": false,
+      "delivery_files": [
+        "tests/a2_kedro/acceptance/test_v0_05.py"
+      ],
+      "model": "Claude Code Sonnet (verify installed model and effort)",
+      "owner": "independent-qa-owner",
+      "verify": [
+        "Dedicated focused positive + negative case",
+        "Actual executable exit code",
+        "Ruff, Pyright when relevant, pre-commit/CI"
+      ],
+      "exclusive_resources": [],
+      "state": "PLANNED_NOT_STARTED"
+    },
+    {
+      "id": "V0-06",
+      "timebox_minutes": 20,
+      "depends_on": [
+        "P1-12b",
+        "E0-05"
+      ],
+      "required_gates": [],
+      "goal": "async cancel、CPU/GIL、parser cgroup、child cleanup、max RSS、无 orphan、无 writer after claim expiry",
+      "edit_paths": [
+        "tests/a2_kedro/acceptance/test_v0_06.py"
+      ],
+      "effort": "medium",
+      "read_only_review": false,
+      "delivery_files": [
+        "tests/a2_kedro/acceptance/test_v0_06.py"
+      ],
+      "model": "Claude Code Sonnet (verify installed model and effort)",
+      "owner": "independent-qa-owner",
+      "verify": [
+        "Dedicated focused positive + negative case",
+        "Actual executable exit code",
+        "Ruff, Pyright when relevant, pre-commit/CI"
+      ],
+      "exclusive_resources": [],
+      "state": "PLANNED_NOT_STARTED"
+    },
+    {
+      "id": "V0-07",
+      "timebox_minutes": 25,
+      "depends_on": [
+        "C0-11d",
+        "E0-12"
+      ],
+      "required_gates": [],
+      "goal": "数据库迁移 v2/3/4→经 C0-11a 决议的 schema/revision、旧结构/trigger/占用表/legacy hash 拒绝、失败原子回滚",
+      "edit_paths": [
+        "tests/a2_kedro/acceptance/test_v0_07.py"
+      ],
+      "effort": "medium",
+      "read_only_review": false,
+      "delivery_files": [
+        "tests/a2_kedro/acceptance/test_v0_07.py"
+      ],
+      "model": "Claude Code Sonnet (verify installed model and effort)",
+      "owner": "independent-qa-owner",
+      "verify": [
+        "Dedicated focused positive + negative case",
+        "Actual executable exit code",
+        "Ruff, Pyright when relevant, pre-commit/CI"
+      ],
+      "exclusive_resources": [],
+      "state": "PLANNED_NOT_STARTED"
+    },
+    {
+      "id": "V0-08",
+      "timebox_minutes": 20,
+      "depends_on": [
+        "C0-20c",
+        "E0-12"
+      ],
+      "required_gates": [],
+      "goal": "完整 v2 acceptance/receipt/held-index、conflicting SHA/attempt、并发和 late crash 恢复",
+      "edit_paths": [
+        "tests/a2_kedro/acceptance/test_v0_08.py"
+      ],
+      "effort": "medium",
+      "read_only_review": false,
+      "delivery_files": [
+        "tests/a2_kedro/acceptance/test_v0_08.py"
+      ],
+      "model": "Claude Code Sonnet (verify installed model and effort)",
+      "owner": "independent-qa-owner",
+      "verify": [
+        "Dedicated focused positive + negative case",
+        "Actual executable exit code",
+        "Ruff, Pyright when relevant, pre-commit/CI"
+      ],
+      "exclusive_resources": [],
+      "state": "PLANNED_NOT_STARTED"
+    },
+    {
+      "id": "V0-09",
+      "timebox_minutes": 20,
+      "depends_on": [
+        "E0-09"
+      ],
+      "required_gates": [],
+      "goal": "A3/A5 老数据加载、新输入 typed 适配、限制贯穿，历史不重写",
+      "edit_paths": [
+        "tests/a2_kedro/acceptance/test_v0_09.py"
+      ],
+      "effort": "medium",
+      "read_only_review": false,
+      "delivery_files": [
+        "tests/a2_kedro/acceptance/test_v0_09.py"
+      ],
+      "model": "Claude Code Sonnet (verify installed model and effort)",
+      "owner": "independent-qa-owner",
+      "verify": [
+        "Dedicated focused positive + negative case",
+        "Actual executable exit code",
+        "Ruff, Pyright when relevant, pre-commit/CI"
+      ],
+      "exclusive_resources": [],
+      "state": "PLANNED_NOT_STARTED"
+    },
+    {
+      "id": "V0-10",
+      "timebox_minutes": 20,
+      "depends_on": [
+        "I0-06"
+      ],
+      "required_gates": [],
+      "goal": "Prefect hint 丢失/重复/partial failure、cursor 不漂移、pending backpressure",
+      "edit_paths": [
+        "tests/a2_kedro/acceptance/test_v0_10.py"
+      ],
+      "effort": "medium",
+      "read_only_review": false,
+      "delivery_files": [
+        "tests/a2_kedro/acceptance/test_v0_10.py"
+      ],
+      "model": "Claude Code Sonnet (verify installed model and effort)",
+      "owner": "independent-qa-owner",
+      "verify": [
+        "Dedicated focused positive + negative case",
+        "Actual executable exit code",
+        "Ruff, Pyright when relevant, pre-commit/CI"
+      ],
+      "exclusive_resources": [],
+      "state": "PLANNED_NOT_STARTED"
+    },
+    {
+      "id": "V0-11",
+      "timebox_minutes": 20,
+      "depends_on": [
+        "V0-11a",
+        "E0-12"
+      ],
+      "required_gates": [],
+      "goal": "Python 3.12/3.13/3.14、Pi aarch64 和 x86/Linux、Mac/Windows smoke；不能把 `-O` synthetic 冒充全量",
+      "edit_paths": [
+        "tests/a2_kedro/acceptance/test_v0_11.py"
+      ],
+      "effort": "medium",
+      "read_only_review": false,
+      "delivery_files": [
+        "tests/a2_kedro/acceptance/test_v0_11.py"
+      ],
+      "model": "Claude Code Sonnet (verify installed model and effort)",
+      "owner": "independent-qa-owner",
+      "verify": [
+        "Dedicated focused positive + negative case",
+        "Actual executable exit code",
+        "Ruff, Pyright when relevant, pre-commit/CI"
+      ],
+      "exclusive_resources": [],
+      "state": "PLANNED_NOT_STARTED"
+    },
+    {
+      "id": "V0-11a",
+      "timebox_minutes": 20,
+      "depends_on": [
+        "C0-00"
+      ],
+      "required_gates": [],
+      "goal": "`.github/workflows/ci.yml` 中增加/确认 Linux x86_64 真实 runner + wheel/pytest targeted gate；原 CI 仅 ARM Linux + Mac/Windows smoke",
+      "edit_paths": [
+        ".github/workflows/ci.yml"
+      ],
+      "effort": "medium",
+      "read_only_review": false,
+      "delivery_files": [
+        ".github/workflows/ci.yml"
+      ],
+      "model": "Claude Code Sonnet (verify installed model and effort)",
+      "owner": "ci-workflow-single-owner",
+      "verify": [
+        "Dedicated focused positive + negative case",
+        "Actual executable exit code",
+        "Ruff, Pyright when relevant, pre-commit/CI"
+      ],
+      "exclusive_resources": [],
+      "state": "PLANNED_NOT_STARTED"
+    },
+    {
+      "id": "V0-12",
+      "timebox_minutes": 20,
+      "depends_on": [
+        "E0-12",
+        "F0-09",
+        "F0-10"
+      ],
+      "required_gates": [
+        "F0_PRODUCTION_ADMISSION"
+      ],
+      "goal": "GitHub 全部必需 checks：`ruff check` / `ruff format --check` / Pyright / pre-commit / gitleaks / pytest / cgroup-v2 / wheel install",
+      "edit_paths": [
+        "tests/a2_kedro/acceptance/test_v0_12.py"
+      ],
+      "effort": "medium",
+      "read_only_review": false,
+      "delivery_files": [
+        "tests/a2_kedro/acceptance/test_v0_12.py"
+      ],
+      "model": "Claude Code Sonnet (verify installed model and effort)",
+      "owner": "independent-qa-owner",
+      "verify": [
+        "Dedicated focused positive + negative case",
+        "Actual executable exit code",
+        "Ruff, Pyright when relevant, pre-commit/CI"
+      ],
+      "exclusive_resources": [],
+      "state": "PLANNED_NOT_STARTED"
+    },
+    {
+      "id": "V0-15",
+      "timebox_minutes": 20,
+      "depends_on": [
+        "E0-12",
+        "P1-12b"
+      ],
+      "required_gates": [],
+      "goal": "**保留 D4 V13**：完全相同 A1 frozen Workset 在相同 Pi / supported host 下测 old vs new 的 wall/RSS，超过 10% 的实质回归需查明并复审（绝对量可忽略情形记录证据）",
+      "edit_paths": [
+        "tests/a2_kedro/acceptance/test_v0_15.py"
+      ],
+      "effort": "medium",
+      "read_only_review": false,
+      "delivery_files": [
+        "tests/a2_kedro/acceptance/test_v0_15.py"
+      ],
+      "model": "Claude Code Sonnet (verify installed model and effort)",
+      "owner": "independent-qa-owner",
+      "verify": [
+        "Dedicated focused positive + negative case",
+        "Actual executable exit code",
+        "Ruff, Pyright when relevant, pre-commit/CI"
+      ],
+      "exclusive_resources": [
+        "pi-exclusive-benchmark-slot"
+      ],
+      "state": "PLANNED_NOT_STARTED"
+    },
+    {
+      "id": "V0-16",
+      "timebox_minutes": 20,
+      "depends_on": [
+        "E0-12",
+        "P1-13"
+      ],
+      "required_gates": [],
+      "goal": "**保留 D4 V14**：计数 Kedro 图依赖、bridge/adapter、图外控制器分支/LOC，禁止重建第二套自制 A2 ETL 调度器",
+      "edit_paths": [
+        "tests/a2_kedro/acceptance/test_v0_16.py"
+      ],
+      "effort": "medium",
+      "read_only_review": false,
+      "delivery_files": [
+        "tests/a2_kedro/acceptance/test_v0_16.py"
+      ],
+      "model": "Claude Code Sonnet (verify installed model and effort)",
+      "owner": "independent-qa-owner",
+      "verify": [
+        "Dedicated focused positive + negative case",
+        "Actual executable exit code",
+        "Ruff, Pyright when relevant, pre-commit/CI"
+      ],
+      "exclusive_resources": [],
+      "state": "PLANNED_NOT_STARTED"
+    },
+    {
+      "id": "V0-17",
+      "timebox_minutes": 20,
+      "depends_on": [
+        "I0-06",
+        "E0-12",
+        "T0-09",
+        "I0-07"
+      ],
+      "required_gates": [],
+      "goal": "**保留 D4 V16**：按原 D4 [AUTO-01–AUTO-25] 全部单独执行，尤其 missing wakeup、held-only、postcommit、CVE 和 history cutover",
+      "edit_paths": [
+        "tests/a2_kedro/acceptance/test_v0_17.py"
+      ],
+      "effort": "medium",
+      "read_only_review": false,
+      "delivery_files": [
+        "tests/a2_kedro/acceptance/test_v0_17.py"
+      ],
+      "model": "Claude Code Sonnet (verify installed model and effort)",
+      "owner": "independent-qa-owner",
+      "verify": [
+        "Dedicated focused positive + negative case",
+        "Actual executable exit code",
+        "Ruff, Pyright when relevant, pre-commit/CI"
+      ],
+      "exclusive_resources": [],
+      "state": "PLANNED_NOT_STARTED"
+    },
+    {
+      "id": "V0-18",
+      "timebox_minutes": 20,
+      "depends_on": [
+        "V0-17",
+        "V0-15",
+        "V0-16"
+      ],
+      "required_gates": [],
+      "goal": "D4 真实验收 crosswalk —— [PR #68] 原始 V01–V16 + AUTO-01–25 每项有 exact SHA/具体新测试/CI/负责 task，缺任何项 FAIL",
+      "edit_paths": [
+        "docs/notes/a2-v2-d4-v01-v16-crosswalk.md"
+      ],
+      "effort": "high",
+      "read_only_review": false,
+      "delivery_files": [
+        "docs/notes/a2-v2-d4-v01-v16-crosswalk.md"
+      ],
+      "model": "Claude Code Sonnet (verify installed model and effort)",
+      "owner": "independent-qa-owner",
+      "verify": [
+        "Dedicated focused positive + negative case",
+        "Actual executable exit code",
+        "Ruff, Pyright when relevant, pre-commit/CI"
+      ],
+      "exclusive_resources": [],
+      "state": "PLANNED_NOT_STARTED"
+    },
+    {
+      "id": "V0-13",
+      "timebox_minutes": 20,
+      "depends_on": [
+        "F0-08",
+        "P1-11"
+      ],
+      "required_gates": [],
+      "goal": "无新增 CVE ignore/telemetry、未授权网络、隐私 canary；完整锁及版本 hash 审计",
+      "edit_paths": [
+        "tests/a2_kedro/acceptance/test_v0_13.py"
+      ],
+      "effort": "medium",
+      "read_only_review": false,
+      "delivery_files": [
+        "tests/a2_kedro/acceptance/test_v0_13.py"
+      ],
+      "model": "Claude Code Sonnet (verify installed model and effort)",
+      "owner": "independent-qa-owner",
+      "verify": [
+        "Dedicated focused positive + negative case",
+        "Actual executable exit code",
+        "Ruff, Pyright when relevant, pre-commit/CI"
+      ],
+      "exclusive_resources": [],
+      "state": "PLANNED_NOT_STARTED"
+    },
+    {
+      "id": "V0-14a",
+      "timebox_minutes": 20,
+      "depends_on": [
+        "V0-01",
+        "V0-02",
+        "V0-03",
+        "V0-04",
+        "V0-05",
+        "V0-06",
+        "V0-07",
+        "V0-08",
+        "V0-09",
+        "V0-10",
+        "V0-11",
+        "V0-11a",
+        "V0-12",
+        "V0-13",
+        "V0-15",
+        "V0-16",
+        "V0-17",
+        "V0-18",
+        "I0-07",
+        "I0-08",
+        "I0-09"
+      ],
+      "required_gates": [],
+      "goal": "独立 reviewer 对生产代码和边界的 exact-SHA 一轮只读验证；保留初始 REVISE 原文",
+      "edit_paths": [
+        "docs/notes/a2-v2-independent-review-r1.md"
+      ],
+      "effort": "high",
+      "read_only_review": true,
+      "delivery_files": [
+        "docs/notes/a2-v2-independent-review-r1.md"
+      ],
+      "model": "Claude Code Sonnet (verify installed model and effort)",
+      "owner": "independent-readonly-reviewer",
+      "verify": [
+        "Exact-SHA read-only review",
+        "No source writes or test-execution claims"
+      ],
+      "exclusive_resources": [],
+      "state": "PLANNED_NOT_STARTED"
+    },
+    {
+      "id": "V0-14b",
+      "timebox_minutes": 20,
+      "depends_on": [
+        "V0-14a",
+        "I0-07"
+      ],
+      "required_gates": [],
+      "goal": "独立 reviewer 对可复现 test/CI/安全/性能/自动触发矩阵核验，分工与作者独立",
+      "edit_paths": [
+        "docs/notes/a2-v2-independent-review-r2.md"
+      ],
+      "effort": "high",
+      "read_only_review": true,
+      "delivery_files": [
+        "docs/notes/a2-v2-independent-review-r2.md"
+      ],
+      "model": "Claude Code Sonnet (verify installed model and effort)",
+      "owner": "independent-readonly-reviewer",
+      "verify": [
+        "Exact-SHA read-only review",
+        "No source writes or test-execution claims"
+      ],
+      "exclusive_resources": [],
+      "state": "PLANNED_NOT_STARTED"
+    },
+    {
+      "id": "V0-14c",
+      "timebox_minutes": 20,
+      "depends_on": [
+        "V0-14b",
+        "I0-07"
+      ],
+      "required_gates": [],
+      "goal": "汇总两个只读 reviewer + 必须通过的 CI/owner decisions，在确切 SHA 归档正式 GO/NO-GO，而非每阶段本人签字",
+      "edit_paths": [
+        "docs/notes/a2-v2-final-go-no-go.md"
+      ],
+      "effort": "high",
+      "read_only_review": true,
+      "delivery_files": [
+        "docs/notes/a2-v2-final-go-no-go.md"
+      ],
+      "model": "Claude Code Sonnet (verify installed model and effort)",
+      "owner": "independent-readonly-reviewer",
+      "verify": [
+        "Exact-SHA read-only review",
+        "No source writes or test-execution claims"
+      ],
+      "exclusive_resources": [],
+      "state": "PLANNED_NOT_STARTED"
+    },
+    {
+      "id": "R0-01",
+      "timebox_minutes": 20,
+      "depends_on": [
+        "V0-14c"
+      ],
+      "required_gates": [],
+      "goal": "归档旧 A2 Git SHA、历史 schema/compat fixture、行为负面测试并检查最新 A3 reader，确定临时双读范围",
+      "edit_paths": [
+        "docs/notes/a2_v2_r0_01.md"
+      ],
+      "effort": "medium",
+      "read_only_review": false,
+      "delivery_files": [
+        "docs/notes/a2_v2_r0_01.md"
+      ],
+      "model": "Claude Code Sonnet (verify installed model and effort)",
+      "owner": "release-owner",
+      "verify": [
+        "Dedicated focused positive + negative case",
+        "Actual executable exit code",
+        "Ruff, Pyright when relevant, pre-commit/CI"
+      ],
+      "exclusive_resources": [],
+      "state": "PLANNED_NOT_STARTED"
+    },
+    {
+      "id": "R0-02",
+      "timebox_minutes": 20,
+      "depends_on": [
+        "R0-01"
+      ],
+      "required_gates": [],
+      "goal": "只读 audit 旧 pending Workset 必须清零，另审计旧 held-only 曾被标为 COMPLETE 的历史，不得将其当成新正确 receipt",
+      "edit_paths": [
+        "docs/notes/a2_v2_r0_02.md"
+      ],
+      "effort": "medium",
+      "read_only_review": false,
+      "delivery_files": [
+        "docs/notes/a2_v2_r0_02.md"
+      ],
+      "model": "Claude Code Sonnet (verify installed model and effort)",
+      "owner": "release-owner",
+      "verify": [
+        "Dedicated focused positive + negative case",
+        "Actual executable exit code",
+        "Ruff, Pyright when relevant, pre-commit/CI"
+      ],
+      "exclusive_resources": [],
+      "state": "PLANNED_NOT_STARTED"
+    },
+    {
+      "id": "R0-03",
+      "timebox_minutes": 20,
+      "depends_on": [
+        "R0-02",
+        "I0-09",
+        "I0-11"
+      ],
+      "required_gates": [],
+      "goal": "**切换前**校验 DB 备份/恢复演练、旧 schema4 binary 与新兼容 binary 的开关、迁移 runbook；不能仅靠 git revert",
+      "edit_paths": [
+        "docs/notes/a2_v2_r0_03.md"
+      ],
+      "effort": "medium",
+      "read_only_review": false,
+      "delivery_files": [
+        "docs/notes/a2_v2_r0_03.md"
+      ],
+      "model": "Claude Code Sonnet (verify installed model and effort)",
+      "owner": "release-owner",
+      "verify": [
+        "Dedicated focused positive + negative case",
+        "Actual executable exit code",
+        "Ruff, Pyright when relevant, pre-commit/CI"
+      ],
+      "exclusive_resources": [],
+      "state": "PLANNED_NOT_STARTED"
+    },
+    {
+      "id": "R0-04",
+      "timebox_minutes": 20,
+      "depends_on": [
+        "R0-03",
+        "I0-10",
+        "I0-11"
+      ],
+      "required_gates": [
+        "OWNER_EXPLICIT_CUTOVER_APPROVAL",
+        "STAGED_DB_BACKUP_AND_OLD_PENDING_ZERO"
+      ],
+      "goal": "收到用户明确迁移/安全/cutover 授权后在维护窗口执行显式 schema/producer binding 操作，保持单一 A2 dispatch",
+      "edit_paths": [
+        "docs/notes/a2-v2-r0-schema-activation-receipt.md"
+      ],
+      "effort": "high",
+      "read_only_review": false,
+      "delivery_files": [
+        "docs/notes/a2-v2-r0-schema-activation-receipt.md"
+      ],
+      "model": "Claude Code Sonnet (verify installed model and effort)",
+      "owner": "release-owner",
+      "verify": [
+        "Dedicated focused positive + negative case",
+        "Actual executable exit code",
+        "Ruff, Pyright when relevant, pre-commit/CI"
+      ],
+      "exclusive_resources": [],
+      "state": "PLANNED_NOT_STARTED"
+    },
+    {
+      "id": "R0-05",
+      "timebox_minutes": 20,
+      "depends_on": [
+        "R0-04"
+      ],
+      "required_gates": [],
+      "goal": "小范围 source/stream/consumer 验证 read-only status、结果/A3 限制、无失败回退再决定扩展；无产出证明不放大",
+      "edit_paths": [
+        "docs/notes/a2_v2_r0_05.md"
+      ],
+      "effort": "medium",
+      "read_only_review": false,
+      "delivery_files": [
+        "docs/notes/a2_v2_r0_05.md"
+      ],
+      "model": "Claude Code Sonnet (verify installed model and effort)",
+      "owner": "release-owner",
+      "verify": [
+        "Dedicated focused positive + negative case",
+        "Actual executable exit code",
+        "Ruff, Pyright when relevant, pre-commit/CI"
+      ],
+      "exclusive_resources": [],
+      "state": "PLANNED_NOT_STARTED"
+    },
+    {
+      "id": "R0-06",
+      "timebox_minutes": 20,
+      "depends_on": [
+        "R0-05"
+      ],
+      "required_gates": [
+        "OWNER_EXPLICIT_LEGACY_RETIREMENT_APPROVAL"
+      ],
+      "goal": "确认 v2 成功且旧 Handler 不再生产后，按依赖扫描删除 legacy RecordSteps/StageSteps/旧 dispatch 冗余实现，保留原历史测试/数据",
+      "edit_paths": [
+        "msgloom/preparation_pipeline/handler.py",
+        "msgloom/preparation_pipeline/scheduled.py",
+        "tests/a2_kedro/test_r0_06.py"
+      ],
+      "effort": "high",
+      "read_only_review": false,
+      "delivery_files": [
+        "msgloom/preparation_pipeline/handler.py",
+        "msgloom/preparation_pipeline/scheduled.py",
+        "tests/a2_kedro/test_r0_06.py"
+      ],
+      "model": "Claude Code Sonnet (verify installed model and effort)",
+      "owner": "release-owner",
+      "verify": [
+        "Dedicated focused positive + negative case",
+        "Actual executable exit code",
+        "Ruff, Pyright when relevant, pre-commit/CI"
+      ],
+      "exclusive_resources": [],
+      "state": "PLANNED_NOT_STARTED"
+    },
+    {
+      "id": "R0-07",
+      "timebox_minutes": 20,
+      "depends_on": [
+        "R0-06"
+      ],
+      "required_gates": [
+        "OWNER_EXPLICIT_BRANCH_CLEANUP_APPROVAL"
+      ],
+      "goal": "GitHub required checks / 历史 A3/A5 regression 后单 owner 合并与只清理已合并、无将来用途 worktrees/远程分支",
+      "edit_paths": [
+        "docs/notes/a2-v2-r0-merge-cleanup-audit.md"
+      ],
+      "effort": "medium",
+      "read_only_review": false,
+      "delivery_files": [
+        "docs/notes/a2-v2-r0-merge-cleanup-audit.md"
+      ],
+      "model": "Claude Code Sonnet (verify installed model and effort)",
+      "owner": "release-owner",
+      "verify": [
+        "Dedicated focused positive + negative case",
+        "Actual executable exit code",
+        "Ruff, Pyright when relevant, pre-commit/CI"
+      ],
+      "exclusive_resources": [],
+      "state": "PLANNED_NOT_STARTED"
+    },
+    {
+      "id": "R0-08",
+      "timebox_minutes": 20,
+      "depends_on": [
+        "R0-07"
+      ],
+      "required_gates": [],
+      "goal": "Final acceptance index：代码/迁移/CI/安全决定/回滚演练/自动 Prefect 状态，确认不再长期双引擎或后台假作业",
+      "edit_paths": [
+        "docs/notes/a2_v2_r0_08.md"
+      ],
+      "effort": "medium",
+      "read_only_review": false,
+      "delivery_files": [
+        "docs/notes/a2_v2_r0_08.md"
+      ],
+      "model": "Claude Code Sonnet (verify installed model and effort)",
+      "owner": "release-owner",
+      "verify": [
+        "Dedicated focused positive + negative case",
+        "Actual executable exit code",
+        "Ruff, Pyright when relevant, pre-commit/CI"
+      ],
+      "exclusive_resources": [],
+      "state": "PLANNED_NOT_STARTED"
+    }
+  ]
+}
