@@ -92,7 +92,7 @@ file.
 | T0-08-N34 | lossy_projection | A full prepared@2 record is never projected to a prepared@1 record |
 | T0-08-N35 | lossy_projection | A prepared@2 record with no zone, relation or limitation worth keeping is still not projected |
 | T0-08-N36 | binding | A prepared@2 ref cannot enter the historical triage_input@1 line |
-| T0-08-N37 | binding | A prepared@1 ref does not enter the new triage_input@2 line |
+| T0-08-N37 | binding | PROPOSED POLICY: a prepared@1 ref does not enter the new triage_input@2 line |
 | T0-08-N38 | version_rejection | A future version 3 ref is rejected by the bind operation before the line is compared |
 
 ## Pinned digests
@@ -100,8 +100,9 @@ file.
 P01 and P02 pin the SHA-256 and the byte count of the canonical JSON of the
 two v1 bases. This pins the historical bytes. The author computed the digests
 with the standard `json` and `hashlib` modules from the base in the file. The
-author then compared them once with the output of the v1 codec. The author
-also decoded every v1 case with the real v1 codec to check that accept and
+author checked them against the output of the v1 codec after the fact. The
+answers were not generated from it. The author also decoded every v1 case
+with the real v1 codec, again after the fact, to check that accept and
 reject agree. All agree, except N37, where the v1 codec accepts the record
 and the rejection comes from the A3 line (`triage_input@2`). No A2 v2 code
 was used.
@@ -115,10 +116,17 @@ was used.
   limitations. The v1 bases use an empty block list.
 - The v1 reader rules come from the frozen v1 model. The oracle covers a
   subset of those rules: one case per rule.
-- The answer for N37 (triage_input@2 refuses prepared@1) follows the closed
-  version-2 allowlist of C0-17b. The blueprint does not say it in one
-  sentence.
+- The answer for N37 (triage_input@2 refuses prepared@1) is an inference. It
+  follows the closed version-2 allowlist of C0-17b, but no plan or blueprint
+  text states it. N37 has `policy_status: proposed_owner_signoff_needed`, as
+  T0-07-P10 does. The owner must sign off before A2 cites it as a
+  requirement.
+- The limitation order "record, then attachment, then parsed content" in P01,
+  P04 and P08 is an oracle choice. Blueprint 4.2 says any limitation gives
+  INCOMPLETE. It does not fix an order. Mark it for C0-07 sign-off. These
+  cases carry no `policy_status`, because the order is a view detail and not
+  an accept or reject verdict.
 - The reference reader in the test is a consistency check. It is not a
   conformance proof for the future A3 adapter.
-- `policy_status` is not set on any T0-08 case. Each decision comes from the
+- Only N37 carries `policy_status`. Every other decision comes from the
   blueprint or the frozen v1 contract.

@@ -86,6 +86,14 @@ The full text is in `a2-v2-golden-t0-07.md`.
 
 ## T0-08 decisions
 
-The full text is in `a2-v2-golden-t0-08.md`. No T0-08 case carries
-`policy_status`. The prepared@2 field names in the file are oracle names. C0-07
+The full text is in `a2-v2-golden-t0-08.md`. One T0-08 case carries
+`policy_status`:
+
+- T0-08-N37 `triage_input@2` refuses a prepared@1 ref:
+  `proposed_owner_signoff_needed`. The verdict is an inference from the closed
+  version-2 allowlist. No plan or blueprint text states it.
+
+The limitation order (record, attachment, parsed content) in P01, P04 and P08
+is an oracle choice and needs C0-07 sign-off. It has no `policy_status`. The
+prepared@2 field names in the file are oracle names. C0-07
 freezes the wire names.

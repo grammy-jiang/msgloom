@@ -11,7 +11,7 @@
       "same blueprint, section 4.1: strict frozen models with extra forbidden, a closed (kind, version) allowlist where prepared@2 is the new prepared result and prepared@1 is the historical read format, and old v1 results, codecs and A3 results are not migrated, overwritten or re-encoded",
       "same blueprint, section 4.2: any limitation gives INCOMPLETE; only a fully accepted result without limitation is COMPLETE",
       "same blueprint, section 8.1: triage_input@2 binds prepared@2, filter_result@2 and group_result@2; the historical triage_input@1 and PreparedRecord stay readable as they were; refs of version 2 must not enter the v1 codec; ignoring new zones, relations or limitations is a lossy projection and is not allowed by default",
-      "A2 Kedro v2 execution plan of 2026-10-23, task T0-08 (old prepared@1 readable, new prepared@2 mapped correctly) and tasks C0-12a, C0-17a to C0-17g (closed allowlist, v1 refs rejected by v2 and v2 refs rejected by v1, unknown versions rejected, lossy projection never silent)",
+      "A2 Kedro v2 execution plan of 2026-10-23, task T0-08 (old prepared@1 readable, new prepared@2 mapped correctly) and tasks C0-12a, C0-17a to C0-17g (closed allowlist; C0-17a: the v1 reader cannot read @2 refs; unknown versions rejected; lossy projection never silent). C0-12a rejects prepared@1 for new acceptance results; that rule does not apply to this historical reader.",
       "Frozen v1 contract, read as ground truth for v1 only: the PreparedRecord model in the msgloom preparation records module (fourteen required fields, strict, frozen, extra forbidden, aware source_time, pending filtering without rule, unique parsed references, attachment parsed reference must be listed, increasing source mapping range) and PreparedDataCodec in the preparation codec module (canonical sorted compact UTF-8 JSON, decode re-encodes and rejects non-canonical bytes); the v1 base values copy the A1 fixture in tests/prepared_contract_fixtures",
       "Frozen v1 A3 contract: the triage_input codec accepts prepared, filter_result and group_result refs of schema version 1 only",
       "The two pinned digests (P01, P02) are the SHA-256 and byte count of the canonical JSON of the v1 bases. They were computed with the standard json and hashlib modules from the base in this file and then compared once with the v1 codec output. They pin the historical bytes. They do not come from any A2 v2 code.",
@@ -1254,14 +1254,15 @@
       "case_id": "T0-08-N37",
       "polarity": "negative",
       "topic": "binding",
-      "title": "A prepared@1 ref does not enter the new triage_input@2 line",
+      "title": "PROPOSED POLICY: a prepared@1 ref does not enter the new triage_input@2 line",
+      "policy_status": "proposed_owner_signoff_needed",
       "input": {
         "operation": "bind_triage_input",
         "target": "triage_input@2",
         "stored": {"kind": "prepared", "schema_version": "1", "base": "v1_min", "edits": []}
       },
       "expected": {"decision": "reject", "code": "ref_version_not_allowed"},
-      "rationale": "triage_input@2 has a kind and version allowlist of prepared, filter_result and group_result of version 2. Old v1 snapshots stay on the v1 line.",
+      "rationale": "triage_input@2 has a kind and version allowlist of prepared, filter_result and group_result of version 2. Old v1 snapshots stay on the v1 line. This is an inference: no plan or blueprint text states it, so the verdict needs owner sign-off.",
       "source": ["BP-8.1", "PLAN-C0-17"]
     },
     {

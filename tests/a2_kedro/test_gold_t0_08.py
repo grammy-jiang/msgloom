@@ -63,6 +63,8 @@ CODES = (
     "lineage_kind_mismatch", "lossy_projection_forbidden",
     "ref_version_not_allowed",
 )  # fmt: skip
+PROPOSED = "proposed_owner_signoff_needed"
+PROPOSED_CASE = "T0-08-N37"
 OPERATIONS = ("read", "force_v1_codec", "project_to_v1", "bind_triage_input")
 TOPICS = (
     "historical_v1", "historical_unchanged", "v2_mapping", "limitations",
@@ -131,9 +133,13 @@ def check_case(case: Case, doc: dict[str, Any], all_cases: list[Case]) -> list[s
 def _problems(case: Case, doc: dict[str, Any], all_cases: list[Case]) -> list[str]:
     bad: list[str] = []
     top = {"case_id", "polarity", "topic", "title", "input", "expected", "rationale", "source"}  # fmt: skip
-    extra = {"links", "pinned"}
+    extra = {"links", "pinned", "policy_status"}
     if not top <= set(case) <= top | extra:
         return [f"case keys {sorted(set(case) ^ top)}"]
+    # Only N37 is a proposed policy; it needs the marker, no other case may carry it.
+    want_status = PROPOSED if case["case_id"] == PROPOSED_CASE else None
+    if case.get("policy_status") != want_status:
+        return [f"policy_status {case.get('policy_status')!r}, want {want_status!r}"]
     inp, exp = case["input"], case["expected"]
     stored = inp["stored"]
     want = {"operation", "stored"} | ({"target"} if inp["operation"] == "bind_triage_input" else set())  # fmt: skip
