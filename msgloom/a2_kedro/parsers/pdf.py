@@ -35,13 +35,21 @@ The page count in a PDF is a claim of the file. pdfium may report a count
 that the file cannot support. The parser reads at most ``MAX_PAGES``
 pages, counts pages that fail to load as ``UNREADABLE`` and reports the
 claim in :attr:`PdfParseResult.claimed_pages`. pdfium trusts a ``/Count``
-above zero and cannot load a page past it. The parser therefore scans the
-raw bytes for page leaf objects (``/Type /Page``). More leaves than the
-claim gives ``PAGE_COUNT_MISMATCH`` and the result is never ``COMPLETE``.
-The scan is a heuristic. It misses page objects inside object streams and
-names written with ``#`` escapes. It can flag a file with old page
-revisions (incremental update) or with that token inside stream data.
-Those cases are flagged, never hidden.
+above zero and cannot load a page past it. The parser therefore cross-checks
+the claim with
+:func:`~msgloom.a2_kedro.parsers.pdf_pagecheck.check_page_count`, a
+heuristic scan for page leaf objects. More leaves than the claim gives
+``PAGE_COUNT_MISMATCH``. A scan that cannot finish (object stream that is
+damaged, too large, over the stream limit, with a predictor or with a
+filter other than Flate) gives ``PAGE_COUNT_UNVERIFIED``. Neither result is
+``COMPLETE``. The scan finds ``/Type /Page`` with any white space between
+the names, the ``/Subtype /Page`` form and ``#xx`` name escapes, in the raw
+bytes and in Flate object streams. It does not find leaves with no
+``/Type`` entry, a comment between key and value, or leaves in an object
+stream that has no ``/Type /ObjStm``. A result without a mismatch
+limitation is therefore not proof that the page count is right. The scan
+can flag a file with old page revisions or with the token in stream data.
+See ``pdf_pagecheck.py`` for the exact rules.
 
 A page text that pdfium returns with undecodable UTF-16 (a lone
 surrogate) is read with replacement characters and gives
@@ -51,7 +59,8 @@ Bounds: ``MAX_PDF_BYTES`` (input), ``MAX_PAGES`` (pages read) and
 ``MAX_TEXT_CHARS`` (text characters over all pages). A page limit or a
 text limit gives a partial, deterministic result. The text limit cuts a
 page at the limit and reads no later page. Work is linear in the bounded
-input; the parser uses no regular expression.
+input. The page count scan uses fixed regular expressions without nested
+repetition.
 
 PII: ``repr`` of every result type shows counts and states only. Limitation
 details and error messages are fixed text. Page text is available only
@@ -86,6 +95,10 @@ from msgloom.a2_kedro.contracts.parse import (
     ParserReceipt,
     Part,
     PartRole,
+)
+from msgloom.a2_kedro.parsers.pdf_pagecheck import (
+    PageCountVerdict,
+    check_page_count,
 )
 from msgloom.contracts import Limitation, TerminalStatus
 
@@ -124,6 +137,7 @@ class PdfLimit(StrEnum):
     NO_TEXT_LAYER = "no_text_layer"
     NO_TEXT = "no_text"
     PAGE_COUNT_MISMATCH = "page_count_mismatch"
+    PAGE_COUNT_UNVERIFIED = "page_count_unverified"
     TEXT_UNDECODABLE = "text_undecodable"
 
 
@@ -142,6 +156,7 @@ _DETAIL: dict[PdfLimit, str] = {
     PdfLimit.NO_TEXT_LAYER: "at least one page has content but no text layer",
     PdfLimit.NO_TEXT: "the PDF has no text",
     PdfLimit.PAGE_COUNT_MISMATCH: "the PDF may have more pages than it claims",
+    PdfLimit.PAGE_COUNT_UNVERIFIED: "the page count could not be fully checked",
     PdfLimit.TEXT_UNDECODABLE: "text of at least one page was not decodable",
 }
 
@@ -377,38 +392,6 @@ _PAGE_LIMITS = {
     PageState.UNREADABLE: PdfLimit.PAGE_UNREADABLE,
     PageState.NO_TEXT_LAYER: PdfLimit.NO_TEXT_LAYER,
 }
-_LEAF_END = frozenset(b" \t\r\n\f\x00/<>[]()%")
-_LEAF_GAP = 64
-
-
-def _has_more_leaves(raw: bytes, claimed: int) -> bool:
-    """
-    Tell whether ``raw`` holds more ``/Type /Page`` leaves than ``claimed``.
-
-    A plain ``bytes.find`` loop with early exit; the work is linear in
-    ``raw``. ``/Pages`` and other ``/Page...`` names do not count.
-    """
-    if raw.count(b"/Page") <= claimed:
-        return False
-    leaves = 0
-    at = raw.find(b"/Page")
-    while at >= 0:
-        end = at + 5
-        before = at
-        floor = max(0, at - _LEAF_GAP)
-        while before > floor and raw[before - 1] in _LEAF_END:
-            before -= 1
-        is_leaf = (
-            before >= 5
-            and (end >= len(raw) or raw[end] in _LEAF_END)
-            and raw.startswith(b"/Type", before - 5)
-        )
-        if is_leaf:
-            leaves += 1
-            if leaves > claimed:
-                return True
-        at = raw.find(b"/Page", end)
-    return False
 
 
 def _read_pages(
@@ -479,6 +462,10 @@ def parse_pdf(data: bytes | bytearray | memoryview) -> PdfParseResult:
         pages = _read_pages(document, claimed, found)
     finally:
         document.close()
-    if claimed <= MAX_PAGES and _has_more_leaves(raw, claimed):
-        found.add(PdfLimit.PAGE_COUNT_MISMATCH)
+    if claimed <= MAX_PAGES:
+        verdict = check_page_count(raw, claimed)
+        if verdict is PageCountVerdict.MISMATCH:
+            found.add(PdfLimit.PAGE_COUNT_MISMATCH)
+        elif verdict is PageCountVerdict.UNVERIFIED:
+            found.add(PdfLimit.PAGE_COUNT_UNVERIFIED)
     return _finish(raw, found, pages, claimed)

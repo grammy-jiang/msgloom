@@ -1,7 +1,8 @@
 # A2 v2 parser P2-03: PDF parser (PROVISIONAL)
 
-Code: `msgloom/a2_kedro/parsers/pdf.py`.
-Tests: `tests/a2_kedro/test_p2_03.py`, `tests/a2_kedro/test_p2_03_hostile.py`.
+Code: `msgloom/a2_kedro/parsers/pdf.py`, `msgloom/a2_kedro/parsers/pdf_pagecheck.py`.
+Tests: `tests/a2_kedro/test_p2_03.py`, `test_p2_03_hostile.py`,
+`test_p2_03_review.py`, `test_p2_03_pagecheck.py`.
 
 All names and bounds below are PROVISIONAL. The parser reuses the C0 models
 (`ParserReceipt`, `ParsedParts`) and the shared `Limitation` and
@@ -39,6 +40,8 @@ All names and bounds below are PROVISIONAL. The parser reuses the C0 models
 | More pages than `MAX_PAGES` | `INCOMPLETE` | `page_limit` | first `MAX_PAGES` |
 | More text than `MAX_TEXT_CHARS` | `INCOMPLETE` | `text_limit` | until the cut |
 | Page count claim above real pages | `INCOMPLETE` | `page_unreadable` | real pages |
+| Page leaves above the claim (detected form) | `INCOMPLETE` | `page_count_mismatch` | claimed pages |
+| Object stream cannot be checked | `INCOMPLETE` | `page_count_unverified` | all |
 
 `COMPLETE` needs no limitation and at least one page with text. An empty
 read is never `COMPLETE`. When no page has text, the parser adds `no_text`.
@@ -55,6 +58,42 @@ of 4096), `MAX_TEXT_CHARS` 2 000 000 over all pages.
   page tree up to an internal bound. The parser reads at most
   `MAX_PAGES` pages. A page that fails to load is `UNREADABLE` and sets
   `page_unreadable`. `claimed_pages` keeps the claim.
+
+## Page count cross-check
+
+pdfium trusts the `/Count` of the page tree. `pdf_pagecheck.check_page_count`
+compares the claim with the number of page leaf objects in the bytes. It is
+a heuristic. A result with no `page_count_mismatch` does not prove that the
+count is right.
+
+Detected (raw bytes and Flate object streams):
+
+- `/Type /Page` with any white space between the names, also none. One
+  compiled regular expression with no nested repetition; a 1 MB white space
+  run is read once.
+- `/Subtype /Page` (invalid PDF, but counted).
+- `#xx` hex escapes in `/Type`, `/Subtype` and `/Page`, for example
+  `/T#79pe /P#61ge`. The patterns match the escape; no byte is rewritten.
+- Leaves in object streams (`/Type /ObjStm`, PDF 1.5 and later). The scan
+  inflates each stream with `zlib.decompressobj` in chunks. Bounds: 256
+  streams, 16 MiB compressed input and 8 MiB inflated output over all
+  streams. A stream with no `/Filter` is already in the raw scan.
+- `page_count_unverified` is set when an object stream cannot be checked:
+  damaged or cut Flate data, a cap hit, a filter other than a single
+  `FlateDecode`, a `/Predictor`, an indirect `/Filter`, or a stream marker
+  without stream data. The result is `INCOMPLETE`.
+
+Not detected (residual limits):
+
+- Leaf objects with no `/Type` and no `/Subtype` entry.
+- A comment (`%`) between `/Type` and `/Page`.
+- Leaves in an object stream whose dictionary has no `/Type /ObjStm`.
+- Leaves in an object stream with an encrypted body are reported as
+  `page_count_unverified`, not counted.
+- False positives: old page revisions (incremental update) and the token
+  inside other stream data raise `page_count_mismatch`.
+- Cost: one pass over the file for each pattern; 30 MB of hostile repeats
+  takes about 1.5 s or less.
 
 ## Encryption
 

@@ -7,6 +7,7 @@ import pytest
 
 from msgloom.a2_kedro.parsers import pdf
 from msgloom.a2_kedro.parsers.pdf import PdfLimit, parse_pdf
+from msgloom.a2_kedro.parsers.pdf_pagecheck import PageCountVerdict, check_page_count
 from msgloom.contracts import TerminalStatus
 from tests.a2_kedro.helpers import check
 from tests.a2_kedro.test_p2_03 import build_pdf
@@ -37,8 +38,8 @@ def test_honest_count_has_no_mismatch() -> None:
 def test_leaf_token_spacing_is_detected(token: bytes) -> None:
     base = build_pdf([b"A", b"B"], count=1)
     data = base.replace(b"/Type /Page ", token + b" ")
-    check(pdf._has_more_leaves(data, 1), "two leaves above a claim of one")
-    check(not pdf._has_more_leaves(data, 2), "two leaves match a claim of two")
+    check(check_page_count(data, 1) is PageCountVerdict.MISMATCH, "two leaves, claim 1")
+    check(check_page_count(data, 2) is PageCountVerdict.OK, "two leaves, claim 2")
 
 
 @pytest.mark.parametrize(
@@ -53,14 +54,14 @@ def test_leaf_token_spacing_is_detected(token: bytes) -> None:
     ],
 )
 def test_non_leaf_names_do_not_count(raw: bytes) -> None:
-    check(not pdf._has_more_leaves(raw, 0), "not a page leaf")
+    check(check_page_count(raw, 0) is PageCountVerdict.OK, "not a page leaf")
 
 
 def test_mismatch_scan_survives_hostile_repeats() -> None:
     data = b"/Type /Page" * 100_000
-    check(pdf._has_more_leaves(data, 5), "early exit on many leaves")
+    check(check_page_count(data, 5) is PageCountVerdict.MISMATCH, "many leaves")
     noise = b"/Page " * 200_000
-    check(not pdf._has_more_leaves(noise, 0), "bare names are not leaves")
+    check(check_page_count(noise, 0) is PageCountVerdict.OK, "bare names")
 
 
 def test_undecodable_page_text_is_flagged_not_dropped(
