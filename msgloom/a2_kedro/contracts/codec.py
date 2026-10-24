@@ -79,6 +79,12 @@ def _walk_text(value: Any, *, allow_enum: bool) -> None:
     if dataclasses.is_dataclass(value) and not isinstance(value, type):
         for field in dataclasses.fields(value):
             _walk_text(getattr(value, field.name), allow_enum=False)
+        return
+    if isinstance(value, BaseModel):
+        # A nested model, foreign or not, is walked by field value. Its
+        # enum members are accepted because annotations are not known here.
+        for name in type(value).model_fields:
+            _walk_text(getattr(value, name), allow_enum=True)
 
 
 def _arrays_to_tuples(value: Any) -> Any:
@@ -103,6 +109,10 @@ def _walk_clean(value: Any) -> None:
     if dataclasses.is_dataclass(value) and not isinstance(value, type):
         for field in dataclasses.fields(value):
             _walk_clean(getattr(value, field.name))
+        return
+    if isinstance(value, BaseModel):
+        for name in type(value).model_fields:
+            _walk_clean(getattr(value, name))
 
 
 class A2Model(BaseModel):
@@ -110,9 +120,9 @@ class A2Model(BaseModel):
     Frozen, strict base for every A2 v2 contract model.
 
     Text rules, applied to every field including text nested in tuples
-    and in dataclass values such as ``ResultRef``. Text inside a foreign
-    pydantic model (for example ``IntakeTransition``) is checked by that
-    model, not here:
+    and in dataclass values such as ``ResultRef``. Text inside a nested
+    pydantic model (for example ``ReleaseEntryRef`` or the foreign
+    ``IntakeTransition``) is walked by field value as well:
 
     * A value must be an exact ``str``. A ``str`` subclass is rejected
       before validation, because pydantic strict mode accepts it. A

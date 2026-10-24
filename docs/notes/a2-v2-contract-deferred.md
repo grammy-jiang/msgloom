@@ -31,13 +31,20 @@ batch body is equal. It must check `batch_sha256` itself.
 Code: `msgloom/a2_kedro/contracts/identity.py`,
 `msgloom/a2_kedro/contracts/transition.py`.
 
-## D-2: foreign transition models are not text-checked here
+## D-2: foreign transition models and nested text
 
 `StageIdentity.transitions` holds `IntakeTransition` models from
 `msgloom/preparation_pipeline/intake_models.py`. Those models accept `str`
-subclasses and newlines in `resource_identity`, `resource_kind` and
-`scope_identity`. These values reach `logical_key()`.
+subclasses and control characters in `resource_kind`, `resource_identity`,
+`scope_kind` and `scope_identity`. The A2 base model now walks nested
+pydantic models by field value (`codec.py`), so `StageIdentity` rejects
+those values when it is built.
 
-`TransitionItem` checks again the fields that it copies, so C0-08 items are
-safe. C0-10 must decide whether `StageIdentity` re-validates the foreign
-fields. Do not change the foreign model in this stream.
+`TransitionItem` copies only `scope_kind` and `scope_id` from the foreign
+model. It does not copy `resource_kind` or `resource_identity`. The nested
+`entry` is walked by the same base rule, and tests cover it.
+
+Open point for C0-10: enum members inside a nested foreign model are
+accepted because the walk does not know the field annotations. C0-10 must
+decide whether a stricter per-field check is needed. Do not change the
+foreign model in this stream.

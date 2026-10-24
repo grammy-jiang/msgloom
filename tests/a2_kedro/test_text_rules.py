@@ -203,3 +203,22 @@ def test_non_ascii_printable_text_is_kept_byte_exact() -> None:
         {"components": (comp(reference="saved/é中"),)}
     )
     check(ExtractedComponents.decode(value.encode()) == value, "round trip")
+
+
+@pytest.mark.parametrize("char", CONTROL_PARAMS, ids=CONTROL_IDS)
+def test_control_character_in_a_nested_entry_is_rejected(char: str) -> None:
+    base = TransitionItem.from_intake(0, transition_for(1, "a"), "auth-1")
+    dumped = base.model_dump()
+    dumped["entry"]["catalog"]["catalog_identity"] += char
+    with pytest.raises(ValueError):
+        TransitionItem.model_validate(dumped)
+
+
+def test_str_subclass_in_a_nested_entry_is_rejected() -> None:
+    base = TransitionItem.from_intake(0, transition_for(1, "a"), "auth-1")
+    catalog = base.entry.catalog.model_copy(
+        update={"catalog_identity": FakeStr("cat-1")}
+    )
+    entry = base.entry.model_copy(update={"catalog": catalog})
+    with pytest.raises(ValueError):
+        TransitionItem.model_validate({**base.model_dump(), "entry": entry})
