@@ -44,6 +44,8 @@ content. Codes: ``attachment_empty``, ``attachment_undecodable``,
 ``MAX_DEPTH`` or a P2-01 ``depth_limit`` part), ``attachment_limit`` (more
 than ``MAX_ATTACHMENTS`` parts), ``attachment_count_mismatch`` (declared
 count differs from the count found), ``attachment_error``,
+``attachment_nested_unexpanded`` (an embedded message that P2-01 did not
+expand, so attachments inside it may be hidden),
 ``structure_incomplete`` (P2-01 could not scan the whole structure) and
 ``source_mismatch`` (``data`` is not the input of ``result``). Any
 limitation makes the status INCOMPLETE. An attachment-only message with no
