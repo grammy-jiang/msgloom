@@ -73,3 +73,13 @@ a hand derivation. The `provenance` and `rationale` fields give the source.
   directory or to correct the manifest.
 - Check: `test_corpus_directory_is_golden` fails if the directory name
   changes without a decision update.
+
+## T0-07 decisions
+
+The full text is in `a2-v2-golden-t0-07.md`.
+
+- T0-07-P05 cancel drains an in-flight write: `task_goal_decision`. A
+  draining save finishes its own atomic transaction.
+- T0-07-P10 replay under a changed configuration:
+  `proposed_owner_signoff_needed`. The blueprint does not say whether a
+  workset frozen under one configuration may replay under another.

@@ -19,7 +19,16 @@ import pytest
 
 GOLDEN_DIR = Path(__file__).resolve().parent / "golden"
 MANIFEST = GOLDEN_DIR / "MANIFEST.sha256"
-EXPECTED_TASKS = ("T0-01", "T0-02", "T0-03", "T0-04", "T0-05", "T0-09", "T0-10")
+EXPECTED_TASKS = (
+    "T0-01",
+    "T0-02",
+    "T0-03",
+    "T0-04",
+    "T0-05",
+    "T0-07",
+    "T0-09",
+    "T0-10",
+)
 SCHEMA = "a2-golden-case-file@1"
 FILE_FIELDS = (
     "schema",

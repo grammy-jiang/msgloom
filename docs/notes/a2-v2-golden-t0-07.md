@@ -119,16 +119,8 @@ consistency of the oracle. Its reference checker tests these invariants:
 The test also checks the manifest line against the file bytes. Negative tests
 flip outcomes and snapshots and require the checker to report a problem.
 
-## Follow-up outside this change
+## Registration in the shared golden tests
 
-These edits need a file that is outside the allowlist of this task:
-
-1. `tests/a2_kedro/test_gold_corpus.py`: add `"T0-07"` to `EXPECTED_TASKS`,
-   between `"T0-05"` and `"T0-09"`. Until then
-   `test_expected_task_files_exist` fails, because the test requires an exact
-   file list.
-2. `tests/a2_kedro/test_gold_decisions.py`: add `"T0-07-P05": TASK_GOAL` and
-   `"T0-07-P10": PROPOSED` to `EXPECTED_STATUS`. Until then
-   `test_policy_status_marks_exactly_the_decision_cases` fails.
-3. `docs/notes/a2-v2-golden-decisions.md`: add decisions 1 and 2 above, and
-   list the cases in the coverage text of `a2-v2-golden-corpus.md`.
+`test_gold_corpus.py` lists T0-07 in `EXPECTED_TASKS`. `test_gold_decisions.py`
+lists T0-07-P05 and T0-07-P10 in `EXPECTED_STATUS`. Both decisions are also in
+`a2-v2-golden-decisions.md`.

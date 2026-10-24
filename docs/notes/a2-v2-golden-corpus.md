@@ -1,7 +1,7 @@
 # A2 v2 independent golden corpus
 
 This corpus is the hand-annotated oracle for tasks T0-01, T0-02, T0-03,
-T0-04, T0-05, T0-09 and T0-10 of the A2 Kedro v2 programme. It lives in
+T0-04, T0-05, T0-07, T0-09 and T0-10 of the A2 Kedro v2 programme. It lives in
 `tests/a2_kedro/golden/`. The execution manifest names `tests/a2_kedro/gold/`.
 The supervisor changed the path to `golden/`.
 

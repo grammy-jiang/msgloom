@@ -24,6 +24,8 @@ EXPECTED_STATUS = {
     "T0-10-P05": PROPOSED,
     **{f"T0-10-N{n:02d}": PROPOSED for n in range(1, 11)},
     "T0-09-N08": PROPOSED,
+    "T0-07-P05": TASK_GOAL,
+    "T0-07-P10": PROPOSED,
     "T0-04-P04": TASK_GOAL,
     "T0-04-P05": TASK_GOAL,
     "T0-04-N03": TASK_GOAL,
