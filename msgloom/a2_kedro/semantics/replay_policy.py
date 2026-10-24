@@ -2,15 +2,23 @@
 Replay-policy idempotency keys for A2 v2 (P3-07).
 
 A replay of a stage is safe only when its key says which rules produced
-the result. The key therefore covers two things:
+the result and which scope and workset it belongs to. The key covers
+three things:
 
 * the input identity digest, for example the digest inside a
-  ``StageIdentity.logical_key``; and
+  ``StageIdentity.logical_key``;
+* an explicit ``scope_key`` and ``workset``, the same two fields that
+  ``StageIdentity`` carries. Two worksets with equal content must not
+  share a key, so the caller must pass both. Each is non-empty, bounded
+  text; an empty or missing value raises :exc:`A2ContractError`; and
 * a :class:`ReplayPolicy`: policy id, policy version, configuration
   digest, code version and schema version.
 
-A change to any one field gives a new key. The same input and the same
-policy give the same key on every host and in every process. The key is a
+A change to any one field gives a new key. The hash material is a
+canonical JSON object with named fields. JSON string quoting makes every
+boundary unambiguous, so ``("a|b", "c")`` and ``("a", "b|c")`` give
+different keys. The same input, scope and policy give the same key on
+every host and in every process. The key is a
 value. A policy bump creates a new key and leaves every earlier key and
 record as it was. Nothing in this module stores state.
 
@@ -80,6 +88,27 @@ def config_digest(config: Mapping[str, Any]) -> str:
     return domain_sha256(CONFIG_DOMAIN, dict(config))
 
 
+class ReplayScope(ResultPart):
+    """
+    The scope and workset that a replay key belongs to.
+
+    Both fields are required, non-empty and bounded by the A2 text rules.
+    They mirror ``StageIdentity.scope_key`` and ``StageIdentity.workset``.
+    The caller supplies them; this module does not check that they
+    exist in any store.
+    """
+
+    scope_key: Text
+    workset: Text
+
+
+def _clean_scope(scope_key: object, workset: object) -> ReplayScope:
+    try:
+        return ReplayScope.model_validate({"scope_key": scope_key, "workset": workset})
+    except ValidationError:
+        raise A2ContractError("scope key or workset is not valid text") from None
+
+
 class ReplayPolicy(ResultPart):
     """
     Frozen description of the rules that a replay runs under.
@@ -100,39 +129,67 @@ class ReplayKey(ResultPart):
     A derived key kept with the facts that produced it.
 
     The record is a value. ``key`` must equal the key derived from
-    ``input_digest`` and ``policy``, so a forged or stale record fails
-    validation. A new policy gives a new record; the old record stays.
+    ``input_digest``, ``scope_key``, ``workset`` and ``policy``, so a
+    forged or stale record fails validation. A new policy gives a new record; the old record stays.
     """
 
     key: Text
     input_digest: Digest
+    scope_key: Text
+    workset: Text
     policy: ReplayPolicy
 
     @model_validator(mode="after")
     def _key_matches_facts(self) -> Self:
-        if self.key != derive_replay_key(self.input_digest, self.policy):
+        expected = derive_replay_key(
+            self.input_digest,
+            self.policy,
+            scope_key=self.scope_key,
+            workset=self.workset,
+        )
+        if self.key != expected:
             raise A2ContractError("replay key does not match its inputs")
         return self
 
     @classmethod
-    def derive(cls, input_digest: str, policy: ReplayPolicy) -> ReplayKey:
-        """Return the record for ``input_digest`` under ``policy``."""
+    def derive(
+        cls,
+        input_digest: str,
+        policy: ReplayPolicy,
+        *,
+        scope_key: str,
+        workset: str,
+    ) -> ReplayKey:
+        """Return the record for ``input_digest`` in a scope under ``policy``."""
         return cls(
-            key=derive_replay_key(input_digest, policy),
+            key=derive_replay_key(
+                input_digest, policy, scope_key=scope_key, workset=workset
+            ),
             input_digest=input_digest,
+            scope_key=scope_key,
+            workset=workset,
             policy=policy,
         )
 
 
-def derive_replay_key(input_digest: str, policy: ReplayPolicy) -> str:
+def derive_replay_key(
+    input_digest: str,
+    policy: ReplayPolicy,
+    *,
+    scope_key: str,
+    workset: str,
+) -> str:
     """
-    Return the replay idempotency key for an input under a policy.
+    Return the replay idempotency key for an input, scope and policy.
 
-    The function is pure. It reads no clock, host, environment or store.
-    The same arguments give the same key. Raise :exc:`A2ContractError`
-    for a bad digest or a value that is not a valid ``ReplayPolicy``.
+    ``scope_key`` and ``workset`` are required keyword arguments. The
+    function is pure. It reads no clock, host, environment or store. The
+    same arguments give the same key. Raise :exc:`A2ContractError` for a
+    bad digest, an empty, oversized or non-text scope key or workset, or
+    a value that is not a valid ``ReplayPolicy``.
     """
     digest = _clean_digest(input_digest)
+    scope = _clean_scope(scope_key, workset)
     if not isinstance(policy, ReplayPolicy):
         raise A2ContractError("policy must be a ReplayPolicy")
     try:
@@ -142,7 +199,11 @@ def derive_replay_key(input_digest: str, policy: ReplayPolicy) -> str:
         raise A2ContractError("replay policy is not valid") from None
     return REPLAY_KEY_PREFIX + domain_sha256(
         REPLAY_KEY_DOMAIN,
-        {"input_digest": digest, "policy": checked.model_dump(mode="json")},
+        {
+            "input_digest": digest,
+            "scope": scope.model_dump(mode="json"),
+            "policy": checked.model_dump(mode="json"),
+        },
     )
 
 

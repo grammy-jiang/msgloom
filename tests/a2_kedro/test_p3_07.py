@@ -27,9 +27,26 @@ from msgloom.a2_kedro.semantics.replay_policy import (
 INPUT = "ab" * 32
 CONFIG = {"limits": {"max_parts": 8, "mode": "strict"}, "names": ["a", "b"]}
 GOLDEN_KEY = (
-    "a2-replay:fe50575e402921302ad7188a2f508eac213b5472578b853324b48e0e330ba831"
+    "a2-replay:8ae284b863cac41990fe585b77b264bc643df4628d8c8523f67729d406c1add5"
 )
 SECRET = "alice@example.invalid-SECRET-7731"
+SCOPE = "cd" * 32
+WORKSET = "workset-a"
+
+
+def derive(
+    input_digest: Any,
+    pol: ReplayPolicy,
+    scope_key: Any = SCOPE,
+    workset: Any = WORKSET,
+) -> str:
+    """Derive a key with a default scope and workset."""
+    return derive_replay_key(input_digest, pol, scope_key=scope_key, workset=workset)
+
+
+def record_for(input_digest: Any, pol: ReplayPolicy) -> ReplayKey:
+    """Return the record for the default scope and workset."""
+    return ReplayKey.derive(input_digest, pol, scope_key=SCOPE, workset=WORKSET)
 
 
 def policy(**changes: Any) -> ReplayPolicy:
@@ -46,8 +63,8 @@ def policy(**changes: Any) -> ReplayPolicy:
 
 
 def test_key_is_stable_for_identical_input() -> None:
-    first = derive_replay_key(INPUT, policy())
-    again = derive_replay_key(INPUT, policy())
+    first = derive(INPUT, policy())
+    again = derive(INPUT, policy())
     if first != again:
         pytest.fail("same input and policy gave different keys")
     if not is_replay_key(first):
@@ -57,7 +74,7 @@ def test_key_is_stable_for_identical_input() -> None:
 
 
 def test_key_golden_value_is_pinned() -> None:
-    key = derive_replay_key(INPUT, policy())
+    key = derive(INPUT, policy())
     if key != GOLDEN_KEY:
         pytest.fail(f"replay key wire value changed: {key}")
 
@@ -71,41 +88,39 @@ def test_key_golden_value_is_pinned() -> None:
     ids=["schema_version", "policy_id"],
 )
 def test_policy_change_gives_new_key(changes: dict[str, Any]) -> None:
-    if derive_replay_key(INPUT, policy()) == derive_replay_key(
-        INPUT, policy(**changes)
-    ):
+    if derive(INPUT, policy()) == derive(INPUT, policy(**changes)):
         pytest.fail("a policy change kept the key")
 
 
 def test_policy_version_change_gives_new_key() -> None:
-    old = derive_replay_key(INPUT, policy(policy_version="1"))
-    new = derive_replay_key(INPUT, policy(policy_version="2"))
+    old = derive(INPUT, policy(policy_version="1"))
+    new = derive(INPUT, policy(policy_version="2"))
     if old == new:
         pytest.fail("policy version bump kept the key")
 
 
 def test_config_digest_change_gives_new_key() -> None:
     changed = policy(config_digest=config_digest({**CONFIG, "extra": 1}))
-    if derive_replay_key(INPUT, policy()) == derive_replay_key(INPUT, changed):
+    if derive(INPUT, policy()) == derive(INPUT, changed):
         pytest.fail("config change kept the key")
 
 
 def test_code_version_change_gives_new_key() -> None:
     changed = policy(code_version="code-1+1")
-    if derive_replay_key(INPUT, policy()) == derive_replay_key(INPUT, changed):
+    if derive(INPUT, policy()) == derive(INPUT, changed):
         pytest.fail("code version change kept the key")
 
 
 def test_input_digest_change_gives_new_key() -> None:
     other = "cd" * 32
-    if derive_replay_key(INPUT, policy()) == derive_replay_key(other, policy()):
+    if derive(INPUT, policy()) == derive(other, policy()):
         pytest.fail("input digest change kept the key")
 
 
 def test_fields_do_not_bleed_into_each_other() -> None:
     left = policy(policy_id="a", policy_version="bc")
     right = policy(policy_id="ab", policy_version="c")
-    if derive_replay_key(INPUT, left) == derive_replay_key(INPUT, right):
+    if derive(INPUT, left) == derive(INPUT, right):
         pytest.fail("field boundary is ambiguous")
 
 
@@ -114,10 +129,7 @@ def test_config_key_order_does_not_matter() -> None:
     two = {"c": None, "b": {"y": "t", "x": [1, 2]}, "a": 1}
     if config_digest(one) != config_digest(two):
         pytest.fail("mapping order changed the config digest")
-    keys = {
-        derive_replay_key(INPUT, policy(config_digest=config_digest(c)))
-        for c in (one, two)
-    }
+    keys = {derive(INPUT, policy(config_digest=config_digest(c))) for c in (one, two)}
     if len(keys) != 1:
         pytest.fail("mapping order changed the key")
 
@@ -140,8 +152,12 @@ def test_config_digest_rejects_non_mapping() -> None:
 
 def test_domains_cannot_collide() -> None:
     pol = policy()
-    value = {"input_digest": INPUT, "policy": pol.model_dump(mode="json")}
-    key = derive_replay_key(INPUT, pol)
+    value = {
+        "input_digest": INPUT,
+        "scope": {"scope_key": SCOPE, "workset": WORKSET},
+        "policy": pol.model_dump(mode="json"),
+    }
+    key = derive(INPUT, pol)
     digest = key.removeprefix("a2-replay:")
     if digest != domain_sha256(REPLAY_KEY_DOMAIN, value):
         pytest.fail("key is not the documented domain digest")
@@ -165,7 +181,7 @@ def test_unknown_fields_are_rejected() -> None:
         ReplayPolicy.model_validate({**values, "surprise": "x"})
     with pytest.raises(ValidationError):
         ReplayKey.model_validate(
-            {**ReplayKey.derive(INPUT, policy()).model_dump(mode="json"), "x": 1}
+            {**record_for(INPUT, policy()).model_dump(mode="json"), "x": 1}
         )
 
 
@@ -195,7 +211,7 @@ def test_missing_fields_are_rejected(missing: str) -> None:
 )
 def test_bad_input_digest_is_rejected(bad: Any) -> None:
     with pytest.raises(A2ContractError):
-        derive_replay_key(bad, policy())
+        derive(bad, policy())
 
 
 def test_bad_config_digest_is_rejected() -> None:
@@ -215,7 +231,7 @@ def test_empty_oversized_or_control_text_is_rejected(field: str) -> None:
 
 def test_policy_must_be_a_replay_policy() -> None:
     with pytest.raises(A2ContractError):
-        derive_replay_key(INPUT, policy().model_dump())  # type: ignore[arg-type]
+        derive(INPUT, policy().model_dump())  # type: ignore[arg-type]
 
 
 def test_unchecked_policy_is_revalidated() -> None:
@@ -227,16 +243,16 @@ def test_unchecked_policy_is_revalidated() -> None:
         schema_version="1",
     )
     with pytest.raises(A2ContractError):
-        derive_replay_key(INPUT, forged)
+        derive(INPUT, forged)
 
 
 def test_policy_bump_never_mutates_or_overwrites_a_prior_key() -> None:
     old_policy = policy(policy_version="1")
-    old = ReplayKey.derive(INPUT, old_policy)
+    old = record_for(INPUT, old_policy)
     old_bytes = canonical_model_bytes(old)
     ledger = {old.key: old}
     new_policy = policy(policy_version="2")
-    new = ReplayKey.derive(INPUT, new_policy)
+    new = record_for(INPUT, new_policy)
     if new.key in ledger:
         pytest.fail("a bump reused the old key")
     ledger[new.key] = new
@@ -244,14 +260,14 @@ def test_policy_bump_never_mutates_or_overwrites_a_prior_key() -> None:
         pytest.fail("a bump overwrote a prior record")
     if canonical_model_bytes(ledger[old.key]) != old_bytes:
         pytest.fail("a prior record changed")
-    if derive_replay_key(INPUT, old_policy) != old.key:
+    if derive(INPUT, old_policy) != old.key:
         pytest.fail("the old policy no longer gives the old key")
     if old.policy.policy_version != "1":
         pytest.fail("the old record points at the new policy")
 
 
 def test_records_are_frozen_values() -> None:
-    record = ReplayKey.derive(INPUT, policy())
+    record = record_for(INPUT, policy())
     with pytest.raises(ValidationError):
         record.key = "a2-replay:" + "0" * 64  # type: ignore[misc]
     with pytest.raises(ValidationError):
@@ -259,15 +275,15 @@ def test_records_are_frozen_values() -> None:
 
 
 def test_record_round_trips_canonical_bytes() -> None:
-    record = ReplayKey.derive(INPUT, policy())
+    record = record_for(INPUT, policy())
     again = decode_model_bytes(ReplayKey, canonical_model_bytes(record))
     if again != record or again.key != record.key:
         pytest.fail("record did not round trip")
 
 
 def test_forged_record_is_rejected() -> None:
-    good = ReplayKey.derive(INPUT, policy()).model_dump(mode="json")
-    other = ReplayKey.derive(INPUT, policy(policy_version="2")).key
+    good = record_for(INPUT, policy()).model_dump(mode="json")
+    other = record_for(INPUT, policy(policy_version="2")).key
     with pytest.raises(ValidationError):
         ReplayKey(**{**good, "key": other})
     with pytest.raises(ValidationError):
@@ -281,21 +297,33 @@ def test_str_subclass_text_is_rejected() -> None:
     with pytest.raises(ValidationError):
         policy(policy_id=Loud("x"))
     with pytest.raises(A2ContractError):
-        derive_replay_key(Loud(INPUT), policy())
+        derive(Loud(INPUT), policy())
 
 
 def test_validation_errors_do_not_echo_input_values() -> None:
     errors: list[str] = []
     for call in (
-        lambda: derive_replay_key(SECRET, policy()),
+        lambda: derive(SECRET, policy()),
         lambda: policy(config_digest=SECRET),
         lambda: policy(policy_id="\n" + SECRET),
         lambda: policy(policy_version=SECRET * 100),
         lambda: ReplayPolicy.model_validate({**policy().model_dump(), "leak": SECRET}),
-        lambda: ReplayKey(key=SECRET, input_digest=INPUT, policy=policy()),
         lambda: ReplayKey(
-            key="a2-replay:" + "0" * 64, input_digest=SECRET, policy=policy()
+            key=SECRET,
+            input_digest=INPUT,
+            scope_key=SCOPE,
+            workset=WORKSET,
+            policy=policy(),
         ),
+        lambda: ReplayKey(
+            key="a2-replay:" + "0" * 64,
+            input_digest=SECRET,
+            scope_key=SCOPE,
+            workset=WORKSET,
+            policy=policy(),
+        ),
+        lambda: derive(INPUT, policy(), scope_key=SECRET + "\n"),
+        lambda: derive(INPUT, policy(), workset=SECRET * 1000),
     ):
         try:
             call()
@@ -303,8 +331,84 @@ def test_validation_errors_do_not_echo_input_values() -> None:
             errors.append(repr(error) + str(error) + repr(error.__cause__))
             continue
         pytest.fail("a bad value was accepted")
-    if len(errors) != 7:
+    if len(errors) != 9:
         pytest.fail("not every case raised")
     for text in errors:
         if SECRET in text:
             pytest.fail("an error echoed an input value")
+
+
+def test_same_digest_different_workset_gives_new_key() -> None:
+    first = derive(INPUT, policy(), workset="workset-a")
+    second = derive(INPUT, policy(), workset="workset-b")
+    if first == second:
+        pytest.fail("two worksets with equal content share a key")
+
+
+def test_same_digest_different_scope_key_gives_new_key() -> None:
+    first = derive(INPUT, policy(), scope_key="cd" * 32)
+    second = derive(INPUT, policy(), scope_key="ef" * 32)
+    if first == second:
+        pytest.fail("two scopes with equal content share a key")
+
+
+def test_scope_and_workset_boundary_is_unambiguous() -> None:
+    left = derive(INPUT, policy(), scope_key="a|b", workset="c")
+    right = derive(INPUT, policy(), scope_key="a", workset="b|c")
+    if left == right:
+        pytest.fail("scope and workset boundary is ambiguous")
+    swapped = derive(INPUT, policy(), scope_key="c", workset="a|b")
+    if left == swapped:
+        pytest.fail("swapping scope and workset kept the key")
+
+
+@pytest.mark.parametrize("field", ["scope_key", "workset"])
+@pytest.mark.parametrize(
+    "bad", ["", "x" * 2049, "a\nb", "a\x00b", None, 7, b"ab"], ids=repr
+)
+def test_empty_or_bad_scope_or_workset_is_a_typed_error(field: str, bad: Any) -> None:
+    with pytest.raises(A2ContractError):
+        derive(INPUT, policy(), **{field: bad})
+    with pytest.raises(A2ContractError):
+        ReplayKey.derive(
+            INPUT,
+            policy(),
+            **{"scope_key": SCOPE, "workset": WORKSET, field: bad},
+        )
+
+
+@pytest.mark.parametrize("omit", ["scope_key", "workset"])
+def test_missing_scope_or_workset_is_refused(omit: str) -> None:
+    values = {"scope_key": SCOPE, "workset": WORKSET}
+    del values[omit]
+    with pytest.raises(TypeError):
+        derive_replay_key(INPUT, policy(), **values)  # type: ignore[call-arg]
+    with pytest.raises(TypeError):
+        derive_replay_key(INPUT, policy(), SCOPE, WORKSET)  # type: ignore[misc]
+
+
+def test_str_subclass_scope_is_a_typed_error() -> None:
+    class Loud(str):
+        __slots__ = ()
+
+    with pytest.raises(A2ContractError):
+        derive(INPUT, policy(), scope_key=Loud("s"))
+    with pytest.raises(A2ContractError):
+        derive(INPUT, policy(), workset=Loud("w"))
+
+
+def test_record_carries_scope_and_refuses_a_moved_workset() -> None:
+    record = record_for(INPUT, policy())
+    if (record.scope_key, record.workset) != (SCOPE, WORKSET):
+        pytest.fail("record lost its scope or workset")
+    moved = {**record.model_dump(mode="json"), "workset": "workset-b"}
+    with pytest.raises(ValidationError):
+        ReplayKey(**moved)
+    moved = {**record.model_dump(mode="json"), "scope_key": "ef" * 32}
+    with pytest.raises(ValidationError):
+        ReplayKey(**moved)
+    for omit in ("scope_key", "workset"):
+        values = record.model_dump(mode="json")
+        del values[omit]
+        with pytest.raises(ValidationError):
+            ReplayKey(**values)
