@@ -81,6 +81,42 @@ unresolved field 3.
 The root role vocabulary is `primary`, `component` and `baseline`. The
 A1 evidence proves the role. The header does not carry it.
 
+## Cross-reference: schema IDs and transitions
+
+The pair `prepared_transitions@2` is in `schema_ids.STAGE_SCHEMAS`. The
+header accepts it through `approved_pairs()`. Two different digests
+describe one transition batch:
+
+- `StageIdentity.logical_key()` (domain `a2-stage-accepted-input@1`)
+  names the accepted stage. It covers the ordered `transitions` tuple of
+  `IntakeTransition` values. See `msgloom/a2_kedro/contracts/identity.py`.
+- `TransitionBatch.batch_sha256` (domain `a2-transition-batch@1`) proves
+  the stored batch body. It covers the Workset Ref, code version, policy
+  version, count and every item digest. See
+  `msgloom/a2_kedro/contracts/transition.py`.
+
+The stage key does not yet bind `batch_sha256`. That binding is a
+deferred dependency. See `docs/notes/a2-v2-contract-deferred.md`.
+
+## Direction and ordering rules
+
+- `native_relations@1`: `reply_to` and `ancestor` both point from the
+  later node (`source`) to the earlier node (`target`). `reference` has no
+  time direction. The cycle check joins `reply_to` and `ancestor`. Nodes
+  and relations must arrive sorted; the validator rejects unsorted input.
+- `extracted_components@1`: `components` keeps the producer order. The
+  code does not sort it, and the bytes depend on that order.
+- `prepared_transitions@2`: `items` keep the batch order. Ordinals must
+  equal the position. Reordering changes both digests.
+
+## Text rules
+
+Every contract string is an exact `str`. A `str` subclass is rejected.
+No contract field is body text, so no field accepts a control character:
+no C0 or C1 control, NUL, tab, newline, DEL, U+0085, U+2028 or U+2029.
+A future body-text field needs its own decision record. Tests:
+`tests/a2_kedro/test_text_rules.py`.
+
 ## Frozen identifier tables (PROVISIONAL)
 
 Each table below is checked by `tests/a2_kedro/test_c0_00.py` against the

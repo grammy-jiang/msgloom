@@ -139,3 +139,9 @@ def test_decode_is_strict() -> None:
     ):
         with pytest.raises(A2ContractError):
             NativeRelations.decode(bad)
+
+
+def test_reply_and_ancestor_share_one_direction() -> None:
+    with pytest.raises(ValueError, match="cycle"):
+        build([A, B], [rel("reply_to", B, A), rel("ancestor", A, B)])
+    build([A, B, C], [rel("reply_to", B, A), rel("ancestor", C, A)])

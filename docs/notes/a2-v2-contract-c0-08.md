@@ -12,6 +12,9 @@ research form. All names below are PROVISIONAL. The tests fail on change.
   `kind`, `authority`.
 - Item kinds: `presence`, `absence`, `membership_removal`, `deletion`,
   `context_refresh` (same closed list as `IntakeTransition`).
+- Cross-reference: `prepared_transitions@2` is listed in
+  `docs/decisions/a2-v2-schema-ids.md`. The stage key and
+  `batch_sha256` are separate. See `docs/notes/a2-v2-contract-deferred.md`.
 - Digest domains: `a2-transition-item@1` and `a2-transition-batch@1`.
 - Batch digest input: Workset Ref, code version, policy version, item
   count, ordered item digests. The validator recomputes it.

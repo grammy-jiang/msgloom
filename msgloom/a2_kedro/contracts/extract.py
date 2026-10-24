@@ -13,6 +13,12 @@ Status rules:
   never dropped silently.
 * ``unsupported`` carries a reference and a digest together, or neither.
 
+Ordering: ``components`` keeps the producer order. The validator does
+not sort it. The canonical bytes, and so every digest, depend on that
+order. Two orders of the same entries are two different records. Only the
+one ``primary`` entry and unique component IDs are required. A later task
+may add a sort rule; until then the producer must use a stable order.
+
 Metadata is a bounded, sorted list of text pairs. Keys and values are exact
 ``str`` and hold no control character (no NUL, tab, newline, DEL, C1,
 U+2028 or U+2029). Metadata is identifier-like data, not body text.

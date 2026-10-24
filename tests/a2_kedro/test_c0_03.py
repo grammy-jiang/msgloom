@@ -153,3 +153,14 @@ def test_decode_rejects_noncanonical_duplicate_and_extra() -> None:
         ExtractedComponents.decode(good.replace(b'"present"', b'"unknown"'))
     with pytest.raises(A2ContractError):
         ExtractedComponents.decode(b"x" * (4 * 1024 * 1024 + 1))
+
+
+def test_component_order_is_producer_order_and_changes_the_bytes() -> None:
+    first = record(comp("p"), comp("a", "alternate"))
+    second = record(comp("a", "alternate"), comp("p"))
+    check(first.encode() != second.encode(), "order is part of the bytes")
+    check(ExtractedComponents.decode(second.encode()) == second, "kept order")
+    check(
+        [c.component_id for c in second.components] == ["a", "p"],
+        "validator does not sort",
+    )

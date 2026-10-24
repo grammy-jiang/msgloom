@@ -10,6 +10,20 @@ Every node has an explicit scope: a scope kind (``mailbox``, ``thread`` or
 different scopes are different nodes. A relation joins two declared nodes
 of the same scope. Equal thread IDs in different scopes never relate.
 
+Direction: every relation reads "``source`` relates to ``target``", and
+``reply_to`` and ``ancestor`` both point from the later node to the
+earlier node.
+
+* ``reply_to``: ``source`` is a direct reply to ``target``.
+* ``ancestor``: ``target`` is an ancestor of ``source`` in the same
+  scope. It is a hypothesis about any distance, not only one hop.
+* ``reference``: ``source`` cites ``target``. It has no time direction.
+
+The cycle check joins ``reply_to`` and ``ancestor`` edges in one graph, so
+both kinds must keep this direction. A producer that writes an ancestor
+edge the other way round creates a false cycle and fails closed. The code
+does not compare timestamps; the direction is a convention.
+
 Rules:
 
 * Relation kinds are closed: ``reply_to``, ``ancestor``, ``reference``.
@@ -17,6 +31,9 @@ Rules:
 * No self reference, no duplicate ``(kind, source, target)``.
 * The ``reply_to`` and ``ancestor`` edges together have no cycle.
 * Nodes and relations are sorted, so the canonical bytes are unique.
+  Nodes sort by ``(scope_kind, scope_id, node_id)``. Relations sort by
+  ``(kind, source, target)``. A producer sorts before it builds; the
+  validator rejects unsorted input and never sorts for the caller.
 
 CANDIDATE/RESEARCH, PROVISIONAL: field names and limits are not frozen.
 See ``docs/notes/a2-v2-contract-c0-06.md``.

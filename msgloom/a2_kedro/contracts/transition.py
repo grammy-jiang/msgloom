@@ -16,6 +16,14 @@ Two proofs exist and neither can be dropped:
   duplicated or substituted item, or a changed workset ref, code or
   policy, makes the stored digest wrong, so construction fails.
 
+Cross-reference: the kind ``prepared_transitions`` with version ``2`` is
+an approved pair in :mod:`msgloom.a2_kedro.contracts.schema_ids` and in
+the table of ``docs/decisions/a2-v2-schema-ids.md``. The batch stage key
+is built by :class:`msgloom.a2_kedro.contracts.identity.StageIdentity`
+from the ordered transitions. This module's ``batch_sha256`` is a
+separate digest and is not part of that key yet. See
+``docs/notes/a2-v2-contract-deferred.md``.
+
 An :class:`ItemProof` ties one item to its batch. ``verify_item_proof``
 checks it against a batch.
 

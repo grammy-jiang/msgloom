@@ -18,5 +18,11 @@ any change.
   `ancestor` edges have no cycle. `reference` cycles are legal. Nodes and
   relations are sorted for one canonical byte form.
 
+Direction: `reply_to` and `ancestor` both point from the later node
+(`source`) to the earlier node (`target`). `ancestor` means `target` is an
+ancestor of `source` at any distance. `reference` has no time direction.
+The code checks no timestamps. The direction is a convention that keeps the
+joined cycle check meaningful.
+
 Open: the vocabulary of `basis` (evidence reference) is not decided.
 Open: whether a cross-scope relation needs a separate explicit kind.

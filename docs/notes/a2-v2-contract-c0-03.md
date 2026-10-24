@@ -19,4 +19,11 @@ wire-form test fails on any change.
   carries no reference or digest. `present` and `partial` need both.
   `unsupported` carries both or neither.
 
+Ordering: `components` keeps the producer order. The code does not sort
+it. The canonical bytes depend on the order. A later task may add a sort
+rule.
+
+Text: all strings are exact `str` with no control character. Metadata is
+identifier-like data, not body text.
+
 Open: the `reference` text form (saved-bytes reference) is not decided.
