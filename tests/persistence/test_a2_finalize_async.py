@@ -128,26 +128,40 @@ def test_identical_replay_is_replayed(env: Env, tmp_path: Path) -> None:
     check(env.rows() == [terminal_row(env)] and len(env.files()) == 1, "unchanged")
 
 
+class ClosingProxy:
+    """Forward every attribute to a real connection and count ``close`` calls."""
+
+    def __init__(self, inner: sqlite3.Connection) -> None:
+        self.inner = inner
+        self.closes = 0
+
+    def __getattr__(self, name: str) -> Any:
+        return getattr(self.inner, name)
+
+    def close(self) -> None:
+        self.closes += 1
+        self.inner.close()
+
+
 @pytest.mark.parametrize("kind", ["success", "refusal"])
 def test_worker_connection_is_closed_on_every_path(
     env: Env, tmp_path: Path, monkeypatch: pytest.MonkeyPatch, kind: str
 ) -> None:
     real = facade_module.connect_existing
-    opened: list[sqlite3.Connection] = []
+    opened: list[ClosingProxy] = []
 
-    def recording(path: Path) -> sqlite3.Connection:
-        connection = real(path)
-        opened.append(connection)
-        return connection
+    def recording(path: Path) -> Any:
+        proxy = ClosingProxy(real(path))
+        opened.append(proxy)
+        return proxy
 
     monkeypatch.setattr(facade_module, "connect_existing", recording)
-    request = env.request(
-        proof=hb.attempt_proof("a9", "e") if kind == "refusal" else None
-    )
+    foreign = kind == "refusal"
+    request = env.request(proof=hb.attempt_proof("a9", "e") if foreign else None)
 
     async def body(persistence: Phase1Persistence) -> None:
         facade = facade_for(persistence, env)
-        if kind == "refusal":
+        if foreign:
             with pytest.raises(A2FinalizeError):
                 await facade.finalize(request)
         else:
@@ -155,8 +169,7 @@ def test_worker_connection_is_closed_on_every_path(
 
     run_with_persistence(tmp_path, body)
     check(len(opened) == 1, "one connection per call")
-    with pytest.raises(sqlite3.ProgrammingError):
-        opened[0].execute("SELECT 1")
+    check(opened[0].closes == 1, "the worker closes its connection exactly once")
 
 
 def test_conflicting_terminal_values_propagate(env: Env, tmp_path: Path) -> None:
