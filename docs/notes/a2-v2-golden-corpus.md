@@ -33,7 +33,8 @@ T0-06, T0-07 and T0-08 are outside this corpus. They depend on contract tasks.
    RFC 6761: `example.com`, `example.net`, `example.org` (and subdomains), or a
    name that ends in `.example`, `.invalid`, `.test` or `.localhost`. The
    corpus uses `example.invalid` and `example.test`. The test rejects any other
-   host, such as `foo.internal`.
+   host, such as `foo.internal`. It exempts only an exact allowlist of file
+   names (`NON_HOST_TOKENS`), never a file suffix, and never after `//` or `@`.
    The canary string `CANARY-PII-7731-ZQ` marks data that must never reach a
    log, a status record or a stored artifact.
 
@@ -61,7 +62,29 @@ and the Word `word-feature-coverage` limitation. Complete cases therefore use
 the field `content_loss_limitations`. Sources: `parser-pdf.md` ("Lifecycle
 and failures"), `parser-word.md`, `parser-excel.md`.
 
+### Field names `content_loss_limitations` and `limitations`
+
+Both fields exist only in `t0_05.json`. Both hold the expected set of
+content-loss limitation kinds. They differ in name for this reason:
+
+- `content_loss_limitations` appears in `complete` cases. The value is `[]`.
+  The name tells the reader that only content-loss limitations must be absent.
+  Disclosure-only limitations may still be present in a `complete` result.
+- `limitations` appears in `partial` and `unsupported` cases. The value lists
+  the content-loss kinds that must be present, for example `["scanned"]`.
+  Disclosure-only limitations are not listed there.
+
+A consuming test must treat both names as the same set: the content-loss
+subset of the reported limitations. It must compare that subset only, and
+ignore disclosure-only limitations. The names stay different so that the
+manifest digest and the reviewed text of `t0_05.json` do not change. Merging
+them is a safe future change if the corpus has no other consumer. It needs a
+reviewer and a new manifest line.
+
 ## Decisions that are not from A1
+
+`a2-v2-golden-decisions.md` is the authoritative list. It gives the status
+and the `policy_status` marker of each case. The summary below is older text.
 
 These expected values are not derived from A1 docs. Each needs owner sign-off.
 The cases name the status in their provenance or rationale.
