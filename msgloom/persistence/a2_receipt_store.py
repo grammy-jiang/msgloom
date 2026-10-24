@@ -24,16 +24,30 @@ original :class:`ClaimEntry` events, one file per sequence, chained by
 SHA-256. There is no update or delete function. A different entry at a
 stored sequence raises :exc:`A2ReceiptConflict`. The same entry replays.
 
-Atomicity: a file is written under a private temporary name, flushed with
-``fsync`` and published with ``os.link``, which fails if the final name
-exists. An error before the link leaves no final file. Readers ignore a
-leftover ``.tmp-*`` file.
+Head anchor: the chain alone cannot show that its tail was removed. A
+reader that deletes ``claim-00002.json`` leaves a valid shorter chain.
+Without an anchor, tail truncation or rollback is NOT detectable.
+:meth:`ReceiptStore.claim_history` and :meth:`ReceiptStore.append_claim`
+accept an optional ``expected_head_sha256``. It is the ``entry_sha256`` of
+the newest claim (``GENESIS`` for an empty history). A different stored
+head raises ``claim-head-mismatch``. The caller must take the anchor from a
+trusted place, the SQL claim table. That cross-check is a later task and is
+not implemented here. With no anchor, behavior is unchanged.
+
+Atomicity: a file is written in full under a private temporary name, flushed
+with ``fsync`` and published with ``os.link``, which fails if the final name
+exists. The directory is then flushed with ``fsync``. A short write, an
+error before the link or a failed size check leaves no final file. Readers
+ignore a leftover ``.tmp-*`` file. See :mod:`msgloom.persistence.a2_receipt_io`.
 
 Bounds fail closed and are never clamped. Errors are :exc:`A2ReceiptError`
 with a fixed ``reason`` code and never carry a path, id, digest, claim
 value or pydantic text. Directory names are digests of the workset ref.
 Concurrent appenders of one sequence are safe (one link wins). There is no
 wider cross-process lock. Durability needs a local POSIX file system.
+:meth:`ReceiptStore.get_receipt_proof` checks only the self digest of the
+proof. A caller must run :func:`verify_receipt_proof` against the receipt and
+the accepted-stage records.
 """
 
 from __future__ import annotations
@@ -41,10 +55,7 @@ from __future__ import annotations
 import json
 import os
 import re
-import secrets
-import stat
 from collections.abc import Mapping, Sequence
-from contextlib import suppress
 from dataclasses import asdict
 from pathlib import Path
 from typing import Annotated, Literal
@@ -65,6 +76,16 @@ from msgloom.a2_kedro.contracts.receipt import CompletionReceipt
 from msgloom.a2_kedro.contracts.schema_ids import is_accepted_key, require_stage_schema
 from msgloom.contracts import ResultRef
 from msgloom.persistence.a2_acceptance_models import AcceptedStage
+from msgloom.persistence.a2_receipt_errors import (
+    A2ReceiptBoundError,
+    A2ReceiptConflict,
+    A2ReceiptError,
+)
+from msgloom.persistence.a2_receipt_io import (
+    create_once,
+    fsync_directory,
+    read_bounded,
+)
 
 #: PROVISIONAL limits. Roots and transitions are each bounded by 1024.
 MAX_COVERAGE_ITEMS = 2048
@@ -83,26 +104,6 @@ _DIR_DOMAIN = "a2-receipt-store-workset@1"
 _PROOF_FILE = "receipt-proof.json"
 _CLAIM_FILE = re.compile(r"claim-(\d{5})\.json")
 _RANK = {"root": 0, "baseline": 0, "transition": 1}
-
-
-class A2ReceiptError(A2ContractError):
-    """A request was refused. ``reason`` is a fixed code, never data."""
-
-    def __init__(self, reason: str) -> None:
-        super().__init__(reason)
-        self.reason = reason
-
-
-class A2ReceiptBoundError(A2ReceiptError):
-    """An explicit item or byte bound was exceeded."""
-
-
-class A2ReceiptConflict(A2ReceiptError):
-    """A stored record would change. ``fields`` names fields, not values."""
-
-    def __init__(self, reason: str, fields: tuple[str, ...]) -> None:
-        super().__init__(reason)
-        self.fields = fields
 
 
 class CoverageItem(A2Model):
@@ -311,28 +312,6 @@ def _claim_digest(seq: int, prev: str, entry: ClaimEntry) -> str:
     return domain_sha256(_CLAIM_DOMAIN, body)
 
 
-def _read(path: Path, limit: int) -> bytes | None:
-    """Return at most ``limit`` bytes of a regular file; ``None`` if absent."""
-    flags = os.O_RDONLY | getattr(os, "O_NOFOLLOW", 0)
-    try:
-        fd = os.open(path, flags)
-    except FileNotFoundError:
-        return None
-    except OSError:
-        raise A2ReceiptError("read-failed") from None
-    try:
-        if not stat.S_ISREG(os.fstat(fd).st_mode):
-            raise A2ReceiptError("read-failed")
-        data = os.read(fd, limit + 1)
-    except OSError:
-        raise A2ReceiptError("read-failed") from None
-    finally:
-        os.close(fd)
-    if len(data) > limit:
-        raise A2ReceiptBoundError("stored-too-large")
-    return data
-
-
 def _decode[M: A2Model](
     model: type[M], data: bytes | None, limit: int, reason: str
 ) -> M:
@@ -346,31 +325,12 @@ def _decode[M: A2Model](
         raise A2ReceiptError(reason) from None
 
 
-def _create_once(directory: Path, name: str, data: bytes) -> bool:
-    """
-    Publish ``data`` as ``name`` unless it exists; return whether it was new.
-
-    Write a private temporary file, ``fsync`` it, then ``os.link`` it to the
-    final name. The temporary file is removed on every exit path.
-    """
-    temp = directory / f".tmp-{secrets.token_hex(8)}"
+def _canonical(model: A2Model, limit: int) -> bytes:
+    """Return canonical bytes of ``model``; an oversize payload is a bound error."""
     try:
-        fd = os.open(temp, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
-        try:
-            os.write(fd, data)
-            os.fsync(fd)
-        finally:
-            os.close(fd)
-        try:
-            os.link(temp, directory / name)
-        except FileExistsError:
-            return False
-        return True
-    except OSError:
-        raise A2ReceiptError("write-failed") from None
-    finally:
-        with suppress(OSError):
-            temp.unlink()
+        return canonical_model_bytes(model, max_bytes=limit)
+    except A2ContractError:
+        raise A2ReceiptBoundError("payload-too-large") from None
 
 
 class ReceiptStore:
@@ -393,6 +353,11 @@ class ReceiptStore:
             raise A2ReceiptError("write-failed") from None
         if path.is_symlink():
             raise A2ReceiptError("store-root-invalid")
+        if create:
+            try:
+                fsync_directory(self._root)  # make a new directory name durable
+            except OSError:
+                raise A2ReceiptError("write-failed") from None
         return path
 
     def put_receipt_proof(
@@ -408,17 +373,17 @@ class ReceiptStore:
         proof for the same workset raises :exc:`A2ReceiptConflict`.
         """
         verify_receipt_proof(proof, receipt, accepted)
-        data = canonical_model_bytes(proof, max_bytes=MAX_PROOF_BYTES)
+        data = _canonical(proof, MAX_PROOF_BYTES)
         directory = self._directory(proof.workset, create=True)
-        if _create_once(directory, _PROOF_FILE, data):
+        if create_once(directory, _PROOF_FILE, data):
             return "inserted"
-        if _read(directory / _PROOF_FILE, MAX_PROOF_BYTES) != data:
+        if read_bounded(directory / _PROOF_FILE, MAX_PROOF_BYTES) != data:
             raise A2ReceiptConflict("receipt-proof-conflict", ("proof",))
         return "replayed"
 
     def get_receipt_proof(self, workset: ResultRef) -> ReceiptProof | None:
         """Return the stored proof after a full integrity check."""
-        data = _read(self._directory(workset) / _PROOF_FILE, MAX_PROOF_BYTES)
+        data = read_bounded(self._directory(workset) / _PROOF_FILE, MAX_PROOF_BYTES)
         if data is None:
             return None
         proof = _decode(ReceiptProof, data, MAX_PROOF_BYTES, "stored-proof-corrupt")
@@ -426,13 +391,21 @@ class ReceiptStore:
             raise A2ReceiptError("stored-proof-corrupt")
         return proof
 
-    def claim_history(self, workset: ResultRef) -> tuple[StoredClaim, ...]:
-        """Return the verified claim chain, oldest first."""
+    def claim_history(
+        self, workset: ResultRef, *, expected_head_sha256: str | None = None
+    ) -> tuple[StoredClaim, ...]:
+        """
+        Return the verified claim chain, oldest first.
+
+        With ``expected_head_sha256`` the stored head must match it, or
+        ``claim-head-mismatch`` is raised. This detects a removed tail or an
+        empty history. Without it a removed tail is NOT detectable.
+        """
         directory = self._directory(workset)
         try:
             names = sorted(n for n in os.listdir(directory) if n.startswith("claim-"))
         except FileNotFoundError:
-            return ()
+            names = []
         except OSError:
             raise A2ReceiptError("read-failed") from None
         if len(names) > MAX_CLAIMS:
@@ -442,7 +415,7 @@ class ReceiptStore:
         for index, name in enumerate(names):
             if not (found := _CLAIM_FILE.fullmatch(name)) or int(found[1]) != index:
                 raise A2ReceiptError("claim-history-corrupt")
-            data = _read(directory / name, MAX_CLAIM_BYTES)
+            data = read_bounded(directory / name, MAX_CLAIM_BYTES)
             stored = _decode(
                 StoredClaim, data, MAX_CLAIM_BYTES, "claim-history-corrupt"
             )
@@ -450,10 +423,17 @@ class ReceiptStore:
                 raise A2ReceiptError("claim-history-corrupt")
             claims.append(stored)
             prev = stored.entry_sha256
+        if expected_head_sha256 is not None and expected_head_sha256 != prev:
+            raise A2ReceiptError("claim-head-mismatch")
         return tuple(claims)
 
     def append_claim(
-        self, workset: ResultRef, entry: ClaimEntry, expected_seq: int
+        self,
+        workset: ResultRef,
+        entry: ClaimEntry,
+        expected_seq: int,
+        *,
+        expected_head_sha256: str | None = None,
     ) -> PutOutcome:
         """
         Append ``entry`` at ``expected_seq``; never rewrite history.
@@ -461,10 +441,14 @@ class ReceiptStore:
         The same entry at a stored sequence replays. A different entry
         raises :exc:`A2ReceiptConflict`. A sequence past the end raises
         ``claim-gap``. A full history raises :exc:`A2ReceiptBoundError`.
+
+        ``expected_head_sha256`` is checked against the stored head before
+        this call changes anything (see :meth:`claim_history`). After an
+        append the new head is the ``entry_sha256`` of the new claim.
         """
         if not 0 <= expected_seq < MAX_CLAIMS:
             raise A2ReceiptBoundError("claim-history-too-long")
-        history = self.claim_history(workset)
+        history = self.claim_history(workset, expected_head_sha256=expected_head_sha256)
         if (outcome := _replay(history, entry, expected_seq)) is not None:
             return outcome
         prev = history[-1].entry_sha256 if history else GENESIS
@@ -474,10 +458,10 @@ class ReceiptStore:
             entry=entry,
             entry_sha256=_claim_digest(expected_seq, prev, entry),
         )
-        claim_data = canonical_model_bytes(stored, max_bytes=MAX_CLAIM_BYTES)
+        claim_data = _canonical(stored, MAX_CLAIM_BYTES)
         directory = self._directory(workset, create=True)
         name = f"claim-{expected_seq:05d}.json"
-        if _create_once(directory, name, claim_data):
+        if create_once(directory, name, claim_data):
             return "inserted"
         # Lost a race for this sequence: the winner decides.
         outcome = _replay(self.claim_history(workset), entry, expected_seq)
