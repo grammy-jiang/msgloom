@@ -1,0 +1,86 @@
+# A2 v2 P3-06: typed, scoped context for non-communication sources (PROVISIONAL)
+
+Code: `msgloom/a2_kedro/semantics/context_types.py`.
+Tests: `tests/a2_kedro/test_p3_06.py`.
+
+Status: PROVISIONAL, CANDIDATE/RESEARCH. The function layer is pure. It reads
+no provider, network, file, clock or database. It depends only on the typed
+contracts at base `95a9eeb`.
+
+## Result
+
+`publish_context(selection, grant, target)` takes one `CollectedSelection`,
+one `ContextGrant` and one `PublicationTarget`. It returns one
+`ContextPublication` or raises `ContextRefusal`.
+
+| Context type     | Source type        | Intake stream      |
+|------------------|--------------------|--------------------|
+| `calendar_event` | `outlook_calendar` | `outlook_calendar` |
+| `todo_item`      | `todo`             | `todo`             |
+| `onedrive_file`  | `onedrive`         | `onedrive`         |
+| `contact`        | `contact`          | `contacts`         |
+
+Mail and Teams source types give `not_context_source`. A value outside
+`PreparedSourceType` gives `unknown_source_type`.
+
+## Scope rule
+
+The grant names the Intake scope and the workset of the frozen record. It
+may list conversations. The guard `_check_scope` allows a target only if:
+
+1. the grant stream is the stream of the context type;
+2. the target scope and workset equal the grant exactly;
+3. the target conversation, if any, is listed in the grant.
+
+Conversation kinds are the existing `ScopeKind` values (`mailbox`,
+`thread`, `channel`). The same ID under another kind is another scope.
+
+## Published fields (metadata only)
+
+Context type, stream, workset ref, optional conversation, exact source and
+source-scope refs, `identity_sha256`, `title_sha256`, `source_time` (whole
+UTC seconds), attachment and metadata counts, sorted limitation codes. No
+body, party, attachment, metadata value or location is published.
+
+## PROVISIONAL decisions
+
+- P-1: the output is an in-process dataclass. It is not a wire kind. No
+  `context@1` entry exists in `schema_ids.STAGE_SCHEMAS`, and this task must
+  not add one. It has no header, no canonical bytes and no digest of its own.
+  A later task must decide the wire kind and its field names.
+- P-2: `prepared@2` and `group_result@2` have no calendar, To Do, OneDrive
+  or contact field and no non-conversation scope kind. This layer therefore
+  publishes no event time span, task state, file name, size or contact data.
+  It records the limitation `type_fields_unavailable` on every publication.
+- P-3: the conversation scope reuses `relations.ScopeKind`. The contracts
+  have no native link from a calendar event, task, file or contact to a
+  conversation. The grant (workset owner authority) is the only source of
+  that link. This layer does not infer it from a relationship, a subject or
+  a time.
+- P-4: `title_sha256` and `identity_sha256` follow the digest style of
+  `prepared@2` (`text_sha256`, `identity_sha256`). Domains are
+  `a2-context-title@1` and `a2-context-identity@1`. They are unsalted.
+- P-5: `source_time` is whole UTC seconds in `0..2**40`, the range of
+  `prepared@2.sent_at`. The precision decision of C0-07 is still open.
+- P-6: bounds `MAX_SUBJECT_BYTES=8192`, `MAX_ITEMS=256`,
+  `MAX_CONVERSATIONS=64` are provisional. Text bound is
+  `codec.MAX_TEXT_BYTES`.
+- P-7: limitation codes (`content_not_published`, `type_fields_unavailable`,
+  `source_limited`, `time_whole_seconds`) are a local vocabulary.
+
+## Limitations and gaps
+
+- The guard trusts the grant. This layer cannot prove that the grant came
+  from the workset owner. A later stage (P3-09 review, orchestration) must
+  bind it to the frozen selection.
+- Text checks match `A2Model`: no control, line-separator or unencodable
+  text. Format characters such as bidi overrides (`Cf`) are not refused.
+- A subject or semantic identity is hashed, so it may hold control
+  characters. Only the unencodable form and the size are refused.
+- Scope text is validated inside `_check_scope`. Disabling the guard also
+  disables that check. The mutation test covers this on purpose.
+- A record `source_scope` is published as given. It is not compared to the
+  Intake scope, because no contract links the two.
+- Record and source limitations are counted (`source_limited`). Their codes
+  and details are not copied.
+- Many records, a batch API and ordering across records are out of scope.
