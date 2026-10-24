@@ -9,8 +9,8 @@ Tests in `tests/a2_kedro/test_a1_typed_evidence.py` use real
 `PreparationIntakeWorkset` values. They show these results.
 
 - The adapter accepts only a real `ReleasedInput`. It rejects look-alikes.
-- The adapter hashes with `CollectedSelectionCodec`. A caller can not pass an
-  encoder, so a caller can not choose the hashed bytes.
+- The adapter hashes with `CollectedSelectionCodec`. A caller cannot pass an
+  encoder, so a caller cannot choose the hashed bytes.
 - The adapter rejects a reader answer for another release entry, including
   another catalog.
 - A root is built only when the Intake selection identity matches exactly
@@ -20,7 +20,7 @@ Tests in `tests/a2_kedro/test_a1_typed_evidence.py` use real
 - A baseline root comes from a real `CollectedSelection`. The digest comes
   from the codec and the identity must match.
 
-## What they can not prove
+## What they cannot prove
 
 A1 has no public verifier. Two formulas are mirrored in A2:
 
@@ -29,13 +29,21 @@ A1 has no public verifier. Two formulas are mirrored in A2:
 2. The baseline selection identity (`intake-baseline-selection:`).
 
 Both come from private A1 helpers. Tests import the private `_identity` to
-check the mirror. A formula change in A1 makes A2 reject every root. The
-test `test_gap_formula_change_fails_closed` shows this fail-closed result.
+check the mirror. A formula change in A1 would make A2 reject every root.
+The test `test_gap_formula_change_fails_closed` changes an input, not the
+formula. It shows that a mismatch rejects. It does not show the effect of
+an A1 formula change.
 
 A second gap: `OccurrenceEvidence` is a plain dataclass. A caller can build
 it by hand. `test_gap_evidence_object_is_caller_constructible` shows that
-such evidence passes the workset check. Python can not bind evidence to a
+such evidence passes the workset check. Python cannot bind evidence to a
 read without help from A1.
+
+A third gap: the adapter checks the type with `isinstance`. A subclass of
+`ReleasedInput` passes. A value built with `model_construct` skips
+validation and also passes. The tests build the duplicate case with
+`model_copy(update=...)`, which skips validation too. A1 offers no public
+way to prove that a value was validated.
 
 ## Narrow bridge A1 would need to expose
 

@@ -13,8 +13,8 @@ Tests: `tests/a2_kedro/test_c0_00_header.py`.
 ## Decision
 
 The system writes each A2 v2 payload with a header. The header names the
-kind, the version and the wire profile. A reader checks the header before it
-decodes the body.
+kind, the version and the wire profile. A reader will check the header before it
+decodes the body. No reader code exists yet.
 
 | Item | Provisional value |
 | --- | --- |
@@ -72,7 +72,11 @@ over the frozen inputs only. The inputs include every transition in order:
 entry, fact ID, kind, resource and scope. The key excludes output digest,
 time, attempt and node name. Reversing the order gives a different key.
 Dropping one transition gives a different key. The golden fixture holds the
-ordered and the reversed key.
+ordered and the reversed key. That key has no authority input. See
+unresolved field 3.
+
+The root role vocabulary is `primary`, `component` and `baseline`. The
+A1 evidence proves the role. The header does not carry it.
 
 ## Unresolved wire fields
 

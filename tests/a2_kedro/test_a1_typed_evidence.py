@@ -36,10 +36,12 @@ from tests.a2_kedro.helpers import CODE, CONFIG, SCOPE, check, entry, mutate
 
 
 def digest_of(value: object) -> str:
+    """Return the digest of ``value`` under the real A1 codec."""
     return sha256_hex(CollectedSelectionCodec().encode(value))
 
 
 def read(value: object, seq: int = 1):
+    """Read ``value`` through the adapter and return its evidence."""
     return asyncio.run(
         ReadOnlyOccurrenceAdapter(TypedReader(value)).evidence(entry(seq))
     )
@@ -134,6 +136,32 @@ def test_invalid_role_rejected() -> None:
     )
     with pytest.raises(ValueError):
         mutate(root, role="context")
+
+
+def test_invalid_member_role_rejected_by_verifier() -> None:
+    value = released(1)
+    ws = workset_of(value, (selection_of(value, 0),))
+    evidence = read(value)
+    forged = replace(
+        evidence, members=((evidence.members[0][0], "owner"), *evidence.members[1:])
+    )
+    with pytest.raises(A2ContractError, match="one role"):
+        verify_exact_occurrence(
+            ws,
+            ws.selections[0],
+            forged,
+            saved_selection_sha256=digest_of(value.selection),
+        )
+
+
+def test_adapter_reads_once_and_never_writes() -> None:
+    value = released(1)
+    reader = TypedReader(value)
+    adapter = ReadOnlyOccurrenceAdapter(reader)
+    asyncio.run(adapter.evidence(entry(1)))
+    check(reader.calls == [entry(1)], "exactly one read_entry call")
+    public = [name for name in dir(adapter) if not name.startswith("_")]
+    check(public == ["evidence"], f"adapter public surface is read-only: {public}")
 
 
 def test_invalid_saved_sha_rejected() -> None:
