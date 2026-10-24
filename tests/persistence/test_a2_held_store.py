@@ -113,6 +113,7 @@ def baseline(index: int = 9) -> InputDisposition:
         workset_index=index,
         selection_sha256=hexd("4"),
         reason=HeldReason.PROOF_MISSING,
+        repair_class="operator_repair",
         configuration_version=CANARY,
         code_version=CANARY,
         baseline_source=VersionRef("source", "id-1", "v1"),

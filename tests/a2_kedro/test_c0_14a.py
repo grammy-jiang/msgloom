@@ -92,7 +92,7 @@ def make_receipt(
     if transitions:
         pair = (transition_for(3, "c"), transition_for(4, "d"))
         batch = TransitionBatch(transitions=pair, result=BATCH_REF, status=COMPLETE)
-    receipt = CompletionReceipt(
+    receipt = CompletionReceipt.build(
         workset=WORKSET_REF,
         status=COMPLETE,
         policy_version=policy,
