@@ -24,7 +24,12 @@ from dataclasses import dataclass, field
 from typing import Literal
 
 from msgloom.a2_kedro.contracts.extract import ComponentStatus
-from msgloom.a2_kedro.contracts.parse import ParsedParts, PartFormat, PartRole
+from msgloom.a2_kedro.contracts.parse import (
+    MAX_PARTS,
+    ParsedParts,
+    PartFormat,
+    PartRole,
+)
 from msgloom.contracts import Limitation, TerminalStatus
 
 #: Provisional bound for quote and text map records per part.
@@ -160,3 +165,38 @@ def decode_text(raw: bytes, charset: str | None, flags: set[str]) -> str:
             continue
     flags.add("charset_decode_error")
     return raw.decode(name if charset else "utf-8", errors="replace")
+
+
+def split_multipart(
+    data: bytes, begin: int, end: int, boundary: bytes
+) -> tuple[list[tuple[int, int]], tuple[str, ...]]:
+    """
+    Return child windows and problem codes (empty when well formed).
+
+    Scanning continues after a close delimiter. A later delimiter of the
+    same boundary is kept as a part (or ignored if it is a second close)
+    and creates ``multipart_malformed``. Epilogue text creates no problem.
+    """
+    pattern = re.compile(
+        rb"(?:(?<=\n)|\A)--" + re.escape(boundary) + rb"(--)?[ \t]*(?:\r?\n|\Z)"
+    )
+    spans: list[tuple[int, int]] = []
+    opened, closed, extra = -1, False, False
+    for match in pattern.finditer(data, begin, end):
+        extra = extra or closed
+        if opened >= 0:
+            stop = match.start()
+            stop -= 1 if stop > opened and data[stop - 1] == 10 else 0
+            stop -= 1 if stop > opened and data[stop - 1] == 13 else 0
+            spans.append((opened, stop))
+        closed = bool(match.group(1))
+        opened = -1 if closed else match.end()
+        if len(spans) > MAX_PARTS:
+            return spans, ()
+    problems = set()
+    if extra or (not spans and opened < 0):
+        problems.add("multipart_malformed")
+    if opened >= 0:
+        spans.append((opened, end))
+        problems.add("multipart_truncated")
+    return spans, tuple(sorted(problems))

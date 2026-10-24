@@ -49,7 +49,19 @@ It uses only the standard library (`email` for header blocks,
   bad quoted-printable escapes, replacement characters) plus a flag. The
   part is never dropped.
 - Receipt `outcome` is `partial` only for a resource cap (`bytes` or
-  `parts`). Content defects use limitations.
+  `parts`). C0-04 requires `outcome == "complete"` exactly when
+  `limit_hit == "none"`, and `LimitHit` has no value for a content
+  defect. A content defect (corrupt base64, unknown charset, truncated
+  multipart) therefore leaves the wire receipt `complete`. The
+  limitation list and `MimeParseResult.status` (INCOMPLETE) are the
+  authority. Fix needs a contract change (see Known gaps).
+- Multipart scanning continues after a close delimiter. A later
+  delimiter of the same boundary keeps its part and adds
+  `multipart_malformed`. Text after the close with no delimiter line is
+  an epilogue and is ignored without a limitation.
+- HTML: a skipped element (`script`, `style`, `title`, `template`) that
+  is not closed at end of input adds `html_parse_error`. Nested
+  `template` elements use a depth counter.
 - HTML: script, style, template and title content is dropped. Attributes
   are never read. Nothing is fetched. `text_map` spans map text ranges to
   character ranges of the decoded body. Plain text has one identity span.
@@ -74,3 +86,10 @@ per part, parts 256 (wire limit).
   flagged. `pre` whitespace is collapsed in HTML.
 - Zero-byte or fully unrepresentable input cannot form `ParsedParts`
   (a byte link needs length of at least 1), so `parsed` is `None`.
+- The wire receipt cannot say `partial` for a content defect (C0-04 ties
+  `outcome` to `limit_hit`). A future contract change should add a
+  limit-hit value or a separate defect flag.
+- Preamble bytes (before the first delimiter) and epilogue bytes (after
+  the close delimiter) are not parts and are not flagged.
+- CPU is not bounded by time. A hostile 8 MB HTML part (the part cap) can
+  take about 19 s to reduce. Only byte and item caps exist.

@@ -69,6 +69,7 @@ from msgloom.a2_kedro.parsers import (
     decode_text,
     decode_transfer,
     marker_regions,
+    split_multipart,
 )
 from msgloom.contracts import Limitation, TerminalStatus
 
@@ -112,11 +113,13 @@ class _Reducer(HTMLParser):
         self._size = 0
         self._tail = ""
         self._skip: str | None = None
+        self._skip_depth = 0
         self._open: list[int] | None = None
         self._spans: list[list[int]] = []
         self._quotes: list[int] = []
         self.regions: list[QuotedRegion] = []
         self.truncated = False
+        self.unclosed = False
 
     def _event(self) -> int:
         line, col = self.getpos()
@@ -149,7 +152,9 @@ class _Reducer(HTMLParser):
     def handle_starttag(self, tag: str, attrs: list[tuple[str, str | None]]) -> None:
         pos = self._event()
         if self._skip is None and tag in _SKIPPED:
-            self._skip = tag
+            self._skip, self._skip_depth = tag, 1
+        elif tag == self._skip:
+            self._skip_depth += 1
         if tag in _BLOCKS and self._skip is None:
             self._break(pos)
         if tag == "blockquote":
@@ -158,7 +163,9 @@ class _Reducer(HTMLParser):
     def handle_endtag(self, tag: str) -> None:
         pos = self._event()
         if tag == self._skip:
-            self._skip = None
+            self._skip_depth -= 1
+            if self._skip_depth == 0:
+                self._skip = None
             return
         if tag in _BLOCKS and self._skip is None:
             self._break(pos)
@@ -192,6 +199,7 @@ class _Reducer(HTMLParser):
         """Close the parser and return text, text map and quote regions."""
         self.close()
         self._event()
+        self.unclosed = self._skip is not None
         while self._quotes:
             self._close_quote()
         spans = tuple(TextSpan(*entry) for entry in self._spans)
@@ -216,32 +224,6 @@ def _split_head(data: bytes, start: int, end: int) -> tuple[int, int]:
     if match := _HEADER_END.search(data, start, end):
         return match.start(), match.end()
     return end, end
-
-
-def _boundaries(
-    data: bytes, begin: int, end: int, boundary: bytes
-) -> tuple[list[tuple[int, int]], str]:
-    """Return child windows and a problem code ('' when well formed)."""
-    pattern = re.compile(
-        rb"(?:(?<=\n)|\A)--" + re.escape(boundary) + rb"(--)?[ \t]*(?:\r?\n|\Z)"
-    )
-    spans: list[tuple[int, int]] = []
-    opened = -1
-    for match in pattern.finditer(data, begin, end):
-        if opened >= 0:
-            stop = match.start()
-            stop -= 1 if stop > opened and data[stop - 1] == 10 else 0
-            stop -= 1 if stop > opened and data[stop - 1] == 13 else 0
-            spans.append((opened, stop))
-        if match.group(1):
-            return spans, "" if spans else "multipart_malformed"
-        opened = match.end()
-        if len(spans) > MAX_PARTS:
-            return spans, ""
-    if opened >= 0:
-        spans.append((opened, end))
-        return spans, "multipart_truncated"
-    return spans, "multipart_malformed"
 
 
 def _role(
@@ -302,6 +284,8 @@ def _reduce(
         regions.extend(found)
         if reducer.truncated:
             flags.add("map_truncated")
+        if reducer.unclosed:
+            flags.add("html_parse_error")  # skipped element never closed
     else:
         mapping = (TextSpan(0, len(text), 0, len(text)),) if text else ()
     found_marks, cut = marker_regions(text)
@@ -362,12 +346,11 @@ def _entity(scan: _Scan, start: int, end: int, site: _Site) -> None:
     children: list[tuple[int, int]] = []
     if container:
         raw = msg.get_boundary()
-        problem = "multipart_malformed"
+        problems = ("multipart_malformed",)
         if raw:
             wire = raw.encode("utf-8", "surrogateescape")
-            children, problem = _boundaries(scan.data, body, end, wire)
-        if problem:
-            flags.add(problem)
+            children, problems = split_multipart(scan.data, body, end, wire)
+        flags.update(problems)
     text, mapping, quoted = None, (), ()
     leaf = None if container or inner or end <= body else (body, end)
     if leaf and (text := _leaf(scan, *leaf, kind, msg, flags)) is not None:
@@ -440,6 +423,7 @@ def _wire(scan: _Scan, size: int, digest: str, component_id: str) -> ParsedParts
     receipt = ParserReceipt(
         worker=WORKER,
         worker_version=WORKER_VERSION,
+        # C0-04 ties outcome to limit_hit; content defects stay limitations.
         outcome="complete" if scan.limit_hit == "none" else "partial",
         limit_hit=scan.limit_hit,
         input_bytes=size,
