@@ -38,6 +38,7 @@ from msgloom.triage_input import (
     saved_part_payloads,
     validate_parent_part_states,
 )
+from msgloom.triage_input.adapter_v2 import admit_upstream
 
 from .codecs import (
     TriagePartState,
@@ -120,6 +121,7 @@ class TriageHandler(_TriagePartStateMixin, _TriageIOMixin, _TriageFinalizeMixin)
             try:
                 async with asyncio.timeout_at(state.acceptance_deadline):
                     loaded = await self._preflight_upstream()
+                    v2_hold = admit_upstream(loaded)  # None for v1 (C0-17c)
             except TimeoutError:
                 return self._deadline_outcome(request)
             except Exception as error:  # noqa: BLE001
@@ -128,6 +130,10 @@ class TriageHandler(_TriagePartStateMixin, _TriageIOMixin, _TriageFinalizeMixin)
                     TerminalStatus.FAILED,
                     refs=durable_prefix(),
                     failure=Failure("triage_input_invalid", type(error).__name__),
+                )
+            if v2_hold is not None:  # PROVISIONAL: no v2 reader yet; no claim
+                return self._outcome(
+                    request, v2_hold.status, limitations=v2_hold.limitations
                 )
 
             prepared_versions = []
