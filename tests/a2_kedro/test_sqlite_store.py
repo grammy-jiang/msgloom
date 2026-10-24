@@ -261,7 +261,7 @@ def make_receipt(
         )
         for i, ref in enumerate(refs)
     )
-    return CompletionReceipt(
+    return CompletionReceipt.build(
         workset=WORKSET_REF, status=status, policy_version="policy-1", roots=roots
     )
 
@@ -300,7 +300,7 @@ def test_receipt_append_or_verify(store: A2ResearchStore, store_path: Path) -> N
         CompletionReceipt.model_validate_json(receipt.model_dump_json()) == receipt,
         "json",
     )
-    changed = CompletionReceipt(
+    changed = CompletionReceipt.build(
         workset=WORKSET_REF,
         status=COMPLETE,
         policy_version="policy-1",
