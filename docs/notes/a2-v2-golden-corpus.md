@@ -10,15 +10,21 @@ The supervisor changed the path to `golden/`.
 | File | Topic | Positive | Negative |
 | --- | --- | --- | --- |
 | `t0_01.json` | A1 fixed behavior: 20 Spiders, 7 streams, Task 15 rules | 6 | 5 |
-| `t0_02.json` | Mail multi-MIME, inline quote, duplicate Message-ID | 5 | 6 |
-| `t0_03.json` | Teams chat, channel, component-only, scope refresh | 5 | 6 |
-| `t0_04.json` | Calendar, To Do, OneDrive, Contacts stay contextual | 5 | 5 |
+| `t0_02.json` | Mail multi-MIME, inline quote, duplicate Message-ID, transfer encodings, nested message, truncated multipart | 9 | 8 |
+| `t0_03.json` | Teams chat, channel, component-only, scope refresh, edited and deleted messages, truncated record | 8 | 9 |
+| `t0_04.json` | Calendar (cancelled, all-day, recurrence, removed marker), To Do, OneDrive, Contacts stay contextual | 8 | 7 |
 | `t0_05.json` | PDF, Word, Excel, malformed, large, partial | 7 | 7 |
 | `t0_06.json` | Held, intake-held, transition-only: one terminal per item | 11 | 20 |
 | `t0_07.json` | Crash, restart, late write, cancel: accepted prefix, replay | 10 | 7 |
 | `t0_08.json` | Historical prepared@1 reader, prepared@2 mapping, no lossy projection | 13 | 38 |
 | `t0_09.json` | Prefect lost, duplicate hint, partial A1 finish | 6 | 8 |
 | `t0_10.json` | Node.run logger, PII canary, telemetry, illegal paths | 5 | 13 |
+
+Cases T0-02-P06 to P09, N07, N08, T0-03-P06 to P08, N07 to N09 and
+T0-04-P06 to P08, N06, N07 were added after the T0-11 review (finding M2).
+A language model wrote them by hand from the cited A1 notes. No program
+produced any value. Six of them carry a `policy_status` marker because the
+A1 text is silent.
 
 ## Independence rules
 
@@ -28,7 +34,7 @@ The supervisor changed the path to `golden/`.
    exception exists: the two pinned digests (SHA-256 and byte count) in
    T0-08-P01 and T0-08-P02 were computed with `json` and `hashlib` from the
    base payload in the file and compared with the A1 v1 codec output. No human
-   has reviewed the corpus. The 23 cases that carry a `policy_status` marker
+   has reviewed the corpus. The 29 cases that carry a `policy_status` marker
    need owner sign-off (see `a2-v2-golden-decisions.md`). Do not describe the
    corpus as human-annotated or human-reviewed.
 2. The author reads only A1 code names, A1 docs, the A1 spec and A1 tests. The

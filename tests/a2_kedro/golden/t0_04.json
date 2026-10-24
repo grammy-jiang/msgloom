@@ -6,6 +6,7 @@
   "independence_statement": "Items are invented by hand. Expected results follow the sentence in preparation-semantics.md that To Do, OneDrive and Contacts always get one-member None results, and the handoff spec statement that Calendar's final A2 role is not defined by A1. No grouping code was run or imported.",
   "provenance": {
     "sources": [
+      "ADDED CASES P06 to P08, N06, N07 (independent follow-up for review finding M2): hand-written by a language model (Claude Sonnet 5.5 worker). Facts about event flags, calendarView occurrence expansion and the delta @removed marker come from docs/component-layout.md. N06 follows that A1 text only. P06 to P08 and N07 are task-goal decisions because they rely on the Calendar-is-contextual decision of P04. No program produced any value.",
       "docs/notes/preparation-semantics.md: 'To Do, OneDrive, and Contacts are contextual inputs...'",
       "docs/superpowers/specs/2026-10-03-a1-a2-handoff-contract-design.md: non-goals ('define Calendar's final A2 semantic role'), streams list",
       "TASK-GOAL DECISION, NOT FROM preparation-semantics.md (P04, P05, N03): preparation-semantics.md names only To Do, OneDrive and Contacts as contextual inputs. Treating Calendar as contextual with a one-member None group is a task-goal decision. The handoff spec leaves Calendar's final A2 role undefined. It needs owner sign-off.",
@@ -53,6 +54,33 @@
       "input": {"version_refs": ["todo-1", "od-1", "ct-1", "cal-1"], "shared_scope": "scope-user-A"},
       "expected": {"groups": [["todo-1"], ["od-1"], ["ct-1"], ["cal-1"]], "cross_source_join": false},
       "rationale": "To Do, OneDrive and Contacts groups follow preparation-semantics.md (source types are partitioned before grouping). The cal-1 group is the task-goal decision of P04."
+    },
+    {
+      "case_id": "T0-04-P06",
+      "polarity": "positive",
+      "policy_status": "task_goal_decision",
+      "title": "Cancelled event keeps its cancellation flag and stays a one-member None group",
+      "input": {"version_ref": "cal-3", "stream": "outlook_calendar", "subject": "Planning meeting", "is_cancelled": true, "organizer": "alice@example.invalid"},
+      "expected": {"group_status": "none", "group_size": 1, "is_cancelled_preserved": true, "treated_as_deleted": false, "communication_group_member": false},
+      "rationale": "TASK-GOAL DECISION for the group part, as in T0-04-P04. A1 fact: component-layout.md says the event item projects all-day and cancellation flags. A1 text does not say that a cancellation is a deletion, so the case expects no deletion."
+    },
+    {
+      "case_id": "T0-04-P07",
+      "polarity": "positive",
+      "policy_status": "task_goal_decision",
+      "title": "All-day event keeps its all-day flag and stays a one-member None group",
+      "input": {"version_ref": "cal-4", "stream": "outlook_calendar", "subject": "Company holiday", "is_all_day": true, "start": {"date_time": "2026-01-05T00:00:00", "time_zone": "UTC"}, "end": {"date_time": "2026-01-06T00:00:00", "time_zone": "UTC"}},
+      "expected": {"group_status": "none", "group_size": 1, "is_all_day_preserved": true, "communication_group_member": false},
+      "rationale": "TASK-GOAL DECISION for the group part, as in T0-04-P04. A1 fact: component-layout.md says the event item projects the all-day flag. The case fixes no time-zone conversion, because the A1 text is silent."
+    },
+    {
+      "case_id": "T0-04-P08",
+      "polarity": "positive",
+      "policy_status": "task_goal_decision",
+      "title": "Recurrence occurrence keeps its series master id as a field and stays a one-member None group",
+      "input": {"version_ref": "cal-5", "stream": "outlook_calendar", "subject": "Weekly sync", "event_type": "occurrence", "series_master_id": "series-1"},
+      "expected": {"group_status": "none", "group_size": 1, "series_master_id_preserved": true, "series_master_id_is_grouping_evidence": false},
+      "rationale": "TASK-GOAL DECISION for the group part, as in T0-04-P04. A1 fact: component-layout.md says calendarView expands recurring occurrences and the event item projects the series-master id. A series master id is a field, not a relationship kind in the preparation-semantics.md table."
     },
     {
       "case_id": "T0-04-N01",
@@ -110,6 +138,28 @@
       "title": "Deleted contextual item does not delete or alter any communication group",
       "input": {"event": "todo_removed_from_snapshot", "version_ref": "todo-1", "communication_groups_before": [["mail-9"]]},
       "expected": {"communication_groups_after": [["mail-9"]], "todo_absence_authority_over_mail": false}
+    },
+    {
+      "case_id": "T0-04-N06",
+      "polarity": "negative",
+      "title": "A delta removed marker is not proof that the event was deleted",
+      "input": {"event": "calendar_delta_removed_marker", "version_ref": "cal-6", "tracked_view": "fixed window 2026-01-05 to 2026-01-12", "reason": "event moved outside the window"},
+      "expected": {"is_removed_set": false, "absence_proves_global_deletion": false, "observation_kept": true},
+      "rationale": "A1 fact, component-layout.md: a Calendar delta @removed marker is scoped to the tracked view. It is stored as an immutable delta observation but does not set CalendarEventRecord.is_removed, because an event that moves outside the fixed window is also removed from that view."
+    },
+    {
+      "case_id": "T0-04-N07",
+      "polarity": "negative",
+      "policy_status": "task_goal_decision",
+      "title": "Two occurrences of one series are not joined into a group",
+      "input": {
+        "records": [
+          {"version_ref": "cal-7", "stream": "outlook_calendar", "event_type": "occurrence", "series_master_id": "series-1"},
+          {"version_ref": "cal-8", "stream": "outlook_calendar", "event_type": "occurrence", "series_master_id": "series-1"}
+        ]
+      },
+      "expected": {"same_group": false, "groups": [["cal-7"], ["cal-8"]]},
+      "rationale": "TASK-GOAL DECISION, as in T0-04-P04: Calendar stays contextual, so each event is its own one-member None group. preparation-semantics.md lists no series relationship kind."
     }
   ]
 }

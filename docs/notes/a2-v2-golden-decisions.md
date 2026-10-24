@@ -45,12 +45,18 @@ a hand derivation. The `provenance` and `rationale` fields give the source.
 
 ### 3. T0-04 Calendar as a contextual source: task-goal decision
 
-- Cases: T0-04-P04, T0-04-P05, T0-04-N03.
+- Cases: T0-04-P04, T0-04-P05, T0-04-N03, T0-04-P06, T0-04-P07,
+  T0-04-P08, T0-04-N07.
 - Status: `task_goal_decision`.
 - Rationale: `preparation-semantics.md` names only To Do, OneDrive and
   Contacts as contextual inputs. The handoff spec leaves the final A2 role of
   Calendar open. The task goal says Calendar stays contextual. The cases
   therefore put a Calendar event in a one-member None group.
+- Added after review finding M2: P06 (cancelled event), P07 (all-day event),
+  P08 (recurrence occurrence) and N07 (two occurrences of one series) rely on
+  the same decision. Their A1 facts (event flags, series master id) are cited
+  in each case. T0-04-N06 (delta removed marker) follows A1 text only and has
+  no marker.
 
 ### 4. T0-02 reply text split and ancestor order: task-goal decision
 
@@ -73,6 +79,20 @@ a hand derivation. The `provenance` and `rationale` fields give the source.
   directory or to correct the manifest.
 - Check: `test_corpus_directory_is_golden` fails if the directory name
   changes without a decision update.
+
+### 6. T0-02 empty MIME body and T0-03 truncated record: PROPOSED, owner sign-off needed
+
+- Cases: T0-02-P08, T0-03-N07.
+- Status: `proposed_owner_signoff_needed`.
+- Rationale: The A1 MIME note names an empty-content limitation only for
+  direct TEXT, HTML and JSON inputs. It is silent on an empty MIME leaf.
+  P08 expects an empty contribution with no error and no invented text. A1
+  Teams code requires a non-empty source id, but no A1 text says what A2 does
+  with a record that has none. N07 expects no acceptance, no invented id and
+  a visible failure.
+- Risk if wrong: The owner may want a limitation for an empty MIME body, or a
+  quarantine state for a truncated record. Then the cases must change, with a
+  new reviewer and a new manifest line.
 
 ## T0-07 decisions
 

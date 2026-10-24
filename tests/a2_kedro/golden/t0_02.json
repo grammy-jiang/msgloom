@@ -6,6 +6,7 @@
   "independence_statement": "Message bodies are short synthetic texts written by hand. Contributed text, quoted text, ancestor lists and missing references were decided by a language model reading each body by hand. No parser, grouping code or A2 code was run or imported.",
   "provenance": {
     "sources": [
+      "ADDED CASES P06 to P09, N07, N08 (independent follow-up for review finding M2): hand-written by a language model (Claude Sonnet 5.5 worker) from docs/notes/parser-mime-html.md (transfer decoding, attachment subtree, structural and transfer defects become generic limitations) and docs/notes/parser-qualification.md (MIME row). No program produced any value. T0-02-P08 is PROPOSED: the A1 note is silent on an empty MIME leaf and the value needs owner sign-off.",
       "docs/notes/preparation-semantics.md: 'Grouping relationship conventions' (in_reply_to, outlook_conversation, missing parent, cycles)",
       "docs/notes/parser-mime-html.md: part references 1, 1.1, 1.2; inline and attachment handling",
       "docs/notes/parser-qualification.md: MIME row (quoted-printable alternatives, multipart relationships, base64 attachment)",
@@ -136,6 +137,82 @@
       }
     },
     {
+      "case_id": "T0-02-P06",
+      "polarity": "positive",
+      "title": "Quoted-printable UTF-8 text part is transfer-decoded, including a soft line break",
+      "input": {
+        "message_id": "<m7@mail.example.invalid>",
+        "parts": [
+          {"ref": "1", "type": "text/plain", "charset": "utf-8", "transfer_encoding": "quoted-printable", "raw": "Review the caf=C3=A9 plan to=\nday."}
+        ]
+      },
+      "expected": {
+        "extracted_part_refs": ["1"],
+        "text_by_part": {"1": "Review the caf\u00e9 plan today."},
+        "raw_encoded_text_kept": false
+      },
+      "rationale": "docs/notes/parser-mime-html.md: readable text and HTML leaves are 'transfer-decoded and decoded with their declared character set'. docs/notes/parser-qualification.md MIME row names quoted-printable UTF-8. The decoded string was derived by hand: =C3=A9 is the UTF-8 pair for the letter e with acute accent, and '=' at the end of a line joins the lines."
+    },
+    {
+      "case_id": "T0-02-P07",
+      "polarity": "positive",
+      "title": "Base64 text part is transfer-decoded and the encoded form is not kept as text",
+      "input": {
+        "message_id": "<m8@mail.example.invalid>",
+        "parts": [
+          {"ref": "1", "type": "text/plain", "charset": "utf-8", "transfer_encoding": "base64", "raw": "SGVsbG8gV29ybGQh"}
+        ]
+      },
+      "expected": {
+        "extracted_part_refs": ["1"],
+        "text_by_part": {"1": "Hello World!"},
+        "raw_encoded_text_kept": false
+      },
+      "rationale": "Same A1 sentence as P06. The base64 text SGVsbG8gV29ybGQh decodes to Hello World! (checked by hand, 12 bytes in four groups of three)."
+    },
+    {
+      "case_id": "T0-02-P08",
+      "polarity": "positive",
+      "policy_status": "proposed_owner_signoff_needed",
+      "title": "Empty plain-text body gives an empty contribution, not an error and not invented text",
+      "input": {
+        "message_id": "<m9@mail.example.invalid>",
+        "source_scope": "scope-mail-account-A",
+        "parts": [
+          {"ref": "1", "type": "text/plain", "charset": "utf-8", "raw": ""}
+        ]
+      },
+      "expected": {
+        "contributed_text": "",
+        "message_record_kept": true,
+        "placeholder_text_invented": false,
+        "parse_failed": false
+      },
+      "rationale": "PROPOSED. The A1 MIME note names an empty-content limitation only for direct TEXT, HTML and JSON inputs, not for an empty MIME leaf. The A1 text is silent here. The value is the plain safe answer: keep the record, add no text."
+    },
+    {
+      "case_id": "T0-02-P09",
+      "polarity": "positive",
+      "title": "Attached message/rfc822: the inner message is metadata, not body text",
+      "input": {
+        "message_id": "<m10@mail.example.invalid>",
+        "parts": [
+          {"ref": "1", "type": "multipart/mixed"},
+          {"ref": "1.1", "type": "text/plain", "text": "See the forwarded message."},
+          {"ref": "1.2", "type": "message/rfc822", "disposition": "attachment"},
+          {"ref": "1.2.1", "type": "text/plain", "text": "Inner message text. CANARY-PII-7731-ZQ"}
+        ]
+      },
+      "expected": {
+        "contributed_text": "See the forwarded message.",
+        "attachment_parts": ["1.2"],
+        "metadata_only_parts": ["1.2", "1.2.1"],
+        "inner_text_in_body": false,
+        "canary_in_contributed_text": false
+      },
+      "rationale": "docs/notes/parser-mime-html.md: 'Attachment disposition applies to the complete subtree ... no readable descendant is emitted as message-body text. This includes attached message/rfc822 and multipart containers.' The ref 1.2.1 follows the nested numbering rule in the same note."
+    },
+    {
       "case_id": "T0-02-N01",
       "polarity": "negative",
       "title": "Duplicate Message-ID with different bodies must not be merged or silently deduplicated",
@@ -216,6 +293,42 @@
         ]
       },
       "expected": {"grouping_status_each": "uncertain", "group_confirmed": false}
+    },
+    {
+      "case_id": "T0-02-N07",
+      "polarity": "negative",
+      "title": "Truncated multipart: the missing closing boundary becomes a generic limitation, never a crash or a leak",
+      "input": {
+        "message_id": "<m11@mail.example.invalid>",
+        "content_type": "multipart/mixed; boundary=\"BND1\"",
+        "raw": "--BND1\nContent-Type: text/plain\n\nFirst part. CANARY-PII-7731-ZQ\n--BND1\nContent-Type: text/pla"
+      },
+      "expected": {
+        "exception_raised": false,
+        "structural_limitation_present": true,
+        "limitation_detail_contains_body_text": false,
+        "limitation_detail_contains_canary": false,
+        "reported_as_clean_complete": false
+      },
+      "rationale": "docs/notes/parser-mime-html.md: 'Unsupported character sets, invalid bytes, transfer defects, and structural defects become generic limitations. Limitation details never include source bodies, URLs, or decoder exception text.' The case fixes no extracted part list, because the A1 note does not say which parts survive."
+    },
+    {
+      "case_id": "T0-02-N08",
+      "polarity": "negative",
+      "title": "Invalid base64 text is a transfer defect: generic limitation, no raw bytes in the detail",
+      "input": {
+        "message_id": "<m12@mail.example.invalid>",
+        "parts": [
+          {"ref": "1", "type": "text/plain", "charset": "utf-8", "transfer_encoding": "base64", "raw": "!!CANARY-PII-7731-ZQ!!"}
+        ]
+      },
+      "expected": {
+        "exception_raised": false,
+        "transfer_limitation_present": true,
+        "limitation_detail_contains_canary": false,
+        "reported_as_clean_complete": false
+      },
+      "rationale": "Same A1 sentence as N07 (transfer defects become generic limitations). The case does not fix the decoded text, which the A1 note does not state."
     }
   ]
 }
