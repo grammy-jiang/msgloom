@@ -13,8 +13,12 @@ denies every socket connect, lookup and send. The tests with a default
 consent setting are positive controls: they prove the recorder sees an
 attempt.
 
-Run: ``A2_F0_KEDRO_PYTHON=/tmp/scratch/bin/python python -m pytest
-tests/research/a2_f0_kedro_integration.py``
+Gate: every test carries the ``kedro_scratch`` marker. The plugin
+``scripts/research/a2_f0_pytest_gate.py`` deselects marked tests unless
+``A2_F0_KEDRO_OPT_IN=1``. The default test run never collects this file.
+
+Run: ``python scripts/research/a2_f0_scratch_kedro_env.py run VENV``. It
+sets the plugin and both variables.
 """
 
 from __future__ import annotations
@@ -33,6 +37,9 @@ ROOT = Path(__file__).resolve().parents[2]
 PROBE = ROOT / "scripts" / "research" / "a2_f0_kedro_probe.py"
 CONTROLS = ROOT / "scripts" / "research" / "a2_f0_denial_controls.py"
 ENV_NAME = "A2_F0_KEDRO_PYTHON"
+EXPECTED_KEDRO = "1.7.0"
+
+pytestmark = pytest.mark.kedro_scratch
 
 
 def _controls() -> Any:
@@ -59,6 +66,15 @@ def kedro_python() -> str:
         pytest.fail(f"{ENV_NAME} does not name a file: {value}")
     if ".venv" in path.parts or (ROOT / ".venv") in path.parents:
         pytest.fail(f"{ENV_NAME} must not point at a project .venv: {value}")
+    probe = subprocess.run(
+        [value, "-I", "-c", "import kedro; print(kedro.__version__)"],
+        capture_output=True,
+        text=True,
+        timeout=120,
+        check=False,
+    )
+    if probe.returncode != 0 or probe.stdout.strip() != EXPECTED_KEDRO:
+        pytest.fail(f"scratch interpreter lacks Kedro {EXPECTED_KEDRO}: {probe}")
     return value
 
 
