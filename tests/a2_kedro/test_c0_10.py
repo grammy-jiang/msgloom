@@ -285,6 +285,25 @@ def test_acceptance_index_binds_order_status_and_results() -> None:
     check(acceptance_index(good.roots, other_batch) != base, "batch result bound")
 
 
+def test_build_refuses_wire_dicts_with_a_contract_error() -> None:
+    _ws, good = complete_receipt()
+    with pytest.raises(A2ContractError, match="model instances"):
+        CompletionReceipt.build(
+            workset=good.workset,
+            status=good.status,
+            policy_version=good.policy_version,
+            roots=[{"workset_selection_index": 0}],
+        )
+    with pytest.raises(A2ContractError, match="model instances"):
+        CompletionReceipt.build(
+            workset=good.workset,
+            status=good.status,
+            policy_version=good.policy_version,
+            roots=good.roots,
+            transition_batch={"result": "x"},
+        )
+
+
 def test_claim_proofs_are_structural_and_all_or_nothing() -> None:
     _ws, good = complete_receipt()
     results = [root.result for root in good.roots]

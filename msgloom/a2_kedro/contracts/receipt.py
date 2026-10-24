@@ -198,10 +198,13 @@ class CompletionReceipt(A2Model):
         explicit ``acceptance_index_sha256`` is kept and then checked, so
         a wrong value still fails. Wire parsing never calls this method.
         """
-        fields.setdefault(
-            "acceptance_index_sha256",
-            acceptance_index(fields.get("roots", ()), fields.get("transition_batch")),
-        )
+        roots = fields.get("roots", ())
+        batch = fields.get("transition_batch")
+        if not all(isinstance(r, TerminalRoot) for r in roots) or not (
+            batch is None or isinstance(batch, TransitionBatch)
+        ):
+            raise A2ContractError("build needs model instances for roots and batch")
+        fields.setdefault("acceptance_index_sha256", acceptance_index(roots, batch))
         return cls(**fields)
 
     @model_validator(mode="after")
